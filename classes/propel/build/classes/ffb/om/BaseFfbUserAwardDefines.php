@@ -542,18 +542,18 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->user_award_defines_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->user_award_defines_award_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
-			$this->user_award_defines_rank = ($row[$startcol + 2] !== null) ? (int) $row[$startcol + 2] : null;
-			$this->user_award_defines_rank_name = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
-			$this->user_award_defines_aim = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
-			$this->user_award_defines_aim_dbtable = ($row[$startcol + 5] !== null) ? (string) $row[$startcol + 5] : null;
-			$this->user_award_defines_aim_operator = ($row[$startcol + 6] !== null) ? (string) $row[$startcol + 6] : null;
-			$this->user_award_defines_aim_count = ($row[$startcol + 7] !== null) ? (int) $row[$startcol + 7] : null;
-			$this->user_award_defines_aim_automatic = ($row[$startcol + 8] !== null) ? (boolean) $row[$startcol + 8] : null;
-			$this->user_award_defines_aim_function_name = ($row[$startcol + 9] !== null) ? (string) $row[$startcol + 9] : null;
-			$this->user_award_defines_image = ($row[$startcol + 10] !== null) ? (string) $row[$startcol + 10] : null;
-			$this->user_award_defines_description = ($row[$startcol + 11] !== null) ? (string) $row[$startcol + 11] : null;
+			$this->user_award_defines_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->user_award_defines_award_id = (($row[$startcol + 1] ?? null) !== null) ? (int) $row[$startcol + 1] : null;
+			$this->user_award_defines_rank = (($row[$startcol + 2] ?? null) !== null) ? (int) $row[$startcol + 2] : null;
+			$this->user_award_defines_rank_name = (($row[$startcol + 3] ?? null) !== null) ? (string) $row[$startcol + 3] : null;
+			$this->user_award_defines_aim = (($row[$startcol + 4] ?? null) !== null) ? (string) $row[$startcol + 4] : null;
+			$this->user_award_defines_aim_dbtable = (($row[$startcol + 5] ?? null) !== null) ? (string) $row[$startcol + 5] : null;
+			$this->user_award_defines_aim_operator = (($row[$startcol + 6] ?? null) !== null) ? (string) $row[$startcol + 6] : null;
+			$this->user_award_defines_aim_count = (($row[$startcol + 7] ?? null) !== null) ? (int) $row[$startcol + 7] : null;
+			$this->user_award_defines_aim_automatic = (($row[$startcol + 8] ?? null) !== null) ? (boolean) $row[$startcol + 8] : null;
+			$this->user_award_defines_aim_function_name = (($row[$startcol + 9] ?? null) !== null) ? (string) $row[$startcol + 9] : null;
+			$this->user_award_defines_image = (($row[$startcol + 10] ?? null) !== null) ? (string) $row[$startcol + 10] : null;
+			$this->user_award_defines_description = (($row[$startcol + 11] ?? null) !== null) ? (string) $row[$startcol + 11] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -600,7 +600,7 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -642,7 +642,7 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -684,7 +684,7 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -1246,7 +1246,7 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 	 * @return     FfbUserAwardDefines The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbUserAward(FfbUserAward $v = null)
+	public function setFfbUserAward(?FfbUserAward $v = null)
 	{
 		if ($v === null) {
 			$this->setUserAwardDefinesAwardId(NULL);
@@ -1273,7 +1273,7 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 	 * @return     FfbUserAward The associated FfbUserAward object.
 	 * @throws     PropelException
 	 */
-	public function getFfbUserAward(PropelPDO $con = null)
+	public function getFfbUserAward(?PropelPDO $con = null)
 	{
 		if ($this->aFfbUserAward === null && ($this->user_award_defines_award_id !== null)) {
 			$this->aFfbUserAward = FfbUserAwardQuery::create()->findPk($this->user_award_defines_award_id, $con);
@@ -1331,7 +1331,7 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 	 * @return     PropelCollection|array FfbUserAwardFinished[] List of FfbUserAwardFinished objects
 	 * @throws     PropelException
 	 */
-	public function getFfbUserAwardFinisheds($criteria = null, PropelPDO $con = null)
+	public function getFfbUserAwardFinisheds($criteria = null, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbUserAwardFinisheds || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbUserAwardFinisheds) {
@@ -1359,7 +1359,7 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 	 * @return     int Count of related FfbUserAwardFinished objects.
 	 * @throws     PropelException
 	 */
-	public function countFfbUserAwardFinisheds(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+	public function countFfbUserAwardFinisheds(?Criteria $criteria = null, $distinct = false, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbUserAwardFinisheds || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbUserAwardFinisheds) {

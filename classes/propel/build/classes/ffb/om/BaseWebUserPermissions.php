@@ -291,11 +291,11 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->user_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->user_permissions_ffb_mailservice_reminder = ($row[$startcol + 1] !== null) ? (string) $row[$startcol + 1] : null;
-			$this->user_permissions_ffb_mailservice_info = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
-			$this->user_permissions_ffb_visible_profile = ($row[$startcol + 3] !== null) ? (boolean) $row[$startcol + 3] : null;
-			$this->user_permissions_pictory_visible_profile = ($row[$startcol + 4] !== null) ? (boolean) $row[$startcol + 4] : null;
+			$this->user_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->user_permissions_ffb_mailservice_reminder = (($row[$startcol + 1] ?? null) !== null) ? (string) $row[$startcol + 1] : null;
+			$this->user_permissions_ffb_mailservice_info = (($row[$startcol + 2] ?? null) !== null) ? (string) $row[$startcol + 2] : null;
+			$this->user_permissions_ffb_visible_profile = (($row[$startcol + 3] ?? null) !== null) ? (boolean) $row[$startcol + 3] : null;
+			$this->user_permissions_pictory_visible_profile = (($row[$startcol + 4] ?? null) !== null) ? (boolean) $row[$startcol + 4] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -342,7 +342,7 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -382,7 +382,7 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -424,7 +424,7 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -878,7 +878,7 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 	 * @return     WebUserPermissions The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setWebUser(WebUser $v = null)
+	public function setWebUser(?WebUser $v = null)
 	{
 		if ($v === null) {
 			$this->setUserId(NULL);
@@ -904,7 +904,7 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 	 * @return     WebUser The associated WebUser object.
 	 * @throws     PropelException
 	 */
-	public function getWebUser(PropelPDO $con = null)
+	public function getWebUser(?PropelPDO $con = null)
 	{
 		if ($this->aWebUser === null && ($this->user_id !== null)) {
 			$this->aWebUser = WebUserQuery::create()->findPk($this->user_id, $con);

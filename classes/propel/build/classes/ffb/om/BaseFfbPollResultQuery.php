@@ -34,8 +34,8 @@
  * @method     FfbPollResultQuery rightJoinWebUser($relationAlias = null) Adds a RIGHT JOIN clause to the query using the WebUser relation
  * @method     FfbPollResultQuery innerJoinWebUser($relationAlias = null) Adds a INNER JOIN clause to the query using the WebUser relation
  *
- * @method     FfbPollResult findOne(PropelPDO $con = null) Return the first FfbPollResult matching the query
- * @method     FfbPollResult findOneOrCreate(PropelPDO $con = null) Return the first FfbPollResult matching the query, or a new FfbPollResult object populated from the query conditions when no match is found
+ * @method     FfbPollResult findOne(?PropelPDO $con = null) Return the first FfbPollResult matching the query
+ * @method     FfbPollResult findOneOrCreate(?PropelPDO $con = null) Return the first FfbPollResult matching the query, or a new FfbPollResult object populated from the query conditions when no match is found
  *
  * @method     FfbPollResult findOneByPollResultId(int $poll_result_id) Return the first FfbPollResult filtered by the poll_result_id column
  * @method     FfbPollResult findOneByPollResultPollId(int $poll_result_poll_id) Return the first FfbPollResult filtered by the poll_result_poll_id column

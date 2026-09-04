@@ -336,12 +336,12 @@ abstract class BaseFfbPsgoal extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->psgoal_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->psgoal_match_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
-			$this->psgoal_playerteam_id = ($row[$startcol + 2] !== null) ? (int) $row[$startcol + 2] : null;
-			$this->psgoal_minute = ($row[$startcol + 3] !== null) ? (int) $row[$startcol + 3] : null;
-			$this->psgoal_hit = ($row[$startcol + 4] !== null) ? (boolean) $row[$startcol + 4] : null;
-			$this->psgoal_fail = ($row[$startcol + 5] !== null) ? (boolean) $row[$startcol + 5] : null;
+			$this->psgoal_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->psgoal_match_id = (($row[$startcol + 1] ?? null) !== null) ? (int) $row[$startcol + 1] : null;
+			$this->psgoal_playerteam_id = (($row[$startcol + 2] ?? null) !== null) ? (int) $row[$startcol + 2] : null;
+			$this->psgoal_minute = (($row[$startcol + 3] ?? null) !== null) ? (int) $row[$startcol + 3] : null;
+			$this->psgoal_hit = (($row[$startcol + 4] ?? null) !== null) ? (boolean) $row[$startcol + 4] : null;
+			$this->psgoal_fail = (($row[$startcol + 5] ?? null) !== null) ? (boolean) $row[$startcol + 5] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -391,7 +391,7 @@ abstract class BaseFfbPsgoal extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -432,7 +432,7 @@ abstract class BaseFfbPsgoal extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -474,7 +474,7 @@ abstract class BaseFfbPsgoal extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -962,7 +962,7 @@ abstract class BaseFfbPsgoal extends BaseObject  implements Persistent
 	 * @return     FfbPsgoal The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbMatch(FfbMatch $v = null)
+	public function setFfbMatch(?FfbMatch $v = null)
 	{
 		if ($v === null) {
 			$this->setPsgoalMatchId(NULL);
@@ -989,7 +989,7 @@ abstract class BaseFfbPsgoal extends BaseObject  implements Persistent
 	 * @return     FfbMatch The associated FfbMatch object.
 	 * @throws     PropelException
 	 */
-	public function getFfbMatch(PropelPDO $con = null)
+	public function getFfbMatch(?PropelPDO $con = null)
 	{
 		if ($this->aFfbMatch === null && ($this->psgoal_match_id !== null)) {
 			$this->aFfbMatch = FfbMatchQuery::create()->findPk($this->psgoal_match_id, $con);
@@ -1011,7 +1011,7 @@ abstract class BaseFfbPsgoal extends BaseObject  implements Persistent
 	 * @return     FfbPsgoal The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPlayerteam(FfbPlayerteam $v = null)
+	public function setFfbPlayerteam(?FfbPlayerteam $v = null)
 	{
 		if ($v === null) {
 			$this->setPsgoalPlayerteamId(NULL);
@@ -1038,7 +1038,7 @@ abstract class BaseFfbPsgoal extends BaseObject  implements Persistent
 	 * @return     FfbPlayerteam The associated FfbPlayerteam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerteam(PropelPDO $con = null)
+	public function getFfbPlayerteam(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPlayerteam === null && ($this->psgoal_playerteam_id !== null)) {
 			$this->aFfbPlayerteam = FfbPlayerteamQuery::create()->findPk($this->psgoal_playerteam_id, $con);

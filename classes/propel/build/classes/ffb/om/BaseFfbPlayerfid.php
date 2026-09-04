@@ -556,19 +556,19 @@ abstract class BaseFfbPlayerfid extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->playerfid_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->playerfid_playerteam_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
-			$this->playerfid_team_id = ($row[$startcol + 2] !== null) ? (int) $row[$startcol + 2] : null;
-			$this->playerfid_fid_foe = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
-			$this->playerfid_fid_fifa = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
-			$this->playerfid_fid_tm = ($row[$startcol + 5] !== null) ? (string) $row[$startcol + 5] : null;
-			$this->playerfid_fid_uefa = ($row[$startcol + 6] !== null) ? (string) $row[$startcol + 6] : null;
-			$this->playerfid_fid_wf = ($row[$startcol + 7] !== null) ? (string) $row[$startcol + 7] : null;
-			$this->playerfid_name_foe = ($row[$startcol + 8] !== null) ? (string) $row[$startcol + 8] : null;
-			$this->playerfid_name_fifa = ($row[$startcol + 9] !== null) ? (string) $row[$startcol + 9] : null;
-			$this->playerfid_name_tm = ($row[$startcol + 10] !== null) ? (string) $row[$startcol + 10] : null;
-			$this->playerfid_name_uefa = ($row[$startcol + 11] !== null) ? (string) $row[$startcol + 11] : null;
-			$this->playerfid_name_wf = ($row[$startcol + 12] !== null) ? (string) $row[$startcol + 12] : null;
+			$this->playerfid_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->playerfid_playerteam_id = (($row[$startcol + 1] ?? null) !== null) ? (int) $row[$startcol + 1] : null;
+			$this->playerfid_team_id = (($row[$startcol + 2] ?? null) !== null) ? (int) $row[$startcol + 2] : null;
+			$this->playerfid_fid_foe = (($row[$startcol + 3] ?? null) !== null) ? (string) $row[$startcol + 3] : null;
+			$this->playerfid_fid_fifa = (($row[$startcol + 4] ?? null) !== null) ? (string) $row[$startcol + 4] : null;
+			$this->playerfid_fid_tm = (($row[$startcol + 5] ?? null) !== null) ? (string) $row[$startcol + 5] : null;
+			$this->playerfid_fid_uefa = (($row[$startcol + 6] ?? null) !== null) ? (string) $row[$startcol + 6] : null;
+			$this->playerfid_fid_wf = (($row[$startcol + 7] ?? null) !== null) ? (string) $row[$startcol + 7] : null;
+			$this->playerfid_name_foe = (($row[$startcol + 8] ?? null) !== null) ? (string) $row[$startcol + 8] : null;
+			$this->playerfid_name_fifa = (($row[$startcol + 9] ?? null) !== null) ? (string) $row[$startcol + 9] : null;
+			$this->playerfid_name_tm = (($row[$startcol + 10] ?? null) !== null) ? (string) $row[$startcol + 10] : null;
+			$this->playerfid_name_uefa = (($row[$startcol + 11] ?? null) !== null) ? (string) $row[$startcol + 11] : null;
+			$this->playerfid_name_wf = (($row[$startcol + 12] ?? null) !== null) ? (string) $row[$startcol + 12] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -618,7 +618,7 @@ abstract class BaseFfbPlayerfid extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -659,7 +659,7 @@ abstract class BaseFfbPlayerfid extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -701,7 +701,7 @@ abstract class BaseFfbPlayerfid extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -1259,7 +1259,7 @@ abstract class BaseFfbPlayerfid extends BaseObject  implements Persistent
 	 * @return     FfbPlayerfid The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPlayerteam(FfbPlayerteam $v = null)
+	public function setFfbPlayerteam(?FfbPlayerteam $v = null)
 	{
 		if ($v === null) {
 			$this->setPlayerfidPlayerteamId(NULL);
@@ -1286,7 +1286,7 @@ abstract class BaseFfbPlayerfid extends BaseObject  implements Persistent
 	 * @return     FfbPlayerteam The associated FfbPlayerteam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerteam(PropelPDO $con = null)
+	public function getFfbPlayerteam(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPlayerteam === null && ($this->playerfid_playerteam_id !== null)) {
 			$this->aFfbPlayerteam = FfbPlayerteamQuery::create()->findPk($this->playerfid_playerteam_id, $con);
@@ -1308,7 +1308,7 @@ abstract class BaseFfbPlayerfid extends BaseObject  implements Persistent
 	 * @return     FfbPlayerfid The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbTeam(FfbTeam $v = null)
+	public function setFfbTeam(?FfbTeam $v = null)
 	{
 		if ($v === null) {
 			$this->setPlayerfidTeamId(NULL);
@@ -1335,7 +1335,7 @@ abstract class BaseFfbPlayerfid extends BaseObject  implements Persistent
 	 * @return     FfbTeam The associated FfbTeam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbTeam(PropelPDO $con = null)
+	public function getFfbTeam(?PropelPDO $con = null)
 	{
 		if ($this->aFfbTeam === null && ($this->playerfid_team_id !== null)) {
 			$this->aFfbTeam = FfbTeamQuery::create()->findPk($this->playerfid_team_id, $con);

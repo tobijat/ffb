@@ -140,7 +140,7 @@ class admintools extends FFB_Auth_AdminFfb {
 			//$criteria->add(FfbPlayerteamPeer::PLAYERTEAM_ID, 4346, Criteria::GREATER_THAN);
 			//$pts = $team->getFfbPlayerteams($criteria);
 			$pts = $team->getFfbPlayerteams();
-			echo utf8_decode($team->getTeamName()).' '.count($pts).'/';
+			echo mb_convert_encoding((string)$team->getTeamName(), 'ISO-8859-1', 'UTF-8').' '.count($pts).'/';
 			$i=0;
 			foreach($pts as $pt) {
 				$pt->setPlayerteamDateTransfer($transfer);
@@ -199,7 +199,7 @@ class admintools extends FFB_Auth_AdminFfb {
 			foreach($match_items as $item) {
 				echo $item->getMatchDate().' ';
 				echo $item->getFfbMatchround()->getMatchroundTitle().' ';
-				echo utf8_decode($item->getFfbTeamRelatedByMatchHometeamId()->getTeamName()).' '.utf8_decode($item->getFfbTeamRelatedByMatchGuestteamId()->getTeamName()).'<br>';
+				echo mb_convert_encoding((string)$item->getFfbTeamRelatedByMatchHometeamId()->getTeamName(), 'ISO-8859-1', 'UTF-8').' '.mb_convert_encoding((string)$item->getFfbTeamRelatedByMatchGuestteamId()->getTeamName(), 'ISO-8859-1', 'UTF-8').'<br>';
 			}
 		}
 		print_r($pt_ids);

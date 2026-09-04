@@ -286,7 +286,7 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 			// Because propel.useDateTimeClass is TRUE, we return a DateTime object.
 			return $dt;
 		} elseif (strpos($format, '%') !== false) {
-			return strftime($format, $dt->format('U'));
+			return $dt->format(strtr($format, array('%Y'=>'Y','%m'=>'m','%d'=>'d','%H'=>'H','%M'=>'i','%S'=>'s','%A'=>'l','%B'=>'F','%a'=>'D','%b'=>'M','%%'=>'%')));
 		} else {
 			return $dt->format($format);
 		}
@@ -663,18 +663,18 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->match_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->match_round = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
-			$this->match_hometeam_id = ($row[$startcol + 2] !== null) ? (int) $row[$startcol + 2] : null;
-			$this->match_guestteam_id = ($row[$startcol + 3] !== null) ? (int) $row[$startcol + 3] : null;
-			$this->match_homescore = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
-			$this->match_guestscore = ($row[$startcol + 5] !== null) ? (string) $row[$startcol + 5] : null;
-			$this->match_homescore_penalty = ($row[$startcol + 6] !== null) ? (string) $row[$startcol + 6] : null;
-			$this->match_guestscore_penalty = ($row[$startcol + 7] !== null) ? (string) $row[$startcol + 7] : null;
-			$this->match_date = ($row[$startcol + 8] !== null) ? (string) $row[$startcol + 8] : null;
-			$this->match_minutes = ($row[$startcol + 9] !== null) ? (int) $row[$startcol + 9] : null;
-			$this->match_status = ($row[$startcol + 10] !== null) ? (string) $row[$startcol + 10] : null;
-			$this->match_url = ($row[$startcol + 11] !== null) ? (string) $row[$startcol + 11] : null;
+			$this->match_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->match_round = (($row[$startcol + 1] ?? null) !== null) ? (int) $row[$startcol + 1] : null;
+			$this->match_hometeam_id = (($row[$startcol + 2] ?? null) !== null) ? (int) $row[$startcol + 2] : null;
+			$this->match_guestteam_id = (($row[$startcol + 3] ?? null) !== null) ? (int) $row[$startcol + 3] : null;
+			$this->match_homescore = (($row[$startcol + 4] ?? null) !== null) ? (string) $row[$startcol + 4] : null;
+			$this->match_guestscore = (($row[$startcol + 5] ?? null) !== null) ? (string) $row[$startcol + 5] : null;
+			$this->match_homescore_penalty = (($row[$startcol + 6] ?? null) !== null) ? (string) $row[$startcol + 6] : null;
+			$this->match_guestscore_penalty = (($row[$startcol + 7] ?? null) !== null) ? (string) $row[$startcol + 7] : null;
+			$this->match_date = (($row[$startcol + 8] ?? null) !== null) ? (string) $row[$startcol + 8] : null;
+			$this->match_minutes = (($row[$startcol + 9] ?? null) !== null) ? (int) $row[$startcol + 9] : null;
+			$this->match_status = (($row[$startcol + 10] ?? null) !== null) ? (string) $row[$startcol + 10] : null;
+			$this->match_url = (($row[$startcol + 11] ?? null) !== null) ? (string) $row[$startcol + 11] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -727,7 +727,7 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -775,7 +775,7 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -817,7 +817,7 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -1455,7 +1455,7 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 	 * @return     FfbMatch The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbMatchround(FfbMatchround $v = null)
+	public function setFfbMatchround(?FfbMatchround $v = null)
 	{
 		if ($v === null) {
 			$this->setMatchRound(NULL);
@@ -1482,7 +1482,7 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 	 * @return     FfbMatchround The associated FfbMatchround object.
 	 * @throws     PropelException
 	 */
-	public function getFfbMatchround(PropelPDO $con = null)
+	public function getFfbMatchround(?PropelPDO $con = null)
 	{
 		if ($this->aFfbMatchround === null && ($this->match_round !== null)) {
 			$this->aFfbMatchround = FfbMatchroundQuery::create()->findPk($this->match_round, $con);
@@ -1504,7 +1504,7 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 	 * @return     FfbMatch The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbTeamRelatedByMatchHometeamId(FfbTeam $v = null)
+	public function setFfbTeamRelatedByMatchHometeamId(?FfbTeam $v = null)
 	{
 		if ($v === null) {
 			$this->setMatchHometeamId(NULL);
@@ -1531,7 +1531,7 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 	 * @return     FfbTeam The associated FfbTeam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbTeamRelatedByMatchHometeamId(PropelPDO $con = null)
+	public function getFfbTeamRelatedByMatchHometeamId(?PropelPDO $con = null)
 	{
 		if ($this->aFfbTeamRelatedByMatchHometeamId === null && ($this->match_hometeam_id !== null)) {
 			$this->aFfbTeamRelatedByMatchHometeamId = FfbTeamQuery::create()->findPk($this->match_hometeam_id, $con);
@@ -1553,7 +1553,7 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 	 * @return     FfbMatch The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbTeamRelatedByMatchGuestteamId(FfbTeam $v = null)
+	public function setFfbTeamRelatedByMatchGuestteamId(?FfbTeam $v = null)
 	{
 		if ($v === null) {
 			$this->setMatchGuestteamId(NULL);
@@ -1580,7 +1580,7 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 	 * @return     FfbTeam The associated FfbTeam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbTeamRelatedByMatchGuestteamId(PropelPDO $con = null)
+	public function getFfbTeamRelatedByMatchGuestteamId(?PropelPDO $con = null)
 	{
 		if ($this->aFfbTeamRelatedByMatchGuestteamId === null && ($this->match_guestteam_id !== null)) {
 			$this->aFfbTeamRelatedByMatchGuestteamId = FfbTeamQuery::create()->findPk($this->match_guestteam_id, $con);
@@ -1638,7 +1638,7 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 	 * @return     PropelCollection|array FfbGoal[] List of FfbGoal objects
 	 * @throws     PropelException
 	 */
-	public function getFfbGoals($criteria = null, PropelPDO $con = null)
+	public function getFfbGoals($criteria = null, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbGoals || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbGoals) {
@@ -1666,7 +1666,7 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 	 * @return     int Count of related FfbGoal objects.
 	 * @throws     PropelException
 	 */
-	public function countFfbGoals(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+	public function countFfbGoals(?Criteria $criteria = null, $distinct = false, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbGoals || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbGoals) {
@@ -1772,7 +1772,7 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 	 * @return     PropelCollection|array FfbPsgoal[] List of FfbPsgoal objects
 	 * @throws     PropelException
 	 */
-	public function getFfbPsgoals($criteria = null, PropelPDO $con = null)
+	public function getFfbPsgoals($criteria = null, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbPsgoals || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbPsgoals) {
@@ -1800,7 +1800,7 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 	 * @return     int Count of related FfbPsgoal objects.
 	 * @throws     PropelException
 	 */
-	public function countFfbPsgoals(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+	public function countFfbPsgoals(?Criteria $criteria = null, $distinct = false, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbPsgoals || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbPsgoals) {
@@ -1906,7 +1906,7 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 	 * @return     PropelCollection|array FfbPlayerstats[] List of FfbPlayerstats objects
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerstatss($criteria = null, PropelPDO $con = null)
+	public function getFfbPlayerstatss($criteria = null, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbPlayerstatss || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbPlayerstatss) {
@@ -1934,7 +1934,7 @@ abstract class BaseFfbMatch extends BaseObject  implements Persistent
 	 * @return     int Count of related FfbPlayerstats objects.
 	 * @throws     PropelException
 	 */
-	public function countFfbPlayerstatss(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+	public function countFfbPlayerstatss(?Criteria $criteria = null, $distinct = false, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbPlayerstatss || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbPlayerstatss) {

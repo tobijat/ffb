@@ -26,8 +26,8 @@
  * @method     WebAdminQuery rightJoinWebUser($relationAlias = null) Adds a RIGHT JOIN clause to the query using the WebUser relation
  * @method     WebAdminQuery innerJoinWebUser($relationAlias = null) Adds a INNER JOIN clause to the query using the WebUser relation
  *
- * @method     WebAdmin findOne(PropelPDO $con = null) Return the first WebAdmin matching the query
- * @method     WebAdmin findOneOrCreate(PropelPDO $con = null) Return the first WebAdmin matching the query, or a new WebAdmin object populated from the query conditions when no match is found
+ * @method     WebAdmin findOne(?PropelPDO $con = null) Return the first WebAdmin matching the query
+ * @method     WebAdmin findOneOrCreate(?PropelPDO $con = null) Return the first WebAdmin matching the query, or a new WebAdmin object populated from the query conditions when no match is found
  *
  * @method     WebAdmin findOneByAdminId(int $admin_id) Return the first WebAdmin filtered by the admin_id column
  * @method     WebAdmin findOneByAdminUserId(int $admin_user_id) Return the first WebAdmin filtered by the admin_user_id column

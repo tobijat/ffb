@@ -87,7 +87,7 @@ class tools extends FFB_Auth_AdminFfb {
     }
 
     private function getTeamForPlayerteamId($playerteam_id) {
-        $team_name = utf8_decode(FfbPlayerteamPeer::retrieveByPK($playerteam_id)->getFfbTeam()->getTeamName());
+        $team_name = mb_convert_encoding((string)FfbPlayerteamPeer::retrieveByPK($playerteam_id)->getFfbTeam()->getTeamName(), 'ISO-8859-1', 'UTF-8');
 
         return $team_name;
     }

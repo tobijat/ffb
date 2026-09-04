@@ -28,8 +28,8 @@
  * @method     FfbUserAwardFinishedQuery rightJoinFfbUserAwardDefines($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbUserAwardDefines relation
  * @method     FfbUserAwardFinishedQuery innerJoinFfbUserAwardDefines($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbUserAwardDefines relation
  *
- * @method     FfbUserAwardFinished findOne(PropelPDO $con = null) Return the first FfbUserAwardFinished matching the query
- * @method     FfbUserAwardFinished findOneOrCreate(PropelPDO $con = null) Return the first FfbUserAwardFinished matching the query, or a new FfbUserAwardFinished object populated from the query conditions when no match is found
+ * @method     FfbUserAwardFinished findOne(?PropelPDO $con = null) Return the first FfbUserAwardFinished matching the query
+ * @method     FfbUserAwardFinished findOneOrCreate(?PropelPDO $con = null) Return the first FfbUserAwardFinished matching the query, or a new FfbUserAwardFinished object populated from the query conditions when no match is found
  *
  * @method     FfbUserAwardFinished findOneByUserAwardFinishedId(int $user_award_finished_id) Return the first FfbUserAwardFinished filtered by the user_award_finished_id column
  * @method     FfbUserAwardFinished findOneByUserAwardFinishedUserId(int $user_award_finished_user_id) Return the first FfbUserAwardFinished filtered by the user_award_finished_user_id column

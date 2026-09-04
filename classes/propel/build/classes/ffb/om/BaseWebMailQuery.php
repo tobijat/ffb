@@ -32,8 +32,8 @@
  * @method     WebMailQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
  * @method     WebMailQuery innerJoin($relation) Adds a INNER JOIN clause to the query
  *
- * @method     WebMail findOne(PropelPDO $con = null) Return the first WebMail matching the query
- * @method     WebMail findOneOrCreate(PropelPDO $con = null) Return the first WebMail matching the query, or a new WebMail object populated from the query conditions when no match is found
+ * @method     WebMail findOne(?PropelPDO $con = null) Return the first WebMail matching the query
+ * @method     WebMail findOneOrCreate(?PropelPDO $con = null) Return the first WebMail matching the query, or a new WebMail object populated from the query conditions when no match is found
  *
  * @method     WebMail findOneByMailId(int $mail_id) Return the first WebMail filtered by the mail_id column
  * @method     WebMail findOneByMailDate(string $mail_date) Return the first WebMail filtered by the mail_date column

@@ -259,11 +259,11 @@ abstract class BaseWebAdmin extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->admin_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->admin_user_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
-			$this->admin_section = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
-			$this->admin_level = ($row[$startcol + 3] !== null) ? (int) $row[$startcol + 3] : null;
-			$this->admin_status = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
+			$this->admin_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->admin_user_id = (($row[$startcol + 1] ?? null) !== null) ? (int) $row[$startcol + 1] : null;
+			$this->admin_section = (($row[$startcol + 2] ?? null) !== null) ? (string) $row[$startcol + 2] : null;
+			$this->admin_level = (($row[$startcol + 3] ?? null) !== null) ? (int) $row[$startcol + 3] : null;
+			$this->admin_status = (($row[$startcol + 4] ?? null) !== null) ? (string) $row[$startcol + 4] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -310,7 +310,7 @@ abstract class BaseWebAdmin extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -350,7 +350,7 @@ abstract class BaseWebAdmin extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -392,7 +392,7 @@ abstract class BaseWebAdmin extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -854,7 +854,7 @@ abstract class BaseWebAdmin extends BaseObject  implements Persistent
 	 * @return     WebAdmin The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setWebUser(WebUser $v = null)
+	public function setWebUser(?WebUser $v = null)
 	{
 		if ($v === null) {
 			$this->setAdminUserId(NULL);
@@ -881,7 +881,7 @@ abstract class BaseWebAdmin extends BaseObject  implements Persistent
 	 * @return     WebUser The associated WebUser object.
 	 * @throws     PropelException
 	 */
-	public function getWebUser(PropelPDO $con = null)
+	public function getWebUser(?PropelPDO $con = null)
 	{
 		if ($this->aWebUser === null && ($this->admin_user_id !== null)) {
 			$this->aWebUser = WebUserQuery::create()->findPk($this->admin_user_id, $con);

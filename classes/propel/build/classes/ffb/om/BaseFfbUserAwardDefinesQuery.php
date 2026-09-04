@@ -44,8 +44,8 @@
  * @method     FfbUserAwardDefinesQuery rightJoinFfbUserAwardFinished($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbUserAwardFinished relation
  * @method     FfbUserAwardDefinesQuery innerJoinFfbUserAwardFinished($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbUserAwardFinished relation
  *
- * @method     FfbUserAwardDefines findOne(PropelPDO $con = null) Return the first FfbUserAwardDefines matching the query
- * @method     FfbUserAwardDefines findOneOrCreate(PropelPDO $con = null) Return the first FfbUserAwardDefines matching the query, or a new FfbUserAwardDefines object populated from the query conditions when no match is found
+ * @method     FfbUserAwardDefines findOne(?PropelPDO $con = null) Return the first FfbUserAwardDefines matching the query
+ * @method     FfbUserAwardDefines findOneOrCreate(?PropelPDO $con = null) Return the first FfbUserAwardDefines matching the query, or a new FfbUserAwardDefines object populated from the query conditions when no match is found
  *
  * @method     FfbUserAwardDefines findOneByUserAwardDefinesId(int $user_award_defines_id) Return the first FfbUserAwardDefines filtered by the user_award_defines_id column
  * @method     FfbUserAwardDefines findOneByUserAwardDefinesAwardId(int $user_award_defines_award_id) Return the first FfbUserAwardDefines filtered by the user_award_defines_award_id column

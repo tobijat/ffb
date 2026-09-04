@@ -168,7 +168,7 @@ abstract class BaseFfbApikey extends BaseObject  implements Persistent
 			// Because propel.useDateTimeClass is TRUE, we return a DateTime object.
 			return $dt;
 		} elseif (strpos($format, '%') !== false) {
-			return strftime($format, $dt->format('U'));
+			return $dt->format(strtr($format, array('%Y'=>'Y','%m'=>'m','%d'=>'d','%H'=>'H','%M'=>'i','%S'=>'s','%A'=>'l','%B'=>'F','%a'=>'D','%b'=>'M','%%'=>'%')));
 		} else {
 			return $dt->format($format);
 		}
@@ -369,12 +369,12 @@ abstract class BaseFfbApikey extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->apikey_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->apikey_key = ($row[$startcol + 1] !== null) ? (string) $row[$startcol + 1] : null;
-			$this->apikey_ip = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
-			$this->apikey_description = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
-			$this->apikey_lastcall = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
-			$this->apikey_status = ($row[$startcol + 5] !== null) ? (boolean) $row[$startcol + 5] : null;
+			$this->apikey_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->apikey_key = (($row[$startcol + 1] ?? null) !== null) ? (string) $row[$startcol + 1] : null;
+			$this->apikey_ip = (($row[$startcol + 2] ?? null) !== null) ? (string) $row[$startcol + 2] : null;
+			$this->apikey_description = (($row[$startcol + 3] ?? null) !== null) ? (string) $row[$startcol + 3] : null;
+			$this->apikey_lastcall = (($row[$startcol + 4] ?? null) !== null) ? (string) $row[$startcol + 4] : null;
+			$this->apikey_status = (($row[$startcol + 5] ?? null) !== null) ? (boolean) $row[$startcol + 5] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -418,7 +418,7 @@ abstract class BaseFfbApikey extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -457,7 +457,7 @@ abstract class BaseFfbApikey extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -499,7 +499,7 @@ abstract class BaseFfbApikey extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");

@@ -44,7 +44,7 @@ class test extends FFB_Auth_No {
         echo "(" . count($users) . ") Active Users since 2016-05-30<br><br>";
         echo "<b>last action / username</b><br>";
         foreach ($users as $user) {
-            echo $user->getUserDateLaction() . " / " . utf8_decode($user->getUserNickname()) . "<br>";
+            echo $user->getUserDateLaction() . " / " . mb_convert_encoding((string)$user->getUserNickname(), 'ISO-8859-1', 'UTF-8') . "<br>";
         }
 
         echo "<br><hr><br>";
@@ -62,7 +62,7 @@ class test extends FFB_Auth_No {
 		echo "(" . count($userteams) . ") Lineups for round $matchround_id<br><br>";
 		echo "<b>username</b><br>";
 		foreach($userteams as $team) {
-			echo utf8_decode($team->getWebUser()->getUserNickname()) . "<br>";
+			echo mb_convert_encoding((string)$team->getWebUser()->getUserNickname(), 'ISO-8859-1', 'UTF-8') . "<br>";
 		}
 		die();
 	}

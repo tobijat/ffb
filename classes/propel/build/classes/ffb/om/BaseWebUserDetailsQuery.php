@@ -58,8 +58,8 @@
  * @method     WebUserDetailsQuery rightJoinFfbGame($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbGame relation
  * @method     WebUserDetailsQuery innerJoinFfbGame($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbGame relation
  *
- * @method     WebUserDetails findOne(PropelPDO $con = null) Return the first WebUserDetails matching the query
- * @method     WebUserDetails findOneOrCreate(PropelPDO $con = null) Return the first WebUserDetails matching the query, or a new WebUserDetails object populated from the query conditions when no match is found
+ * @method     WebUserDetails findOne(?PropelPDO $con = null) Return the first WebUserDetails matching the query
+ * @method     WebUserDetails findOneOrCreate(?PropelPDO $con = null) Return the first WebUserDetails matching the query, or a new WebUserDetails object populated from the query conditions when no match is found
  *
  * @method     WebUserDetails findOneByUserId(int $user_id) Return the first WebUserDetails filtered by the user_id column
  * @method     WebUserDetails findOneByUserDetailsAvatar(string $user_details_avatar) Return the first WebUserDetails filtered by the user_details_avatar column

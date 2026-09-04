@@ -32,8 +32,8 @@
  * @method     FfbCronjobQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
  * @method     FfbCronjobQuery innerJoin($relation) Adds a INNER JOIN clause to the query
  *
- * @method     FfbCronjob findOne(PropelPDO $con = null) Return the first FfbCronjob matching the query
- * @method     FfbCronjob findOneOrCreate(PropelPDO $con = null) Return the first FfbCronjob matching the query, or a new FfbCronjob object populated from the query conditions when no match is found
+ * @method     FfbCronjob findOne(?PropelPDO $con = null) Return the first FfbCronjob matching the query
+ * @method     FfbCronjob findOneOrCreate(?PropelPDO $con = null) Return the first FfbCronjob matching the query, or a new FfbCronjob object populated from the query conditions when no match is found
  *
  * @method     FfbCronjob findOneByCronjobId(int $cronjob_id) Return the first FfbCronjob filtered by the cronjob_id column
  * @method     FfbCronjob findOneByCronjobDescription(string $cronjob_description) Return the first FfbCronjob filtered by the cronjob_description column

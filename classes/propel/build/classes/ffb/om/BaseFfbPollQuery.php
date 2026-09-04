@@ -40,8 +40,8 @@
  * @method     FfbPollQuery rightJoinFfbPollAnswer($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbPollAnswer relation
  * @method     FfbPollQuery innerJoinFfbPollAnswer($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbPollAnswer relation
  *
- * @method     FfbPoll findOne(PropelPDO $con = null) Return the first FfbPoll matching the query
- * @method     FfbPoll findOneOrCreate(PropelPDO $con = null) Return the first FfbPoll matching the query, or a new FfbPoll object populated from the query conditions when no match is found
+ * @method     FfbPoll findOne(?PropelPDO $con = null) Return the first FfbPoll matching the query
+ * @method     FfbPoll findOneOrCreate(?PropelPDO $con = null) Return the first FfbPoll matching the query, or a new FfbPoll object populated from the query conditions when no match is found
  *
  * @method     FfbPoll findOneByPollId(int $poll_id) Return the first FfbPoll filtered by the poll_id column
  * @method     FfbPoll findOneByPollTitle(string $poll_title) Return the first FfbPoll filtered by the poll_title column

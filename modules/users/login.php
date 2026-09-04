@@ -25,6 +25,8 @@
       public function __default()
       {
 		  $this->session->destroy();
+          $this->htmlFile = $this->config->area_prefix.'_login.php';
+          $this->navFile = $this->config->area_prefix.'_login_navigation.php';
       }
 
       public function loginAjax()

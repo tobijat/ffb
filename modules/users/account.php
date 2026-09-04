@@ -63,7 +63,8 @@ class account extends FFB_Auth_User
             $user['user_lname'] = $exist_user->getUserLname();
             $user['user_nationality'] = $exist_user->getUserNationality();
             $user['user_mailservice'] = $exist_user->getUserMailservice();
-            $birthdate = strtotime($exist_user->getUserDateBirth());
+            $birthRaw = $exist_user->getUserDateBirth();
+            $birthdate = $birthRaw ? strtotime($birthRaw) : false;
             if(!$birthdate) {
             	//echo 'birth: '.$birthdate;
             	$user['user_birth_year'] = 0;

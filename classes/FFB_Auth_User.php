@@ -31,7 +31,8 @@ abstract class FFB_Auth_User extends FFB_Auth {
     			return false;
     		}
     		//login timeout
-    		$user_laction_time  = strtotime($user->getUserDateLaction());
+    		$laction = $user->getUserDateLaction();
+    		$user_laction_time  = $laction ? strtotime($laction) : 0;
 			$timeout = $this->config->area_user_login_timeout;
     		if($timeout > 0 && ($user_laction_time+$timeout)<=time()) {
 	        	$this->session->user_id = 0;

@@ -359,7 +359,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 			// Because propel.useDateTimeClass is TRUE, we return a DateTime object.
 			return $dt;
 		} elseif (strpos($format, '%') !== false) {
-			return strftime($format, $dt->format('U'));
+			return $dt->format(strtr($format, array('%Y'=>'Y','%m'=>'m','%d'=>'d','%H'=>'H','%M'=>'i','%S'=>'s','%A'=>'l','%B'=>'F','%a'=>'D','%b'=>'M','%%'=>'%')));
 		} else {
 			return $dt->format($format);
 		}
@@ -417,7 +417,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 			// Because propel.useDateTimeClass is TRUE, we return a DateTime object.
 			return $dt;
 		} elseif (strpos($format, '%') !== false) {
-			return strftime($format, $dt->format('U'));
+			return $dt->format(strtr($format, array('%Y'=>'Y','%m'=>'m','%d'=>'d','%H'=>'H','%M'=>'i','%S'=>'s','%A'=>'l','%B'=>'F','%a'=>'D','%b'=>'M','%%'=>'%')));
 		} else {
 			return $dt->format($format);
 		}
@@ -455,7 +455,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 			// Because propel.useDateTimeClass is TRUE, we return a DateTime object.
 			return $dt;
 		} elseif (strpos($format, '%') !== false) {
-			return strftime($format, $dt->format('U'));
+			return $dt->format(strtr($format, array('%Y'=>'Y','%m'=>'m','%d'=>'d','%H'=>'H','%M'=>'i','%S'=>'s','%A'=>'l','%B'=>'F','%a'=>'D','%b'=>'M','%%'=>'%')));
 		} else {
 			return $dt->format($format);
 		}
@@ -493,7 +493,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 			// Because propel.useDateTimeClass is TRUE, we return a DateTime object.
 			return $dt;
 		} elseif (strpos($format, '%') !== false) {
-			return strftime($format, $dt->format('U'));
+			return $dt->format(strtr($format, array('%Y'=>'Y','%m'=>'m','%d'=>'d','%H'=>'H','%M'=>'i','%S'=>'s','%A'=>'l','%B'=>'F','%a'=>'D','%b'=>'M','%%'=>'%')));
 		} else {
 			return $dt->format($format);
 		}
@@ -1039,24 +1039,24 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->user_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->user_nickname = ($row[$startcol + 1] !== null) ? (string) $row[$startcol + 1] : null;
-			$this->user_password = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
-			$this->user_email = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
-			$this->user_fname = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
-			$this->user_lname = ($row[$startcol + 5] !== null) ? (string) $row[$startcol + 5] : null;
-			$this->user_gender = ($row[$startcol + 6] !== null) ? (string) $row[$startcol + 6] : null;
-			$this->user_status = ($row[$startcol + 7] !== null) ? (string) $row[$startcol + 7] : null;
-			$this->user_admin = ($row[$startcol + 8] !== null) ? (boolean) $row[$startcol + 8] : null;
-			$this->user_nationality = ($row[$startcol + 9] !== null) ? (string) $row[$startcol + 9] : null;
-			$this->user_date_birth = ($row[$startcol + 10] !== null) ? (string) $row[$startcol + 10] : null;
-			$this->user_ip = ($row[$startcol + 11] !== null) ? (string) $row[$startcol + 11] : null;
-			$this->user_lip = ($row[$startcol + 12] !== null) ? (string) $row[$startcol + 12] : null;
-			$this->user_date_register = ($row[$startcol + 13] !== null) ? (string) $row[$startcol + 13] : null;
-			$this->user_date_llogin = ($row[$startcol + 14] !== null) ? (string) $row[$startcol + 14] : null;
-			$this->user_date_laction = ($row[$startcol + 15] !== null) ? (string) $row[$startcol + 15] : null;
-			$this->user_activation_code = ($row[$startcol + 16] !== null) ? (string) $row[$startcol + 16] : null;
-			$this->user_mailservice = ($row[$startcol + 17] !== null) ? (string) $row[$startcol + 17] : null;
+			$this->user_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->user_nickname = (($row[$startcol + 1] ?? null) !== null) ? (string) $row[$startcol + 1] : null;
+			$this->user_password = (($row[$startcol + 2] ?? null) !== null) ? (string) $row[$startcol + 2] : null;
+			$this->user_email = (($row[$startcol + 3] ?? null) !== null) ? (string) $row[$startcol + 3] : null;
+			$this->user_fname = (($row[$startcol + 4] ?? null) !== null) ? (string) $row[$startcol + 4] : null;
+			$this->user_lname = (($row[$startcol + 5] ?? null) !== null) ? (string) $row[$startcol + 5] : null;
+			$this->user_gender = (($row[$startcol + 6] ?? null) !== null) ? (string) $row[$startcol + 6] : null;
+			$this->user_status = (($row[$startcol + 7] ?? null) !== null) ? (string) $row[$startcol + 7] : null;
+			$this->user_admin = (($row[$startcol + 8] ?? null) !== null) ? (boolean) $row[$startcol + 8] : null;
+			$this->user_nationality = (($row[$startcol + 9] ?? null) !== null) ? (string) $row[$startcol + 9] : null;
+			$this->user_date_birth = (($row[$startcol + 10] ?? null) !== null) ? (string) $row[$startcol + 10] : null;
+			$this->user_ip = (($row[$startcol + 11] ?? null) !== null) ? (string) $row[$startcol + 11] : null;
+			$this->user_lip = (($row[$startcol + 12] ?? null) !== null) ? (string) $row[$startcol + 12] : null;
+			$this->user_date_register = (($row[$startcol + 13] ?? null) !== null) ? (string) $row[$startcol + 13] : null;
+			$this->user_date_llogin = (($row[$startcol + 14] ?? null) !== null) ? (string) $row[$startcol + 14] : null;
+			$this->user_date_laction = (($row[$startcol + 15] ?? null) !== null) ? (string) $row[$startcol + 15] : null;
+			$this->user_activation_code = (($row[$startcol + 16] ?? null) !== null) ? (string) $row[$startcol + 16] : null;
+			$this->user_mailservice = (($row[$startcol + 17] ?? null) !== null) ? (string) $row[$startcol + 17] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -1100,7 +1100,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -1161,7 +1161,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -1203,7 +1203,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -2005,7 +2005,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     WebUserDetails
 	 * @throws     PropelException
 	 */
-	public function getWebUserDetails(PropelPDO $con = null)
+	public function getWebUserDetails(?PropelPDO $con = null)
 	{
 
 		if ($this->singleWebUserDetails === null && !$this->isNew()) {
@@ -2022,7 +2022,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     WebUser The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setWebUserDetails(WebUserDetails $v = null)
+	public function setWebUserDetails(?WebUserDetails $v = null)
 	{
 		$this->singleWebUserDetails = $v;
 
@@ -2041,7 +2041,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     WebUserPermissions
 	 * @throws     PropelException
 	 */
-	public function getWebUserPermissions(PropelPDO $con = null)
+	public function getWebUserPermissions(?PropelPDO $con = null)
 	{
 
 		if ($this->singleWebUserPermissions === null && !$this->isNew()) {
@@ -2058,7 +2058,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     WebUser The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setWebUserPermissions(WebUserPermissions $v = null)
+	public function setWebUserPermissions(?WebUserPermissions $v = null)
 	{
 		$this->singleWebUserPermissions = $v;
 
@@ -2113,7 +2113,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     PropelCollection|array FfbComments[] List of FfbComments objects
 	 * @throws     PropelException
 	 */
-	public function getFfbCommentss($criteria = null, PropelPDO $con = null)
+	public function getFfbCommentss($criteria = null, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbCommentss || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbCommentss) {
@@ -2141,7 +2141,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     int Count of related FfbComments objects.
 	 * @throws     PropelException
 	 */
-	public function countFfbCommentss(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+	public function countFfbCommentss(?Criteria $criteria = null, $distinct = false, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbCommentss || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbCommentss) {
@@ -2272,7 +2272,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     PropelCollection|array FfbPollResult[] List of FfbPollResult objects
 	 * @throws     PropelException
 	 */
-	public function getFfbPollResults($criteria = null, PropelPDO $con = null)
+	public function getFfbPollResults($criteria = null, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbPollResults || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbPollResults) {
@@ -2300,7 +2300,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     int Count of related FfbPollResult objects.
 	 * @throws     PropelException
 	 */
-	public function countFfbPollResults(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+	public function countFfbPollResults(?Criteria $criteria = null, $distinct = false, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbPollResults || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbPollResults) {
@@ -2431,7 +2431,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     PropelCollection|array FfbInvitation[] List of FfbInvitation objects
 	 * @throws     PropelException
 	 */
-	public function getFfbInvitations($criteria = null, PropelPDO $con = null)
+	public function getFfbInvitations($criteria = null, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbInvitations || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbInvitations) {
@@ -2459,7 +2459,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     int Count of related FfbInvitation objects.
 	 * @throws     PropelException
 	 */
-	public function countFfbInvitations(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+	public function countFfbInvitations(?Criteria $criteria = null, $distinct = false, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbInvitations || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbInvitations) {
@@ -2540,7 +2540,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     PropelCollection|array FfbUserteam[] List of FfbUserteam objects
 	 * @throws     PropelException
 	 */
-	public function getFfbUserteams($criteria = null, PropelPDO $con = null)
+	public function getFfbUserteams($criteria = null, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbUserteams || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbUserteams) {
@@ -2568,7 +2568,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     int Count of related FfbUserteam objects.
 	 * @throws     PropelException
 	 */
-	public function countFfbUserteams(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+	public function countFfbUserteams(?Criteria $criteria = null, $distinct = false, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbUserteams || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbUserteams) {
@@ -2949,7 +2949,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     PropelCollection|array FfbUserscore[] List of FfbUserscore objects
 	 * @throws     PropelException
 	 */
-	public function getFfbUserscores($criteria = null, PropelPDO $con = null)
+	public function getFfbUserscores($criteria = null, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbUserscores || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbUserscores) {
@@ -2977,7 +2977,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     int Count of related FfbUserscore objects.
 	 * @throws     PropelException
 	 */
-	public function countFfbUserscores(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+	public function countFfbUserscores(?Criteria $criteria = null, $distinct = false, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbUserscores || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbUserscores) {
@@ -3083,7 +3083,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     PropelCollection|array FfbAdmin[] List of FfbAdmin objects
 	 * @throws     PropelException
 	 */
-	public function getFfbAdmins($criteria = null, PropelPDO $con = null)
+	public function getFfbAdmins($criteria = null, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbAdmins || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbAdmins) {
@@ -3111,7 +3111,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     int Count of related FfbAdmin objects.
 	 * @throws     PropelException
 	 */
-	public function countFfbAdmins(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+	public function countFfbAdmins(?Criteria $criteria = null, $distinct = false, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbAdmins || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbAdmins) {
@@ -3217,7 +3217,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     PropelCollection|array WebLog[] List of WebLog objects
 	 * @throws     PropelException
 	 */
-	public function getWebLogs($criteria = null, PropelPDO $con = null)
+	public function getWebLogs($criteria = null, ?PropelPDO $con = null)
 	{
 		if(null === $this->collWebLogs || null !== $criteria) {
 			if ($this->isNew() && null === $this->collWebLogs) {
@@ -3245,7 +3245,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     int Count of related WebLog objects.
 	 * @throws     PropelException
 	 */
-	public function countWebLogs(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+	public function countWebLogs(?Criteria $criteria = null, $distinct = false, ?PropelPDO $con = null)
 	{
 		if(null === $this->collWebLogs || null !== $criteria) {
 			if ($this->isNew() && null === $this->collWebLogs) {
@@ -3326,7 +3326,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     PropelCollection|array FfbUserAwardFinished[] List of FfbUserAwardFinished objects
 	 * @throws     PropelException
 	 */
-	public function getFfbUserAwardFinisheds($criteria = null, PropelPDO $con = null)
+	public function getFfbUserAwardFinisheds($criteria = null, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbUserAwardFinisheds || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbUserAwardFinisheds) {
@@ -3354,7 +3354,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     int Count of related FfbUserAwardFinished objects.
 	 * @throws     PropelException
 	 */
-	public function countFfbUserAwardFinisheds(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+	public function countFfbUserAwardFinisheds(?Criteria $criteria = null, $distinct = false, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbUserAwardFinisheds || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbUserAwardFinisheds) {
@@ -3460,7 +3460,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     PropelCollection|array WebAdmin[] List of WebAdmin objects
 	 * @throws     PropelException
 	 */
-	public function getWebAdmins($criteria = null, PropelPDO $con = null)
+	public function getWebAdmins($criteria = null, ?PropelPDO $con = null)
 	{
 		if(null === $this->collWebAdmins || null !== $criteria) {
 			if ($this->isNew() && null === $this->collWebAdmins) {
@@ -3488,7 +3488,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	 * @return     int Count of related WebAdmin objects.
 	 * @throws     PropelException
 	 */
-	public function countWebAdmins(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+	public function countWebAdmins(?Criteria $criteria = null, $distinct = false, ?PropelPDO $con = null)
 	{
 		if(null === $this->collWebAdmins || null !== $criteria) {
 			if ($this->isNew() && null === $this->collWebAdmins) {

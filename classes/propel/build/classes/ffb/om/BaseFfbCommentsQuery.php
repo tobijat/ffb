@@ -38,8 +38,8 @@
  * @method     FfbCommentsQuery rightJoinFfbMatchround($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbMatchround relation
  * @method     FfbCommentsQuery innerJoinFfbMatchround($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbMatchround relation
  *
- * @method     FfbComments findOne(PropelPDO $con = null) Return the first FfbComments matching the query
- * @method     FfbComments findOneOrCreate(PropelPDO $con = null) Return the first FfbComments matching the query, or a new FfbComments object populated from the query conditions when no match is found
+ * @method     FfbComments findOne(?PropelPDO $con = null) Return the first FfbComments matching the query
+ * @method     FfbComments findOneOrCreate(?PropelPDO $con = null) Return the first FfbComments matching the query, or a new FfbComments object populated from the query conditions when no match is found
  *
  * @method     FfbComments findOneByCommentsId(int $comments_id) Return the first FfbComments filtered by the comments_id column
  * @method     FfbComments findOneByCommentsUserId(int $comments_user_id) Return the first FfbComments filtered by the comments_user_id column

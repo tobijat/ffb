@@ -159,7 +159,7 @@ var RecaptchaOptions = {
 				    <div id="reg_formline">
 				        <div id="reg_formdescr">E-Mail &auml;ndern:</div>
 				        <div id="reg_forminput">
-				            <input type="text" class="input" name="user_email_chg" size="50" value="<?= $this->post['user_email_chg'];?>" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
+				            <input type="text" class="input" name="user_email_chg" size="50" value="<?= htmlspecialchars((string)($this->post['user_email_chg'] ?? ''), ENT_QUOTES);?>" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
 				        </div>
 				        <div id="reg_formclear"></div>
 				    </div>
@@ -167,7 +167,7 @@ var RecaptchaOptions = {
 				    <div id="reg_formline">
 				        <div id="reg_formdescr">E-Mail &Auml;nderung wiederholen:</div>
 				        <div id="reg_forminput">
-				            <input type="text" class="input" name="user_email_val_chg" size="50" value="<?= $this->post['user_email_val_chg'];?>" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
+				            <input type="text" class="input" name="user_email_val_chg" size="50" value="<?= htmlspecialchars((string)($this->post['user_email_val_chg'] ?? ''), ENT_QUOTES);?>" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
 				        </div>
 				        <div id="reg_formclear"></div>
 				    </div>

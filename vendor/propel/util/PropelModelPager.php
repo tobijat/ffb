@@ -19,8 +19,7 @@
  */
 class PropelModelPager implements IteratorAggregate, Countable
 {
-    protected
-        $query = null,
+    protected $query = null,
         $page = 1,
         $maxPerPage = 10,
         $lastPage = 1,

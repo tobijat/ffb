@@ -31,6 +31,9 @@ class FFB_Session {
     }
 
     public function destroy() {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            return;
+        }
         foreach($_SESSION as $var => $val) {
             $_SESSION[$var] = null;
         }
@@ -38,6 +41,9 @@ class FFB_Session {
     }
 
     public function clear() {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            return;
+        }
 	    foreach($_SESSION as $var => $val) {
             $_SESSION[$var] = null;
         }

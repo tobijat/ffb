@@ -204,7 +204,7 @@ class userscore extends FFB_Auth_User {
                 } else {
                     $users[$i]['user_score_av'] = 0;
                 }
-                if($win_array[$scoreitem->getWebUser()->getUserNickname()]) {
+                if(!empty($win_array[$scoreitem->getWebUser()->getUserNickname()])) {
                     $users[$i]['matchround_wins'] = $win_array[$scoreitem->getWebUser()->getUserNickname()];
                 } else {
                     $users[$i]['matchround_wins'] = 0;
@@ -310,18 +310,23 @@ class userscore extends FFB_Auth_User {
                 $criteria->addDescendingOrderByColumn(FfbUserteamPeer::USERTEAM_SCORE);
                 $userteam = FfbUserteamPeer::doSelect($criteria);
                 if($userteam) {
-                    if($win_array[$userteam[0]->getWebUser()->getUserNickname()]) {
-                        $win_array[$userteam[0]->getWebUser()->getUserNickname()]++;
+                    $nick0 = $userteam[0]->getWebUser()->getUserNickname();
+                    if(!empty($win_array[$nick0])) {
+                        $win_array[$nick0]++;
                     } else {
-                        $win_array[$userteam[0]->getWebUser()->getUserNickname()] = 1;
+                        $win_array[$nick0] = 1;
                     }
-                    if($userteam[1] && ($userteam[0]->getUserteamScore() == $userteam[1]->getUserteamScore())) {
+                    if(isset($userteam[1]) && ($userteam[0]->getUserteamScore() == $userteam[1]->getUserteamScore())) {
                         for($i=0; $i<count($userteam); $i++) {
                             if($userteam[$i] == $userteam[0]) {
-                                if($win_array[$userteam[$i+1]->getWebUser()->getUserNickname()]) {
-                                    $win_array[$userteam[$i+1]->getWebUser()->getUserNickname()]++;
+                                if(!isset($userteam[$i+1])) {
+                                    break;
+                                }
+                                $nickNext = $userteam[$i+1]->getWebUser()->getUserNickname();
+                                if(!empty($win_array[$nickNext])) {
+                                    $win_array[$nickNext]++;
                                 } else {
-                                    $win_array[$userteam[$i+1]->getWebUser()->getUserNickname()] = 1;
+                                    $win_array[$nickNext] = 1;
                                 }
                             } else {
                                 break;

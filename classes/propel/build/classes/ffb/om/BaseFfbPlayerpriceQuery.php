@@ -32,8 +32,8 @@
  * @method     FfbPlayerpriceQuery rightJoinFfbMatchround($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbMatchround relation
  * @method     FfbPlayerpriceQuery innerJoinFfbMatchround($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbMatchround relation
  *
- * @method     FfbPlayerprice findOne(PropelPDO $con = null) Return the first FfbPlayerprice matching the query
- * @method     FfbPlayerprice findOneOrCreate(PropelPDO $con = null) Return the first FfbPlayerprice matching the query, or a new FfbPlayerprice object populated from the query conditions when no match is found
+ * @method     FfbPlayerprice findOne(?PropelPDO $con = null) Return the first FfbPlayerprice matching the query
+ * @method     FfbPlayerprice findOneOrCreate(?PropelPDO $con = null) Return the first FfbPlayerprice matching the query, or a new FfbPlayerprice object populated from the query conditions when no match is found
  *
  * @method     FfbPlayerprice findOneByPlayerpriceId(int $playerprice_id) Return the first FfbPlayerprice filtered by the playerprice_id column
  * @method     FfbPlayerprice findOneByPlayerpricePlayerteamId(int $playerprice_playerteam_id) Return the first FfbPlayerprice filtered by the playerprice_playerteam_id column

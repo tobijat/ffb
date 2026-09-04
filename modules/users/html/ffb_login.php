@@ -46,7 +46,7 @@ var curr = "";
   //echo "\r\n<!--\r\n";
   //print_r($this->lastResults);
   //echo "\r\n-->\r\n"; 
-	if($this->lastResults[0]) {
+	if(!empty($this->lastResults[0] ?? null)) {
 	$index=0;
 	foreach($this->lastResults AS $result) {
 		echo "newslist[$index] = new Object();\r\n";
@@ -247,42 +247,42 @@ function newsticker()
 			            <br /><br />
 			            <div class="ffb_infos">
 						<b>
-						<?php if($this->userCountTotal[0]) {?>
+						<?php if(!empty($this->userCountTotal[0] ?? null)) {?>
 							<div class="ffb_infos_single_info">
 								<div class="ffb_infos_image"><img class="ffb_infos_img"  src="<?= FFB_BASE_PATH?><?= FFB_IMAGE_PATH?>navigation/nav_user.png"  /></div>
 								<div class="ffb_infos_description">Gesamt registrierte Benutzer:</div>
 								<div class="ffb_infos_info"><?php  echo $this->userCountTotal[0]->getUserId(); ?></div>
 							</div>
 						<?php }?>
-						<?php if($this->userCountToday[0]) {?>
+						<?php if(!empty($this->userCountToday[0] ?? null)) {?>
 							<div class="ffb_infos_single_info">
 								<div class="ffb_infos_image"><img class="ffb_infos_img"  src="<?= FFB_BASE_PATH?><?= FFB_IMAGE_PATH?>symbols/symbol_user.png"  /></div>
 								<div class="ffb_infos_description">Heute eingeloggt:</div>
 								<div class="ffb_infos_info"><?php  echo $this->userCountToday[0]->getUserId(); ?></div>
 							</div>
 						<?php }?>
-						<?php if($this->userCountUserteams[0]) {?>
+						<?php if(!empty($this->userCountUserteams[0] ?? null)) {?>
 							<div class="ffb_infos_single_info">
 								<div class="ffb_infos_image"><img class="ffb_infos_img"  src="<?= FFB_BASE_PATH?><?= FFB_IMAGE_PATH?>symbols/stats_lineup.png"  /></div>
 								<div class="ffb_infos_description">Aufgestellte Teams:</div>
 								<div class="ffb_infos_info"><?php  echo $this->userCountUserteams[0]->getUserteamId(); ?></div>
 							</div>
 						<?php }?>
-						<?php if($this->userCountUserteamScore[0]) {?>
+						<?php if(!empty($this->userCountUserteamScore[0] ?? null)) {?>
 							<div class="ffb_infos_single_info">
 								<div class="ffb_infos_image"><img class="ffb_infos_img"  src="<?= FFB_BASE_PATH?><?= FFB_IMAGE_PATH?>symbols/stats.png"  /></div>
 								<div class="ffb_infos_description">Gesamt Benutzer Score:</div>
 								<div class="ffb_infos_info"><?php  echo $this->userCountUserteamScore[0]->getUserteamId(); ?></div>
 							</div>
 						<?php }?>
-						<?php if($this->userCountUserteamScore[0] && $this->userCountUserteams[0]) {?>
+						<?php if(!empty($this->userCountUserteamScore[0] ?? null) && !empty($this->userCountUserteams[0] ?? null)) {?>
 							<div class="ffb_infos_single_info">
 								<div class="ffb_infos_image"><img class="ffb_infos_img"  src="<?= FFB_BASE_PATH?><?= FFB_IMAGE_PATH?>symbols/symbol_score.png"  /></div>
 								<div class="ffb_infos_description">Punkteschnitt pro Aufstellung:</div>
 								<div class="ffb_infos_info"><?php  echo round( ($this->userCountUserteamScore[0]->getUserteamId() / $this->userCountUserteams[0]->getUserteamId()),2); ?></div>
 							</div>
 						<?php }?>
-						<?php if($this->matchrounds[0]) {?>
+						<?php if(!empty($this->matchrounds[0] ?? null)) {?>
 							<div class="ffb_infos_single_info">
 								<div class="ffb_infos_image"><img class="ffb_infos_img"  src="<?= FFB_BASE_PATH?><?= FFB_IMAGE_PATH?>navigation/nav_player.png"  /></div>
 								<div class="ffb_infos_description">Ausgetragene Matchrunden:</div>
@@ -290,7 +290,7 @@ function newsticker()
 							</div>
 						<?php }?>
 						<div class="ffb_infos_single_info"></div>
-						<?php if($this->hScore[0] && $this->gScore[0]) {?>
+						<?php if(!empty($this->hScore[0] ?? null) && !empty($this->gScore[0] ?? null)) {?>
 						<div class="ffb_infos_single_info">
 						Spielstand:<br />
 						Heim <?php  echo $this->hScore[0]->getMatchId() . ":" . $this->gScore[0]->getMatchId(); ?> Gast<br />
@@ -345,7 +345,7 @@ function newsticker()
 						                <div id="formline">
 						                    <div id="formdescr">* Nickname:</div>
 						                    <div id="forminput">
-						                        <input type="text" name="user_nickname" value="<?= $this->post['user_nickname'];?>">
+						                        <input type="text" name="user_nickname" value="<?= htmlspecialchars((string)($this->post['user_nickname'] ?? ''), ENT_QUOTES);?>">
 						                    </div>
 						                    <div id="formclear"></div>
 						                </div>
@@ -357,7 +357,7 @@ function newsticker()
 						                    <div id="formclear"></div>
 						                </div>
 						                <div id="formline_center">
-						                    <input type="hidden" name="destination" value="<?= $_GET['destination']?>">
+						                    <input type="hidden" name="destination" value="<?= htmlspecialchars((string)($_GET['destination'] ?? ''), ENT_QUOTES)?>">
 						                    <input type="submit" value="Anmelden" onclick="javascript:authenticate();">
 
 						                </div>
@@ -387,7 +387,7 @@ function newsticker()
 					<a href="http://www.twitter.com/fsoccer" target="_new" style="border:0px;"><img style="border:0px;" src="http://twitter-badges.s3.amazonaws.com/t_small-a.png" alt="Follow fsoccer on Twitter" width="30px"/></a>&nbsp;&nbsp;
 					<!-- RSS Feed -->
 					<!-- disabled for WM 2014 - not working anymore -->
-					<!--<a href="http://feeds2.feedburner.com/ffbat" target="_new" title="Soccer Sportsfan RSS"><img style="border:0;" src="<?php  echo $FFB_BASE_PATH.FFB_IMAGE_PATH."symbols/rss_256x256.png";?>" width="32px" alt="Soccer Sportsfan RSS"/></a>-->
+					<!--<a href="http://feeds2.feedburner.com/ffbat" target="_new" title="Soccer Sportsfan RSS"><img style="border:0;" src="<?php  echo FFB_BASE_PATH.FFB_IMAGE_PATH."symbols/rss_256x256.png";?>" width="32px" alt="Soccer Sportsfan RSS"/></a>-->
 				</div>
 
 		    </div>

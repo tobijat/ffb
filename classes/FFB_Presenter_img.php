@@ -11,11 +11,13 @@
       public function display()
       {
           $image_array = $this->module->getData();
-          header ("Content-type: image/png");
+          header ("Content-type: image/jpeg");
           if(is_array($image_array) && !empty($image_array)) {
               foreach ($image_array as $key => $val) {
-      		      imagejpeg ( $val , "" , 100 );
-      		      imagedestroy($val);
+      		      if ($val instanceof GdImage || (is_resource($val) && get_resource_type($val) === 'gd')) {
+      		          imagejpeg($val, null, 100);
+      		          imagedestroy($val);
+      		      }
       		  }
   		  }
       }

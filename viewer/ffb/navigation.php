@@ -13,7 +13,7 @@
   $break = 0;
   foreach($this->nav_items as $nav) {
 
-    if(!$break && $nav['style'] == 'small') {
+    if(!$break && ($nav['style'] ?? '') == 'small') {
         $break = 1;?>
         <div style="clear:both"></div>
 		</div>
@@ -23,7 +23,7 @@
 		<div id="NavbarSmallRound">
 
     <?php }?>
-    <?php if($nav['style'] == 'small') {?>
+    <?php if(($nav['style'] ?? '') == 'small') {?>
         <div id="navitem_small">
             <?php if($nav['link'] == '__BACK__') {?>
                 <a href="javascript:history.back();" style="text-decoration:none;">

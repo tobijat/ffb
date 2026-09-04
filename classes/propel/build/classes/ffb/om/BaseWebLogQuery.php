@@ -36,8 +36,8 @@
  * @method     WebLogQuery rightJoinWebUser($relationAlias = null) Adds a RIGHT JOIN clause to the query using the WebUser relation
  * @method     WebLogQuery innerJoinWebUser($relationAlias = null) Adds a INNER JOIN clause to the query using the WebUser relation
  *
- * @method     WebLog findOne(PropelPDO $con = null) Return the first WebLog matching the query
- * @method     WebLog findOneOrCreate(PropelPDO $con = null) Return the first WebLog matching the query, or a new WebLog object populated from the query conditions when no match is found
+ * @method     WebLog findOne(?PropelPDO $con = null) Return the first WebLog matching the query
+ * @method     WebLog findOneOrCreate(?PropelPDO $con = null) Return the first WebLog matching the query, or a new WebLog object populated from the query conditions when no match is found
  *
  * @method     WebLog findOneByLogId(int $log_id) Return the first WebLog filtered by the log_id column
  * @method     WebLog findOneByLogUserId(int $log_user_id) Return the first WebLog filtered by the log_user_id column

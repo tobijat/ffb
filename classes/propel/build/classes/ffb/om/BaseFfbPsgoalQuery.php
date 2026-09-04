@@ -32,8 +32,8 @@
  * @method     FfbPsgoalQuery rightJoinFfbPlayerteam($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbPlayerteam relation
  * @method     FfbPsgoalQuery innerJoinFfbPlayerteam($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbPlayerteam relation
  *
- * @method     FfbPsgoal findOne(PropelPDO $con = null) Return the first FfbPsgoal matching the query
- * @method     FfbPsgoal findOneOrCreate(PropelPDO $con = null) Return the first FfbPsgoal matching the query, or a new FfbPsgoal object populated from the query conditions when no match is found
+ * @method     FfbPsgoal findOne(?PropelPDO $con = null) Return the first FfbPsgoal matching the query
+ * @method     FfbPsgoal findOneOrCreate(?PropelPDO $con = null) Return the first FfbPsgoal matching the query, or a new FfbPsgoal object populated from the query conditions when no match is found
  *
  * @method     FfbPsgoal findOneByPsgoalId(int $psgoal_id) Return the first FfbPsgoal filtered by the psgoal_id column
  * @method     FfbPsgoal findOneByPsgoalMatchId(int $psgoal_match_id) Return the first FfbPsgoal filtered by the psgoal_match_id column

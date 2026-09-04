@@ -289,7 +289,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 			// Because propel.useDateTimeClass is TRUE, we return a DateTime object.
 			return $dt;
 		} elseif (strpos($format, '%') !== false) {
-			return strftime($format, $dt->format('U'));
+			return $dt->format(strtr($format, array('%Y'=>'Y','%m'=>'m','%d'=>'d','%H'=>'H','%M'=>'i','%S'=>'s','%A'=>'l','%B'=>'F','%a'=>'D','%b'=>'M','%%'=>'%')));
 		} else {
 			return $dt->format($format);
 		}
@@ -930,24 +930,24 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->userteam_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->userteam_user_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
-			$this->userteam_date = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
-			$this->userteam_player_id1 = ($row[$startcol + 3] !== null) ? (int) $row[$startcol + 3] : null;
-			$this->userteam_player_id2 = ($row[$startcol + 4] !== null) ? (int) $row[$startcol + 4] : null;
-			$this->userteam_player_id3 = ($row[$startcol + 5] !== null) ? (int) $row[$startcol + 5] : null;
-			$this->userteam_player_id4 = ($row[$startcol + 6] !== null) ? (int) $row[$startcol + 6] : null;
-			$this->userteam_player_id5 = ($row[$startcol + 7] !== null) ? (int) $row[$startcol + 7] : null;
-			$this->userteam_player_id6 = ($row[$startcol + 8] !== null) ? (int) $row[$startcol + 8] : null;
-			$this->userteam_player_id7 = ($row[$startcol + 9] !== null) ? (int) $row[$startcol + 9] : null;
-			$this->userteam_player_id8 = ($row[$startcol + 10] !== null) ? (int) $row[$startcol + 10] : null;
-			$this->userteam_player_id9 = ($row[$startcol + 11] !== null) ? (int) $row[$startcol + 11] : null;
-			$this->userteam_player_id10 = ($row[$startcol + 12] !== null) ? (int) $row[$startcol + 12] : null;
-			$this->userteam_player_id11 = ($row[$startcol + 13] !== null) ? (int) $row[$startcol + 13] : null;
-			$this->userteam_price = ($row[$startcol + 14] !== null) ? (string) $row[$startcol + 14] : null;
-			$this->userteam_matchround_id = ($row[$startcol + 15] !== null) ? (int) $row[$startcol + 15] : null;
-			$this->userteam_score = ($row[$startcol + 16] !== null) ? (int) $row[$startcol + 16] : null;
-			$this->userteam_wc_points = ($row[$startcol + 17] !== null) ? (int) $row[$startcol + 17] : null;
+			$this->userteam_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->userteam_user_id = (($row[$startcol + 1] ?? null) !== null) ? (int) $row[$startcol + 1] : null;
+			$this->userteam_date = (($row[$startcol + 2] ?? null) !== null) ? (string) $row[$startcol + 2] : null;
+			$this->userteam_player_id1 = (($row[$startcol + 3] ?? null) !== null) ? (int) $row[$startcol + 3] : null;
+			$this->userteam_player_id2 = (($row[$startcol + 4] ?? null) !== null) ? (int) $row[$startcol + 4] : null;
+			$this->userteam_player_id3 = (($row[$startcol + 5] ?? null) !== null) ? (int) $row[$startcol + 5] : null;
+			$this->userteam_player_id4 = (($row[$startcol + 6] ?? null) !== null) ? (int) $row[$startcol + 6] : null;
+			$this->userteam_player_id5 = (($row[$startcol + 7] ?? null) !== null) ? (int) $row[$startcol + 7] : null;
+			$this->userteam_player_id6 = (($row[$startcol + 8] ?? null) !== null) ? (int) $row[$startcol + 8] : null;
+			$this->userteam_player_id7 = (($row[$startcol + 9] ?? null) !== null) ? (int) $row[$startcol + 9] : null;
+			$this->userteam_player_id8 = (($row[$startcol + 10] ?? null) !== null) ? (int) $row[$startcol + 10] : null;
+			$this->userteam_player_id9 = (($row[$startcol + 11] ?? null) !== null) ? (int) $row[$startcol + 11] : null;
+			$this->userteam_player_id10 = (($row[$startcol + 12] ?? null) !== null) ? (int) $row[$startcol + 12] : null;
+			$this->userteam_player_id11 = (($row[$startcol + 13] ?? null) !== null) ? (int) $row[$startcol + 13] : null;
+			$this->userteam_price = (($row[$startcol + 14] ?? null) !== null) ? (string) $row[$startcol + 14] : null;
+			$this->userteam_matchround_id = (($row[$startcol + 15] ?? null) !== null) ? (int) $row[$startcol + 15] : null;
+			$this->userteam_score = (($row[$startcol + 16] ?? null) !== null) ? (int) $row[$startcol + 16] : null;
+			$this->userteam_wc_points = (($row[$startcol + 17] ?? null) !== null) ? (int) $row[$startcol + 17] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -1030,7 +1030,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -1082,7 +1082,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -1124,7 +1124,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -1908,7 +1908,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbUserteam The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setWebUser(WebUser $v = null)
+	public function setWebUser(?WebUser $v = null)
 	{
 		if ($v === null) {
 			$this->setUserteamUserId(NULL);
@@ -1935,7 +1935,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     WebUser The associated WebUser object.
 	 * @throws     PropelException
 	 */
-	public function getWebUser(PropelPDO $con = null)
+	public function getWebUser(?PropelPDO $con = null)
 	{
 		if ($this->aWebUser === null && ($this->userteam_user_id !== null)) {
 			$this->aWebUser = WebUserQuery::create()->findPk($this->userteam_user_id, $con);
@@ -1957,7 +1957,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbUserteam The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPlayerteamRelatedByUserteamPlayerId1(FfbPlayerteam $v = null)
+	public function setFfbPlayerteamRelatedByUserteamPlayerId1(?FfbPlayerteam $v = null)
 	{
 		if ($v === null) {
 			$this->setUserteamPlayerId1(NULL);
@@ -1984,7 +1984,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbPlayerteam The associated FfbPlayerteam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerteamRelatedByUserteamPlayerId1(PropelPDO $con = null)
+	public function getFfbPlayerteamRelatedByUserteamPlayerId1(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPlayerteamRelatedByUserteamPlayerId1 === null && ($this->userteam_player_id1 !== null)) {
 			$this->aFfbPlayerteamRelatedByUserteamPlayerId1 = FfbPlayerteamQuery::create()->findPk($this->userteam_player_id1, $con);
@@ -2006,7 +2006,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbUserteam The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPlayerteamRelatedByUserteamPlayerId2(FfbPlayerteam $v = null)
+	public function setFfbPlayerteamRelatedByUserteamPlayerId2(?FfbPlayerteam $v = null)
 	{
 		if ($v === null) {
 			$this->setUserteamPlayerId2(NULL);
@@ -2033,7 +2033,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbPlayerteam The associated FfbPlayerteam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerteamRelatedByUserteamPlayerId2(PropelPDO $con = null)
+	public function getFfbPlayerteamRelatedByUserteamPlayerId2(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPlayerteamRelatedByUserteamPlayerId2 === null && ($this->userteam_player_id2 !== null)) {
 			$this->aFfbPlayerteamRelatedByUserteamPlayerId2 = FfbPlayerteamQuery::create()->findPk($this->userteam_player_id2, $con);
@@ -2055,7 +2055,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbUserteam The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPlayerteamRelatedByUserteamPlayerId3(FfbPlayerteam $v = null)
+	public function setFfbPlayerteamRelatedByUserteamPlayerId3(?FfbPlayerteam $v = null)
 	{
 		if ($v === null) {
 			$this->setUserteamPlayerId3(NULL);
@@ -2082,7 +2082,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbPlayerteam The associated FfbPlayerteam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerteamRelatedByUserteamPlayerId3(PropelPDO $con = null)
+	public function getFfbPlayerteamRelatedByUserteamPlayerId3(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPlayerteamRelatedByUserteamPlayerId3 === null && ($this->userteam_player_id3 !== null)) {
 			$this->aFfbPlayerteamRelatedByUserteamPlayerId3 = FfbPlayerteamQuery::create()->findPk($this->userteam_player_id3, $con);
@@ -2104,7 +2104,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbUserteam The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPlayerteamRelatedByUserteamPlayerId4(FfbPlayerteam $v = null)
+	public function setFfbPlayerteamRelatedByUserteamPlayerId4(?FfbPlayerteam $v = null)
 	{
 		if ($v === null) {
 			$this->setUserteamPlayerId4(NULL);
@@ -2131,7 +2131,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbPlayerteam The associated FfbPlayerteam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerteamRelatedByUserteamPlayerId4(PropelPDO $con = null)
+	public function getFfbPlayerteamRelatedByUserteamPlayerId4(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPlayerteamRelatedByUserteamPlayerId4 === null && ($this->userteam_player_id4 !== null)) {
 			$this->aFfbPlayerteamRelatedByUserteamPlayerId4 = FfbPlayerteamQuery::create()->findPk($this->userteam_player_id4, $con);
@@ -2153,7 +2153,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbUserteam The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPlayerteamRelatedByUserteamPlayerId5(FfbPlayerteam $v = null)
+	public function setFfbPlayerteamRelatedByUserteamPlayerId5(?FfbPlayerteam $v = null)
 	{
 		if ($v === null) {
 			$this->setUserteamPlayerId5(NULL);
@@ -2180,7 +2180,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbPlayerteam The associated FfbPlayerteam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerteamRelatedByUserteamPlayerId5(PropelPDO $con = null)
+	public function getFfbPlayerteamRelatedByUserteamPlayerId5(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPlayerteamRelatedByUserteamPlayerId5 === null && ($this->userteam_player_id5 !== null)) {
 			$this->aFfbPlayerteamRelatedByUserteamPlayerId5 = FfbPlayerteamQuery::create()->findPk($this->userteam_player_id5, $con);
@@ -2202,7 +2202,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbUserteam The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPlayerteamRelatedByUserteamPlayerId6(FfbPlayerteam $v = null)
+	public function setFfbPlayerteamRelatedByUserteamPlayerId6(?FfbPlayerteam $v = null)
 	{
 		if ($v === null) {
 			$this->setUserteamPlayerId6(NULL);
@@ -2229,7 +2229,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbPlayerteam The associated FfbPlayerteam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerteamRelatedByUserteamPlayerId6(PropelPDO $con = null)
+	public function getFfbPlayerteamRelatedByUserteamPlayerId6(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPlayerteamRelatedByUserteamPlayerId6 === null && ($this->userteam_player_id6 !== null)) {
 			$this->aFfbPlayerteamRelatedByUserteamPlayerId6 = FfbPlayerteamQuery::create()->findPk($this->userteam_player_id6, $con);
@@ -2251,7 +2251,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbUserteam The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPlayerteamRelatedByUserteamPlayerId7(FfbPlayerteam $v = null)
+	public function setFfbPlayerteamRelatedByUserteamPlayerId7(?FfbPlayerteam $v = null)
 	{
 		if ($v === null) {
 			$this->setUserteamPlayerId7(NULL);
@@ -2278,7 +2278,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbPlayerteam The associated FfbPlayerteam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerteamRelatedByUserteamPlayerId7(PropelPDO $con = null)
+	public function getFfbPlayerteamRelatedByUserteamPlayerId7(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPlayerteamRelatedByUserteamPlayerId7 === null && ($this->userteam_player_id7 !== null)) {
 			$this->aFfbPlayerteamRelatedByUserteamPlayerId7 = FfbPlayerteamQuery::create()->findPk($this->userteam_player_id7, $con);
@@ -2300,7 +2300,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbUserteam The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPlayerteamRelatedByUserteamPlayerId8(FfbPlayerteam $v = null)
+	public function setFfbPlayerteamRelatedByUserteamPlayerId8(?FfbPlayerteam $v = null)
 	{
 		if ($v === null) {
 			$this->setUserteamPlayerId8(NULL);
@@ -2327,7 +2327,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbPlayerteam The associated FfbPlayerteam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerteamRelatedByUserteamPlayerId8(PropelPDO $con = null)
+	public function getFfbPlayerteamRelatedByUserteamPlayerId8(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPlayerteamRelatedByUserteamPlayerId8 === null && ($this->userteam_player_id8 !== null)) {
 			$this->aFfbPlayerteamRelatedByUserteamPlayerId8 = FfbPlayerteamQuery::create()->findPk($this->userteam_player_id8, $con);
@@ -2349,7 +2349,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbUserteam The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPlayerteamRelatedByUserteamPlayerId9(FfbPlayerteam $v = null)
+	public function setFfbPlayerteamRelatedByUserteamPlayerId9(?FfbPlayerteam $v = null)
 	{
 		if ($v === null) {
 			$this->setUserteamPlayerId9(NULL);
@@ -2376,7 +2376,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbPlayerteam The associated FfbPlayerteam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerteamRelatedByUserteamPlayerId9(PropelPDO $con = null)
+	public function getFfbPlayerteamRelatedByUserteamPlayerId9(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPlayerteamRelatedByUserteamPlayerId9 === null && ($this->userteam_player_id9 !== null)) {
 			$this->aFfbPlayerteamRelatedByUserteamPlayerId9 = FfbPlayerteamQuery::create()->findPk($this->userteam_player_id9, $con);
@@ -2398,7 +2398,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbUserteam The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPlayerteamRelatedByUserteamPlayerId10(FfbPlayerteam $v = null)
+	public function setFfbPlayerteamRelatedByUserteamPlayerId10(?FfbPlayerteam $v = null)
 	{
 		if ($v === null) {
 			$this->setUserteamPlayerId10(NULL);
@@ -2425,7 +2425,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbPlayerteam The associated FfbPlayerteam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerteamRelatedByUserteamPlayerId10(PropelPDO $con = null)
+	public function getFfbPlayerteamRelatedByUserteamPlayerId10(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPlayerteamRelatedByUserteamPlayerId10 === null && ($this->userteam_player_id10 !== null)) {
 			$this->aFfbPlayerteamRelatedByUserteamPlayerId10 = FfbPlayerteamQuery::create()->findPk($this->userteam_player_id10, $con);
@@ -2447,7 +2447,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbUserteam The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPlayerteamRelatedByUserteamPlayerId11(FfbPlayerteam $v = null)
+	public function setFfbPlayerteamRelatedByUserteamPlayerId11(?FfbPlayerteam $v = null)
 	{
 		if ($v === null) {
 			$this->setUserteamPlayerId11(NULL);
@@ -2474,7 +2474,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbPlayerteam The associated FfbPlayerteam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerteamRelatedByUserteamPlayerId11(PropelPDO $con = null)
+	public function getFfbPlayerteamRelatedByUserteamPlayerId11(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPlayerteamRelatedByUserteamPlayerId11 === null && ($this->userteam_player_id11 !== null)) {
 			$this->aFfbPlayerteamRelatedByUserteamPlayerId11 = FfbPlayerteamQuery::create()->findPk($this->userteam_player_id11, $con);
@@ -2496,7 +2496,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbUserteam The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbMatchround(FfbMatchround $v = null)
+	public function setFfbMatchround(?FfbMatchround $v = null)
 	{
 		if ($v === null) {
 			$this->setUserteamMatchroundId(NULL);
@@ -2523,7 +2523,7 @@ abstract class BaseFfbUserteam extends BaseObject  implements Persistent
 	 * @return     FfbMatchround The associated FfbMatchround object.
 	 * @throws     PropelException
 	 */
-	public function getFfbMatchround(PropelPDO $con = null)
+	public function getFfbMatchround(?PropelPDO $con = null)
 	{
 		if ($this->aFfbMatchround === null && ($this->userteam_matchround_id !== null)) {
 			$this->aFfbMatchround = FfbMatchroundQuery::create()->findPk($this->userteam_matchround_id, $con);

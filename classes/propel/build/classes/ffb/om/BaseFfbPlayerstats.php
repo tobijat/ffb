@@ -1395,37 +1395,37 @@ abstract class BaseFfbPlayerstats extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->playerstats_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->playerstats_playerteam_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
-			$this->playerstats_match_id = ($row[$startcol + 2] !== null) ? (int) $row[$startcol + 2] : null;
-			$this->playerstats_matchround_id = ($row[$startcol + 3] !== null) ? (int) $row[$startcol + 3] : null;
-			$this->playerstats_goals = ($row[$startcol + 4] !== null) ? (int) $row[$startcol + 4] : null;
-			$this->playerstats_assists = ($row[$startcol + 5] !== null) ? (int) $row[$startcol + 5] : null;
-			$this->playerstats_minutes = ($row[$startcol + 6] !== null) ? (int) $row[$startcol + 6] : null;
-			$this->playerstats_minute_in = ($row[$startcol + 7] !== null) ? (int) $row[$startcol + 7] : null;
-			$this->playerstats_minute_out = ($row[$startcol + 8] !== null) ? (int) $row[$startcol + 8] : null;
-			$this->playerstats_cards = ($row[$startcol + 9] !== null) ? (string) $row[$startcol + 9] : null;
-			$this->playerstats_owngoals = ($row[$startcol + 10] !== null) ? (int) $row[$startcol + 10] : null;
-			$this->playerstats_penaltieslost = ($row[$startcol + 11] !== null) ? (int) $row[$startcol + 11] : null;
-			$this->playerstats_penaltiessaved = ($row[$startcol + 12] !== null) ? (int) $row[$startcol + 12] : null;
-			$this->playerstats_penaltyshootout_save = ($row[$startcol + 13] !== null) ? (int) $row[$startcol + 13] : null;
-			$this->playerstats_penaltyshootout_lost = ($row[$startcol + 14] !== null) ? (int) $row[$startcol + 14] : null;
-			$this->playerstats_penaltyshootout_hit = ($row[$startcol + 15] !== null) ? (int) $row[$startcol + 15] : null;
-			$this->playerstats_score_goals = ($row[$startcol + 16] !== null) ? (int) $row[$startcol + 16] : null;
-			$this->playerstats_score_assists = ($row[$startcol + 17] !== null) ? (int) $row[$startcol + 17] : null;
-			$this->playerstats_score_minutes = ($row[$startcol + 18] !== null) ? (int) $row[$startcol + 18] : null;
-			$this->playerstats_score_cards = ($row[$startcol + 19] !== null) ? (int) $row[$startcol + 19] : null;
-			$this->playerstats_score_owngoals = ($row[$startcol + 20] !== null) ? (int) $row[$startcol + 20] : null;
-			$this->playerstats_score_penaltieslost = ($row[$startcol + 21] !== null) ? (int) $row[$startcol + 21] : null;
-			$this->playerstats_score_penaltiessaved = ($row[$startcol + 22] !== null) ? (int) $row[$startcol + 22] : null;
-			$this->playerstats_score_oppgoals = ($row[$startcol + 23] !== null) ? (int) $row[$startcol + 23] : null;
-			$this->playerstats_score_nooppgoals = ($row[$startcol + 24] !== null) ? (int) $row[$startcol + 24] : null;
-			$this->playerstats_score_high_loss = ($row[$startcol + 25] !== null) ? (int) $row[$startcol + 25] : null;
-			$this->playerstats_score_high_win = ($row[$startcol + 26] !== null) ? (int) $row[$startcol + 26] : null;
-			$this->playerstats_score_penaltyshootout_save = ($row[$startcol + 27] !== null) ? (int) $row[$startcol + 27] : null;
-			$this->playerstats_score_penaltyshootout_lost = ($row[$startcol + 28] !== null) ? (int) $row[$startcol + 28] : null;
-			$this->playerstats_score_penaltyshootout_hit = ($row[$startcol + 29] !== null) ? (int) $row[$startcol + 29] : null;
-			$this->playerstats_score = ($row[$startcol + 30] !== null) ? (int) $row[$startcol + 30] : null;
+			$this->playerstats_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->playerstats_playerteam_id = (($row[$startcol + 1] ?? null) !== null) ? (int) $row[$startcol + 1] : null;
+			$this->playerstats_match_id = (($row[$startcol + 2] ?? null) !== null) ? (int) $row[$startcol + 2] : null;
+			$this->playerstats_matchround_id = (($row[$startcol + 3] ?? null) !== null) ? (int) $row[$startcol + 3] : null;
+			$this->playerstats_goals = (($row[$startcol + 4] ?? null) !== null) ? (int) $row[$startcol + 4] : null;
+			$this->playerstats_assists = (($row[$startcol + 5] ?? null) !== null) ? (int) $row[$startcol + 5] : null;
+			$this->playerstats_minutes = (($row[$startcol + 6] ?? null) !== null) ? (int) $row[$startcol + 6] : null;
+			$this->playerstats_minute_in = (($row[$startcol + 7] ?? null) !== null) ? (int) $row[$startcol + 7] : null;
+			$this->playerstats_minute_out = (($row[$startcol + 8] ?? null) !== null) ? (int) $row[$startcol + 8] : null;
+			$this->playerstats_cards = (($row[$startcol + 9] ?? null) !== null) ? (string) $row[$startcol + 9] : null;
+			$this->playerstats_owngoals = (($row[$startcol + 10] ?? null) !== null) ? (int) $row[$startcol + 10] : null;
+			$this->playerstats_penaltieslost = (($row[$startcol + 11] ?? null) !== null) ? (int) $row[$startcol + 11] : null;
+			$this->playerstats_penaltiessaved = (($row[$startcol + 12] ?? null) !== null) ? (int) $row[$startcol + 12] : null;
+			$this->playerstats_penaltyshootout_save = (($row[$startcol + 13] ?? null) !== null) ? (int) $row[$startcol + 13] : null;
+			$this->playerstats_penaltyshootout_lost = (($row[$startcol + 14] ?? null) !== null) ? (int) $row[$startcol + 14] : null;
+			$this->playerstats_penaltyshootout_hit = (($row[$startcol + 15] ?? null) !== null) ? (int) $row[$startcol + 15] : null;
+			$this->playerstats_score_goals = (($row[$startcol + 16] ?? null) !== null) ? (int) $row[$startcol + 16] : null;
+			$this->playerstats_score_assists = (($row[$startcol + 17] ?? null) !== null) ? (int) $row[$startcol + 17] : null;
+			$this->playerstats_score_minutes = (($row[$startcol + 18] ?? null) !== null) ? (int) $row[$startcol + 18] : null;
+			$this->playerstats_score_cards = (($row[$startcol + 19] ?? null) !== null) ? (int) $row[$startcol + 19] : null;
+			$this->playerstats_score_owngoals = (($row[$startcol + 20] ?? null) !== null) ? (int) $row[$startcol + 20] : null;
+			$this->playerstats_score_penaltieslost = (($row[$startcol + 21] ?? null) !== null) ? (int) $row[$startcol + 21] : null;
+			$this->playerstats_score_penaltiessaved = (($row[$startcol + 22] ?? null) !== null) ? (int) $row[$startcol + 22] : null;
+			$this->playerstats_score_oppgoals = (($row[$startcol + 23] ?? null) !== null) ? (int) $row[$startcol + 23] : null;
+			$this->playerstats_score_nooppgoals = (($row[$startcol + 24] ?? null) !== null) ? (int) $row[$startcol + 24] : null;
+			$this->playerstats_score_high_loss = (($row[$startcol + 25] ?? null) !== null) ? (int) $row[$startcol + 25] : null;
+			$this->playerstats_score_high_win = (($row[$startcol + 26] ?? null) !== null) ? (int) $row[$startcol + 26] : null;
+			$this->playerstats_score_penaltyshootout_save = (($row[$startcol + 27] ?? null) !== null) ? (int) $row[$startcol + 27] : null;
+			$this->playerstats_score_penaltyshootout_lost = (($row[$startcol + 28] ?? null) !== null) ? (int) $row[$startcol + 28] : null;
+			$this->playerstats_score_penaltyshootout_hit = (($row[$startcol + 29] ?? null) !== null) ? (int) $row[$startcol + 29] : null;
+			$this->playerstats_score = (($row[$startcol + 30] ?? null) !== null) ? (int) $row[$startcol + 30] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -1478,7 +1478,7 @@ abstract class BaseFfbPlayerstats extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -1520,7 +1520,7 @@ abstract class BaseFfbPlayerstats extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -1562,7 +1562,7 @@ abstract class BaseFfbPlayerstats extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -2316,7 +2316,7 @@ abstract class BaseFfbPlayerstats extends BaseObject  implements Persistent
 	 * @return     FfbPlayerstats The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPlayerteam(FfbPlayerteam $v = null)
+	public function setFfbPlayerteam(?FfbPlayerteam $v = null)
 	{
 		if ($v === null) {
 			$this->setPlayerstatsPlayerteamId(NULL);
@@ -2343,7 +2343,7 @@ abstract class BaseFfbPlayerstats extends BaseObject  implements Persistent
 	 * @return     FfbPlayerteam The associated FfbPlayerteam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerteam(PropelPDO $con = null)
+	public function getFfbPlayerteam(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPlayerteam === null && ($this->playerstats_playerteam_id !== null)) {
 			$this->aFfbPlayerteam = FfbPlayerteamQuery::create()->findPk($this->playerstats_playerteam_id, $con);
@@ -2365,7 +2365,7 @@ abstract class BaseFfbPlayerstats extends BaseObject  implements Persistent
 	 * @return     FfbPlayerstats The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbMatch(FfbMatch $v = null)
+	public function setFfbMatch(?FfbMatch $v = null)
 	{
 		if ($v === null) {
 			$this->setPlayerstatsMatchId(NULL);
@@ -2392,7 +2392,7 @@ abstract class BaseFfbPlayerstats extends BaseObject  implements Persistent
 	 * @return     FfbMatch The associated FfbMatch object.
 	 * @throws     PropelException
 	 */
-	public function getFfbMatch(PropelPDO $con = null)
+	public function getFfbMatch(?PropelPDO $con = null)
 	{
 		if ($this->aFfbMatch === null && ($this->playerstats_match_id !== null)) {
 			$this->aFfbMatch = FfbMatchQuery::create()->findPk($this->playerstats_match_id, $con);
@@ -2414,7 +2414,7 @@ abstract class BaseFfbPlayerstats extends BaseObject  implements Persistent
 	 * @return     FfbPlayerstats The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbMatchround(FfbMatchround $v = null)
+	public function setFfbMatchround(?FfbMatchround $v = null)
 	{
 		if ($v === null) {
 			$this->setPlayerstatsMatchroundId(NULL);
@@ -2441,7 +2441,7 @@ abstract class BaseFfbPlayerstats extends BaseObject  implements Persistent
 	 * @return     FfbMatchround The associated FfbMatchround object.
 	 * @throws     PropelException
 	 */
-	public function getFfbMatchround(PropelPDO $con = null)
+	public function getFfbMatchround(?PropelPDO $con = null)
 	{
 		if ($this->aFfbMatchround === null && ($this->playerstats_matchround_id !== null)) {
 			$this->aFfbMatchround = FfbMatchroundQuery::create()->findPk($this->playerstats_matchround_id, $con);

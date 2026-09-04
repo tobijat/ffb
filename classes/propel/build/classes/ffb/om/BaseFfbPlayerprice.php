@@ -342,12 +342,12 @@ abstract class BaseFfbPlayerprice extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->playerprice_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->playerprice_playerteam_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
-			$this->playerprice_matchround_id = ($row[$startcol + 2] !== null) ? (int) $row[$startcol + 2] : null;
-			$this->playerprice_price = ($row[$startcol + 3] !== null) ? (double) $row[$startcol + 3] : null;
-			$this->playerprice_player_power = ($row[$startcol + 4] !== null) ? (double) $row[$startcol + 4] : null;
-			$this->playerprice_av_power = ($row[$startcol + 5] !== null) ? (double) $row[$startcol + 5] : null;
+			$this->playerprice_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->playerprice_playerteam_id = (($row[$startcol + 1] ?? null) !== null) ? (int) $row[$startcol + 1] : null;
+			$this->playerprice_matchround_id = (($row[$startcol + 2] ?? null) !== null) ? (int) $row[$startcol + 2] : null;
+			$this->playerprice_price = (($row[$startcol + 3] ?? null) !== null) ? (double) $row[$startcol + 3] : null;
+			$this->playerprice_player_power = (($row[$startcol + 4] ?? null) !== null) ? (double) $row[$startcol + 4] : null;
+			$this->playerprice_av_power = (($row[$startcol + 5] ?? null) !== null) ? (double) $row[$startcol + 5] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -397,7 +397,7 @@ abstract class BaseFfbPlayerprice extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -438,7 +438,7 @@ abstract class BaseFfbPlayerprice extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -480,7 +480,7 @@ abstract class BaseFfbPlayerprice extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -968,7 +968,7 @@ abstract class BaseFfbPlayerprice extends BaseObject  implements Persistent
 	 * @return     FfbPlayerprice The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPlayerteam(FfbPlayerteam $v = null)
+	public function setFfbPlayerteam(?FfbPlayerteam $v = null)
 	{
 		if ($v === null) {
 			$this->setPlayerpricePlayerteamId(NULL);
@@ -995,7 +995,7 @@ abstract class BaseFfbPlayerprice extends BaseObject  implements Persistent
 	 * @return     FfbPlayerteam The associated FfbPlayerteam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerteam(PropelPDO $con = null)
+	public function getFfbPlayerteam(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPlayerteam === null && ($this->playerprice_playerteam_id !== null)) {
 			$this->aFfbPlayerteam = FfbPlayerteamQuery::create()->findPk($this->playerprice_playerteam_id, $con);
@@ -1017,7 +1017,7 @@ abstract class BaseFfbPlayerprice extends BaseObject  implements Persistent
 	 * @return     FfbPlayerprice The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbMatchround(FfbMatchround $v = null)
+	public function setFfbMatchround(?FfbMatchround $v = null)
 	{
 		if ($v === null) {
 			$this->setPlayerpriceMatchroundId(NULL);
@@ -1044,7 +1044,7 @@ abstract class BaseFfbPlayerprice extends BaseObject  implements Persistent
 	 * @return     FfbMatchround The associated FfbMatchround object.
 	 * @throws     PropelException
 	 */
-	public function getFfbMatchround(PropelPDO $con = null)
+	public function getFfbMatchround(?PropelPDO $con = null)
 	{
 		if ($this->aFfbMatchround === null && ($this->playerprice_matchround_id !== null)) {
 			$this->aFfbMatchround = FfbMatchroundQuery::create()->findPk($this->playerprice_matchround_id, $con);
