@@ -8,12 +8,12 @@
 ?>
 	<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
 	<meta name="author" content="geri">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.FFB_INCLUDE_PATH?>userscore.css" type="text/css">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.FFB_INCLUDE_PATH?>standard.css" type="text/css">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.FFB_INCLUDE_PATH?>playerstats.css" type="text/css">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.FFB_INCLUDE_PATH?>matchdata.css" type="text/css">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.FFB_INCLUDE_PATH?>comments.css" type="text/css">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.FFB_INCLUDE_PATH?>statistics.css" type="text/css">
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>userscore.css" type="text/css">
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>standard.css" type="text/css">
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>playerstats.css" type="text/css">
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>matchdata.css" type="text/css">
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>comments.css" type="text/css">
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>statistics.css" type="text/css">
     <script type="text/javascript" src="<?php echo FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
 	<script type="text/javascript" src="<?php echo FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
 	<script type="text/javascript" src="<?php echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>userscore_v2.js"></script>
@@ -21,11 +21,11 @@
 	<script type="text/javascript" src="<?php echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>info_popup.js"></script>
 	<script type="text/javascript" src="<?php echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>playerinfo.js"></script>
 	<script type="text/javascript" src="<?php echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>userprofile.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>comments.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>countdown.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>comments.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>countdown.js"></script>
 </head>
 
-<body onLoad="javascript:initUserscore(<?echo $this->session->user_id?>);">
+<body onLoad="javascript:initUserscore(<?= $this->session->user_id?>);">
 
 <div id="Container">
     <div class="rounddiv_nav">
@@ -33,7 +33,7 @@
 			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 			<div id="NavbarRound">
 				<div id="Navigation">
-			        <?include(FFB_VIEWER_PATH.'navigation.php')?>
+			        <?php include(FFB_VIEWER_PATH.'navigation.php')?>
 			    </div>
 			    <div class="rounddiv_countdown">
 					<div class="roundcorner_light">
@@ -117,7 +117,7 @@
 		<div class="roundcorner_dark">
 			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 		    <div id="Mainright_villacher">
-		  		<? if($this->adGuaranaBrause)
+		  		<?php  if($this->adGuaranaBrause)
 		  			echo $this->adGuaranaBrause;
 	  			?>
 	  			
@@ -130,7 +130,7 @@
 		<div class="roundcorner_dark">
 			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 		    <div id="Mainright_ads">
-		  		<?echo $this->adBottomRight;?>
+		  		<?= $this->adBottomRight;?>
 		    </div>
 		    <b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
 		</div>
@@ -155,7 +155,7 @@
           </div>
         </div>
         
-        <?
+        <?php 
           $index  = 0;
           $modulo = 3;
           $mstart = $modulo;
@@ -230,8 +230,8 @@
         echo "</div>\r\n";
           
        if($this->numComments>0) { ?>
-        <a href="javascript:void(0);" onclick="javascript:getComments('userscore', null);return;" style="font-size:80%;">alle <? echo $this->numTotalComments; ?> Community Meinungen anzeigen</a>
-        <?}
+        <a href="javascript:void(0);" onclick="javascript:getComments('userscore', null);return;" style="font-size:80%;">alle <?php  echo $this->numTotalComments; ?> Community Meinungen anzeigen</a>
+        <?php }
         } else {
           echo '<div id="comments_1"></div>';
           echo '<div id="comments_2"></div>';
@@ -254,7 +254,7 @@
 		<div class="roundcorner_dark">
 			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 			<div id="Footer">
-			    <?include(FFB_VIEWER_PATH.'footer.php')?>
+			    <?php include(FFB_VIEWER_PATH.'footer.php')?>
 			</div>
 			<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
 		</div>

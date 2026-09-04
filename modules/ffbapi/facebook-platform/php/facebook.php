@@ -407,7 +407,7 @@ class Facebook {
    * @return    string   val without added slashes
    */
   public static function no_magic_quotes($val) {
-    if (get_magic_quotes_gpc()) {
+    if (false) { // get_magic_quotes_gpc removed in PHP 8
       return stripslashes($val);
     } else {
       return $val;

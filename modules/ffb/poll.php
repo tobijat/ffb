@@ -36,11 +36,15 @@ class poll extends FFB_Auth_User
 	public function savePollTextAnswer() {
 		//$game_id = $this->session->game_id_player;
 		$user_id = $this->session->user_id;
-		$poll_id = $_POST['poll_id'];
-		$poll_answer = $_POST['poll_answer'];
-		$poll_answer_id = $_POST['poll_answer_id'];
+		$poll_id = isset($_POST['poll_id']) ? $_POST['poll_id'] : null;
+		$poll_answer = isset($_POST['poll_answer']) ? $_POST['poll_answer'] : null;
+		$poll_answer_id = isset($_POST['poll_answer_id']) ? $_POST['poll_answer_id'] : null;
 
 		$poll_answer_item = FfbPollAnswerPeer::retrieveByPK($poll_answer_id);
+		if (!$poll_answer_item) {
+			$this->status = 500;
+			return;
+		}
 		$poll_answer_item->setPollAnswerCount($poll_answer_item->getPollAnswerCount()+1);
 		$poll_answer_item->save();
 
@@ -57,10 +61,14 @@ class poll extends FFB_Auth_User
 
 	public function savePollSelectAnswer() {
 		$user_id = $this->session->user_id;
-		$poll_id = $_POST['poll_id'];
-		$poll_answer_id = $_POST['poll_answer_id'];
+		$poll_id = isset($_POST['poll_id']) ? $_POST['poll_id'] : null;
+		$poll_answer_id = isset($_POST['poll_answer_id']) ? $_POST['poll_answer_id'] : null;
 
 		$poll_answer_item = FfbPollAnswerPeer::retrieveByPK($poll_answer_id);
+		if (!$poll_answer_item) {
+			$this->status = 500;
+			return;
+		}
 		$poll_answer_item->setPollAnswerCount($poll_answer_item->getPollAnswerCount()+1);
 		$poll_answer_item->save();
 
@@ -87,8 +95,8 @@ class poll extends FFB_Auth_User
 		$criteria->add($c1);
 
 		$polls = FfbPollPeer::doSelect($criteria);
-		$rand_poll = mt_rand(0,count($polls)-1);
 		if($polls) {
+			$rand_poll = mt_rand(0, count($polls) - 1);
 			$poll = $polls[$rand_poll];
 			$criteria = new Criteria();
 			$criteria->add(FfbPollResultPeer::POLL_RESULT_USER_ID, $user_id);
@@ -108,9 +116,13 @@ class poll extends FFB_Auth_User
 
 	public function getSelectPollById() {
 		$user_id = $this->session->user_id;
-		$poll_id = $_REQUEST['poll_id'];
+		$poll_id = isset($_REQUEST['poll_id']) ? $_REQUEST['poll_id'] : null;
 		$now = time();
 		$poll = FfbPollPeer::retrieveByPK($poll_id);
+		if (!$poll) {
+			$this->select_poll = 0;
+			return;
+		}
 		if(strtotime($poll->getPollEnd()) <= $now) {
 			$poll_array = $this->getPollResult($poll);
 		} else {
@@ -226,7 +238,7 @@ class poll extends FFB_Auth_User
 	private function getPollData($poll) {
 		$pa = array();
 		$pa['poll_id'] = $poll->getPollId();
-		$pa['poll_title'] = utf8_encode($poll->getPollTitle());
+		$pa['poll_title'] = $poll->getPollTitle();
 		$pa['poll_start'] = date('d.m.Y H:i', strtotime($poll->getPollStart()));
 		$pa['poll_end'] = date('d.m.Y H:i', strtotime($poll->getPollEnd()));
 		$pa['poll_type'] = $poll->getPollType();
@@ -243,7 +255,7 @@ class poll extends FFB_Auth_User
 			$i=0;
 			foreach($answers as $answer) {
 				$answer_array[$i]['poll_answer_id'] = $answer->getPollAnswerId();
-				$answer_array[$i]['poll_answer_title'] = utf8_encode($answer->getPollAnswerTitle());
+				$answer_array[$i]['poll_answer_title'] = $answer->getPollAnswerTitle();
 				$answer_array[$i]['poll_answer_count'] = $answer->getPollAnswerCount();
 				$i++;
 			}
@@ -262,7 +274,7 @@ class poll extends FFB_Auth_User
 		$answers = $poll->getFfbPollAnswers();
 		$poll_array = array();
 		$poll_array['poll_id'] = $poll->getPollId();
-		$poll_array['poll_title'] = utf8_encode($poll->getPollTitle());
+		$poll_array['poll_title'] = $poll->getPollTitle();
 		$poll_array['poll_start'] = date('d.m.Y H:i', strtotime($poll->getPollStart()));
 		$poll_array['poll_end'] = date('d.m.Y H:i', strtotime($poll->getPollEnd()));
 		if(strtotime($poll->getPollEnd()) < time()) {
@@ -277,7 +289,7 @@ class poll extends FFB_Auth_User
 			$i=0;
 			foreach($answers as $answer) {
 				$ra[$i]['poll_answer_id'] = $answer->getPollAnswerId();
-				$ra[$i]['poll_answer_title'] = utf8_encode($answer->getPollAnswerTitle());
+				$ra[$i]['poll_answer_title'] = $answer->getPollAnswerTitle();
 				$ra[$i]['poll_answer_count'] = $answer->getPollAnswerCount();
 				if($num_results > 0) {
 					$ra[$i]['poll_answer_percent'] = round($answer->getPollAnswerCount()/$num_results*100, 1);
@@ -335,7 +347,7 @@ class poll extends FFB_Auth_User
 		$darkBlueBG = imagecolorallocate ( $img ,25 , 25 , 225);
 		$someKindBlueBG = imagecolorallocate ( $img ,175 , 240 , 240);
   		$filled = imagefill ( $img , 0 , 0 , $someKindBlueBG );
-  		imagestring($img, $this->pollFontNum, 2, $yIndex/10 , utf8_encode($poll->getPollTitle()), $blackText);
+  		imagestring($img, $this->pollFontNum, 2, $yIndex/10 , utf8_decode($poll->getPollTitle()), $blackText);
   		imageline($img, $pollHalfSideSpace, $yIndex-3, $this->pollPicWidth-$pollHalfSideSpace, $yIndex-3, $darkBlueBG);
 
 
@@ -350,7 +362,7 @@ class poll extends FFB_Auth_User
   			if($index==1)
   				$color	=	$redBg;
 			imagestring($img, $this->pollFontNum, 5, $yIndex, "$index.", $color);
-			imagestring($img, $this->pollFontNum, $pollHalfSideSpace, $yIndex, utf8_encode($answer->getPollAnswerTitle()), $color );
+			imagestring($img, $this->pollFontNum, $pollHalfSideSpace, $yIndex, utf8_decode($answer->getPollAnswerTitle()), $color );
 			$yIndex		+=	10;
   			imagefilledrectangle($img, $pollHalfSideSpace, $yIndex+$this->pollFontNum, $pollHalfSideSpace+$fillSize, $yIndex+$this->pollBarThickness+$this->pollFontNum, $color );
   			$percentage	=	round($percentage*100,0);

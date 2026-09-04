@@ -21,9 +21,9 @@ class tools_copyFfb2Board extends FFB_Auth_No
 
     public function __default()
     {
-        $connection = mysql_connect(FFB_BOARD_DB_SERVER, FFB_BOARD_DB_USER, FFB_BOARD_DB_PASSWORD)
+        $connection = mysqli_connect(FFB_BOARD_DB_SERVER, FFB_BOARD_DB_USER, FFB_BOARD_DB_PASSWORD)
             	      or die ("Cannot establish connection to server.");
-      	$db = mysql_select_db(FFB_BOARD_DB_NAME, $connection)
+      	$db = mysqli_select_db($connection, FFB_BOARD_DB_NAME)
               or die ("Cannot find database.");
         $criteria = new Criteria();
         $users = WebUserPeer::doSelect($criteria);
@@ -48,9 +48,9 @@ class tools_copyFfb2Board extends FFB_Auth_No
                 $username = $user->getUserNickname();
                 $query = "SELECT * FROM ffb_forum_users WHERE username='$username'";
                 echo $query.'<br>';
-                $result = mysql_query($query, $connection)
+                $result = mysqli_query($connection, $query)
                           or die ("Cannot fetch data for USER. Database problem.");
-                $found_rows = mysql_num_rows($result);
+                $found_rows = mysqli_num_rows($result);
 
                 echo $user->getUserNickname().': '.$found_rows.'<br>';
                 print_r($sql_ary);
@@ -95,19 +95,19 @@ class tools_copyFfb2Board extends FFB_Auth_No
 
                       //echo $insert_request.'<br>';
                     /*
-                      mysql_query($insert_request, $connection)
+                      mysqli_query($connection, $insert_request)
                       or die ("Cannot insert USER. Database problem.");
-                      $newuser_id = mysql_insert_id();
+                      $newuser_id = mysqli_insert_id($connection);
 
                       $insert_request = 'INSERT INTO ffb_forum_user_group (group_id, user_id, group_leader, user_pending) VALUES(2, '.$newuser_id.',0,0)';
-                      mysql_query($insert_request, $connection)
+                      mysqli_query($connection, $insert_request)
                       or die ("Cannot insert USER into GROUP. Database problem.");
                     */
                 }
 
             }
         }
-        mysql_close($connection);
+        mysqli_close($connection);
         exit();
     }
 }

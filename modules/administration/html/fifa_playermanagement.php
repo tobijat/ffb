@@ -1,18 +1,18 @@
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<meta name="author" content="Gritschacher, Musser">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.ADM_INCLUDE_PATH?>administration.css" type="text/css">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.ADM_INCLUDE_PATH?>standard.css" type="text/css">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.ADM_INCLUDE_PATH?>fifa_playermanagement.css" type="text/css">
-    <script type="text/javascript" src="<?echo FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH?>script/admin/fifa_playermanagement.js"></script>
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.ADM_INCLUDE_PATH?>administration.css" type="text/css">
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.ADM_INCLUDE_PATH?>standard.css" type="text/css">
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.ADM_INCLUDE_PATH?>fifa_playermanagement.css" type="text/css">
+    <script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH?>script/admin/fifa_playermanagement.js"></script>
 </head>
 <body onload="javascript:init()">
 <div id="Container">
 
     <div id="Navbar">
         <div id="Navigation">
-            <?include(ADM_VIEWER_PATH.'navigation.php')?>
+            <?php include(ADM_VIEWER_PATH.'navigation.php')?>
         </div>
 
         <div style="clear:both;"></div>
@@ -44,7 +44,7 @@
     <div id="formanswer" style="visibility:hidden;">
     </div>
 
-<?include(INCLUDE_PATH.'country_list.php');?>
+<?php include(INCLUDE_PATH.'country_list.php');?>
 <div id="form">
 <div id="select_matchround"></div>
 <div id="select_match"></div>
@@ -53,7 +53,7 @@
     <div id="formline">
 	  	<div id="formdescr">* URL:</div>
 	  	<div id="forminput">
-	  		<input type="text" size="50" id="web_url" name="fifa_url" value="<?echo $this->post['fifa_url'];?>">
+	  		<input type="text" size="50" id="web_url" name="fifa_url" value="<?= $this->post['fifa_url'];?>">
 	  	</div>
 	</div>
 	<div id="formclear"></div>
@@ -116,6 +116,6 @@
 </div>
 </div>
 <div id="Footer">
-    <?include(ADM_VIEWER_PATH.'footer.php')?>
+    <?php include(ADM_VIEWER_PATH.'footer.php')?>
 </div>
 </div>

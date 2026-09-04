@@ -21,7 +21,7 @@ class matchround extends FFB_Auth_AdminFfb {
     public function __default() {
         $this->administration_modus = $_POST['administration_modus'];
         $this->post = $_POST;
-        if(count($_POST)) {
+        if (!empty($_POST)) {
             if(isset($_POST['matchround_administration_change_x']) || isset($_POST['matchround_administration_change']))
                 { $this->changeItem($_POST['matchround_id']); }
             elseif(isset($_POST['matchround_administration_delete_x']) || isset($_POST['matchround_administration_delete']))
@@ -155,7 +155,7 @@ class matchround extends FFB_Auth_AdminFfb {
             $errors[] = 'Go to the start page and choose a League first!';
         }
         //check for empty fields
-        if(!count($_POST) || !$_POST['matchround_title'] || !$_POST['matchround_startdate_day'] ||
+        if (empty($_POST) || !$_POST['matchround_title'] || !$_POST['matchround_startdate_day'] ||
            !$_POST['matchround_startdate_month'] || !$_POST['matchround_startdate_year'] || !$_POST['matchround_enddate_day'] ||
            !$_POST['matchround_enddate_month'] || !$_POST['matchround_enddate_year'])
         {
@@ -325,77 +325,77 @@ class matchround extends FFB_Auth_AdminFfb {
     	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
     	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID1, FfbPlayerteamPeer::PLAYERTEAM_ID);
     	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort(&$teamsAtStart, $teams);
+    	$i = $i + $this->playerSort($teamsAtStart, $teams);
 
     	$criteria = new Criteria();
     	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
     	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
     	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID2, FfbPlayerteamPeer::PLAYERTEAM_ID);
     	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort(&$teamsAtStart, $teams);
+    	$i = $i + $this->playerSort($teamsAtStart, $teams);
 
     	$criteria = new Criteria();
     	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
     	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
     	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID3, FfbPlayerteamPeer::PLAYERTEAM_ID);
     	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort(&$teamsAtStart, $teams);
+    	$i = $i + $this->playerSort($teamsAtStart, $teams);
 
     	$criteria = new Criteria();
     	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
     	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
     	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID4, FfbPlayerteamPeer::PLAYERTEAM_ID);
     	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort(&$teamsAtStart, $teams);
+    	$i = $i + $this->playerSort($teamsAtStart, $teams);
 
     	$criteria = new Criteria();
     	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
     	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
     	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID5, FfbPlayerteamPeer::PLAYERTEAM_ID);
     	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort(&$teamsAtStart, $teams);
+    	$i = $i + $this->playerSort($teamsAtStart, $teams);
 
     	$criteria = new Criteria();
     	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
     	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
     	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID6, FfbPlayerteamPeer::PLAYERTEAM_ID);
     	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort(&$teamsAtStart, $teams);
+    	$i = $i + $this->playerSort($teamsAtStart, $teams);
 
     	$criteria = new Criteria();
     	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
     	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
     	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID7, FfbPlayerteamPeer::PLAYERTEAM_ID);
     	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort(&$teamsAtStart, $teams);
+    	$i = $i + $this->playerSort($teamsAtStart, $teams);
 
     	$criteria = new Criteria();
     	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
     	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
     	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID8, FfbPlayerteamPeer::PLAYERTEAM_ID);
     	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort(&$teamsAtStart, $teams);
+    	$i = $i + $this->playerSort($teamsAtStart, $teams);
 
     	$criteria = new Criteria();
     	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
     	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
     	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID9, FfbPlayerteamPeer::PLAYERTEAM_ID);
     	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort(&$teamsAtStart, $teams);
+    	$i = $i + $this->playerSort($teamsAtStart, $teams);
 
     	$criteria = new Criteria();
     	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
     	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
     	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID10, FfbPlayerteamPeer::PLAYERTEAM_ID);
     	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort(&$teamsAtStart, $teams);
+    	$i = $i + $this->playerSort($teamsAtStart, $teams);
 
     	$criteria = new Criteria();
     	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
     	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
     	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID11, FfbPlayerteamPeer::PLAYERTEAM_ID);
     	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort(&$teamsAtStart, $teams);
+    	$i = $i + $this->playerSort($teamsAtStart, $teams);
 
 		$this->numTeams = count($teamsAtStart);
 		foreach($teamsAtStart as $key=>$row) {

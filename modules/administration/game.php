@@ -19,7 +19,7 @@
       	$this->htmlFile = 'game.php';
       	$this->administration_modus = $_POST['administration_modus'];
       	$this->post = $_POST;
-      	if(count($_POST)) {
+      	if (!empty($_POST)) {
       		if(isset($_POST['game_administration_change_x']) || isset($_POST['game_administration_change']))
       		{ $this->changeItem($_POST['game_id']); }
       		elseif(isset($_POST['game_administration_delete_x']) || isset($_POST['game_administration_delete']))
@@ -169,7 +169,7 @@
           $items = FfbGamePeer::doSelect($criteria);
           $games = array();
           $i=0;
-          if(items) {
+          if ($items) {
               foreach($items as $item) {
                   $games[$i]["game_id"] = $item->getGameId();
                   $games[$i]["game_title"] = $item->getGameTitle();

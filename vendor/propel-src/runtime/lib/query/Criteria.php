@@ -24,6 +24,7 @@
  * @version    $Revision$
  * @package    propel.runtime.query
  */
+#[\AllowDynamicProperties]
 class Criteria implements IteratorAggregate
 {
 
@@ -279,6 +280,7 @@ class Criteria implements IteratorAggregate
      * Implementing SPL IteratorAggregate interface.  This allows
      * you to foreach () over a Criteria object.
      */
+#[\ReturnTypeWillChange]
     public function getIterator()
     {
         return new CriterionIterator($this);

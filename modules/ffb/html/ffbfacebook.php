@@ -14,8 +14,8 @@
     <link rel="stylesheet" href="<?php echo FFB_BASE_PATH.FFB_INCLUDE_PATH?>facebook.css" type="text/css" />
     <script type="text/javascript" src="<?php echo FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
 	<script type="text/javascript" src="<?php echo FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>countdown.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>ffbfacebook.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>countdown.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>ffbfacebook.js"></script>
 	<script>
 	var ffbFacebookSubmitButton_	=	'<blink><input class="netbutton1" type="submit" name="action" value="Vernetzen!" /></blink>';
 	function doFfbFacebookConnect() {
@@ -55,7 +55,7 @@
 <div id="Container">
 
     <div id="Navbar">
-        <img style="float:left; margin-top:10px;"  src="<?echo FFB_BASE_PATH.FFB_IMAGE_PATH ."symbols/Facebook-64_2.png";  ?>" width="64" alt="Facebook" title="Facebook"/>
+        <img style="float:left; margin-top:10px;"  src="<?= FFB_BASE_PATH.FFB_IMAGE_PATH ."symbols/Facebook-64_2.png";  ?>" width="64" alt="Facebook" title="Facebook"/>
 
 		<div id="Navigation">
         </div>
@@ -70,7 +70,7 @@
     </div>
 
     <div id="Mainleft" style="width:100%;">
-            <div id="admintitle">Hallo <?
+            <div id="admintitle">Hallo <?php 
 	if($this->facebook_user[0]['pic_small']) {
 		echo " <img src=\"" . $this->facebook_user[0]['pic_small'] . "\"> ";
 	} elseif ( $this->facebook_user[0]['pic'] ) {
@@ -85,7 +85,7 @@
 	 		<div id="facebookwelcome">
 	 		
 	 			<div id="step1">
- 					<img src="<?echo FFB_BASE_PATH.FFB_IMAGE_PATH ."backgrounds/sa10.png";?>" width="100px" height="100px" align="left" vspace="10" hspace="20" alt="South Africa 2010" />
+ 					<img src="<?= FFB_BASE_PATH.FFB_IMAGE_PATH ."backgrounds/sa10.png";?>" width="100px" height="100px" align="left" vspace="10" hspace="20" alt="South Africa 2010" />
  					Get in touch with Facebook!<br />
 					Verbinde dein Facebook Profil mit deinem Fantasy Football Account und zeige Deinen Freunden deine Erfolge!<br />
  					Vergiss nicht Deine Freunde auch zum Spiel einzuladen!
@@ -103,9 +103,9 @@
 						<li>
                 		<div id="formline">
                     		<div id="formdescr">
-                        		<input type="hidden" name="destination" value="<? FFB_BASE_PATH ?>ffb/" />
-                        		<input type="hidden" name="PHPSSID" value="<? echo session_id();?>" />
-                        		<input type="hidden" name="facebook_user_id" value="<?echo $this->facebook_user[0]['uid'];?>" /><script type="text/javascript" src="http://static.ak.connect.facebook.com/js/api_lib/v0.4/FeatureLoader.js.php/de_DE"></script><script type="text/javascript">FB.init("<?echo FFB_FACEBOOK_API_KEY;?>");</script><div id="ffbfbsubmit"><input class="netbutton0"  type="image" src="<?echo FFB_BASE_PATH.FFB_IMAGE_PATH."symbols/Connect_white_large_long.gif";?>" name="action" alt="Ein paar Gehnehmigungen, bitte!" onclick="FB.Connect.showPermissionDialog('publish_stream,read_stream,offline_access', function(a<?echo FFB_FACEBOOK_APP_ID;?>_perms) { dropLineW3('ffbfbsubmit', 'erledigt');dropLineW3('buttonVernetzen', ffbFacebookSubmitButton_);  return; });return false;"/></div>
+                        		<input type="hidden" name="destination" value="<?php  FFB_BASE_PATH ?>ffb/" />
+                        		<input type="hidden" name="PHPSSID" value="<?php  echo session_id();?>" />
+                        		<input type="hidden" name="facebook_user_id" value="<?= $this->facebook_user[0]['uid'];?>" /><script type="text/javascript" src="http://static.ak.connect.facebook.com/js/api_lib/v0.4/FeatureLoader.js.php/de_DE"></script><script type="text/javascript">FB.init("<?= FFB_FACEBOOK_API_KEY;?>");</script><div id="ffbfbsubmit"><input class="netbutton0"  type="image" src="<?= FFB_BASE_PATH.FFB_IMAGE_PATH."symbols/Connect_white_large_long.gif";?>" name="action" alt="Ein paar Gehnehmigungen, bitte!" onclick="FB.Connect.showPermissionDialog('publish_stream,read_stream,offline_access', function(a<?= FFB_FACEBOOK_APP_ID;?>_perms) { dropLineW3('ffbfbsubmit', 'erledigt');dropLineW3('buttonVernetzen', ffbFacebookSubmitButton_);  return; });return false;"/></div>
                         		
 
                     		</div>
@@ -137,20 +137,20 @@
             		</p>
 	 			</div>
 			</div>
-	 		<?} else {
+	 		<?php } else {
 	 		?>
 			 <h3>Du hast dich erfolgreich vernetzt, du bekommst jetzt direkt in deinen Facebook Account Auszeichnungen angezeigt sobald du neue Ziele erreicht hast!</h3>
-			 <a href="<? echo FFB_BASE_PATH; ?>" target="_soccer">Weiter gehts auf <? echo FFB_BASE_PATH; ?></a><br />oder direkt auf deiner Facebook Seite.	
+			 <a href="<?php  echo FFB_BASE_PATH; ?>" target="_soccer">Weiter gehts auf <?php  echo FFB_BASE_PATH; ?></a><br />oder direkt auf deiner Facebook Seite.	
 			 <br />
 			 <hr />
-			 <? 
+			 <?php  
 			 	if( strcmp($this->disablePermissionKey,"0") != 0) { ?>
-			 		Wenn du keine Nachrichten mehr auf Facebook erhalten willst, nutze diesen <a href="<? echo BASE_PATH."users/mailservice/cancelFb.html?id=".$this->disablePermissionKey ?>" target="_self ">Link zum Deaktivieren</a>.
-<?			 	} else { ?> 
+			 		Wenn du keine Nachrichten mehr auf Facebook erhalten willst, nutze diesen <a href="<?php  echo BASE_PATH."users/mailservice/cancelFb.html?id=".$this->disablePermissionKey ?>" target="_self ">Link zum Deaktivieren</a>.
+<?php 			 	} else { ?> 
 					In deinem Profil wurden die Facebook Benachrichtigungen deaktiviert!<br />
 					Oder du hast dich zum ersten mal angemeldet, dann wurden die Benachritigungen in diesem Moment eingerichtet.
 					
-<? 				}
+<?php  				}
 			}
 /*
 foreach ($this->facebook_friends AS $friend_info) {
@@ -171,7 +171,7 @@ foreach ($this->facebook_friends AS $friend_info) {
 ?>
 </div>
 
-<script type="text/javascript" src="http://static.ak.connect.facebook.com/connect.php/de_DE"></script><script type="text/javascript">FB.init("<?echo FFB_FACEBOOK_API_KEY;?>");</script><fb:fan profile_id="<?echo FFB_FACEBOOK_APP_ID;?>" stream="1" connections="10" logobar="1" width="300"></fb:fan><div style="font-size:8px; padding-left:10px"><a href="http://soccer.sportsfan.at/ffb/ffbfacebook?">Fantasy Football soccer.sportsfan.at</a> on Facebook</div>
+<script type="text/javascript" src="http://static.ak.connect.facebook.com/connect.php/de_DE"></script><script type="text/javascript">FB.init("<?= FFB_FACEBOOK_API_KEY;?>");</script><fb:fan profile_id="<?= FFB_FACEBOOK_APP_ID;?>" stream="1" connections="10" logobar="1" width="300"></fb:fan><div style="font-size:8px; padding-left:10px"><a href="http://soccer.sportsfan.at/ffb/ffbfacebook?">Fantasy Football soccer.sportsfan.at</a> on Facebook</div>
 
     </div>
  

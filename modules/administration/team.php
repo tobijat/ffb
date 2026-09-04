@@ -21,7 +21,7 @@ class team extends FFB_Auth_AdminFfb {
     public function __default() {
         $this->administration_modus = $_POST['administration_modus'];
         $this->post = $_POST;
-        if(count($_POST)) {
+        if (!empty($_POST)) {
             if(isset($_POST['team_administration_change_x']) || isset($_POST['team_administration_change']))
                 { $this->changeItem($_POST['team_id']); }
             elseif(isset($_POST['team_administration_delete_x']) || isset($_POST['team_administration_delete']))
@@ -391,7 +391,7 @@ class team extends FFB_Auth_AdminFfb {
         $errors = array();
 
         //check for empty fields
-        if(!count($_POST) || !$_POST['team_name'] || !$_POST['team_nationality'] || !$_POST['team_price'])
+        if (empty($_POST) || !$_POST['team_name'] || !$_POST['team_nationality'] || !$_POST['team_price'])
         {
             $errors[] = 'You have to fill out all fields marked with a *!';
         }

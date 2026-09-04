@@ -6,24 +6,24 @@
  */
 ?>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	<link rel="stylesheet" href="<?echo FFB_BASE_PATH.ADM_INCLUDE_PATH?>standard.css" type="text/css">
-	<link rel="stylesheet" href="<?echo FFB_BASE_PATH.ADM_INCLUDE_PATH?>administration.css" type="text/css">
-	<link rel="stylesheet" href="<?echo FFB_BASE_PATH.ADM_INCLUDE_PATH?>matchpoints.css" type="text/css">
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH?>script/admin/matchpoints.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH?>script/admin/facebookAdmin.js"></script>
+	<link rel="stylesheet" href="<?= FFB_BASE_PATH.ADM_INCLUDE_PATH?>standard.css" type="text/css">
+	<link rel="stylesheet" href="<?= FFB_BASE_PATH.ADM_INCLUDE_PATH?>administration.css" type="text/css">
+	<link rel="stylesheet" href="<?= FFB_BASE_PATH.ADM_INCLUDE_PATH?>matchpoints.css" type="text/css">
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH?>script/admin/matchpoints.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH?>script/admin/facebookAdmin.js"></script>
 	<meta name="author" content="Musser">
 	<meta name="author" content="Gritschacher">
 </head>
 <body onLoad="javascript:loadMatchround();">
 <!--Facebook Code for connect-->
- <script src="http://static.ak.connect.facebook.com/connect.php/de_DE" type="text/javascript"></script><script type="text/javascript">FB.init("<?echo FFB_FACEBOOK_API_KEY;?>");</script>
+ <script src="http://static.ak.connect.facebook.com/connect.php/de_DE" type="text/javascript"></script><script type="text/javascript">FB.init("<?= FFB_FACEBOOK_API_KEY;?>");</script>
  <!--Facebook ENDE-->
 <div id="Container">
     <div id="Navbar">
         <div id="Navigation">
-            <?include(ADM_VIEWER_PATH.'navigation.php')?>
+            <?php include(ADM_VIEWER_PATH.'navigation.php')?>
         </div>
 
         <div style="clear:both;"></div>
@@ -37,13 +37,13 @@
         <div id="Players">
 			<div id="Home">
 				<div id="HomeTitle"></div>
-				<div id="loadingHome"><img src="<? echo FFB_BASE_PATH?>/images/loading/ajax-loader-medium.gif" alt="loading"></div>
+				<div id="loadingHome"><img src="<?php  echo FFB_BASE_PATH?>/images/loading/ajax-loader-medium.gif" alt="loading"></div>
 				<ol id="HomePlayers"></ol>
 				<!--div id="HomePlayers"></div-->
 			</div>
 			<div id="Guest">
 				<div id="GuestTitle"></div>
-				<div id="loadingGuest"><img src="<? echo FFB_BASE_PATH?>/images/loading/ajax-loader-medium.gif" alt="loading"></div>
+				<div id="loadingGuest"><img src="<?php  echo FFB_BASE_PATH?>/images/loading/ajax-loader-medium.gif" alt="loading"></div>
 				<ol id="GuestPlayers" ></ol>
 				<!--div id="GuestPlayers"></div-->
 			</div>
@@ -85,7 +85,7 @@ function callbackPublish(post_id, exception) {
     </div>
 
     <div id="Footer">
-        <?include(ADM_VIEWER_PATH.'footer.php')?>
+        <?php include(ADM_VIEWER_PATH.'footer.php')?>
     </div>
 
 </div>

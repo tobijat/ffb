@@ -9,6 +9,6 @@
 <html>
 <head>
     <title>www.tobijat.at - Administration Tool</title>
-<? include($this->viewer); ?>
+<?php  include($this->viewer); ?>
 
 </html>

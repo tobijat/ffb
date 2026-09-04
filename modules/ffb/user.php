@@ -70,8 +70,8 @@ class user extends FFB_Auth_User {
 			$user_arr['user_date_llogin'] = date('d.m.Y', strtotime($user->getUserDateLlogin()));
 			$user_arr['user_date_register'] = date('d.m.Y', strtotime($user->getUserDateRegister()));
 			$user_arr['user_email'] = $user->getUserEmail();
-			$user_arr['user_fname'] = utf8_encode($user->getUserFname());
-			$user_arr['user_lname'] = utf8_encode($user->getUserLname());
+			$user_arr['user_fname'] = $user->getUserFname();
+			$user_arr['user_lname'] = $user->getUserLname();
 			$user_arr['user_gender'] = $user->getUserGender();
 			$user_arr['user_nationality'] = $user->getUserNationality();
 			if($user->getUserDateBirth()) {

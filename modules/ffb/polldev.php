@@ -134,7 +134,7 @@ class polldev extends FFB_Auth_User
 			$i=0;
 			foreach($answers as $answer) {
 				$answer_array[$i]['poll_answer_id'] = $answer->getPollAnswerId();
-				$answer_array[$i]['poll_answer_title'] = utf8_encode($answer->getPollAnswerTitle());
+				$answer_array[$i]['poll_answer_title'] = $answer->getPollAnswerTitle();
 				$answer_array[$i]['poll_answer_count'] = $answer->getPollAnswerCount();
 				$i++;
 			}

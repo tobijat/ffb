@@ -8,8 +8,8 @@
 ?>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<meta name="author" content="Gritschacher Tobias, Musser Gerald">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.FFB_INCLUDE_PATH?>standard.css" type="text/css">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.FFB_INCLUDE_PATH?>help.css" type="text/css">
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>standard.css" type="text/css">
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>help.css" type="text/css">
 </head>
 
 <body>
@@ -20,7 +20,7 @@
 			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 			<div id="NavbarRound">
 				<div id="Navigation">
-			        <?include(FFB_VIEWER_PATH.'navigation.php')?>
+			        <?php include(FFB_VIEWER_PATH.'navigation.php')?>
 			    </div>
 			    <div style="clear:both;"></div>
 			</div>
@@ -102,7 +102,7 @@
 		<div class="roundcorner_dark">
 			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 			<div id="Footer">
-			    <?include(FFB_VIEWER_PATH.'footer.php')?>
+			    <?php include(FFB_VIEWER_PATH.'footer.php')?>
 			</div>
 			<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
 		</div>

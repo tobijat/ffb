@@ -21,7 +21,7 @@ class player extends FFB_Auth_AdminFfb {
     public function __default() {
         $this->administration_modus = $_POST['administration_modus'];
         $this->post = $_POST;
-        if(count($_POST)) {
+        if (!empty($_POST)) {
             if(isset($_POST['player_administration_change_x']) || isset($_POST['player_administration_change']))
                 { $this->changeItem($_POST['player_id']); }
             elseif(isset($_POST['player_administration_delete_x']) || isset($_POST['player_administration_delete']))
@@ -285,14 +285,14 @@ class player extends FFB_Auth_AdminFfb {
         $errors = array();
         if($_POST['player_administration_update']) {
             //check for empty fields
-            if(!count($_POST) || !$_POST['player_lname'] || !$_POST['player_fname'] || !$_POST['player_nationality'])
+            if (empty($_POST) || !$_POST['player_lname'] || !$_POST['player_fname'] || !$_POST['player_nationality'])
             {
                 $errors[] = 'You have to fill out all fields marked with a *!';
             }
         } elseif($_POST['player_administration_insert']) {
             //echo 'insert<br>';
             //check for empty fields
-            if(!count($_POST) || !$_POST['player_lname'] || !$_POST['player_fname'] || !$_POST['player_nationality'] || !$_POST['player_team']
+            if (empty($_POST) || !$_POST['player_lname'] || !$_POST['player_fname'] || !$_POST['player_nationality'] || !$_POST['player_team']
                               || !$_POST['playerteam_price'] || !$_POST['playerteam_position'])
             {
                 $errors[] = 'You have to fill out all fields marked with a *!';

@@ -20,7 +20,7 @@ class news extends FFB_Auth_AdminFfb {
     public function __default() {
         $this->administration_modus = $_POST['administration_modus'];
         $this->post = $_POST;
-        if(count($_POST)) {
+        if (!empty($_POST)) {
             if(isset($_POST['news_administration_change_x']) || isset($_POST['news_administration_change']))
                 { $this->changeItem($_POST['news_id']); }
             elseif(isset($_POST['news_administration_delete_x']) || isset($_POST['news_administration_delete']))
@@ -145,7 +145,7 @@ class news extends FFB_Auth_AdminFfb {
         $errors = array();
 
         //check for empty fields
-        if(!count($_POST) || !$_POST['news_title'] || !$_POST['news_text'])
+        if (empty($_POST) || !$_POST['news_title'] || !$_POST['news_text'])
         {
             $errors[] = 'You have to fill out all fields marked with a *!';
         }

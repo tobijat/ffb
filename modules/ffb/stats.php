@@ -71,14 +71,18 @@ class stats extends FFB_Auth_No {
 	}
 
 	public function getTeamPlayers() {
-		$team_id = $_REQUEST['team_id'];
+		$team_id = isset($_REQUEST['team_id']) ? $_REQUEST['team_id'] : null;
+		if (!$team_id) {
+			$this->players = array();
+			$this->duration();
+			return;
+		}
         $criteria = new Criteria();
-        $criteria->addJoin(FfbPlayerPeer::PLAYER_ID, FfbPlayerteamPeer::PLAYERTEAM_PLAYER_ID);
         $criteria->add(FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID, $team_id);
         $criteria->addAscendingOrderByColumn(FfbPlayerteamPeer::PLAYERTEAM_PLAYER_POSITION);
         $criteria->addAscendingOrderByColumn(FfbPlayerPeer::PLAYER_LNAME);
         $criteria->addAscendingOrderByColumn(FfbPlayerPeer::PLAYER_FNAME);
-        $playerteam_items = FfbPlayerteamPeer::doSelect($criteria);
+        $playerteam_items = FfbPlayerteamPeer::doSelectJoinFfbPlayer($criteria);
 		//print_r($playerteam_items);
 		$players = array();
 		$i=0;
