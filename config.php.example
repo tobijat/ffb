@@ -1,0 +1,108 @@
+<?php
+
+/**
+ * @author Gritschacher, Musser
+ * @copyright 05/2008
+ * @version 0.3
+ *
+ * Copy this file to config.php and fill in local credentials.
+ * config.php is gitignored and must not be committed.
+ */
+
+// mysql_* compatibility shim for PHP 8+
+require_once dirname(__FILE__) . '/vendor/mysql_compat.php';
+
+//Root-Pfad
+define('BASE_PATH','http://'.$_SERVER['SERVER_NAME'].'/');
+//Root-Pfad für FFB
+define('FFB_BASE_PATH','http://'.$_SERVER['SERVER_NAME'].'/');
+//Root-Pfad für PICTORY
+define('PIC_BASE_PATH','http://'.$_SERVER['SERVER_NAME'].'/');
+
+//Folder der Klassen
+define('FFB_CLASS_PATH','classes/');
+
+//Folder der FFB Bilder
+define('FFB_IMAGE_PATH','images/ffb/');
+//Folder der PICTORY Bilder
+define('PIC_IMAGE_PATH','images/pictory/');
+//Folder der ADMIN Bilder
+define('ADM_IMAGE_PATH','images/admin/');
+
+//Folder der allgemeinen Includes/Css
+define('INCLUDE_PATH','include/');
+//Folder der FFB Includes/Css
+define('FFB_INCLUDE_PATH','include/ffb/');
+//Folder der PICTORY Includes/Css
+define('PIC_INCLUDE_PATH','include/pictory/');
+//Folder der ADMIN Includes/Css
+define('ADM_INCLUDE_PATH','include/admin/');
+
+//Folder für allgemeine JS
+define('SCRIPT_PATH','script/');
+//Folder für die FFB JS
+define('FFB_SCRIPT_PATH','script/ffb/');
+//Folder für die PICTORY JS
+define('PIC_SCRIPT_PATH','script/pictory/');
+//Folder für die ADMIN JS
+define('ADM_SCRIPT_PATH','script/admin/');
+
+//Folder für allgemeine VIEWER-Files
+define('VIEWER_PATH','viewer/');
+//Folder für die FFB VIEWER
+define('FFB_VIEWER_PATH','viewer/ffb/');
+//Folder für die PICTORY VIEWER
+define('PIC_VIEWER_PATH','viewer/pictory/');
+//Folder für die PICTORY VIEWER
+define('ADM_VIEWER_PATH','viewer/administration/');
+
+//Folder für die MODULE
+define('FFB_MODULE_PATH','modules/');
+
+//Subdomains
+define('FFB_SUBDOMAIN','ffb');
+define('PIC_SUBDOMAIN','pictory');
+
+//Default-Modul: Start-Modul, wird auch aufgerufen, wenn ungültige URL eingegeben wird
+define('FFB_DEFAULT_MODULE','welcome');
+
+//Pfad zum Propel-Config-File
+define('PROPEL_CONFIG_FILE', 'classes/propel/build/conf/ffb-conf.php');
+
+
+//Comments
+define('DEFAULT_COMMENT_NUMBER', 30);
+
+//Recaptcha — replace with your keys
+define('FFB_RECAPTCHA_PUBLICKEY','YOUR_RECAPTCHA_PUBLIC_KEY');
+define('FFB_RECAPTCHA_PRIVATEKEY','YOUR_RECAPTCHA_PRIVATE_KEY');
+
+//Database-Name
+define('FFB_DATABASE_NAME','YOUR_DB_NAME');
+define('FFB_DB_LOGIN','mysqli://YOUR_DB_USER:YOUR_DB_PASSWORD@127.0.0.1/YOUR_DB_NAME');
+
+// Board / forum database (also mirrored in area_config_*.xml)
+define('FFB_BOARD_DB_SERVER','127.0.0.1');
+define('FFB_BOARD_DB_NAME','YOUR_BOARD_DB_NAME');
+define('FFB_BOARD_DB_USER','YOUR_BOARD_DB_USER');
+define('FFB_BOARD_DB_PASSWORD','YOUR_BOARD_DB_PASSWORD');
+
+// Facebook application credentials
+define('FFB_FACEBOOK_API_KEY','YOUR_FACEBOOK_API_KEY');
+define('FFB_FACEBOOK_APP_SECRET','YOUR_FACEBOOK_APP_SECRET');
+define('FFB_FACEBOOK_APP_ID','YOUR_FACEBOOK_APP_ID');
+define('FFB_FACEBOOK_SESSION_KEY','YOUR_FACEBOOK_SESSION_KEY');
+define('FFB_FACEBOOK_USER_ID','YOUR_FACEBOOK_USER_ID');
+
+//zusätzliche INCLUDE-Paths
+set_include_path("classes/propel/build/classes" . PATH_SEPARATOR . get_include_path());
+
+// Local vendor paths (Propel runtime, PEAR core, PEAR DB, PEAR Log)
+$vendorBase = dirname(__FILE__) . '/vendor';
+set_include_path($vendorBase . PATH_SEPARATOR . get_include_path());
+set_include_path($vendorBase . '/pear-core/src' . PATH_SEPARATOR . get_include_path());
+set_include_path($vendorBase . '/pear-db' . PATH_SEPARATOR . get_include_path());
+set_include_path($vendorBase . '/pear-log' . PATH_SEPARATOR . get_include_path());
+set_include_path($vendorBase . '/pear-exception' . PATH_SEPARATOR . get_include_path());
+
+?>

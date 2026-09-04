@@ -1,0 +1,123 @@
+.stats_section{}
+
+.checkbox_div{}
+.checkbox_div_l {
+float:left;
+}
+.checkbox_div_r {
+float:left;
+}
+.checkbox_div_r {
+float:left;
+}
+
+.duration {
+font-weight:bold;
+font-size:60%;
+}
+
+.statsPlayerItem {
+float:left;
+width:30%;
+margin-bottom:1%;
+margin-right:2%;
+clear:all;
+border-style:solid;
+border-width:1px;
+background-color:#99CC99;
+}
+.playerImg {
+float:left;
+margin-right:2%;
+margin-top:1%;
+margin-left:1%;
+height:60px;
+}
+
+.statsPlayerName {
+font-weight:bold;
+background-color:#99CC85;
+width:97%;
+}
+
+.statsLeagueItem {
+float:left;
+width:46%;
+margin-bottom:1%;
+margin-right:2%;
+clear:all;
+border-style:solid;
+border-width:1px;
+background-color:#99CC99;
+height:100%;
+}
+
+.statsLeagueHead {
+background-color:#99CC00;
+font-weight:bold;
+margin-left:1%;
+margin-top:1%;
+margin-bottom:2%;
+width:95%;
+height:100%;
+}
+
+.statsLeagueBody {
+margin-left:2%;
+margin-top:1%;
+height:100%;
+}
+
+.statsLeagueBodyElem0, .statsLeagueBodyElem1 {
+border-top: 1px dotted;
+width:95%;
+margin-bottom:1%;
+height:100%;
+}
+
+.statsLeagueBodyElem1 {
+background-color:#99CC80;
+}
+
+h1 {
+margin-left:1%;
+vertical-align:top;
+float:left;
+display:inline;
+color:silver;
+}
+
+
+#statsSlot {
+float:left;
+display:inline;
+width:236px;
+height:60px;
+}
+
+#statsmain{
+margin-top:75px;
+margin-left:3%;
+clear:all;
+}
+
+.statsLeagueLine, .statsPlayerLine {
+height:100%;
+float:left;
+width:97%;
+border-bottom:1px solid #CCEE77;
+margin-bottom:1%;
+}
+
+.overallStats {
+background-color:#99CCAA;
+margin:2%;
+font-weight:bold;
+margin-left:60px;
+}
+
+img.img1, img.img0 {
+width:16px;
+margin-left:2px;
+margin-right:2px;
+}

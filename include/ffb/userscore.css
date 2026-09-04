@@ -1,0 +1,217 @@
+#lineup_infoarea {
+    /*background-color: #99CC99;*/
+    min-height: 40px;
+    width: 100%;
+    padding-bottom: 5px;
+    padding-top:1px;
+}
+#lineup_infoarea_title {
+    width: 96%;
+    margin-left:auto;
+    margin-right:auto;
+    font-size:14pt;
+    text-align:center;
+}
+#lineup_infoarea_infos {
+    width: 79%;
+    margin-left:auto;
+    margin-right:auto;
+    font-size:9pt;
+    text-align:center;
+    margin-top:2px;
+    padding:1px;
+}
+
+/* round lineup select main div */
+.rounddiv_lineupselectmain {
+	background:transparent;
+    width:99%;
+    margin-left:auto;
+    margin-right:auto;
+    padding-top:5px;
+}
+#lineup_select_main {
+    background-color:#CCFFCC;
+}
+/* ***** */
+
+#lineup_select_round {
+    width: 100%;
+    text-align:center;
+}
+/* round matchlist div */
+.rounddiv_matchlist {
+	background:transparent;
+    width:99%;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top:10px;
+    visibility: visible;
+}
+div#matchlist {
+    background-color:#CCFFCC;
+    font-size:8pt;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+/* ***** */
+div#UserscoreMain {
+    width: 100%;
+    min-height:500px;
+    /*background-color:#99CC99;*/
+}
+div#UserscoreHelp {
+    width: 80%;
+    padding-left: 10%;
+    padding-right: 10%;
+    padding-bottom: 20px;
+    background-color:#99CC99;
+    font-size: 8pt;
+}
+div#userscore {
+    width: 600px;
+    margin-left:auto;
+    margin-right:auto;
+    /*background-color:#99CC99;*/
+    font-size: 10pt;
+    border: solid black 1px;
+}
+div#userscore_sites {
+    width: 600px;
+    margin-left:auto;
+    margin-right:auto;
+    font-size: 10pt;
+    text-align:center;
+    padding-bottom:3px;
+    padding-top:2px;
+}
+div#scoretitle {
+    width:100%;
+    font-size:10pt;
+    text-align:center;
+    margin-bottom:5px;
+}
+div#scoreline_none {
+    width:100%;
+    padding-top:2px;
+    padding-bottom:2px;
+    margin-left:auto;
+    margin-right:auto;
+    clear:both;
+}
+
+div#scoreline {
+    background-color:#99DE99;
+    width:100%;
+    padding-top:2px;
+    padding-bottom:2px;
+    margin-left:auto;
+    margin-right:auto;
+    font-size:9pt;
+    clear:both;
+}
+div#scoreline_div {
+    background-color:#99CC99;
+    width:100%;
+    padding-top:2px;
+    padding-bottom:2px;
+    margin-left:auto;
+    margin-right:auto;
+    clear:both;
+}
+
+div#myscoreline {
+    background-color:#99DE99;
+    width:100%;
+    margin-left:auto;
+    margin-right:auto;
+    clear:both;
+    font-weight: bold;
+}
+div#myscoreline_div {
+    background-color:#99CC99;
+    width:100%;
+    margin-left:auto;
+    margin-right:auto;
+    clear:both;
+    font-weight: bold;
+}
+
+div#rank1 {
+  background-color: #ffd700;
+  width:100%;
+  padding-top:2px;
+  padding-bottom:2px;
+  margin-left:auto;
+  margin-right:auto;
+  clear:both;
+}
+
+div#rank2 {
+  background-color: #cccccc;
+  width:100%;
+  padding-top:2px;
+  padding-bottom:2px;
+  margin-left:auto;
+  margin-right:auto;
+  clear:both;
+}
+
+div#rank3 {
+  background-color: #cd853f;
+  width:100%;
+  padding-top:2px;
+  padding-bottom:2px;
+  margin-left:auto;
+  margin-right:auto;
+  clear:both;
+}
+
+
+div#scoreline:hover { background-color: #CCFFCC; }
+div#scoreline_div:hover { background-color: #CCFFCC; }
+div#myscoreline:hover { background-color: #CCFFCC; }
+div#myscoreline_div:hover { background-color: #CCFFCC; }
+
+div#scoreplace {
+    float:left;
+    width:60px;
+    padding-left:5px;
+}
+div#scoreflag {
+    padding-top:3px;
+    float:left;
+    width:30px;
+}
+div#scorepart {
+    float:left;
+    width:80px;
+    text-align:center;
+}
+div#scorewins {
+    float:left;
+    width:80px;
+    text-align:center;
+}
+div#scorewc {
+    float:right;
+    width:80px;
+    text-align:right;
+    padding-right:5px;
+    font-size:10pt;
+}
+div#scorenickname {
+    float:left;
+    width:120px;
+    text-align:left;
+}
+div#score {
+    float:right;
+    width:120px;
+    text-align:right;
+    padding-right:5px;
+    font-size:11pt;
+}
+div#scoreclear {
+    clear:both;
+}

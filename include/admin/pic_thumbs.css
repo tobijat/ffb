@@ -1,0 +1,99 @@
+#mainthumbs {
+    overflow:hidden;
+    width:95%;
+    text-align:center;
+    border:solid red 1px;
+    padding:2px;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+#thumbrow {
+    display:-moz-inline-box;
+    display: inline-block;
+    margin-left:auto;
+    margin-right:auto;
+    margin-bottom:5px;
+    margin-top:0px;
+    overflow:hidden;
+    border-left:solid red 0px;
+    border-right:solid red 0px;
+}
+
+#thumbnail {
+    display:-moz-inline-box;
+    display: inline-block;
+    margin-right:5px;
+    margin-left:0px;
+    padding:2px;
+    float:left;
+    text-align:center;
+    border:solid red 1px;
+    overflow:hidden;
+}
+
+div.thumbnail {
+    display:-moz-inline-box;
+    display: inline-block;
+    margin-right:5px;
+    margin-left:0px;
+    padding:2px;
+    float:left;
+    text-align:center;
+    border:solid red 1px;
+    overflow:hidden;
+}
+
+#albumrow {
+    display:-moz-inline-box;
+    display: inline-block;
+    margin-left:auto;
+    margin-right:auto;
+    margin-bottom:0px;
+    margin-top:0px;
+    overflow:hidden;
+    border-left:solid red 0px;
+    border-right:solid red 0px;
+}
+
+#albumitem {
+    display:-moz-inline-box;
+    display: inline-block;
+    margin-right:3px;
+    margin-left:3px;
+    padding:0px;
+    float:left;
+    text-align:center;
+    border:solid red 1px;
+    overflow:hidden;
+}
+
+#albumnail {
+    display:-moz-inline-box;
+    display: inline-block;
+    margin-right:0px;
+    margin-left:0px;
+    padding:0px;
+    width:150px;
+    height:112px;
+    text-align:center;
+    border:solid red 0px;
+    overflow:hidden;
+}
+
+#description {
+    display:-moz-inline-box;
+    display: inline-block;
+    margin-right:0px;
+    margin-left:0px;
+    padding:0px;
+    width:150px;
+    text-align:center;
+    border:solid red 0px;
+    padding-bottom:2px;
+}
+
+a.nav:link { color:#000000; text-decoration:underline; }
+a.nav:visited { color:#000000; text-decoration:underline; }
+a.nav:hover { color:#FFFFFF; text-decoration:underline; background:#008000; }
+a.nav:active { color:#808000; text-decoration:underline; }

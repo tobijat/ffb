@@ -1,0 +1,59 @@
+<?
+// Copy this file to forumSQLConnect.php and fill in local credentials.
+// forumSQLConnect.php is gitignored and must not be committed.
+$host='127.0.0.1';
+$usr="YOUR_BOARD_DB_USER";
+$pwd="YOUR_BOARD_DB_PASSWORD";
+$dbase="YOUR_BOARD_DB_NAME";
+
+
+/*-------------------------------------*/
+/* create a link ($lnk)to the database */
+/* select the database for furthur use */
+/* V0.1                                */
+/* ------------------------------------*/
+
+$lnk = connect_to_db($host, $usr, $pwd);
+$db = mysql_select_db($dbase, $lnk);
+
+
+/*-------------------------------------*/
+/* connect to the database if possible */
+/* V0.1                                */
+/* ------------------------------------*/
+
+function connect_to_db($dbhost, $dbusr, $dbpwd)
+{
+  $link = mysql_connect($dbhost, $dbusr, $dbpwd);
+  if(!$link) {
+    die ('No connection possible' . mysql_error());
+  }
+
+  return $link;
+}
+
+/*-------------------------------------*/
+/* send MySql querys to the db         */
+/* V0.1                                */
+/* ------------------------------------*/
+
+function send_query($sql_query)
+{
+  $result = mysql_query($sql_query);
+
+  return $result;
+}
+
+/*-------------------------------------*/
+/* close database if needed            */
+/* V0.1                                */
+/* ------------------------------------*/
+
+function close_db_conn($link)
+{
+  mysql_close("$link");
+}
+
+
+
+?>

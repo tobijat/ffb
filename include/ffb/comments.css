@@ -1,0 +1,49 @@
+.userComment,  .userComment0, .userComment1, .userCommentAd {
+  width:95%;
+  margin-left:2%;
+  margin-bottom:5px;
+}
+
+.userComment {
+  background-color:#99CC99;
+}
+
+.userComment0 {
+  background-color:#99CCAA;
+}
+
+.userComment1 {
+  background-color:#99CC80;
+}
+
+.userCommentAd {
+  background-color:#99CC99;
+}
+
+.userCommentHead {
+  font-weight:bold;
+  font-style:italic;
+  margin-bottom:5px;
+}
+
+.userCommentBody {
+  font-style:italic;
+  text-align:block;
+   margin-bottom:2px;
+}
+
+.userCommentFooter {
+  font-size:80%;
+  margin-bottom:5px;
+  background-color:#99CC99;
+}
+
+.commentButton {
+  background-color:#99CC80;
+  font-weight:bold;
+}
+
+.commentButton:hover {
+  background-color:#99CCAA;
+  font-weight:bold;
+}

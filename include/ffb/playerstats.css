@@ -1,0 +1,275 @@
+div#statslist {
+    background-color:#CCFFCC;
+    width:100%;
+    margin-left:auto;
+    margin-right:auto;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+div#statsline {
+    width:97%;
+    margin-left:auto;
+    margin-right:auto;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    clear:both;
+    /*background-color:#99CC99;*/
+    font-size:8pt;
+}
+div#infoline {
+    width:97%;
+    margin-left:auto;
+    margin-right:auto;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    clear:both;
+    /*background-color:#99CC99;*/
+    font-size:8pt;
+}
+
+/* round Infomain (Popup) div */
+/*
+.rounddiv_infomain {
+	background:transparent;
+    width: 97%;
+    margin-right:auto;
+    margin-left:auto;
+    margin-top:5px;
+}
+*/
+div#infomain {
+    /*background-color:#99CC99;*/
+    width: 97%;
+    margin-right:auto;
+    margin-left:auto;
+    margin-top:5px;
+    padding-top:5px;
+    border:solid black 1px;
+}
+/* ***** */
+
+div#infopic {
+    width:140px;
+    float:left;
+    padding-left:5px;
+    padding-top:5px;
+    padding-bottom:5px;
+}
+div#infotext {
+    text-align:right;
+    width:340px;
+    float:left;
+}
+div#inforounds {
+    /*border: solid black 1px;*/
+    text-align:left;
+    width:480px;
+    padding-left:5px;
+    padding-top:5px;
+    padding-bottom:5px;
+    font-size:8pt;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+table.inforounds {
+    text-align:center;
+    border: solid #99CC99 1px;
+    border-collapse: collapse;
+}
+table.inforounds td {
+    padding:5px;
+    border: solid #99CC99 1px;
+    border-collapse: collapse;
+}
+table.inforounds th {
+    padding:2px;
+    border: solid #99CC99 1px;
+    border-collapse: collapse;
+}
+table.inforounds thead {
+    border: solid black 1px;
+}
+
+div#award_line {
+	background-color:#BBEEBB;
+	width:100%;
+	margin-left:auto;
+	margin-right:auto;
+	margin-top:2px;
+	margin-bottom:2px;
+	padding-top:1px;
+}
+div#award_title_symbol {
+	width:21%;
+	float:left;
+	text-align:center;
+	padding:1px;
+}
+div#award_title_elements {
+	width:78%;
+	float:left;
+	text-align:center;
+	padding:1px;
+}
+div#award_symbol {
+	width:21%;
+	float:left;
+	text-align:center;
+	padding:1px;
+	font-size:8pt;
+}
+div#award_element {
+	width:15%;
+	float:left;
+	text-align:center;
+	padding:1px;
+}
+
+
+div#statsline:hover { background-color: #99CC99; }
+div#infoline:hover { background-color: #99CC99; }
+
+div#listclear {
+    clear:both;
+}
+
+div#infobox_name {
+    width:80%;
+    float:left;
+    text-align:left;
+}
+
+div#infobox_title_image {
+    width:10%;
+    float:left;
+    text-align:center;
+    overflow:hidden;
+}
+
+div#infobox_title_text {
+	width:55%;
+	padding-top:10px;
+    float:left;
+    text-align:center;
+    font-size:12pt;
+}
+
+div#infobox_close {
+    width:20%;
+    float:right;
+    text-align:right;
+}
+
+div#statsname {
+    background-color:#BBEEBB;
+    margin-left:auto;
+    margin-right:auto;
+    padding:2px;
+    width: 97%;
+    text-align: center;
+    font-weight: bold;
+    font-size:10pt;
+    border-bottom:solid black 1px;
+}
+div#nostats {
+    width:90%;
+    text-align:center;
+    margin-left:auto;
+    margin-right:auto;
+}
+div#statssymbol {
+    width:20px;
+    float:left;
+    padding: 2px;
+}
+div#infosymbol {
+    width:8%;
+    float:left;
+    padding: 2px;
+}
+div#statsdescr {
+    width:120px;
+    float:left;
+    text-align:right;
+}
+div#infodescr {
+    width:45%;
+    float:left;
+    text-align:right;
+}
+div#statsamount {
+    width:60px;
+    float:left;
+    text-align:left;
+}
+div#statspoints {
+    float:left;
+    text-align:left;
+}
+div#infoamount {
+    width:45%;
+    float:left;
+    text-align:left;
+}
+div#matchround {
+    width:20%;
+    float:left;
+}
+div#matchhome {
+    width:49%;
+    float: left;
+    text-align:right;
+}
+div#matchguest {
+    width:49%;
+    float: left;
+    text-align:left;
+}
+
+div#listdescr {
+    width:98%;
+    text-align:left;
+    padding:2px;
+}
+div#listsymbol {
+    width: 49%;
+    float:right;
+    text-align:right;
+}
+div#listitem {
+    width:100%;
+    margin-top:5px;
+    border: solid black 1px;
+}
+
+.caption {
+	padding-top:3px;
+	padding-bottom:3px;
+}
+
+.captioncolorpoints, .captioncolorcurve, .captioncolor, .captiontext, .captioncolorpointsyellow, .captioncolorpointsred, .captioncolorgray, .captioncoloravpower {
+	display: inline;
+}
+.captioncolorpoints {
+	background: #236e23;
+}
+.captioncolorpointsyellow {
+	background: #f0f014;
+}
+.captioncolorpointsred {
+	background: #f00000;
+}
+.captioncolorgray {
+	background: #e6e1e1;
+}
+.captioncolorcurve {
+	background: black;
+}
+.captioncoloravpower {
+	background: #aff0f0;
+}
+
+.myname {
+	background-color: #CCFFCC;
+}

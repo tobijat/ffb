@@ -1,0 +1,22 @@
+<?xml version='1.0' standalone='yes'?>
+<CONFIGURATION>
+	<mail_return_address>noreply@example.com</mail_return_address>
+	<mail_reply_address>noreply@example.com</mail_reply_address>
+	<mail_from_address>Example App &lt;noreply@example.com&gt;</mail_from_address>
+	<mail_greez>Your Team</mail_greez>
+	<mail_url>http://example.com</mail_url>
+	<mail_subject_prefix>Example - </mail_subject_prefix>
+	<board_registration>1</board_registration>
+	<board_database_name>YOUR_BOARD_DB_NAME</board_database_name>
+	<board_database_pw>YOUR_BOARD_DB_PASSWORD</board_database_pw>
+	<board_database_server>127.0.0.1</board_database_server>
+	<area_prefix>ffb</area_prefix>
+    <!-- 0 == no ads are loaded; 1 == show ads; -->
+	<area_load_ads>0</area_load_ads>
+    <!-- defines which game should be selected by default for newly registered users - refers to ffb_game.game_id table in DB-->
+	<area_userregistration_default_selected_game_id>25</area_userregistration_default_selected_game_id>
+    <!-- defines after how many seconds of inactivity a user session is destroyed. 0 == infinite -->
+    <area_user_login_timeout>0</area_user_login_timeout>
+    <!-- URL where the ELO ratings can be found -->
+    <ffb_elo_url>http://www.eloratings.net/world.html</ffb_elo_url>
+</CONFIGURATION>

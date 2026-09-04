@@ -1,0 +1,37 @@
+# Local credential / config files (use the matching *.example stubs)
+/config.php
+/area_config_ffb.xml
+/area_config_soccer.xml
+/old_area_config_ffb.xml
+/classes/propel/build.properties
+/classes/propel/runtime-conf.xml
+/classes/propel/build/conf/ffb-conf.php
+/classes/propel_old/build.properties
+/classes/propel_old/runtime-conf.xml
+/classes/propel_old/build/conf/ffb-conf.php
+/classes/propel_old_old/build.properties
+/classes/propel_old_old/runtime-conf.xml
+/classes/propel_old_old/build/conf/ffb-conf.php
+/modules/ffbapi/forumSQLConnect.php
+
+# Logs and runtime
+/logs/
+*.log
+/propel.log
+/resource/fb.txt
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+*.sublime-*
+
+# Env / secrets catch-all
+.env
+.env.*
+*.pem
+*.key
+credentials.json

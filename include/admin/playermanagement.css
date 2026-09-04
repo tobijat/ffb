@@ -1,0 +1,25 @@
+div#playerlist_found {
+    width:98%;
+    background-color:#CCFFCC;
+    margin-top:5px;
+}
+
+div#playerlist_update {
+    width:98%;
+    background-color:#CCFFCC;
+    margin-top:5px;
+}
+
+div#playerlist_db {
+    width:49%;
+    float:left;
+    text-align:left;
+    margin-top:5px;
+}
+
+div#playerlist_tm {
+    width:49%;
+    float:right;
+    text-align:right;
+    margin-top:5px;
+}

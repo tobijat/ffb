@@ -1,0 +1,678 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<database name="d00817fb" defaultIdMethod="native">
+
+    <table name="web_user_details">
+        <column name="user_id" type="integer" required="true" primaryKey="true"/>
+        <column name="user_details_avatar" type="varchar" required="false" size="255"/>
+        <column name="user_details_photo" type="varchar" required="false" size="255"/>
+        <column name="user_details_website" type="varchar" required="false" size="255"/>
+        <column name="user_details_zip" type="varchar" required="false" size="255"/>
+        <column name="user_details_street" type="varchar" required="false" size="255"/>
+        <column name="user_details_city" type="varchar" required="false" size="255"/>
+        <column name="user_details_phone" type="varchar" required="false" size="255"/>
+        <column name="user_details_ffb_favourite_team" type="integer" required="false"/>
+        <column name="user_details_ffb_own_team" type="integer" required="false"/>
+        <column name="user_details_ffb_own_player" type="integer" required="false"/>
+        <column name="user_details_ffb_selected_game" type="integer" required="true"/>
+        <column name="user_details_last_update" type="timestamp" required="true"/>
+        <foreign-key foreignTable="web_user" onDelete="cascade">
+            <reference local="user_id" foreign="user_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_team" onDelete="cascade">
+            <reference local="user_details_ffb_favourite_team" foreign="team_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_team" onDelete="cascade">
+	    <reference local="user_details_ffb_own_team" foreign="team_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_player" onDelete="cascade">
+	        <reference local="user_details_ffb_own_player" foreign="player_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_game">
+	        <reference local="user_details_ffb_selected_game" foreign="game_id"/>
+        </foreign-key>
+    </table>
+
+    <table name="web_user_permissions">
+        <column name="user_id" type="integer" required="true" primaryKey="true"/>
+        <column name="user_permissions_ffb_mailservice_reminder" type="varchar" required="true" size="255"/>
+        <column name="user_permissions_ffb_mailservice_info" type="varchar" required="true" size="255"/>
+        <column name="user_permissions_ffb_facebook" type="varchar" required="true" size="255"/>
+        <column name="user_permissions_pictory_facebook" type="varchar" required="true" size="255"/>
+        <column name="user_permissions_facebook_connected" type="boolean" required="true" default="FALSE"/>
+        <column name="user_permissions_ffb_visible_profile" type="boolean" required="true" default="FALSE"/>
+        <column name="user_permissions_pictory_visible_profile" type="boolean" required="true" default="FALSE"/>
+        <foreign-key foreignTable="web_user" onDelete="cascade">
+	    <reference local="user_id" foreign="user_id"/>
+        </foreign-key>
+    </table>
+    
+    <table name="ffb_cronjob">
+        <column name="cronjob_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="cronjob_description" type="varchar" required="true" size="255"/>
+        <column name="cronjob_function" type="varchar" required="true" size="255"/>
+        <column name="cronjob_time_start" type="timestamp" required="true"/>
+        <column name="cronjob_time_end" type="timestamp" required="true"/>
+        <column name="cronjob_time_lastrun" type="timestamp" required="true"/>
+        <column name="cronjob_status" type="boolean" required="true" default="TRUE"/>
+        <column name="cronjob_interval_hours" type="integer" required="true" default="24"/>
+        <column name="cronjob_runonce" type="boolean" required="true" default="FALSE"/>
+        <column name="cronjob_runhour" type="integer" required="true" default="5"/>
+    </table>
+    
+    <table name="ffb_comments">
+        <column name="comments_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="comments_user_id" type="integer" required="true"/>
+        <column name="comments_game_id" type="integer" required="true"/>
+        <column name="comments_matchround_id" type="integer" required="true"/>
+        <column name="comments_location" type="varchar" required="true" size="255"/>
+        <column name="comments_text" type="longvarchar" required="true"/>
+        <column name="comments_date" type="timestamp" required="true"/>            
+        <foreign-key foreignTable="web_user" onDelete="cascade">
+	    <reference local="comments_user_id" foreign="user_id"/>
+	</foreign-key>
+	<foreign-key foreignTable="ffb_game" onDelete="cascade">
+	    <reference local="comments_game_id" foreign="game_id"/>
+	</foreign-key>
+	<foreign-key foreignTable="ffb_matchround" onDelete="cascade">
+	    <reference local="comments_matchround_id" foreign="matchround_id"/>
+	</foreign-key>
+    </table>
+    
+    <table name="ffb_apikey">
+        <column name="apikey_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="apikey_key" type="varchar" required="true" size="255"/>
+        <column name="apikey_ip" type="varchar" required="true" size="255"/>
+        <column name="apikey_description" type="varchar" required="true" size="255"/>
+        <column name="apikey_lastcall" type="timestamp" required="true"/>
+        <column name="apikey_status" type="boolean" required="true" default="TRUE"/>
+    </table>
+    
+    <table name="ffb_poll">
+        <column name="poll_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="poll_title" type="varchar" required="true" size="255"/>
+        <column name="poll_start" type="timestamp" required="true"/>
+        <column name="poll_end" type="timestamp" required="true"/>
+        <column name="poll_game_id" type="integer" required="true"/>
+        <column name="poll_location" type="varchar" required="true" size="255"/>
+        <column name="poll_type" type="varchar" required="true" size="255"/>
+        <column name="poll_visible" type="boolean" required="true" default="TRUE"/>
+        <foreign-key foreignTable="ffb_game">
+	    <reference local="poll_game_id" foreign="game_id"/>
+        </foreign-key>
+    </table>
+    
+    <table name="ffb_poll_result">
+        <column name="poll_result_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="poll_result_poll_id" type="integer" required="true"/>
+        <column name="poll_result_user_id" type="integer" required="true"/>
+        <column name="poll_result_poll_answer_id" type="integer" required="true"/>
+        <column name="poll_result_text" type="longvarchar" required="true"/>
+        <foreign-key foreignTable="ffb_poll">
+	    <reference local="poll_result_poll_id" foreign="poll_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_poll_answer">
+	    <reference local="poll_result_poll_answer_id" foreign="poll_answer_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="web_user">
+	    <reference local="poll_result_user_id" foreign="user_id"/>
+        </foreign-key>
+    </table>
+    
+    <table name="ffb_poll_answer">
+        <column name="poll_answer_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="poll_answer_poll_id" type="integer" required="true"/>
+        <column name="poll_answer_title" type="varchar" required="true" size="255"/>
+        <column name="poll_answer_count" type="integer" required="true"/>
+        <foreign-key foreignTable="ffb_poll">
+	    <reference local="poll_answer_poll_id" foreign="poll_id"/>
+        </foreign-key>
+    </table>
+    
+    <table name="ffb_team">
+        <column name="team_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="team_foreign_id" type="varchar" required="true" size="255"/>
+        <column name="team_name" type="varchar" required="true" size="255"/>
+        <column name="team_nationality" type="varchar" required="true" size="255"/>
+        <column name="team_avg_price" type="double" required="true"/>
+        <column name="team_num_players" type="integer" required="true"/>
+        <column name="team_status" type="boolean" required="true" default="TRUE"/>
+    </table>
+
+    <table name="ffb_player">
+        <column name="player_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="player_foreign_id" type="varchar" required="true" size="255"/>
+        <column name="player_fname" type="varchar" required="true" size="255"/>
+        <column name="player_lname" type="varchar" required="true" size="255"/>
+        <column name="player_nationality" type="varchar" required="true" size="255"/>
+        <column name="player_status" type="integer" required="true" default="0"/>
+        <column name="player_status_description" type="varchar" required="false" size="255" default=""/>
+    </table>
+
+    <table name="ffb_playerteam">
+        <column name="playerteam_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="playerteam_player_id" type="integer" required="true"/>
+        <column name="playerteam_team_id" type="integer" required="true"/>
+        <column name="playerteam_player_picture" type="varchar" required="false" size="255" default=""/>
+        <column name="playerteam_status" type="boolean" required="true" default="TRUE"/>
+        <column name="playerteam_player_price" type="double" required="true" default="0"/>
+        <column name="playerteam_player_position" type="varchar" required="true" size="255" default="d"/>
+        <column name="playerteam_date_transfer" type="timestamp" required="true"/>
+        <foreign-key foreignTable="ffb_player" onDelete="cascade">
+            <reference local="playerteam_player_id" foreign="player_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_team" onDelete="cascade">
+            <reference local="playerteam_team_id" foreign="team_id"/>
+        </foreign-key>
+    </table>
+
+    <table name="ffb_playerprice">
+            <column name="playerprice_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+            <column name="playerprice_playerteam_id" type="integer" required="true"/>
+            <column name="playerprice_matchround_id" type="integer" required="true"/>
+            <column name="playerprice_price" type="double" required="true" default="0"/>
+            <column name="playerprice_player_power" type="double" required="true" default="0"/>
+            <column name="playerprice_av_power" type="double" required="true" default="0"/>
+            <foreign-key foreignTable="ffb_playerteam" onDelete="cascade">
+                <reference local="playerprice_playerteam_id" foreign="playerteam_id"/>
+            </foreign-key>
+            <foreign-key foreignTable="ffb_matchround" onDelete="cascade">
+	        <reference local="playerprice_matchround_id" foreign="matchround_id"/>
+            </foreign-key>
+    </table>
+
+    <table name="ffb_invitation">
+        <column name="invitation_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="invitation_sender_id" type="integer" required="true"/>
+        <column name="invitation_email" type="varchar" required="true" size="255"/>
+        <column name="invitation_date" type="timestamp" required="true"/>
+        <foreign-key foreignTable="web_user" onDelete="cascade">
+            <reference local="invitation_sender_id" foreign="user_id"/>
+        </foreign-key>
+    </table>
+
+    <table name="ffb_match">
+        <column name="match_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="match_round" type="integer" required="true"/>
+        <column name="match_hometeam_id" type="integer" required="true"/>
+        <column name="match_guestteam_id" type="integer" required="true"/>
+        <column name="match_homescore" type="varchar" required="false" size="255" default=""/>
+        <column name="match_guestscore" type="varchar" required="false" size="255" default=""/>
+        <column name="match_homescore_penalty" type="varchar" required="false" size="255" default=""/>
+        <column name="match_guestscore_penalty" type="varchar" required="false" size="255" default=""/>
+        <column name="match_date" type="timestamp" required="true"/>
+        <column name="match_minutes" type="integer" required="true" default="0"/>
+        <column name="match_status" type="varchar" required="false" size="255" default=""/>
+        <column name="match_url" type="varchar" required="false" size="255" default=""/>
+        <foreign-key foreignTable="ffb_matchround" onDelete="cascade">
+            <reference local="match_round" foreign="matchround_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_team" onDelete="cascade">
+            <reference local="match_hometeam_id" foreign="team_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_team" onDelete="cascade">
+            <reference local="match_guestteam_id" foreign="team_id"/>
+        </foreign-key>
+    </table>
+
+    <table name="ffb_goal">
+        <column name="goal_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+	<column name="goal_match_id" type="integer" required="true"/>
+	<column name="goal_playerteam_id" type="integer" required="true"/>
+	<column name="goal_minute" type="integer" required="true"/>
+	<column name="goal_owngoal" type="boolean" required="true" default="FALSE"/>
+	<column name="goal_penalty" type="boolean" required="true" default="FALSE"/>
+	<column name="goal_penaltyshootout" type="boolean" required="true" default="FALSE"/>
+        <foreign-key foreignTable="ffb_match" onDelete="cascade">
+            <reference local="goal_match_id" foreign="match_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_playerteam" onDelete="cascade">
+	    <reference local="goal_playerteam_id" foreign="playerteam_id"/>
+        </foreign-key>
+    </table>
+    
+    <table name="ffb_psgoal">
+        <column name="psgoal_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+    	<column name="psgoal_match_id" type="integer" required="true"/>
+    	<column name="psgoal_playerteam_id" type="integer" required="true"/>
+    	<column name="psgoal_minute" type="integer" required="true"/>
+    	<column name="psgoal_hit" type="boolean" required="true" default="FALSE"/>
+    	<column name="psgoal_fail" type="boolean" required="true" default="FALSE"/>
+        <foreign-key foreignTable="ffb_match" onDelete="cascade">
+            <reference local="psgoal_match_id" foreign="match_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_playerteam" onDelete="cascade">
+    	    <reference local="psgoal_playerteam_id" foreign="playerteam_id"/>
+        </foreign-key>
+    </table>
+
+    <table name="ffb_matchround">
+        <column name="matchround_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="matchround_game_id" type="integer" required="true"/>
+        <column name="matchround_title" type="varchar" required="true" size="255" default="Round"/>
+        <column name="matchround_startdate" type="timestamp" required="true"/>
+        <column name="matchround_enddate" type="timestamp" required="true"/>
+        <column name="matchround_status" type="integer" required="true" default="1"/>
+        <column name="matchround_credits" type="double" required="true" default="0"/>
+        <column name="matchround_max_players_from_team" type="integer" required="true" default="0"/>
+        <foreign-key foreignTable="ffb_game" onDelete="cascade">
+            <reference local="matchround_game_id" foreign="game_id"/>
+        </foreign-key>
+    </table>
+
+    <table name="ffb_news">
+        <column name="news_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="news_title" type="varchar" required="true" size="255"/>
+        <column name="news_text" type="longvarchar" required="true"/>
+        <column name="news_date" type="timestamp" required="true"/>
+        <column name="news_priority" type="integer" required="true" default="0"/>
+        <column name="news_game_id" type="integer" required="true" default="0"/>
+        <column name="news_symbol" type="varchar" required="true" size="255"/>
+        <foreign-key foreignTable="ffb_game" onDelete="cascade">
+            <reference local="news_game_id" foreign="game_id"/>
+        </foreign-key>
+    </table>
+
+    <table name="ffb_game">
+        <column name="game_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="game_title" type="varchar" required="true" size="255" default="Round"/>
+        <column name="game_visible" type="boolean" required="true" default="FALSE"/>
+        <column name="game_archive" type="boolean" required="true" default="FALSE"/>
+        <column name="game_countdown" type="boolean" required="true" default="FALSE"/>
+        <column name="game_status" type="boolean" required="true" default="FALSE"/>
+        <column name="game_description" type="longvarchar" required="false"/>
+        <column name="game_symbol" type="varchar" required="true" size="255" default="game_symbol_na.png"/>
+    </table>
+
+    <table name="ffb_playerstats">
+         <column name="playerstats_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+         <column name="playerstats_playerteam_id" type="integer" required="true"/>
+         <column name="playerstats_match_id" type="integer" required="true"/>
+         <column name="playerstats_matchround_id" type="integer" required="true"/>
+         <column name="playerstats_goals" type="integer" required="true" default="0"/>
+         <column name="playerstats_assists" type="integer" required="true" default="0"/>
+         <column name="playerstats_minutes" type="integer" required="true" default="0"/>
+         <column name="playerstats_minute_in" type="integer" required="true" default="0"/>
+         <column name="playerstats_minute_out" type="integer" required="true" default="0"/>
+         <column name="playerstats_cards" type="varchar" required="true" size="255" default=""/>
+         <column name="playerstats_owngoals" type="integer" required="true" default="0"/>
+         <column name="playerstats_penaltieslost" type="integer" required="true" default="0"/>
+         <column name="playerstats_penaltiessaved" type="integer" required="true" default="0"/>
+         <column name="playerstats_penaltyshootout_save" type="integer" required="true" default="0"/>
+         <column name="playerstats_penaltyshootout_lost" type="integer" required="true" default="0"/>
+         <column name="playerstats_penaltyshootout_hit" type="integer" required="true" default="0"/>
+         <column name="playerstats_score_goals" type="integer" required="true" default="0"/>
+         <column name="playerstats_score_assists" type="integer" required="true" default="0"/>
+         <column name="playerstats_score_minutes" type="integer" required="true" default="0"/>
+         <column name="playerstats_score_cards" type="integer" required="true" default="0"/>
+         <column name="playerstats_score_owngoals" type="integer" required="true" default="0"/>
+         <column name="playerstats_score_penaltieslost" type="integer" required="true" default="0"/>
+         <column name="playerstats_score_penaltiessaved" type="integer" required="true" default="0"/>
+         <column name="playerstats_score_oppgoals" type="integer" required="true" default="0"/>
+         <column name="playerstats_score_nooppgoals" type="integer" required="true" default="0"/>
+         <column name="playerstats_score_high_loss" type="integer" required="true" default="0"/>
+         <column name="playerstats_score_high_win" type="integer" required="true" default="0"/>
+         <column name="playerstats_score_penaltyshootout_save" type="integer" required="true" default="0"/>
+         <column name="playerstats_score_penaltyshootout_lost" type="integer" required="true" default="0"/>
+         <column name="playerstats_score_penaltyshootout_hit" type="integer" required="true" default="0"/>
+         <column name="playerstats_score" type="integer" required="true" default="0"/>
+         <foreign-key foreignTable="ffb_playerteam" onDelete="cascade">
+            <reference local="playerstats_playerteam_id" foreign="playerteam_id"/>
+         </foreign-key>
+         <foreign-key foreignTable="ffb_match" onDelete="cascade">
+            <reference local="playerstats_match_id" foreign="match_id"/>
+         </foreign-key>
+         <foreign-key foreignTable="ffb_matchround" onDelete="cascade">
+            <reference local="playerstats_matchround_id" foreign="matchround_id"/>
+         </foreign-key>
+    </table>
+
+    <table name="web_mail">
+        <column name="mail_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="mail_date" type="timestamp" required="true"/>
+        <column name="mail_sender" type="varchar" size="255" required="true"/>
+        <column name="mail_to" type="longvarchar" required="true"/>
+        <column name="mail_cc" type="longvarchar" required="true"/>
+        <column name="mail_bc" type="longvarchar" required="true"/>
+        <column name="mail_subject" type="varchar" required="true" size="255"/>
+        <column name="mail_text" type="longvarchar" required="true"/>
+        <column name="mail_num_reciepients" type="integer" required="true"/>
+        <column name="mail_criteria" type="varchar" required="true" size="255"/>
+    </table>
+
+    <table name="ffb_playerfid">
+        <column name="playerfid_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="playerfid_playerteam_id" type="integer" required="true"/>
+        <column name="playerfid_team_id" type="integer" required="true"/>
+        <column name="playerfid_fid_foe" type="varchar" required="true" size="255"/>
+        <column name="playerfid_fid_fifa" type="varchar" required="true" size="255"/>
+        <column name="playerfid_fid_tm" type="varchar" required="true" size="255"/>
+        <column name="playerfid_fid_uefa" type="varchar" required="true" size="255"/>
+        <column name="playerfid_fid_wf" type="varchar" required="true" size="255"/>
+        <column name="playerfid_name_foe" type="varchar" required="true" size="255"/>
+	<column name="playerfid_name_fifa" type="varchar" required="true" size="255"/>
+	<column name="playerfid_name_tm" type="varchar" required="true" size="255"/>
+        <column name="playerfid_name_uefa" type="varchar" required="true" size="255"/>
+        <column name="playerfid_name_wf" type="varchar" required="true" size="255"/>
+        <foreign-key foreignTable="ffb_playerteam">
+    	    <reference local="playerfid_playerteam_id" foreign="playerteam_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_team">
+	    <reference local="playerfid_team_id" foreign="team_id"/>
+        </foreign-key>
+    </table>
+    
+    <table name="ffb_teamfid">
+        <column name="teamfid_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="teamfid_team_id" type="integer" required="true"/>
+        <column name="teamfid_fid_foe" type="varchar" required="true" size="255"/>
+        <column name="teamfid_fid_tm" type="varchar" required="true" size="255"/>
+        <column name="teamfid_fid_wf" type="varchar" required="true" size="255"/>
+        <column name="teamfid_name_foe" type="varchar" required="true" size="255"/>
+        <column name="teamfid_name_tm" type="varchar" required="true" size="255"/>
+        <column name="teamfid_name_wf" type="varchar" required="true" size="255"/>
+        <column name="teamfid_url_foe" type="varchar" required="true" size="255"/>
+        <column name="teamfid_url_tm" type="varchar" required="true" size="255"/>
+        <column name="teamfid_url_wf" type="varchar" required="true" size="255"/>
+        <foreign-key foreignTable="ffb_team">
+       	    <reference local="teamfid_team_id" foreign="team_id"/>
+        </foreign-key>
+    </table>
+
+    <table name="ffb_userteam">
+        <column name="userteam_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="userteam_user_id" type="integer" required="true"/>
+        <column name="userteam_date" type="timestamp" required="true"/>
+        <column name="userteam_player_id1" type="integer" required="true"/>
+        <column name="userteam_player_id2" type="integer" required="true"/>
+        <column name="userteam_player_id3" type="integer" required="true"/>
+        <column name="userteam_player_id4" type="integer" required="true"/>
+        <column name="userteam_player_id5" type="integer" required="true"/>
+        <column name="userteam_player_id6" type="integer" required="true"/>
+        <column name="userteam_player_id7" type="integer" required="true"/>
+        <column name="userteam_player_id8" type="integer" required="true"/>
+        <column name="userteam_player_id9" type="integer" required="true"/>
+        <column name="userteam_player_id10" type="integer" required="true"/>
+        <column name="userteam_player_id11" type="integer" required="true"/>
+        <column name="userteam_price" type="decimal" required="true" default="0"/>
+        <column name="userteam_matchround_id" type="integer" required="true"/>
+        <column name="userteam_score" type="integer" required="true" default="-1"/>
+        <column name="userteam_wc_points" type="integer" required="true" default="0"/>
+        <foreign-key foreignTable="web_user">
+            <reference local="userteam_user_id" foreign="user_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_playerteam" onDelete="setnull">
+            <reference local="userteam_player_id1" foreign="playerteam_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_playerteam" onDelete="setnull">
+            <reference local="userteam_player_id2" foreign="playerteam_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_playerteam" onDelete="setnull">
+            <reference local="userteam_player_id3" foreign="playerteam_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_playerteam" onDelete="setnull">
+            <reference local="userteam_player_id4" foreign="playerteam_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_playerteam" onDelete="setnull">
+            <reference local="userteam_player_id5" foreign="playerteam_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_playerteam" onDelete="setnull">
+            <reference local="userteam_player_id6" foreign="playerteam_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_playerteam" onDelete="setnull">
+            <reference local="userteam_player_id7" foreign="playerteam_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_playerteam" onDelete="setnull">
+            <reference local="userteam_player_id8" foreign="playerteam_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_playerteam" onDelete="setnull">
+            <reference local="userteam_player_id9" foreign="playerteam_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_playerteam" onDelete="setnull">
+            <reference local="userteam_player_id10" foreign="playerteam_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_playerteam" onDelete="setnull">
+            <reference local="userteam_player_id11" foreign="playerteam_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_matchround" onDelete="cascade">
+            <reference local="userteam_matchround_id" foreign="matchround_id"/>
+        </foreign-key>
+    </table>
+
+    <table name="ffb_userscore">
+        <column name="userscore_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="userscore_user_id" type="integer" required="true"/>
+        <column name="userscore_game_id" type="integer" required="true"/>
+        <column name="userscore_total" type="integer" required="true" default="0"/>
+        <column name="userscore_wc_points" type="integer" required="true" default="0"/>
+        <foreign-key foreignTable="web_user" onDelete="cascade">
+            <reference local="userscore_user_id" foreign="user_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_game" onDelete="cascade">
+            <reference local="userscore_game_id" foreign="game_id"/>
+        </foreign-key>
+    </table>
+
+    <table name="ffb_admin">
+        <column name="admin_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="admin_user_id" type="integer" required="true"/>
+        <column name="admin_game_id" type="integer" required="true"/>
+        <foreign-key foreignTable="web_user" onDelete="cascade">
+            <reference local="admin_user_id" foreign="user_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_game" onDelete="cascade">
+            <reference local="admin_game_id" foreign="game_id"/>
+        </foreign-key>
+    </table>
+
+    <table name="ffb_rss">
+        <column name="ffb_rss_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="ffb_rss_title" type="longvarchar" required="true"/>
+        <column name="ffb_rss_description" type="longvarchar" required="true"/>
+        <column name="ffb_rss_category" type="longvarchar" required="true"/>
+        <column name="ffb_rss_guid" type="varchar" required="true"/>
+        <column name="ffb_rss_author" type="varchar" required="true"/>
+        <column name="ffb_rss_origin_id" type="integer" required="true"/>
+        <column name="ffb_rss_pubdate" type="timestamp" required="true"/>
+    </table>
+
+    <table name="ffb_rss_category">
+        <column name="ffb_rss_category_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="ffb_rss_category_name" type="longvarchar" required="true"/>
+    </table>
+
+    <table name="web_log">
+        <column name="log_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="log_user_id" type="integer" required="true"/>
+        <column name="log_user_nickname" type="varchar" size="255" required="true"/>
+        <column name="log_user_ip" type="varchar" size="255" required="true"/>
+        <column name="log_module" type="varchar" size="255" required="true"/>
+        <column name="log_class" type="varchar" size="255" required="true"/>
+        <column name="log_event" type="varchar" size="255" required="true"/>
+        <column name="log_presenter" type="varchar" size="255" required="true"/>
+        <column name="log_subdomain" type="varchar" size="255" required="true"/>
+        <column name="log_date" type="timestamp" required="true"/>
+        <foreign-key foreignTable="web_user" onDelete="cascade">
+            <reference local="log_user_id" foreign="user_id"/>
+        </foreign-key>
+    </table>
+
+    <table name="ffb_options">
+        <column name="options_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="options_game_id" type="integer" required="true"/>
+
+        <column name="options_score_minutes" type="integer" required="true"/>
+        <column name="options_score_minutes_treshold" type="integer" required="true"/>
+        <column name="options_score_minutes_gt" type="integer" required="true"/>
+        <column name="options_score_minutes_lt" type="integer" required="true"/>
+        <column name="options_score_minutes_lt30" type="integer" required="true"/>
+        <column name="options_score_goals_g" type="integer" required="true"/>
+        <column name="options_score_goals_d" type="integer" required="true"/>
+        <column name="options_score_goals_m" type="integer" required="true"/>
+        <column name="options_score_goals_s" type="integer" required="true"/>
+        <column name="options_score_assists" type="integer" required="true"/>
+        <column name="options_score_no_oppgoals_g" type="integer" required="true"/>
+        <column name="options_score_no_oppgoals_d" type="integer" required="true"/>
+        <column name="options_score_no_oppgoals_m" type="integer" required="true"/>
+        <column name="options_score_oppgoals_g" type="integer" required="true"/>
+        <column name="options_score_oppgoals_d" type="integer" required="true"/>
+        <column name="options_score_owngoals" type="integer" required="true"/>
+        <column name="options_score_card_y" type="integer" required="true"/>
+        <column name="options_score_card_r" type="integer" required="true"/>
+        <column name="options_score_card_yr" type="integer" required="true"/>
+        <column name="options_score_penalty_saved" type="integer" required="true"/>
+        <column name="options_score_penalty_lost" type="integer" required="true"/>
+        <column name="options_score_penaltyshootout_save" type="integer" required="true"/>
+        <column name="options_score_penaltyshootout_lost" type="integer" required="true"/>
+        <column name="options_score_penaltyshootout_hit" type="integer" required="true"/>
+        <column name="options_score_high_loss" type="integer" required="true"/>
+        <column name="options_score_high_win" type="integer" required="true"/>
+        <column name="options_score_high_win_loss_treshold" type="integer" required="true"/>
+
+        <column name="options_status_error" type="integer" required="true"/>
+        <column name="options_status_error_validation" type="integer" required="true"/>
+        <column name="options_status_success" type="integer" required="true"/>
+        <column name="options_status_success_insert" type="integer" required="true"/>
+        <column name="options_status_success_update" type="integer" required="true"/>
+        <column name="options_status_success_delete" type="integer" required="true"/>
+
+        <column name="options_lineup_max_players" type="integer" required="true"/>
+        <column name="options_lineup_max_credits" type="integer" required="true"/>
+        <column name="options_lineup_max_players_team" type="integer" required="true"/>
+        <column name="options_lineup_min_g" type="integer" required="true"/>
+        <column name="options_lineup_min_d" type="integer" required="true"/>
+        <column name="options_lineup_min_m" type="integer" required="true"/>
+        <column name="options_lineup_min_s" type="integer" required="true"/>
+        <column name="options_lineup_max_g" type="integer" required="true"/>
+        <column name="options_lineup_max_d" type="integer" required="true"/>
+        <column name="options_lineup_max_m" type="integer" required="true"/>
+        <column name="options_lineup_max_s" type="integer" required="true"/>
+
+        <column name="options_game_rankmode" type="varchar" required="true" size="255" default="wc"/>
+        <column name="options_game_pricemode" type="varchar" required="true" size="255" default="dynamic"/>
+        <column name="options_game_pointsmode" type="varchar" required="true" size="255" default="new"/>
+        <column name="options_game_wcpoints" type="varchar" required="true" size="255" default="new"/>
+        <column name="options_game_remind_hours_before" type="integer" required="true" default="0"/>
+
+        <foreign-key foreignTable="ffb_game" onDelete="cascade">
+            <reference local="options_game_id" foreign="game_id"/>
+        </foreign-key>
+
+    </table>
+
+    <table name="web_user">
+        <column name="user_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="user_nickname" type="varchar" required="true" size="255"/>
+        <column name="user_password" type="varchar" required="true" size="255"/>
+        <column name="user_email" type="varchar" required="true" size="255"/>
+        <column name="user_fname" type="varchar" required="true" size="255"/>
+        <column name="user_lname" type="varchar" required="true" size="255"/>
+        <column name="user_gender" type="varchar" required="false" size="255" default=""/>
+        <column name="user_status" type="varchar" required="true" size="255" default="active"/>
+        <column name="user_admin" type="boolean" required="true" default="FALSE"/>
+        <column name="user_facebook_id" type="varchar" required="true" size="255"/>
+        <column name="user_nationality" type="varchar" required="false" size="255"/>
+        <column name="user_date_birth" type="timestamp" required="false"/>
+        <column name="user_ip" type="varchar" required="true" size="255"/>
+        <column name="user_lip" type="varchar" required="true" size="255"/>
+        <column name="user_date_register" type="timestamp" required="false"/>
+        <column name="user_date_llogin" type="timestamp" required="false"/>
+        <column name="user_date_laction" type="timestamp" required="false"/>
+        <column name="user_activation_code" type="varchar" required="true" size="255"/>
+        <column name="user_mailservice" type="varchar" required="true" size="255"/>
+    </table>
+
+    <table name="ffb_user_award">
+        <column name="user_award_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="user_award_name" type="varchar" required="true" size="255"/>
+        <column name="user_award_image" type="varchar" required="true" size="255"/>
+        <column name="user_award_description" type="longvarchar" required="true"/>
+        <column name="user_award_sortflag" type="integer" required="true"/>
+    </table>
+
+    <table name="ffb_user_award_defines">
+        <column name="user_award_defines_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="user_award_defines_award_id" type="integer" required="true"/>
+        <column name="user_award_defines_rank" type="integer" required="true"/>
+        <column name="user_award_defines_rank_name" type="varchar" required="true" size="255"/>
+        <column name="user_award_defines_aim" type="varchar" required="true" size="255"/>
+        <column name="user_award_defines_aim_dbtable" type="varchar" required="true" size="255"/>
+        <column name="user_award_defines_aim_operator" type="varchar" required="true" size="255"/>
+        <column name="user_award_defines_aim_count" type="integer" required="true" />
+        <column name="user_award_defines_aim_automatic" type="boolean" required="true" default="TRUE"/>
+        <column name="user_award_defines_aim_function_name" type="varchar" required="true" size="255"/>
+        <column name="user_award_defines_image" type="varchar" required="true" size="255"/>
+        <column name="user_award_defines_facebook_description" type="varchar" required="true" size="255"/>
+        <column name="user_award_defines_description" type="longvarchar" required="true"/>
+        <foreign-key foreignTable="ffb_user_award" onDelete="cascade">
+	    <reference local="user_award_defines_award_id" foreign="user_award_id"/>
+        </foreign-key>
+    </table>
+
+    <table name="ffb_user_award_finished">
+        <column name="user_award_finished_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="user_award_finished_user_id" type="integer" required="true"/>
+        <column name="user_award_finished_award_defines_id" type="integer" required="true"/>
+        <column name="user_award_finished_date" type="timestamp" required="false"/>
+        <column name="user_award_finished_facebook_stream_id" type="varchar" required="true" size="255"/>
+        <foreign-key foreignTable="web_user" onDelete="cascade">
+    	    <reference local="user_award_finished_user_id" foreign="user_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_user_award_defines" onDelete="cascade">
+	    <reference local="user_award_finished_award_defines_id" foreign="user_award_defines_id"/>
+        </foreign-key>
+    </table>
+
+    <table name="web_admin">
+        <column name="admin_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="admin_user_id" type="integer" required="true"/>
+        <column name="admin_section" type="varchar" size="255" required="true"/>
+        <column name="admin_level" type="integer" required="true"/>
+        <column name="admin_status" type="varchar" size="255" required="true"/>
+        <foreign-key foreignTable="web_user" onDelete="cascade">
+            <reference local="admin_user_id" foreign="user_id"/>
+        </foreign-key>
+    </table>
+
+    <table name="ffb_ads">
+    	<column name="ads_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+    	<column name="ads_name" type="varchar" required="true" size="255"/>
+    	<column name="ads_code" type="longvarchar" required="true"/>
+    </table>
+
+    <table name="ffb_ads_slot">
+        <column name="ads_slot_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="ads_slot_name" type="varchar" required="true" size="255"/>
+        <column name="ads_slot_css_class" type="varchar" required="true" size="255"/>
+    </table>
+
+    <table name="ffb_ads_allocation">
+        <column name="ads_allocation_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="ads_allocation_ads_id" type="integer" required="true"/>
+        <column name="ads_allocation_slot_id" type="integer" required="true"/>
+        <column name="ads_allocation_game_id" type="integer" required="true"/>
+        <column name="ads_allocation_ad_count" type="integer" required="true"/>
+        <column name="ads_allocation_ad_max" type="integer" required="true"/>
+        <column name="ads_allocation_ad_priority" type="integer" required="true"/>
+        <column name="ads_allocation_start" type="timestamp" required="false"/>
+        <column name="ads_allocation_end" type="timestamp" required="false"/>
+        <foreign-key foreignTable="ffb_ads" onDelete="cascade">
+	    <reference local="ads_allocation_ads_id" foreign="ads_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_ads_slot" onDelete="cascade">
+	    <reference local="ads_allocation_slot_id" foreign="ads_slot_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="ffb_game" onDelete="cascade">
+	    <reference local="ads_allocation_game_id" foreign="game_id"/>
+        </foreign-key>
+    </table>
+
+    <table name="ffb_no_ads">
+        <column name="no_ads_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="no_ads_user_id_ip" type="varchar" required="true" size="255"/>
+	<column name="no_ads_slot_id" type="integer" required="true"/>
+	<foreign-key foreignTable="ffb_ads_slot" onDelete="cascade">
+	    <reference local="no_ads_slot_id" foreign="ads_slot_id"/>
+        </foreign-key>
+    </table>
+
+</database>

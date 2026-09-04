@@ -1,0 +1,58 @@
+div#playerlist_found {
+    width:98%;
+    background-color:#CCFFCC;
+    margin-top:5px;
+}
+
+div#playerlist_update {
+    width:98%;
+    background-color:#CCFFCC;
+    margin-top:5px;
+}
+
+div#playerlist_left {
+    width:49%;
+    float:left;
+}
+
+div#playerlist_right {
+    width:49%;
+    float:left;
+}
+
+div.player_div {
+    width:150px;
+    margin-top:2px;
+    margin-bottom:2px;
+    padding-left:2px;
+    padding-right:2px;
+    border: solid black 1px;
+}
+
+div#playerlist_home_db {
+    width:200px;
+    float:left;
+    text-align:left;
+    margin-top:5px;
+}
+
+div#playerlist_home_fifa {
+    width:300px;
+    float:left;
+    text-align:left;
+    margin-top:5px;
+}
+
+div#playerlist_guest_db {
+    width:200px;
+    float:left;
+    text-align:left;
+    margin-top:5px;
+}
+
+div#playerlist_guest_fifa {
+    width:300px;
+    float:left;
+    text-align:left;
+    margin-top:5px;
+}

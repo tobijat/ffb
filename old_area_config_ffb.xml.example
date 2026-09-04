@@ -1,0 +1,14 @@
+<?xml version='1.0' standalone='yes'?>
+<CONFIGURATION>
+	<mail_return_address>noreply@example.com</mail_return_address>
+	<mail_reply_address>noreply@example.com</mail_reply_address>
+	<mail_from_address>Example App&lt;noreply@example.com&gt;</mail_from_address>
+	<mail_greez>Your Team</mail_greez>
+	<mail_subject_prefix>Example - </mail_subject_prefix>
+	<board_registration>1</board_registration>
+	<board_database_name>YOUR_BOARD_DB_NAME</board_database_name>
+	<board_database_pw>YOUR_BOARD_DB_PASSWORD</board_database_pw>
+	<board_database_server>127.0.0.1</board_database_server>
+	<area_prefix>ffb</area_prefix>
+	<area_load_ads>1</area_load_ads>
+</CONFIGURATION>

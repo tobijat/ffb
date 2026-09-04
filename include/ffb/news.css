@@ -1,0 +1,11 @@
+#news_item {
+    text-align:justify;
+    border:dashed black 1px;
+    padding:5px;
+    margin-top:5px;
+}
+#news_items {
+}
+#news_items_title {
+    font-size:12pt;
+}

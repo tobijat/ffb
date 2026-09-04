@@ -1,0 +1,1192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html>
+<!-- blue Version 7.0.0.10  --><!-- Silbergrau blue, (c) Silbergrau Consulting &amp; Software GmbH, Linz, AUSTRIA 2000-2010, all rights reserved. (blue@silbergrau.com, www.silbergrau.com)
+ Licensed exclusively for Silbergrau Consulting &amp; Software GmbH
+ ** DEVELOPMENT LICENSE ONLY, not to be used in production systems  -->
+
+
+<head>
+    <script type="text/javascript" src="/fv/javascript/rssticker/rssticker_src.js?awVerband=B_">
+	/***********************************************
+	 * RSS Pausing Scroller- cp Dynamic Drive (http://www.dynamicdrive.com)
+	 * This notice MUST stay intact for legal use
+	 * Visit http://www.dynamicdrive.com/dynamicindex17/rsspausescroller/ for source code and documentation
+	 ***********************************************/
+	</script>
+
+	  <script language="JavaScript" type="text/JavaScript">
+	//<![CDATA[
+    function grid_select(url, reference) {
+      if( typeof(reference) != "undefined" && reference !=  "") {
+        document.location=url+"&cal_id="+reference;
+      } else {
+        alert('Bitte zuerst Zeile zur Bearbeitung markieren.');
+      }
+    }
+    function appendSelectedGridCalId(link, reference) {
+      hideProgressBar();
+      if( typeof(reference) != "undefined" && reference !=  "") {
+        link.href += "&cal_id=" + reference;
+        //window.open(url+"&cal_id="+reference, '_blank');
+        if (window.event) { window.event.returnValue=true; }
+        return true;
+      } else {
+        alert('Bitte zuerst Zeile zur Bearbeitung markieren.');
+        if (window.event) { window.event.returnValue=false; }
+        return false;
+      }
+    }
+	//]]>
+  </script>
+
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" language="javascript" src="/fv/javascript/combined/dhtml_pink_cookies.js?awVerband=B_"></script>
+    <script type="text/javascript" language="javascript" src="/fv/javascript/XulMenu.js?awVerband=B_"></script>
+    
+    
+    <script type="text/javascript" src="/fv/javascript/jquery/jquery-1.3.2.min.js"></script>
+ 	<script type="text/javascript" src="/fv/javascript/jquery/jquery.cycle-2.73.all.js"></script>
+    
+	<title>Fussball Online</title>
+
+	
+	    <link rel="stylesheet" type="text/css" href="/fv/styles/O/menu_menuStyles_ticker_portalVerein.css?awVerband=B_" />
+    
+     
+    
+    
+</head>
+
+<body style="margin: 0">
+	
+	
+	
+	
+
+	
+		<table width="100%" class="headerPortalVerein" cellpadding="0" cellspacing="0">
+	<tr>
+		
+			<td width="89" valign="middle" align="center">
+				<table width="100%" height="99" cellpadding="0" cellspacing="0">
+					<tr><td align="right" id="logo"><img alt='logo_ori.gif' border='0' src='/netzwerk/imagedownload/379402779304830775_458057073471424510-89-70-PSvh9d5c.gif?awVerband=B_'/></td></tr>
+					<tr><td style="vertical-align: bottom;"><img src="/fv/images/portal/neutral/header_01_neu_bottom.jpg" alt=""/></td></tr>
+				</table>
+			</td>
+			<td width="213"><img src="/fv/images/portal/neutral/header_01_neu_right.jpg" alt=""/></td>
+			<td id="centerHeader">
+				<div align="center">
+					SV Eberau
+				</div>
+			</td>
+			<td width="333"><img src="/fv/images/portal/neutral/header_05.jpg" alt=""/></td>
+		
+		
+		
+	</tr>
+</table>
+	
+
+	<table width="100%" cellpadding="0" cellspacing="0" >
+		<tr>
+		  <td colspan="2">
+			<table width="100%" cellpadding="0" cellspacing="0">
+			<tr>
+			  <td height="15" valign="top" class="channelleiste">
+			    <table width="100%" border="0" cellpadding="0" cellspacing="0">
+			      <tr>
+			        <td>
+					  <table cellspacing="0" cellpadding="0" id="menu1" class="XulMenu">
+					    <tr>
+					      <?xml version="1.0" encoding="UTF-8"?>
+					      <td>
+					    	<a class="button" target="_top" href="/fv/portal/verein/aktuelles.pu?verbandKuerzel=B&amp;awVerband=B_&amp;vereinNr=7149">AKTUELLES</a>
+					      </td>
+					      <td>
+					    	<a class="button" target="_top">VEREIN</a>
+					    	<div class="section">
+						    	<a class="item" target="_top" href="/fv/portal/verein/displayFunktionaere.pu?verbandKuerzel=B&amp;awVerband=B_&amp;vereinNr=7149">Funktion&auml;re</a>
+						    	<a class="item" target="_top" href="/fv/portal/verein/displayTrainer.pu?verbandKuerzel=B&amp;awVerband=B_&amp;vereinNr=7149">Trainer</a>
+						    	
+						    	<a class="item" target="_top" href="/fv/portal/verein/stammdaten/displayStammdaten.pu?verbandKuerzel=B&amp;awVerband=B_&amp;vereinNr=7149">Vereinsdaten</a>
+					    	</div>
+					      </td>
+						  <td>
+							<a class="button" target="_top" href="/fv/portal/verein/displayMannschaften.pu?verbandKuerzel=B&amp;awVerband=B_&amp;vereinNr=7149">MANNSCHAFTEN</a>
+						  </td>
+						  <td>
+						  	
+						  	
+						  	
+						  		
+								<a class="button" target="_top" href="/fv/portal/verein/displaySportplatz.pu?verbandKuerzel=B&amp;awVerband=B_&amp;vereinNr=7149&amp;spielort=475275713|231479585182718034">SPORTPLATZ</a>
+							
+						  </td>
+						  <td>
+							<a class="button" target="_top" href="/fv/datenserviceVerein/displayDatenservice.pu?verbandKuerzel=B&amp;awVerband=B_&amp;vereinNr=7149">DATENSERVICE</a>
+						  </td>
+						  <td>
+							<a class="button" target="_top" href="http://www.bfv.at" >ZUM VERBAND...</a>
+						  </td>
+				    	</tr>
+				  	  </table>
+				  	</td>
+				  </tr>
+			    </table>
+			  </td>
+			</tr>
+		    </table>
+		  </td>
+		</tr>
+		<tr>
+			<td width="100%" style="padding-top:2px; vertical-align: top;" class="contentBorderLeft">
+				
+					    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td valign="top" align="left">
+      <table width="100%">
+        <tr>
+          <th class="headline" >
+		    Kampfmannschaft
+    	    
+	      	  &nbsp;-&nbsp;
+		 	  II. Liga Süd
+		    
+          </th>
+        </tr>
+        <tr>
+          <td class="infoBody" >
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+#mannschaftsSponsorLeft {
+/*	width: 100%; */
+	text-align: left;
+}
+#mannschaftsSponsorRight {
+/*	width: 100%; */
+	text-align: right;
+}
+</style>
+
+<style type="text/css">
+	div.fadeMannschaft1 ul,
+	div.fadeMannschaft2 ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		text-align: left;
+	}
+</style>
+
+
+<script type="text/javascript">
+	$(document).ready(function(){
+		
+			$('.fadeMannschaft1 ul').cycle({ 
+				speed:   3000,
+				timeoutFn: calculateTimeoutFadeMannschaft1
+			});
+		
+			$('.fadeMannschaft2 ul').cycle({ 
+				speed:   3000,
+				timeoutFn: calculateTimeoutFadeMannschaft2
+			});
+		
+
+	});
+
+	function calculateTimeoutFadeMannschaft(listName) {
+	    var actListItem = document.getElementById(listName);
+	    var timeout = parseInt(actListItem.getAttribute("timeout"));
+	    if (timeout>0) {
+		    return timeout*1000;
+	    }
+	    return 5000; 
+	}
+
+	
+				function calculateTimeoutFadeMannschaft1(currElement, nextElement, opts, isForward) { 
+				    var index = opts.currSlide;
+					var listName = "fadeMannschaft_572412372767515488-"+index;
+			
+					return calculateTimeoutFadeMannschaft(listName);
+				}
+			
+				function calculateTimeoutFadeMannschaft2(currElement, nextElement, opts, isForward) { 
+				    var index = opts.currSlide;
+					var listName = "fadeMannschaft_572412372767515488-"+index;
+			
+					return calculateTimeoutFadeMannschaft(listName);
+				}
+			
+</script>
+
+
+<table class="kaderTable"> 
+  <tbody>
+  
+  
+  <tr>
+    <td align="center" colspan="6"> 
+      <table>
+        <tr>
+
+          <td width="20%" >
+	        <table>
+	          <tr>
+	            <td id="specialRow" align="center" >
+	          	    <div id="kaderHeader">Hauptsponsor</div>
+	                <div class="fadeMannschaft1">
+	                	
+				    </div>
+	                <div>&nbsp;</div>
+	            </td>
+	          </tr>
+	        </table>
+          </td>
+          <td valign="top" align="center">
+	        <table>
+	          <tbody>
+	            <tr>
+
+
+ 	      
+	        
+	          <td align="center" id="specialRow" >
+	            
+	            <div id="kaderHeader">Trainer</div>
+	            <div>
+			      <table >
+	            	<tr>
+	          	      <td class="portalImage">	        
+  	                    <img alt='Krancz_Willi.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_574309109503445070-84-105-0nFIZd.JPG?awVerband=B_'/>
+  	                  </td>
+  	                </tr>
+  	              </table>
+	            </div>
+	            <div>
+	        	  <a class="portalLink" href="/fv/portal/verein/selectTrainer.pu?trainerType=0&trainerOid=100086|576443093541510260&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">
+	                Krancz&nbsp;
+	                Wilhelm&nbsp;
+	              </a>
+	            </div>
+	          </td>
+	        
+	      
+          
+            
+              <td align="center" id="specialRow">
+                
+                <div id="kaderHeader">Co-Trainer</div>
+                <div>
+			      <table>
+	        	    <tr>
+	          	      <td class="portalImage">	        
+  	                    <img alt='Jandrasits_Werner Kopie.jpg' border='0' src='/netzwerk/imagedownload/379402779304830775_510963469014421115-84-105-4mFEwtfB.jpg?awVerband=B_'/>
+  	                  </td>
+  	               </tr>
+  	              </table>
+                </div>
+                <div>
+                  <a class="portalLink" href="/fv/portal/verein/selectTrainer.pu?trainerType=1&trainerOid=100086|576443093541510261&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">
+                    Jandrasits&nbsp;
+                    Werner&nbsp;
+                  </a>
+                </div>
+              </td>
+            
+          
+	      
+
+
+	            </tr>
+	          </tbody>
+  	        </table>
+	      </td>
+	      <td width="20%" align="right" rowspan="3">
+	        <table>
+	          <tr>
+	            <td id="specialRow" align="center" >
+	          	    <div id="kaderHeader">Nebensponsor</div>
+	                <div class="fadeMannschaft2">
+		                
+				    </div>
+	              	<div>&nbsp;</div>
+	            </td>
+	          </tr>
+	        </table>
+	      </td>
+
+        </tr>
+      </table>
+    </td>
+  </tr>  
+  
+  
+
+  <tr><td align="center" colspan="6">
+    <div id="kaderHeader">Tor</div>
+  </td></tr>
+  
+  <tr>
+  <td align="center" colspan="6"> 
+    <table >
+      <tr>
+        
+          <td align="center" id="specialRow" >
+	        <div>
+      		  <table>
+        	    <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Alber_Armin.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_517408196546068739-84-105-F0Ed2Fzr.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	            </tr>
+ 	          </table>
+	        </div>
+	        <div>
+	          <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576438441555057325&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Alber&nbsp;Armin</a>
+	        </div>
+	      </td>
+        
+          <td align="center" id="specialRow" >
+	        <div>
+      		  <table>
+        	    <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Trippel_Christoph.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_501214086524306772-84-105-Br5k3HV.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	            </tr>
+ 	          </table>
+	        </div>
+	        <div>
+	          <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576439269141568267&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Trippel&nbsp;Christoph</a>
+	        </div>
+	      </td>
+        
+          <td align="center" id="specialRow" >
+	        <div>
+      		  <table>
+        	    <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Walter_Michael.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_501214259128305036-84-105-rr8W31vk.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	            </tr>
+ 	          </table>
+	        </div>
+	        <div>
+	          <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576438441555057317&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Walter&nbsp;Michael</a>
+	        </div>
+	      </td>
+        
+      </tr>
+    </table>
+  </td>
+</tr>
+
+  
+  <tr><td align="center" colspan="6">
+    <div id="kaderHeader">Verteidigung</div>
+  </td></tr>
+  
+<tr>    
+  <td>
+    <table width="100%"><tr>
+      
+	    
+	  	  </tr></table></td></tr>
+		  <tr><td><table width="100%"><tr>
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Gerencser_Bernd.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_510964603422658345-84-105-EXln0uF3.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576438441555057323&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Gerencser&nbsp;Bernd</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Mittl_Andreas.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_501213667496559914-84-105-L8uISqTu.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576438441555057328&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Mittl&nbsp;Andreas</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Reisinger_Michael.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_501213757422437682-84-105-9WuBLY8b.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576438441555057322&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Reisinger&nbsp;Michael</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Stubits_Gerd.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_510965873927671794-84-105-RZ97W3f5.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576438441555057316&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Stubits&nbsp;Gerd</a>
+	      </div>
+	    </td>  
+  	      
+            
+    </tr></table>
+  </td>
+  
+</tr>
+
+  
+  <tr><td align="center" colspan="6">
+    <div id="kaderHeader">Mittelfeld</div>
+  </td></tr>
+  
+<tr>    
+  <td>
+    <table width="100%"><tr>
+      
+	    
+	  	  </tr></table></td></tr>
+		  <tr><td><table width="100%"><tr>
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Bauer_Mario.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_501194339069982504-84-105-xnBPoRVd.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576438441555057315&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Bauer&nbsp;Mario</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Fabsits_Simon.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_574096165294394124-84-105-bbLNJbSI.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576439269141568268&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Fabsits&nbsp;Simon</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Frankl_Dominik.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_510963804558741152-84-105-4Uw2pIOZ.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576439269141568265&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Frankl&nbsp;Dominik</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Gutleben_Andreas.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_501185702696055144-84-105-29e333Qn.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576438441555057320&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Gutleben&nbsp;Andreas</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Horvath_Istvan.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_510964718581468981-84-105-07VfsEVs.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576438441555057314&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Horvath&nbsp;Istvan</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Kedl_Daniel.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_510965011444551544-84-105-xZ7dGmG.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|626487854366938616&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Kedl&nbsp;Daniel</a>
+	      </div>
+	    </td>  
+  	      
+      
+	    
+	  	  </tr></table></td></tr>
+		  <tr><td><table width="100%"><tr>
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Kopcsandy_Daniel.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_501194804268627941-84-105-Wi5XvDAB.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576438441555057321&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Kopcsandy&nbsp;Daniel</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Kraller_Patrick.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_510965696760270810-84-105-fH5QHNGO.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576438441555057324&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Kraller&nbsp;Patrick</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Kraller_Rainer.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_510965629382971344-84-105-nju7qGYD.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576438441555057319&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Kraller&nbsp;Rainer</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Lakovits_Matthias.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_501213598777083169-84-105-X1WBhTmc.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576438441555057329&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Lakovits&nbsp;Matthias</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Raba_Andreas.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_510965775680294882-84-105-t1q3B3h5.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576439269141568264&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Raba&nbsp;Andreas</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Schrammel_Mario.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_510965823461806062-84-105-K5dunCR4.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576438441555057318&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Schrammel&nbsp;Mario</a>
+	      </div>
+	    </td>  
+  	      
+      
+	    
+	  	  </tr></table></td></tr>
+		  <tr><td><table width="100%"><tr>
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Trinkl_Alexander.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_501214036595311954-84-105-EBw5Mne.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576438441555057327&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Trinkl&nbsp;Alexander</a>
+	      </div>
+	    </td>  
+  	      
+            
+    </tr></table>
+  </td>
+  
+</tr>
+
+  
+  <tr><td align="center" colspan="6">
+    <div id="kaderHeader">Sturm</div>
+  </td></tr>
+  
+<tr>    
+  <td>
+    <table width="100%"><tr>
+      
+	    
+	  	  </tr></table></td></tr>
+		  <tr><td><table width="100%"><tr>
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Koronczai-Roland.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_580127542506229465-84-105-ivbOVGc.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|580030788435740724&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Koronczai&nbsp;Roland</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='taki_christian.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_509786917479434773-84-105-vywg3fIo.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576438441555057326&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Takacs&nbsp;Christian</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='T�r�k_Adrian.jpg' border='0' src='/netzwerk/imagedownload/379402779304830775_517414982594397490-84-105-46XtoFgd.jpg?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576439269141568269&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Török&nbsp;Adrian</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Zavodi_Roland.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_517415415580788114-84-105-0w5Xg1E.JPG?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576439269141568266&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Zavodi&nbsp;Roland</a>
+	      </div>
+	    </td>  
+  	      
+            
+    </tr></table>
+  </td>
+  
+</tr>
+
+  
+  <tr><td align="center" colspan="6">
+    <div id="kaderHeader">Noch ohne Spielposition</div>
+  </td></tr>
+  
+<tr>    
+  <td>
+    <table width="100%"><tr>
+      
+	    
+	  	  </tr></table></td></tr>
+		  <tr><td><table width="100%"><tr>
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Gratzl-Gottfried.jpg' border='0' src='/netzwerk/imagedownload/379402779304830775_582237115015026461-84-105-YqlXruO3.jpg?awVerband=B_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|594885380577358621&vereinOid=100095|160862842547799295&verbandKuerzel=B&vereinNr=7149&awVerband=B_&mannschaftOid=100092|572412372767515488 ">Gratzl&nbsp;Gottfried</a>
+	      </div>
+	    </td>  
+  	      
+            
+    </tr></table>
+  </td>
+  
+</tr>        
+  
+
+  </tbody>
+</table>
+  
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+				
+			</td>
+			<td width="180" style="vertical-align:top;" class="contentBorderRight">
+				
+					
+
+
+
+
+
+
+<style type="text/css">
+	td.fade ul,
+	td.fadeVerein1 ul,
+	td.fadeVerein2 ul,
+	td.fadeVerein3 ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		text-align: left;
+	}
+</style>
+
+
+<script type="text/javascript">
+	$(document).ready(function(){
+		
+			$('.fadeVerein1 ul').cycle({ 
+				speed:   3000,
+				timeoutFn: calculateTimeoutFadeVerein1
+			});
+		
+			$('.fadeVerein2 ul').cycle({ 
+				speed:   3000,
+				timeoutFn: calculateTimeoutFadeVerein2
+			});
+		
+			$('.fadeVerein3 ul').cycle({ 
+				speed:   3000,
+				timeoutFn: calculateTimeoutFadeVerein3
+			});
+		
+
+	});
+
+	function calculateTimeoutVerein(listName) {
+	    var actListItem = document.getElementById(listName);
+	    var timeout = parseInt(actListItem.getAttribute("timeout"));
+	    if (timeout>0) {
+		    return timeout*1000;
+	    }
+	    return 5000; 
+	}
+
+	
+				function calculateTimeoutFadeVerein1(currElement, nextElement, opts, isForward) { 
+				    var index = opts.currSlide;
+					var listName = "fadeVEREIN_1-"+index;
+			
+					return calculateTimeoutVerein(listName);
+				}
+			
+				function calculateTimeoutFadeVerein2(currElement, nextElement, opts, isForward) { 
+				    var index = opts.currSlide;
+					var listName = "fadeVEREIN_2-"+index;
+			
+					return calculateTimeoutVerein(listName);
+				}
+			
+				function calculateTimeoutFadeVerein3(currElement, nextElement, opts, isForward) { 
+				    var index = opts.currSlide;
+					var listName = "fadeVEREIN_3-"+index;
+			
+					return calculateTimeoutVerein(listName);
+				}
+			
+</script>
+
+<table>
+	<tr>
+		<td style="padding-top: 20px;">
+			<a href="http://www.silbergrau.com">
+				<img src="/fussball/pictures/powered.gif" alt="www.silbergrau.com" border="0" />
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<td style="padding-top: 10px;" class="fadeVerein1">
+			
+		</td>
+	</tr>
+	
+	<tr>
+		<td style="padding-top: 10px;" class="fadeVerein2">
+			
+		</td>
+	</tr>
+
+	<tr>
+		<td style="padding-top:20px">
+			<table width="160" class="servicetable">
+            	<tr>
+            		<td class="seealsoheader">Fu&szlig;ball Live</td>
+            	</tr>
+            	<tr>
+            		<td style="	font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 11px;">
+						<script type="text/javascript" >
+							new rsspausescroller("fvNetzwerkLarge", "pscroller2", "rssclass", 5000, "_blank", "date+description", "/netzwerk/tickerdownload/379402779304830775_7149.js");
+						</script>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	
+	<tr>
+		<td style="padding-top: 10px;" class="fadeVerein3">
+			
+		</td>
+	</tr>
+</table>
+
+				
+			</td>
+		</tr>
+	</table>
+	<script type="text/javascript">
+	    var menu1 = new XulMenu("menu1");
+	    menu1.arrow1 = "../pictures/arrow1.gif";
+	    menu1.arrow2 = "../pictures/arrow2.gif";
+	    menu1.init();
+	</script>
+	
+	
+		<br/>
+<div class="disclaimer" align="center">
+	(c) Fu&szlig;ballverband Burgenland, jegliches verwendete Material ist urheberrechtlich gesch&uuml;tzt - siehe <a href="http://www.fussballoesterreich.at/ooefv/content/565012306513886675_565016357206168545~565026134430783483_565026134430783483,de.html,de.html" target="_blank">Nutzungsbedingungen</a>
+
+</div>
+
+	
+</body>
+
+</html>

@@ -1,0 +1,224 @@
+/* round Matchinfo Main (Popup) div */
+/*
+.rounddiv_matchinfomain {
+	background:transparent;
+    width: 97%;
+    margin-right:auto;
+    margin-left:auto;
+    margin-top:5px;
+}
+*/
+div#matchinfo_main {
+    /*background-color:#99CC99;*/
+    width: 97%;
+    margin-right:auto;
+    margin-left:auto;
+    margin-top:5px;
+    border:solid black 1px;
+}
+/* ***** */
+
+div#matchinfo_list_main {
+	background:transparent;
+    width: 97%;
+    margin-right:auto;
+    margin-left:auto;
+
+}
+
+div#matchinfo_list_line {
+    width:98%;
+    margin-right:auto;
+    margin-left:auto;
+    /*background-color:#99CC99;*/
+}
+div#matchinfo_list_line:hover { background-color: #99CC99; }
+
+div#matchinfo_list_date {
+    width:25%;
+    float:left;
+    text-align:left;
+}
+div#matchinfo_list_right {
+    width:75%;
+    float:left;
+}
+div#matchinfo_list_hometeam {
+    width:45%;
+    float:left;
+    text-align:right;
+}
+div#matchinfo_list_guestteam {
+    width:45%;
+    float:right;
+    text-align:left;
+}
+div#matchinfo_list_result {
+    width:10%;
+    float:left;
+    text-align:center;
+}
+
+div#matchinfo_hr {
+    width:100%;
+    border-top:solid black 1px;
+}
+div#matchdata_line {
+    width:100%;
+    padding-top:2px;
+}
+div#matchdata_hometeam {
+    width:38%;
+    margin-left:2%;
+    float:left;
+    text-align:left;
+    font-size:14pt;
+}
+div#matchdata_result {
+    width:20%;
+    float:left;
+    text-align:center;
+    font-size:14pt;
+}
+div#matchdata_guestteam {
+    width:38%;
+    margin-right:2%;
+    float:right;
+    text-align:right;
+    font-size:14pt;
+}
+div#matchdata_date {
+    width:100%;
+    text-align:center;
+    font-size:10pt;
+}
+div#matchdata_hometeam_players {
+    width:45%;
+    margin-left:2%;
+    padding-bottom:2px;
+    float:left;
+    text-align:left;
+    font-size:8pt;
+}
+div#matchdata_teamplayers_middle {
+    width:2%;
+    float:left;
+}
+div#matchdata_guestteam_players {
+    width:45%;
+    margin-right:2%;
+    padding-bottom:2px;
+    float:right;
+    text-align:right;
+    font-size:8pt;
+}
+
+div#goalorder {
+    width:90%;
+    margin-left:auto;
+    margin-right:auto;
+}
+div#goalorder_line {
+    width:100%;
+    font-size:8pt;
+}
+div#goalorder_title {
+    width:100%;
+    text-align:center;
+    font-size:10pt;
+}
+div#goalorder_minute {
+    width:43%;
+    padding-right:2px;
+    float:left;
+    text-align:right;
+}
+div#goalorder_result {
+    width:10%;
+    float:left;
+    text-align:center;
+}
+div#goalorder_player {
+    width:43%;
+    float:right;
+    text-align:left;
+}
+
+div#psgoal {
+    width:70%;
+    margin-left:auto;
+    margin-right:auto;
+}
+div#psgoal_line {
+    width:100%;
+    font-size:8pt;
+}
+div#psgoal_title {
+    width:100%;
+    text-align:center;
+    font-size:10pt;
+}
+div#psgoal_home {
+    width:48%;
+	float:left;
+	text-align:left;
+}
+div#psgoal_guest {
+    width:48%;
+	float:right;
+	text-align:right;
+}
+div#psgoal_nationality {
+    width:10%;
+    padding-right:2px;
+    float:left;
+    text-align:right;
+}
+div#psgoal_symbol {
+    width:10%;
+    float:left;
+    text-align:center;
+}
+div#psgoal_player {
+    width:95%;
+}
+
+div#prevmatches {
+    width:99%;
+    margin-left:auto;
+    margin-right:auto;
+}
+div#prevmatches_line {
+    width:100%;
+    font-size:8pt;
+}
+div#prevmatches_title {
+    width:100%;
+    text-align:center;
+    font-size:10pt;
+}
+div#prevmatches_round {
+    width:29%;
+    float:left;
+    text-align:left;
+}
+div#prevmatches_date {
+    width:14%;
+    float:left;
+    text-align:right;
+}
+div#prevmatches_result {
+    width:11%;
+    float:left;
+    text-align:center;
+}
+div#prevmatches_hometeam {
+    width:23%;
+    float:left;
+    text-align:right;
+}
+div#prevmatches_guestteam {
+    width:23%;
+    float:right;
+    text-align:left;
+}

@@ -1,0 +1,633 @@
+#lineup_field_main {
+    background-color: #99CC99;
+    width: 100%;
+    visibility: visible;
+    position: relative;
+}
+/* round lineup select main div */
+.rounddiv_lineupselectmain {
+	background:transparent;
+    width:99%;
+    margin-left:auto;
+    margin-right:auto;
+    padding-top:5px;
+}
+#lineup_select_main {
+    background-color:#CCFFCC;
+}
+/* ***** */
+
+/* round matchlist main div */
+.rounddiv_matchlist {
+	background:transparent;
+    width:99%;
+    margin-left:auto;
+    margin-right:auto;
+    margin-bottom: 5px;
+    visibility: visible;
+}
+div#matchlist {
+    background-color:#CCFFCC;
+    font-size:8pt;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+/* ***** */
+
+#lineup_select_team {
+    width: 100%;
+    text-align:center;
+}
+#lineup_select_selected_team {
+    width: 100%;
+    text-align:center;
+    font-size:12pt;
+    padding-top:2px;
+}
+#lineup_select_player {
+    width: 100%;
+    padding-top:2px;
+}
+#lineup_infoarea {
+    background-color: #99CC99;
+    min-height: 70px;
+    width: 100%;
+    padding-bottom: 5px;
+}
+#lineup_infoarea_title {
+    width: 96%;
+    margin-left:auto;
+    margin-right:auto;
+    font-size:14pt;
+    text-align:center;
+}
+#lineup_infoarea_actions {
+    width: 96%;
+    margin-left:auto;
+    margin-right:auto;
+    text-align:center;
+    padding-top:10px;
+}
+#lineup_infoarea_infos {
+    width: 79%;
+    margin-left:auto;
+    margin-right:auto;
+    font-size:9pt;
+    text-align:center;
+    margin-top:2px;
+    padding:1px;
+}
+#lineup_infoarea_credits {
+    width:15%;
+    height:68px;
+    position:absolute;
+    top:2px;
+    left:75%;
+    z-index:10;
+    text-align:center;
+    background-color:#99CC99;
+}
+#lineup_infoarea_credits_img {
+    width:45%;
+    float:left;
+    text-align:right;
+    padding-top:12px;
+}
+#lineup_infoarea_credits_txt {
+    width:53%;
+    float:right;
+    text-align:center;
+    padding-top:20px;
+    font-size: 16pt;
+}
+#lineup_infoarea_credits_players {
+    width:100%;
+    text-align:center;
+    font-size:8pt;
+    padding-top:1px;
+}
+#lineup_infoarea_credits_maxplayers {
+    width:100%;
+    text-align:center;
+    font-size:8pt;
+    padding-top:1px;
+}
+div#line_goalie {
+    width:inherit;
+    height:100px;
+    position:absolute;
+    top:30px;
+    left:0px;
+    z-index:1;
+    text-align:center;
+}
+div#playerlist {
+    width:99%;
+    margin-left:auto;
+    margin-right:auto;
+    background-color:#99CC99;
+    font-size: 10pt;
+    border: solid black 1px;
+    font-size:8pt;
+}
+div#playerline_none {
+    background-color:#99CC99;
+    width:100%;
+    padding-top:2px;
+    padding-bottom:2px;
+    margin-left:auto;
+    margin-right:auto;
+    clear:both;
+}
+div#playerline_pos {
+    background-color:#99CC99;
+    width:100%;
+    margin-top:2px;
+    padding-top:2px;
+    margin-left:auto;
+    margin-right:auto;
+    text-align:center;
+    border-top:solid black 1px;
+    border-bottom:dashed black 1px;
+}
+div#playerline:hover { background-color: #CCFFCC; }
+div#playerline_div:hover { background-color: #CCFFCC; }
+div#playerlisttrend {
+    float:left;
+    width:12px;
+    padding-left:1px;
+    padding-right:1px;
+}
+div#playerlistname {
+    float:left;
+    width:40%;
+    padding-left:1px;
+    padding-right:2px;
+}
+div#playerlistprice {
+    float:left;
+    width:9%;
+    padding-left:2px;
+    padding-right:2px;
+    text-align:center;
+}
+div#playerliststatus {
+    float:left;
+    width:8%;
+    padding-left:2px;
+    padding-right:2px;
+    text-align:center;
+}
+div#playerlistinfo {
+    float:left;
+    width:9%;
+    padding-left:2px;
+    padding-right:2px;
+    text-align:center;
+}
+
+div.playergrade {
+    width:25%;
+    float: left;
+    text-align:center;
+    padding-left:2px;
+    padding-right:2px;
+}
+div#playerline_0 {
+    background-color:#99DE99;
+    width:100%;
+    padding-top:2px;
+    padding-bottom:2px;
+    margin-left:auto;
+    margin-right:auto;
+    clear:both;
+}
+div#playerline_1 {
+    background-color:#99CC99;
+    width:100%;
+    padding-top:2px;
+    padding-bottom:2px;
+    margin-left:auto;
+    margin-right:auto;
+    clear:both;
+}
+
+img.nat {
+    max-width:16px;
+    max-height:16px;
+}
+
+
+
+
+
+
+
+div#infoarea {
+    height:180px;
+    position: relative;
+    border: solid black 3px;
+    border-style:groove;
+}
+
+div#matchround_select {
+    background-color:#CCFFCC;
+    width:99%;
+    margin-left:auto;
+    margin-right:auto;
+    margin-bottom: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    visibility: visible;
+}
+div#player_stats {
+    width:99%;
+    visibility: visible;
+    position:absolute;
+    top:0px;
+    left:0px;
+    z-index:1;
+}
+#Rightinfo {
+    background-color: #99CC99;
+    width: 100%;
+    visibility: visible;
+    position: relative;
+    margin-bottom: 5px;
+}
+
+
+hr {
+    color: #CCFFCC;
+    clear: both;
+}
+
+#mygoalie img, #mydefence img, #mymidfield img, #mystriker img {
+	border:1px solid white;
+}
+
+#mygoalie, #mydefence, #mymidfield, #mystriker {
+	text-align: center;
+	font-weight: bold;
+	float: left;
+}
+
+#mygoalie {
+	width: 95%;
+	background-color: teal;
+}
+
+#mydefence {
+	width: 19%;
+	background-color: maroon;
+}
+
+#mymidfield {
+	width: 19%;
+	background-color: yellow;
+
+}
+
+#mystriker {
+	width: 33%;
+	background-color: silver;
+}
+
+.teamerror{
+    width:90%;
+	color:red;
+	background-color: #CCFFCC;
+	text-align: center;
+	font-style: italic;
+	font-weight: bold;
+	padding:5px;
+	margin-left:auto;
+	margin-right:auto;
+}
+.playertable {
+	border: 0px;
+	border-spacing:0px;
+}
+th.playertable_th {
+	padding-right: 10px;
+}
+td.playertable_td {
+	padding-right: 10px;
+}
+.tdname {
+	width: 150px;
+	border-spacing:0px;
+	padding-right:10px;
+}
+.tdprice {
+	text-align: center;
+	width:20px;
+	font-style:italic;
+	border-spacing:0px;
+	padding-right:10px;
+}
+.tdpos {
+	text-align: center;
+	width:20px;
+	font-style:italic;
+	border-spacing:0px;
+	padding-right:10px;
+}
+
+.tdAUT {
+	text-align: center;
+	width:22px;
+	height:17px;
+	font-style: italic;
+	font-weight: bold;
+	background-image: url(http://www.gemura.com/img/flags/aut.gif);
+	padding-right:10px;
+}
+
+.tdGER {
+	text-align: center;
+	width:20px;
+	height:15px;
+	font-style: italic;
+	background-image: url(http://www.gemura.com/img/flags/ger.gif);
+	padding-right:10px;
+}
+
+a.playerlink {
+	display: inline;
+	font-weight: bold;
+}
+a.playerlink:link {
+	color: black;
+	font-weight: bold;
+}
+a.playerlink:visited {
+	color: black;
+	font-weight: bold;
+}
+a.playerlink:active {
+	color: #FF9900;
+}
+a.playerlink:hover {
+	color: maroon;
+	font-weight: bold;
+	background-color: white;
+}
+
+div#soccer_field {
+    width:647px;
+    height:600px;
+    margin-top:0;
+    margin-bottom: 0;
+    margin-right:auto;
+    margin-left:auto;
+    position:relative;
+}
+
+div#line_goalie {
+    width:inherit;
+    height:100px;
+    position:absolute;
+    top:30px;
+    left:0px;
+    z-index:1;
+    text-align:center;
+}
+
+div#line_defence {
+    width:inherit;
+    height:100px;
+    position:absolute;
+    top:160px;
+    left:0px;
+    z-index:1;
+    text-align:center;
+}
+
+div#line_midfield {
+    width:inherit;
+    height:100px;
+    position:absolute;
+    top:290px;
+    left:0px;
+    z-index:1;
+    text-align:center;
+}
+
+div#line_forward {
+    width:inherit;
+    height:100px;
+    position:absolute;
+    top:420px;
+    left:0px;
+    z-index:1;
+    text-align:center;
+}
+
+div#line_elements_g {
+    display:-moz-inline-box;
+    display: inline-block;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+div#line_elements_d {
+    display:-moz-inline-box;
+    display: inline-block;
+    margin-left:auto;
+    margin-right:auto;
+}
+div#line_elements_m {
+    display:-moz-inline-box;
+    display: inline-block;
+    margin-left:auto;
+    margin-right:auto;
+}
+div#line_elements_s {
+    display:-moz-inline-box;
+    display: inline-block;
+    margin-left:auto;
+    margin-right:auto;
+}
+div#line_element, div.line_element {
+    float:left;
+    display:-moz-inline-box;
+    display:inline-block;
+    margin-left:15px;
+    margin-right:15px;
+    height:100px;
+    width:90px;
+    text-align:center;
+    border: solid black 0px;
+    font-size: 8pt;
+}
+
+div#line_clear {
+    clear:both;
+}
+div.infosymbols {
+    display:-moz-inline-box;
+    display: inline-block;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top: 5px;
+    padding-top:1px;
+    padding-bottom:1px;
+    background-color: #99CC99;
+    overflow: hidden;
+}
+div.position {
+    display:-moz-inline-box;
+    display: inline-block;
+    float:left;
+    text-align: left;
+    background-color: #FF0000;
+    padding-left:1px;
+}
+div.info {
+    display:-moz-inline-box;
+    display: inline-block;
+    float:left;
+    text-align: left;
+    padding-left:1px;
+    padding-right:1px;
+}
+div.price {
+    float:left;
+    display:-moz-inline-box;
+    display: inline-block;
+    text-align: left;
+    background-color: gold;
+    margin-left:2px;
+    margin-top:2px;
+}
+div.nationality {
+    float:left;
+    display:-moz-inline-box;
+    display: inline-block;
+    text-align: center;
+    padding-left:1px;
+}
+div.status {
+    float:left;
+    display:-moz-inline-box;
+    display: inline-block;
+    text-align: left;
+    padding-left:1px;
+    padding-right:1px;
+}
+div#administration {
+    width:100%;
+    padding:5px;
+    margin-left:auto;
+    margin-right:auto;
+    background-color:#99CC99;
+    font-size: 10pt;
+}
+div#admintitle {
+    width:100%;
+    font-size:16pt;
+    text-align:center;
+    margin-bottom:5px;
+}
+div#form {
+    background-color:#CCFFCC;
+    width:90%;
+    padding:5px;
+    margin-left:auto;
+    margin-right:auto;
+}
+div#formline {
+    margin-top: 2px;
+    clear:both;
+}
+div#formdescr {
+    width: 49%;
+    float:left;
+    text-align:right;
+}
+div#forminput {
+    width: 49%;
+    float:left;
+    text-align:left;
+}
+div#formclear {
+    clear:both;
+}
+
+div#playerinfo {
+	background-color: black;
+	color: red;
+}
+
+div#mylineup {
+	background-color: black;
+	color: red;
+}
+
+div#credits {
+    width:90%;
+    text-align:center;
+	font-size: 20px;
+	font-weight: bold;
+	margin-right:auto;
+	margin-left: auto;
+	margin-bottom:5px;
+}
+div#matchdate {
+    width:18%;
+    float:left;
+    padding-left: 2px;
+}
+div#matchteams {
+    width:80%;
+    float:left;
+    text-align:center;
+}
+div#matchround {
+    width:20%;
+    float:left;
+}
+div#matchhome {
+    width:49%;
+    float: left;
+    text-align:right;
+}
+div#matchguest {
+    width:49%;
+    float: left;
+    text-align:left;
+}
+div#listline {
+    width:97%;
+    margin-left:auto;
+    margin-right:auto;
+    clear:both;
+    background-color:#99CC99;
+}
+div#listline:hover { background-color: #CCFFCC; }
+
+div#listclear {
+    clear:both;
+}
+div#listdescr {
+    width:98%;
+    text-align:left;
+    padding:2px;
+}
+div#listsymbol {
+    width: 49%;
+    float:right;
+    text-align:right;
+}
+div#listitem {
+    width:100%;
+    margin-top:5px;
+    border: solid black 1px;
+}
+.dress {
+	width: 32px;
+	height: 32px;
+}
+
+
