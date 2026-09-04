@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copy to runtime-conf.xml and fill in local credentials. -->
+<!--
+  Used only when regenerating Propel config via convert-conf.
+  Prefer classes/propel/build/conf/ffb-conf.php which reads .env / environment.
+  Do not put real passwords in a committed runtime-conf.xml.
+-->
 <config>
 
  <log>
@@ -15,7 +19,7 @@
    <datasource id="YOUR_DB_NAME">
     <adapter>mysql</adapter>
     <connection>
-     <dsn>mysql:host=127.0.0.1;dbname=YOUR_DB_NAME</dsn>
+     <dsn>mysql:host=127.0.0.1;dbname=YOUR_DB_NAME;charset=utf8mb4</dsn>
      <user>YOUR_DB_USER</user>
      <password>YOUR_DB_PASSWORD</password>
     </connection>
