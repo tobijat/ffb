@@ -12,13 +12,11 @@
 /classes/propel_old_old/build.properties
 /classes/propel_old_old/runtime-conf.xml
 /classes/propel_old_old/build/conf/ffb-conf.php
-/modules/ffbapi/forumSQLConnect.php
 
 # Logs and runtime
 /logs/
 *.log
 /propel.log
-/resource/fb.txt
 
 # OS / editor
 .DS_Store

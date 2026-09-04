@@ -40,7 +40,6 @@ class __start extends FFB_Auth_No {
 		$this->generalStats();
 		$this->loadLeagues();
 		$this->loadLastResults();
-		//$this->lastForumPosts(); //disabled for WM 2014 -> contains spam only
     }
     
     
@@ -86,27 +85,6 @@ class __start extends FFB_Auth_No {
 		$this->gScore = FfbMatchPeer::doSelect($criteria); 
     }
     
-    
-   	private function lastForumPosts() {
-		require_once 'modules/ffbapi/forumSQLConnect.php';
-		$excludeForums[]	=	2;
-		$query	=	"SELECT 
-						topic_title, topic_last_post_time, topic_url, topic_id
-					FROM ffb_forum_topics
-					WHERE ";
-		foreach($excludeForums as $elem) {
-			$query .= " forum_id!= ". $elem . " AND ";
-		}
-		$query .=	" forum_id!=1 				 
-					ORDER BY topic_last_post_time DESC
-					LIMIT 7;";
-		$result	=	send_query($query);
-		$tmp 	=	array();
-		while($row = mysqli_fetch_array($result)) {
-			$tmp[]	=	$row;	
-		}
-		$this->forumPosts	=	$tmp;				
-	}
 	
 	//fuer meta tags Ligaliste
 	private function loadLeagues() {
