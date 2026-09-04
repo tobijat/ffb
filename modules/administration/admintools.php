@@ -355,7 +355,6 @@ class admintools extends FFB_Auth_AdminFfb {
 
 	public function testRegistry() {
 		echo 'test: '.$this->config->config_file.'<br>';
-		echo 'uid: '.$this->advert->getUserId().'<br>';
 		exit();
 	}
 

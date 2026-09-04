@@ -7,8 +7,6 @@
 	<mail_url>http://example.com</mail_url>
 	<mail_subject_prefix>Example - </mail_subject_prefix>
 	<area_prefix>ffb</area_prefix>
-    <!-- 0 == no ads are loaded; 1 == show ads; -->
-	<area_load_ads>0</area_load_ads>
     <!-- defines which game should be selected by default for newly registered users - refers to ffb_game.game_id table in DB-->
 	<area_userregistration_default_selected_game_id>25</area_userregistration_default_selected_game_id>
     <!-- defines after how many seconds of inactivity a user session is destroyed. 0 == infinite -->

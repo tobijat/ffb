@@ -6,5 +6,4 @@
 	<mail_greez>Your Team</mail_greez>
 	<mail_subject_prefix>Example - </mail_subject_prefix>
 	<area_prefix>ffb</area_prefix>
-	<area_load_ads>1</area_load_ads>
 </CONFIGURATION>

@@ -60,8 +60,6 @@ window.google_analytics_uacct = "UA-10198363-4";
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 <?php //sollte als letztes vor dem abschließenden </body> tag stehen
 include('modules/ffbapi/analyticstracking.php');
-
-include('modules/ffbapi/amazonpreview.php');
 ?>
 
 </body>

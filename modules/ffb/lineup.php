@@ -27,20 +27,12 @@ class lineup extends FFB_Auth_User {
 	public function lineup2() {
         $this->checkGame();
         $this->htmlFile = 'lineup2.php';
-        //$this->adBottomRight = $this->advert->getAd('aufstellung rechts');
 	}
 
 	public function lineup() {
         $this->checkGame();
         $this->htmlFile = 'lineup.php';
 		$this->htmlTitle = 'Lineup';
-		if($this->config->area_load_ads == 1) {
-        	$this->adBottomRight = $this->advert->getAd('aufstellung rechts');
-        	$ads[]  = $this->advert->getAd('CommentsText');
-        	$ads[]  = $this->advert->getAd('CommentsText');
-        	$ads[]  = $this->advert->getAd('CommentsText');
-        	$this->adCommentText  = $ads;
-		}
         require_once('comments.php');
         comments::loadInto($this, 'lineup', null, DEFAULT_COMMENT_NUMBER, false);
 	}

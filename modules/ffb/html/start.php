@@ -75,23 +75,11 @@
 			<div class="roundcorner_dark">
 				<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 		        <div id="Leftteam">
-
-					<div style="text-align:center; float:left; width:25%; margin-top:10px; margin-bottom:10px;">
-
-
-		                <?php  echo $this->adLeft; ?>
-		            </div>
-		            <div style="text-align:center; float:left; width:48%; margin-top:15px;">
+		            <div style="text-align:center; margin-top:15px;">
 		                <div id="news_items_title"></div>
 		                <div id="news_items"></div>
 		                <br />
 		            </div>
-					<div style="text-align:center; float:right; width:25%; margin-top:00px;">
-
-
-
-							<?php  echo $this->adRight; ?>
-					</div>
 		            <div style="clear:both;"></div>
 		        </div>
 		        <b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
@@ -162,7 +150,6 @@
 					-->
 				</div>
 				<br>
-		  		<?= $this->adBottomRight;?>
 		    </div>
 		    <b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
 		</div>

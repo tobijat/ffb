@@ -119,11 +119,6 @@ abstract class BaseFfbGame extends BaseObject  implements Persistent
 	protected $collFfbOptionss;
 
 	/**
-	 * @var        array FfbAdsAllocation[] Collection to store aggregation of FfbAdsAllocation objects.
-	 */
-	protected $collFfbAdsAllocations;
-
-	/**
 	 * Flag to prevent endless save loop, if this object is referenced
 	 * by another object which falls in this transaction.
 	 * @var        boolean
@@ -553,8 +548,6 @@ abstract class BaseFfbGame extends BaseObject  implements Persistent
 
 			$this->collFfbOptionss = null;
 
-			$this->collFfbAdsAllocations = null;
-
 		} // if (deep)
 	}
 
@@ -752,14 +745,6 @@ abstract class BaseFfbGame extends BaseObject  implements Persistent
 				}
 			}
 
-			if ($this->collFfbAdsAllocations !== null) {
-				foreach ($this->collFfbAdsAllocations as $referrerFK) {
-					if (!$referrerFK->isDeleted()) {
-						$affectedRows += $referrerFK->save($con);
-					}
-				}
-			}
-
 			$this->alreadyInSave = false;
 
 		}
@@ -889,14 +874,6 @@ abstract class BaseFfbGame extends BaseObject  implements Persistent
 
 				if ($this->collFfbOptionss !== null) {
 					foreach ($this->collFfbOptionss as $referrerFK) {
-						if (!$referrerFK->validate($columns)) {
-							$failureMap = array_merge($failureMap, $referrerFK->getValidationFailures());
-						}
-					}
-				}
-
-				if ($this->collFfbAdsAllocations !== null) {
-					foreach ($this->collFfbAdsAllocations as $referrerFK) {
 						if (!$referrerFK->validate($columns)) {
 							$failureMap = array_merge($failureMap, $referrerFK->getValidationFailures());
 						}
@@ -1216,12 +1193,6 @@ abstract class BaseFfbGame extends BaseObject  implements Persistent
 			foreach ($this->getFfbOptionss() as $relObj) {
 				if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
 					$copyObj->addFfbOptions($relObj->copy($deepCopy));
-				}
-			}
-
-			foreach ($this->getFfbAdsAllocations() as $relObj) {
-				if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
-					$copyObj->addFfbAdsAllocation($relObj->copy($deepCopy));
 				}
 			}
 
@@ -2343,165 +2314,6 @@ abstract class BaseFfbGame extends BaseObject  implements Persistent
 	}
 
 	/**
-	 * Clears out the collFfbAdsAllocations collection
-	 *
-	 * This does not modify the database; however, it will remove any associated objects, causing
-	 * them to be refetched by subsequent calls to accessor method.
-	 *
-	 * @return     void
-	 * @see        addFfbAdsAllocations()
-	 */
-	public function clearFfbAdsAllocations()
-	{
-		$this->collFfbAdsAllocations = null; // important to set this to NULL since that means it is uninitialized
-	}
-
-	/**
-	 * Initializes the collFfbAdsAllocations collection.
-	 *
-	 * By default this just sets the collFfbAdsAllocations collection to an empty array (like clearcollFfbAdsAllocations());
-	 * however, you may wish to override this method in your stub class to provide setting appropriate
-	 * to your application -- for example, setting the initial array to the values stored in database.
-	 *
-	 * @return     void
-	 */
-	public function initFfbAdsAllocations()
-	{
-		$this->collFfbAdsAllocations = new PropelObjectCollection();
-		$this->collFfbAdsAllocations->setModel('FfbAdsAllocation');
-	}
-
-	/**
-	 * Gets an array of FfbAdsAllocation objects which contain a foreign key that references this object.
-	 *
-	 * If the $criteria is not null, it is used to always fetch the results from the database.
-	 * Otherwise the results are fetched from the database the first time, then cached.
-	 * Next time the same method is called without $criteria, the cached collection is returned.
-	 * If this FfbGame is new, it will return
-	 * an empty collection or the current collection; the criteria is ignored on a new object.
-	 *
-	 * @param      Criteria $criteria optional Criteria object to narrow the query
-	 * @param      PropelPDO $con optional connection object
-	 * @return     PropelCollection|array FfbAdsAllocation[] List of FfbAdsAllocation objects
-	 * @throws     PropelException
-	 */
-	public function getFfbAdsAllocations($criteria = null, PropelPDO $con = null)
-	{
-		if(null === $this->collFfbAdsAllocations || null !== $criteria) {
-			if ($this->isNew() && null === $this->collFfbAdsAllocations) {
-				// return empty collection
-				$this->initFfbAdsAllocations();
-			} else {
-				$collFfbAdsAllocations = FfbAdsAllocationQuery::create(null, $criteria)
-					->filterByFfbGame($this)
-					->find($con);
-				if (null !== $criteria) {
-					return $collFfbAdsAllocations;
-				}
-				$this->collFfbAdsAllocations = $collFfbAdsAllocations;
-			}
-		}
-		return $this->collFfbAdsAllocations;
-	}
-
-	/**
-	 * Returns the number of related FfbAdsAllocation objects.
-	 *
-	 * @param      Criteria $criteria
-	 * @param      boolean $distinct
-	 * @param      PropelPDO $con
-	 * @return     int Count of related FfbAdsAllocation objects.
-	 * @throws     PropelException
-	 */
-	public function countFfbAdsAllocations(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
-	{
-		if(null === $this->collFfbAdsAllocations || null !== $criteria) {
-			if ($this->isNew() && null === $this->collFfbAdsAllocations) {
-				return 0;
-			} else {
-				$query = FfbAdsAllocationQuery::create(null, $criteria);
-				if($distinct) {
-					$query->distinct();
-				}
-				return $query
-					->filterByFfbGame($this)
-					->count($con);
-			}
-		} else {
-			return count($this->collFfbAdsAllocations);
-		}
-	}
-
-	/**
-	 * Method called to associate a FfbAdsAllocation object to this object
-	 * through the FfbAdsAllocation foreign key attribute.
-	 *
-	 * @param      FfbAdsAllocation $l FfbAdsAllocation
-	 * @return     void
-	 * @throws     PropelException
-	 */
-	public function addFfbAdsAllocation(FfbAdsAllocation $l)
-	{
-		if ($this->collFfbAdsAllocations === null) {
-			$this->initFfbAdsAllocations();
-		}
-		if (!$this->collFfbAdsAllocations->contains($l)) { // only add it if the **same** object is not already associated
-			$this->collFfbAdsAllocations[]= $l;
-			$l->setFfbGame($this);
-		}
-	}
-
-
-	/**
-	 * If this collection has already been initialized with
-	 * an identical criteria, it returns the collection.
-	 * Otherwise if this FfbGame is new, it will return
-	 * an empty collection; or if this FfbGame has previously
-	 * been saved, it will retrieve related FfbAdsAllocations from storage.
-	 *
-	 * This method is protected by default in order to keep the public
-	 * api reasonable.  You can provide public methods for those you
-	 * actually need in FfbGame.
-	 *
-	 * @param      Criteria $criteria optional Criteria object to narrow the query
-	 * @param      PropelPDO $con optional connection object
-	 * @param      string $join_behavior optional join type to use (defaults to Criteria::LEFT_JOIN)
-	 * @return     PropelCollection|array FfbAdsAllocation[] List of FfbAdsAllocation objects
-	 */
-	public function getFfbAdsAllocationsJoinFfbAds($criteria = null, $con = null, $join_behavior = Criteria::LEFT_JOIN)
-	{
-		$query = FfbAdsAllocationQuery::create(null, $criteria);
-		$query->joinWith('FfbAds', $join_behavior);
-
-		return $this->getFfbAdsAllocations($query, $con);
-	}
-
-
-	/**
-	 * If this collection has already been initialized with
-	 * an identical criteria, it returns the collection.
-	 * Otherwise if this FfbGame is new, it will return
-	 * an empty collection; or if this FfbGame has previously
-	 * been saved, it will retrieve related FfbAdsAllocations from storage.
-	 *
-	 * This method is protected by default in order to keep the public
-	 * api reasonable.  You can provide public methods for those you
-	 * actually need in FfbGame.
-	 *
-	 * @param      Criteria $criteria optional Criteria object to narrow the query
-	 * @param      PropelPDO $con optional connection object
-	 * @param      string $join_behavior optional join type to use (defaults to Criteria::LEFT_JOIN)
-	 * @return     PropelCollection|array FfbAdsAllocation[] List of FfbAdsAllocation objects
-	 */
-	public function getFfbAdsAllocationsJoinFfbAdsSlot($criteria = null, $con = null, $join_behavior = Criteria::LEFT_JOIN)
-	{
-		$query = FfbAdsAllocationQuery::create(null, $criteria);
-		$query->joinWith('FfbAdsSlot', $join_behavior);
-
-		return $this->getFfbAdsAllocations($query, $con);
-	}
-
-	/**
 	 * Clears the current object and sets all attributes to their default values
 	 */
 	public function clear()
@@ -2575,11 +2387,6 @@ abstract class BaseFfbGame extends BaseObject  implements Persistent
 					$o->clearAllReferences($deep);
 				}
 			}
-			if ($this->collFfbAdsAllocations) {
-				foreach ((array) $this->collFfbAdsAllocations as $o) {
-					$o->clearAllReferences($deep);
-				}
-			}
 		} // if ($deep)
 
 		$this->collWebUserDetailss = null;
@@ -2590,7 +2397,6 @@ abstract class BaseFfbGame extends BaseObject  implements Persistent
 		$this->collFfbUserscores = null;
 		$this->collFfbAdmins = null;
 		$this->collFfbOptionss = null;
-		$this->collFfbAdsAllocations = null;
 	}
 
 	/**

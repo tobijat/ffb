@@ -627,46 +627,4 @@
         </foreign-key>
     </table>
 
-    <table name="ffb_ads">
-    	<column name="ads_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
-    	<column name="ads_name" type="varchar" required="true" size="255"/>
-    	<column name="ads_code" type="longvarchar" required="true"/>
-    </table>
-
-    <table name="ffb_ads_slot">
-        <column name="ads_slot_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
-        <column name="ads_slot_name" type="varchar" required="true" size="255"/>
-        <column name="ads_slot_css_class" type="varchar" required="true" size="255"/>
-    </table>
-
-    <table name="ffb_ads_allocation">
-        <column name="ads_allocation_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
-        <column name="ads_allocation_ads_id" type="integer" required="true"/>
-        <column name="ads_allocation_slot_id" type="integer" required="true"/>
-        <column name="ads_allocation_game_id" type="integer" required="true"/>
-        <column name="ads_allocation_ad_count" type="integer" required="true"/>
-        <column name="ads_allocation_ad_max" type="integer" required="true"/>
-        <column name="ads_allocation_ad_priority" type="integer" required="true"/>
-        <column name="ads_allocation_start" type="timestamp" required="false"/>
-        <column name="ads_allocation_end" type="timestamp" required="false"/>
-        <foreign-key foreignTable="ffb_ads" onDelete="cascade">
-	    <reference local="ads_allocation_ads_id" foreign="ads_id"/>
-        </foreign-key>
-        <foreign-key foreignTable="ffb_ads_slot" onDelete="cascade">
-	    <reference local="ads_allocation_slot_id" foreign="ads_slot_id"/>
-        </foreign-key>
-        <foreign-key foreignTable="ffb_game" onDelete="cascade">
-	    <reference local="ads_allocation_game_id" foreign="game_id"/>
-        </foreign-key>
-    </table>
-
-    <table name="ffb_no_ads">
-        <column name="no_ads_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
-        <column name="no_ads_user_id_ip" type="varchar" required="true" size="255"/>
-	<column name="no_ads_slot_id" type="integer" required="true"/>
-	<foreign-key foreignTable="ffb_ads_slot" onDelete="cascade">
-	    <reference local="no_ads_slot_id" foreign="ads_slot_id"/>
-        </foreign-key>
-    </table>
-
 </database>

@@ -123,16 +123,6 @@
 		</div>
 	</div>
 
-	<div class="rounddiv_mainrightads">
-		<div class="roundcorner_dark">
-			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
-			<div id="Mainright_ads">
-				<?= $this->adBottomRight;?>
-			</div>
-			<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
-		</div>
-	</div>
-
     <div class="rounddiv_footer">
 		<div class="roundcorner_dark">
 			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>

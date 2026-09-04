@@ -22,18 +22,6 @@ class userscore extends FFB_Auth_User {
 		$this->htmlFile = 'userscore.php';
 		$this->htmlTitle = 'User Scores';
 
-		if($this->config->area_load_ads == 1) {
-			$this->adBottomRight = $this->advert->getAd('rechts unten');
-			$ads[]  = $this->advert->getAd('CommentsText');
-			$ads[]  = $this->advert->getAd('CommentsText');
-			$ads[]  = $this->advert->getAd('CommentsText');
-			$this->adCommentText  = $ads;
-		}
-        //villacher ads permanent -> WM 2014
-		//$this->adVillacherBier = $this->advert->getAd('VillacherBierRangliste');
-        //guarana brause ads permanent -> EM 2016
-        $this->adGuaranaBrause = $this->advert->getAd('GuaranaBrauseRangliste');
-
 		require_once('comments.php');
     	comments::loadInto($this, 'userscore', null, DEFAULT_COMMENT_NUMBER, false);
 

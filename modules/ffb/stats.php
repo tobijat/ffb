@@ -17,7 +17,6 @@ class stats extends FFB_Auth_No {
         parent::__construct();
 		
 		$this->startTime = microtime(TRUE);
-		$this->adStatsSlot	=	$this->advert->getAd('StatsSlot');
     }
 	
 	public function __destruct() {

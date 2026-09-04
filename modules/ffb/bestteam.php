@@ -30,17 +30,6 @@ class bestteam extends FFB_Auth_User {
 	public function bestteam() {
         $this->htmlFile = 'bestteam.php';
 		$this->htmlTitle = 'Top / Flop Teams';
-
-        //guarana brause permanent ad during em 2016
-        $this->adBottomRight = $this->advert->getAd('GuaranaBrauseBestTeam');
-
-		if($this->config->area_load_ads == 1) {
-			$this->adBottomRight = $this->advert->getAd('rechts unten');
-			$ads[]  = $this->advert->getAd('CommentsText');
-			$ads[]  = $this->advert->getAd('CommentsText');
-			$ads[]  = $this->advert->getAd('CommentsText');
-			$this->adCommentText  = $ads;
-		}
         require_once('comments.php');
         comments::loadInto($this, 'bestteam', null, DEFAULT_COMMENT_NUMBER, false);
 	}

@@ -27,16 +27,6 @@ class myteam extends FFB_Auth_User {
 	public function myteam() {
         $this->htmlFile = 'myteam.php';
 		$this->htmlTitle = 'Show My Team';
-
-        //guarana brause permanent ad during em 2016
-        $this->adBottomRight = $this->advert->getAd('GuaranaBrauseMyTeam');
-
-		if($this->config->area_load_ads == 1) {
-			$ads[]  = $this->advert->getAd('CommentsText');
-			$ads[]  = $this->advert->getAd('CommentsText');
-			$ads[]  = $this->advert->getAd('CommentsText');
-			$this->adCommentText  = $ads;
-		}
         require_once('comments.php');
         comments::loadInto($this, 'myteam', null, DEFAULT_COMMENT_NUMBER, false);
 	}
