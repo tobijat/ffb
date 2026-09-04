@@ -1,0 +1,64 @@
+.adInput, .adInputSmall, .adDummy, .adInputAll {
+	font-size: 		10px;
+	font-weight: 	bold;
+	float:			left;
+	margin-right:	2px;
+	margin-bottom:  2px;
+	text-align: 	center;
+}
+
+.adDummy{
+	width:			3%;
+}
+
+.adInput{
+	width:			20%;
+	background-color: #CCFFDD;
+}
+
+.adInputSmall{
+	width:			5%;
+	background-color: #EEFFFF
+}
+
+.adInputAll {
+	width:			95%;
+	background-color: #CCCCFF;
+}
+
+.adEntry {
+	width:			99%;
+	clear: 			both;
+}
+
+.formerror, .formanswer {
+	min-height: 	12px;
+	font-size: 		10px;
+	font-weight: 	bold;
+	width:			100%;
+	
+}
+
+.adInputOpt {
+	font-size: 		10px;
+	font-weight: 	bold;
+	margin-right:	1px;
+	margin-bottom:  2px;
+	text-align: 	center;	
+	background-color: maroon;
+	color:			#EEFFFF;
+}
+
+.adInputOpt1 {
+	font-size: 		10px;
+	font-weight: 	bold;
+	margin-right:	1px;
+	margin-bottom:  2px;
+	text-align: 	center;	
+	background-color: maroon;
+	color:			#EEFFFF;
+}
+
+.selectOptgroup {
+	background-color:maroon;
+}

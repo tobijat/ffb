@@ -1,0 +1,214 @@
+body { background-color:#CCFFCC;
+       margin:0px;
+       padding:0px;
+       font-size:12pt;
+       font-family:Verdana,sans-serif;
+       color:#000000;
+}
+
+#Container {
+    background-color: #CCFFCC;
+    width: 98%;
+    margin-right: auto;
+    margin-left: auto;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 5px;
+    padding-right: 5px;
+    visibility: visible;
+    position: relative;
+
+}
+
+#Navbar {
+    background-color: #99CC99;
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    visibility: visible;
+    position: relative;
+    border: solid black 0px;
+    padding-bottom: 2px;
+    margin-bottom: 5px;
+}
+
+#Navigation {
+    background-color: #99CC99;
+    width: 98%;
+    margin-right: auto;
+    margin-left: auto;
+    visibility: visible;
+    position: relative;
+    padding-left: 2px;
+    padding-top: 2px;
+    float: left;
+}
+
+#Main {
+    background-color: #99CC99;
+    width: 100%;
+    min-height: 550px;
+    visibility: visible;
+    position: relative;
+    padding: 0;
+    font-size: 10pt;
+    margin-bottom:5px;
+}
+#Mainleft {
+    background-color: #CCFFCC;
+    min-height: 550px;
+    width: 65%;
+    float: left;
+    visibility: visible;
+    position: relative;
+    font-size: 10pt;
+    margin-bottom:5px;
+}
+
+#Leftinfo {
+    background-color: #99CC99;
+    min-height: 100px;
+    width: 100%;
+    visibility: visible;
+    position: relative;
+    margin-bottom: 5px;
+}
+
+#Leftteam {
+    background-color: #99CC99;
+    min-height: 600px;
+    width: 100%;
+    visibility: visible;
+    position: relative;
+    margin-bottom: 5px;
+}
+
+#Leftaction {
+    background-color: #99CC99;
+    min-height: 100px;
+    width: 100%;
+    visibility: inherit;
+    position: relative;
+    margin-bottom: 5px;
+}
+
+#Mainright {
+    background-color: #99CC99;
+    width: 34%;
+    min-height: 550px;
+    float: right;
+    visibility: visible;
+    position: relative;
+    padding: 4px;
+    font-size: 10pt;
+    margin-bottom:5px;
+}
+
+#Footer {
+    background-color: #99CC99;
+    width: 100%;
+    clear: both;
+    visibility: visible;
+    position: relative;
+    border-top: solid black 1px;
+    margin-top: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-size:8pt;
+}
+
+
+#Content {
+    background:#E6E6FA;
+    visibility:visible;
+    position: relative;
+    padding: 0px;
+    width:90%;
+    clear:both;
+}
+
+#bigload {
+	width: 100px;
+	height: 100px;
+	vertical-align: middle;
+}
+
+#mediumload {
+	width: 32px;
+	height: 32px;
+	vertical-align: middle;
+}
+
+#smallload {
+	width: 18px;
+	height: 15px;
+	vertical-align: middle;
+}
+
+#bigbarload {
+	width: 126px;
+	height: 22px;
+	vertical-align: middle;
+}
+
+#inprogressload {
+	width: 16px;
+	height: 16px;
+	vertical-align: middle;
+}
+
+#selected_game {
+    width: 70%;
+    text-align:center;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+#imgfront {
+	vertical-align: text-top;
+	vertical-align: top;
+	margin-left: 7px;
+	margin-right: 7px;
+	margin-bottom: 100px;
+}
+
+#logo {
+	display: inline;
+}
+
+hr {
+    color: #CCFFCC;
+}
+
+.stdSelect {
+	width: 200px;
+	font-size: 12px;
+	font-weight: bold;	
+}
+
+.stdSelect0 {
+	background-color: #CCFFCC;
+}
+
+.stdSelect1 {
+	background-color: #99CC99;
+}
+
+.gameselectBox{
+	width: 200px;
+	font-size: 12px;
+	font-weight: bold;
+}
+
+.gameSelect0 {
+	background-color: #CCFFCC;
+}
+
+.gameSelect1 {
+	background-color: #99CC99;
+}
+
+a.nav:link { color:#000000; text-decoration:underline; }
+a.nav:visited { color:#000000; text-decoration:underline; }
+a.nav:hover { color:#FFFFFF; text-decoration:underline; background:#008000; }
+a.nav:active { color:#808000; text-decoration:underline; }

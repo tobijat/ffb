@@ -1,0 +1,93 @@
+#ms_mainleft {
+	background-color: #CCFFCC;
+	width:39%;
+	float:left;
+}
+#ms_leftselect {
+	width:50%;
+	float:left;
+}
+#ms_leftuserlist {
+	width:49%;
+	float:left;
+	border:solid black 1px;
+	height:450px;
+	overflow:auto;
+	padding-left:2px;
+	padding-top:2px;
+	padding-bottom:2px;
+	margin-top:1px;
+	margin-bottom:1px;
+}
+#ms_mainright {
+	background-color: #CCFFCC;
+	width:60%;
+	float:right;
+}
+#ms_main {
+	width:99%;
+	margin-left:auto;
+	margin-right:auto;
+}
+#ms_mainlist {
+	width:99%;
+	margin-left:auto;
+	margin-right:auto;
+}
+#ms_list_line {
+	width:100%;
+	margin-top:1px;
+	margin-bottom:1px;
+}
+#ms_list_line:hover {
+	background-color: #CCFFCC;
+}
+#ms_list_date {
+	width:15%;
+	float:left;
+}
+#ms_list_subject {
+	width:35%;
+	float:left;
+	overflow:hidden;
+	white-space:nowrap;
+	margin-right:2px;
+}
+#ms_list_to {
+	width:20%;
+	float:left;
+	overflow:hidden;
+	white-space:nowrap;
+	margin-right:2px;
+}
+#ms_list_type {
+	width:10%;
+	float:left;
+	overflow:hidden;
+}
+#ms_list_actions {
+	width:10%;
+	float:left;
+}
+
+#ms_mail_to {
+	width:99%;
+	margin-left:auto;
+	margin-right:auto;
+}
+#ms_mail_subject {
+	width:99%;
+	margin-left:auto;
+	margin-right:auto;
+}
+#ms_mail_text {
+	width:99%;
+	margin-left:auto;
+	margin-right:auto;
+}
+#ms_mail_send {
+	width:99%;
+	margin-left:auto;
+	margin-right:auto;
+	text-align:center;
+}

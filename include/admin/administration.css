@@ -1,0 +1,126 @@
+form {
+    padding:0;
+    margin:0;
+}
+div#administration {
+    width:90%;
+    padding:5px;
+    margin-left:auto;
+    margin-right:auto;
+    background-color:#99CC99;
+    font-size: 10pt;
+}
+div#administration_large {
+    width:95%;
+    padding:5px;
+    margin-left:auto;
+    margin-right:auto;
+    background-color:#99CC99;
+    font-size: 10pt;
+}
+div#admintitle {
+    width:100%;
+    font-size:16pt;
+    text-align:center;
+    margin-bottom:5px;
+}
+div#form {
+    background-color:#CCFFCC;
+    width:60%;
+    padding:5px;
+    margin-left:auto;
+    margin-right:auto;
+}
+div#formline {
+    margin-top: 2px;
+    clear:both;
+}
+div#formdescr {
+    width: 49%;
+    float:left;
+    text-align:right;
+}
+div#forminput {
+    width: 49%;
+    float:left;
+    text-align:left;
+}
+div#formclear {
+    clear:both;
+}
+div#formerror {
+    margin-left:auto;
+    margin-right:auto;
+    margin-bottom:5px;
+    background-color: #FF0000;
+    color: #000000;
+    width: 50%;
+    padding:5px;
+    font-size: 10pt;
+}
+div#formanswer {
+    margin-left:auto;
+    margin-right:auto;
+    margin-bottom:5px;
+    background-color: #00FF00;
+    color: #000000;
+    width: 50%;
+    padding:5px;
+    font-size: 10pt;
+}
+
+div#list {
+    background-color:#CCFFCC;
+    width:60%;
+    padding:5px;
+    margin-left:auto;
+    margin-right:auto;
+}
+div#listline {
+    clear:both;
+}
+div#listdescr {
+    width:99%;
+    float:left;
+    text-align:left;
+    background-color:#CCCCCC;
+    padding:2px;
+}
+div#listsymbol {
+    width: 49%;
+    float:right;
+    text-align:right;
+}
+div#listitem {
+    width:100%;
+    margin-top:5px;
+    border: solid black 1px;
+}
+div#matchdate {
+    width:25%;
+    float:left;
+}
+div#matchteams {
+    width:50%;
+    float:left;
+    text-align:center;
+}
+div#matchround {
+    width:20%;
+    float:left;
+}
+div#playername {
+    width:90%;
+    float:left;
+}
+div#matchrounddate {
+    width:35%;
+    float:left;
+}
+div#listclear {
+    clear:both;
+}
+
+.selectOptionOld {
+	background-color: #CCFFCC;
+}

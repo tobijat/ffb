@@ -1,0 +1,79 @@
+div#Home, div#Guest {
+	min-width: 45%;
+	display: inline;
+	float: left;
+	margin-right: 10px;
+	border: solid silver 1px;
+}
+
+div#HomeTitle, div#GuestTitle {
+	margin-bottom: 10px;
+	border-bottom: black dashed 2px;
+	display: inline;
+	text-align: center;
+	font-weight: bold;
+}
+
+div#HomePlayers, div#GuestPlayers {
+	width:100%;
+	margin: 2px;
+}
+
+div#player {
+	width: 99%;
+	border-bottom: 1px;
+	border-bottom-style: solid;
+	border-bottom-width: thin;
+	border-bottom-color: green;
+	vertical-align: middle;
+}
+
+div#loadingGuest, div#loadingHome {
+	visibility: hidden;
+}
+
+div#send {
+	width: 100%;
+	visibility: hidden;
+	text-align: center;
+	background-color: silver;
+}
+
+div#pname {
+	float: left;
+	width: 200px;
+	vertical-align: middle;
+}
+
+div#sep {
+	display: inline;
+	float: left;
+	width: 70px
+}
+
+div#clear {
+	clear: both;
+	visibility: hidden;
+}
+
+#Mostwanted {
+	font-size: 10px;
+	font-weight: bold;
+}
+
+.Duration {
+	display: inline;
+	font-size: 6px;
+	font-weight: bold;
+}
+
+option.red { background-color: red;}
+option.yellow {background-color: yellow;}
+option.silver{	background-color: silver;
+				color: white;
+				font-weight: bold;
+}
+
+.pastrounds {
+	background-color: silver;
+}

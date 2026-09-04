@@ -1,0 +1,1547 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link href="/datenservice/styles/default/vereinsseiten.css?version=OAc8LhMW" rel="stylesheet" type="text/css"  />
+
+	
+		<title>FC-WR Nu&szlig;dorf/Debant</title>
+		
+		
+		
+			<link href="/datenservice/styles/default/vereinsseiten_oefb.css?version=S4KRx83m" rel="stylesheet" type="text/css"  />
+		
+	
+	
+	<script language="javascript" type="text/javascript" src="/datenservice/javascript/jquery-1.4.2.min.js?version=6stmV9w4"></script>
+	<script language="javascript" type="text/javascript" src="/datenservice/javascript/jquery.cycle-2.73.all.min.js?version=hYSY8Exm"></script>
+	
+	<link href="/datenservice/javascript/fancybox/jquery.fancybox-1.3.4.css?version=vbRSYpTT" rel="stylesheet" type="text/css"  />
+	<script language="javascript" type="text/javascript" src="/datenservice/javascript/fancybox/jquery.fancybox-1.3.4.js?version=RoiRLovS"></script>
+	
+	
+	<script language="javascript" type="text/javascript" src="/datenservice/javascript/yui/utilities.js?version=rY9XoHNy"></script>
+	<script language="javascript" type="text/javascript" src="/datenservice/javascript/yui/dispatcher-min.js?version=hr9n7P1S"></script>
+	<script language="javascript" type="text/javascript" src="/datenservice/javascript/yui/sg-namespace.js?version=0BkDP0Oa"></script>
+	<script language="javascript" type="text/javascript" src="/datenservice/javascript/yui/sg-utils.js?version=q4new4PV"></script>
+	<script language="javascript" type="text/javascript" src="/datenservice/javascript/yui/sg-panel.js?version=QWmDPAQa"></script>
+	<script language="javascript" type="text/javascript" src="/datenservice/javascript/yui/sg-geo.js?version=lEpd0Vbp"></script>
+	
+	<script language="javascript" type="text/javascript" src="/datenservice/javascript/datenservice.js?version=6iztdqxz"></script>
+	
+	<script type="text/javascript">
+		function getTimeoutFor (nextSlideElement, options) {
+			var timeout = 5;
+			if( nextSlideElement ) {
+				var nextElem = options.elements[nextSlideElement] ? options.elements[nextSlideElement] : nextSlideElement;
+				
+				if( nextElem && nextElem.getAttribute("timeout") ) { 
+					timeout = parseInt(nextElem.getAttribute("timeout"));
+				}
+			}
+			return timeout * 1000;
+		}
+		
+		$(document).ready(function(){
+			$("#naechste_spiele").addClass("rounded_corners");
+			$(".blog_entry").addClass("rounded_corners");
+			$(".blog .create").attr("title", "Neuen Eintrag erstellen");
+			$(".blog_entry .edit").attr("title", "Diesen Eintrag bearbeiten");
+			$("#saisonAendern").click(function() {
+				$("#saisonAuswahl").slideToggle();
+			});
+			$(".cycle").cycle({
+				speed : 3000, 
+				timeoutFn : function(currSlideElement, nextSlideElement, options, forwardFlag)  {
+					return getTimeoutFor(nextSlideElement, options);
+				}
+			});
+			$(".cycle_header").cycle({
+				speed : 5000, 
+				width : 695, 
+				timeoutFn : function(currSlideElement, nextSlideElement, options, forwardFlag)  {
+					return getTimeoutFor(nextSlideElement, options);
+				}
+			});
+			
+			$("#mannschaftskader a.spielerDetail").fancybox({
+				type : 'iframe',
+				padding : 20,
+				centerOnScroll : false,  
+				overlayColor : "#000", 
+				overlayOpacity : 0.7,
+				autoDimensions : false, 
+				width : 600,
+				height : 600, 
+				transitionIn : "fade", 
+				transitionOut : "fade", 
+				speedIn : 500, 
+				speedOut : 50
+			});
+			
+			$("a.blog_detail").fancybox({
+				padding : 30,
+				centerOnScroll : false,  
+				overlayColor : "#000", 
+				overlayOpacity : 0.7,
+				autoDimensions : false, 
+				width : 800,
+				height : "75%", 
+				transitionIn : "fade", 
+				transitionOut : "fade", 
+				speedIn : 500, 
+				speedOut : 50
+			});
+			$("a.blog_edit").fancybox({
+				type : 'iframe',
+				showCloseButton : false, 
+				enableEscapeButton : false, 
+				hideOnOverlayClick : false, 
+				hideOnContentClick : false, 
+				padding : 10,
+				margin : 15, 
+				centerOnScroll : false,  
+				overlayColor : "#000", 
+				overlayOpacity : 0.7,
+				autoDimensions : false, 
+				width : "100%",
+				height : "100%" 
+			});
+			$("a.blog_create").fancybox({
+				type : 'iframe',
+				showCloseButton : false, 
+				enableEscapeButton : false, 
+				hideOnOverlayClick : false, 
+				hideOnContentClick : false, 
+				padding : 10,
+				margin : 15, 
+				centerOnScroll : false,  
+				overlayColor : "#000", 
+				overlayOpacity : 0.7,
+				autoDimensions : false, 
+				width : "100%",
+				height : "100%" 
+			});
+		});
+		function bcDialogClosed() {
+			$.fancybox.close();
+			location.reload();
+		};
+	</script>
+	<!--[if IE]>
+	<script language="javascript" type="text/javascript" src="/datenservice/javascript/jquery.corner.js?version=CdRjznUl"></script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+			$(".rounded_corners").corner("5px");
+			$(".rounded_corners_small").corner("2px");
+		});
+	</script>
+	<style type="text/css">
+		.spielankuendigung					{ border: 1px solid #E2E1D6 !important; }
+		.spielinfo							{ border: 1px solid #E2E1D6 !important; }
+		.blog div.create 					{ top: 290px !important; }
+	</style>
+	<![endif]-->
+	
+	<!--[if IE 6]>
+	<link href="/datenservice/styles/default/vereinsseiten_ie6.css?version=F0V26UpD" rel="stylesheet" type="text/css"  />
+	<![endif]-->
+</head>
+<body>
+	<div id="bannerTop">
+		<div class="super_banner"></div>
+<div class="fullsize_banner"></div>
+	</div>
+	<div id="trenner" class="rounded_corners_small"> </div>
+	<div id="logo_verband">
+		
+		
+			<img src="/datenservice/images/portal/oefb.png" />
+		
+		<!--
+			<img src="/datenservice/images/portal/stfv.png" />
+			<img src="/datenservice/images/portal/sfv.png" />
+		-->
+	</div>
+	<div id="navigation">
+		
+
+
+
+
+
+
+
+	<ul id="mainNavigation">
+		<li id="navAktuelles">
+			<a href='
+						
+							
+							
+							
+						/datenservice/portal/verein/aktuelles.ds?~cid=1&~ctoken=3d4007657ebcf3&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;awVerband=K_
+					'>
+				Aktuelles
+			</a>
+		</li>
+		
+		
+			<li id="navMannschaften">
+				<a href='
+							
+								
+								
+								
+							/datenservice/portal/verein/mannschaftenTabelleErgebnisse.ds?~cid=1&~ctoken=3d4007657ebcf3&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;awVerband=K_
+						'>
+					Mannschaften
+				</a>
+			</li>
+		
+		<li id="navFunktionaere">
+			<a href='
+						
+							
+							
+							
+						/datenservice/portal/verein/funktionaere.ds?~cid=1&~ctoken=3d4007657ebcf3&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;awVerband=K_
+					'>
+				Funktion&auml;re
+			</a>
+		</li>
+		<li id="navTrainer">
+			<a href='
+						
+							
+							
+							
+						/datenservice/portal/verein/trainer.ds?~cid=1&~ctoken=3d4007657ebcf3&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;awVerband=K_
+					'>
+				Trainer
+			</a>
+		</li>
+		<li id="navSpielort">
+			
+			<a href='
+						
+							
+							
+							
+							
+						/datenservice/portal/verein/spielort.ds?~cid=1&~ctoken=3d4007657ebcf3&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;spielortId=475275713%7C231479568808153686&amp;awVerband=K_
+					'>
+				
+				
+					Sportplatz
+				
+			</a>
+		</li>
+	</ul>
+
+
+
+	
+
+
+
+
+
+
+
+	
+	
+	<ul id="subNavigation">	
+		<li>
+			<a id="saisonAendern" href="javascript:void(0);" title="Saison ändern">Saison 2011 / 2012:</a>
+			<ul id="saisonAuswahl" class="rounded_corners">
+				
+					
+						
+						<li class="selected" >
+							<a href='
+										
+											
+											
+											
+											
+										/datenservice/portal/verein/mannschaftenTabelleErgebnisse.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;awVerband=K_
+									' >
+								2011 / 2012
+							</a>
+						</li>
+					
+				
+					
+						
+						<li  >
+							<a href='
+										
+											
+											
+											
+											
+										/datenservice/portal/verein/mannschaftenTabelleErgebnisse.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C647317179534288513&amp;awVerband=K_
+									' >
+								2010 / 2011
+							</a>
+						</li>
+					
+				
+					
+						
+						<li  >
+							<a href='
+										
+											
+											
+											
+											
+										/datenservice/portal/verein/mannschaftenTabelleErgebnisse.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C564764342747229599&amp;awVerband=K_
+									' >
+								2009 / 2010
+							</a>
+						</li>
+					
+				
+					
+						
+						<li  >
+							<a href='
+										
+											
+											
+											
+											
+										/datenservice/portal/verein/mannschaftenTabelleErgebnisse.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C478694524478481372&amp;awVerband=K_
+									' >
+								2008 / 2009
+							</a>
+						</li>
+					
+				
+					
+						
+						<li  >
+							<a href='
+										
+											
+											
+											
+											
+										/datenservice/portal/verein/mannschaftenTabelleErgebnisse.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C392918696986149464&amp;awVerband=K_
+									' >
+								2007 / 2008
+							</a>
+						</li>
+					
+				
+					
+						
+						<li  >
+							<a href='
+										
+											
+											
+											
+											
+										/datenservice/portal/verein/mannschaftenTabelleErgebnisse.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C310126608512190154&amp;awVerband=K_
+									' >
+								2006 / 2007
+							</a>
+						</li>
+					
+				
+					
+				
+			</ul>
+		</li>
+		
+			<li class="selected" >
+				
+	
+				
+				
+				
+				
+				
+				
+				
+					<!-- Kader als Detailseite ausgewaehlt -->
+					<a href='
+								
+									
+									
+									
+									
+									
+								/datenservice/portal/verein/mannschaftenKader.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C739244736717465919&amp;awVerband=K_
+							'>
+						KM
+					</a>
+				
+				
+				
+			</li>
+		
+			<li  >
+				
+	
+				
+				
+				
+				
+				
+				
+				
+					<!-- Kader als Detailseite ausgewaehlt -->
+					<a href='
+								
+									
+									
+									
+									
+									
+								/datenservice/portal/verein/mannschaftenKader.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C739245118432684371&amp;awVerband=K_
+							'>
+						Reserve
+					</a>
+				
+				
+				
+			</li>
+		
+			<li  >
+				
+	
+				
+				
+				
+				
+				
+				
+				
+					<!-- Kader als Detailseite ausgewaehlt -->
+					<a href='
+								
+									
+									
+									
+									
+									
+								/datenservice/portal/verein/mannschaftenKader.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C744684984920118324&amp;awVerband=K_
+							'>
+						U16
+					</a>
+				
+				
+				
+			</li>
+		
+			<li  >
+				
+	
+				
+				
+				
+				
+				
+				
+				
+					<!-- Kader als Detailseite ausgewaehlt -->
+					<a href='
+								
+									
+									
+									
+									
+									
+								/datenservice/portal/verein/mannschaftenKader.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C744965573791541967&amp;awVerband=K_
+							'>
+						U14
+					</a>
+				
+				
+				
+			</li>
+		
+			<li  >
+				
+	
+				
+				
+				
+				
+				
+				
+				
+					<!-- Kader als Detailseite ausgewaehlt -->
+					<a href='
+								
+									
+									
+									
+									
+									
+								/datenservice/portal/verein/mannschaftenKader.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C744957602602437949&amp;awVerband=K_
+							'>
+						U12 (7er)
+					</a>
+				
+				
+				
+			</li>
+		
+			<li  >
+				
+	
+				
+				
+				
+				
+				
+				
+				
+					<!-- Kader als Detailseite ausgewaehlt -->
+					<a href='
+								
+									
+									
+									
+									
+									
+								/datenservice/portal/verein/mannschaftenKader.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C744684603741770729&amp;awVerband=K_
+							'>
+						U10 A A
+					</a>
+				
+				
+				
+			</li>
+		
+			<li  >
+				
+	
+				
+				
+				
+				
+				
+				
+				
+					<!-- Kader als Detailseite ausgewaehlt -->
+					<a href='
+								
+									
+									
+									
+									
+									
+								/datenservice/portal/verein/mannschaftenKader.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C744684791915025423&amp;awVerband=K_
+							'>
+						U10 B B
+					</a>
+				
+				
+				
+			</li>
+		
+			<li  >
+				
+	
+				
+				
+				
+				
+				
+				
+				
+					<!-- Kader als Detailseite ausgewaehlt -->
+					<a href='
+								
+									
+									
+									
+									
+									
+								/datenservice/portal/verein/mannschaftenKader.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C744570563235153214&amp;awVerband=K_
+							'>
+						U8
+					</a>
+				
+				
+				
+			</li>
+		
+	</ul>
+
+
+
+	</div>
+	<div id="content">
+		<div id='mannschaften'>
+			<div id="main_content" class="rounded_corners">
+				
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+<!--
+	$(document).ready(function(){
+		$("#mainNavigation #navMannschaften").addClass("selected");
+	});
+//-->
+</script>
+
+<div class="head_article rounded_corners">
+	<div class="header_foto">
+		
+			<div class="image_container">
+				
+				
+					<img src="/datenservice/images/keinMannschaftsfoto.gif" />
+				
+			</div>
+		 	<div class="header_title rounded_corners">
+	 			
+		 		FC-WR Nu&szlig;dorf/Debant - Kampfmannschaft
+		 	</div>
+		 
+ 	</div>
+</div>
+
+
+	<div class="info_box rounded_corners">
+			<img src="/netzwerk/imagedownload/379402779304830775_334424693145146039-200-120-9pKFVoL2.jpg">
+	<h1>Nußdorf</h1>
+		<h2>Unterliga West</h2>
+	<p>
+		Trainer: Dold Michael<br />
+		Co-Trainer: Libiseller Ingo Rudolf<br />
+		TW-Trainer: Libiseller Ingo Rudolf<br />
+	</p>
+	<p>
+		Heimtrikot: rot-rot-rot<br />
+	</p>
+</div>
+
+
+			</div>
+			<div id="sub_content" class="rounded_corners">
+				<div id="left">
+					
+
+
+
+
+
+
+
+
+<style type="text/css">
+	.sidebox #kader		{ font-weight: bold; }
+</style>
+
+
+	
+
+<script type="text/javascript" >
+	$(document).ready(function() {
+		$.get("/online/bannerVereinshomepages_SB/705555987159085035_737080217918325744_0,de.html", function(data) {
+			$("#ds_super_banner").html(data);
+			FV.initScrollableAds();
+		});
+	});
+</script>
+<div id="ds_super_banner"></div>
+
+
+
+
+	<div id="mannschaftskader" class="rounded_corners">
+		
+
+
+
+
+
+
+<div class="headline">Trainer &amp; Betreuer</div>
+
+
+
+
+<ul class="betreuer">
+	
+		<li>
+			<div class="spieler rounded_corners">
+				<div class="spielerPosition">Trainer</div>
+				<div class="spielerImage">
+					
+							<img src="/netzwerk/imagedownload/379402779304830775_686468104244359559-120-150-jbTQ3e.jpg" />
+
+					
+					
+				</div>
+				<div class="spielerName">Dold Michael</div>
+			</div>
+		</li>
+	
+	
+		<li>
+			<div class="spieler rounded_corners">
+				<div class="spielerPosition">Co-Trainer</div>
+				<div class="spielerImage">
+					
+							<img src="/netzwerk/imagedownload/379402779304830775_686468632256901642-120-150-yC3r0qM0.jpg" />
+
+					
+					
+				</div>
+				<div class="spielerName">Libiseller Ingo Rudolf</div>
+			</div>
+		</li>
+	
+	
+		<li>
+			<div class="spieler rounded_corners">
+				<div class="spielerPosition">TW-Trainer</div>
+				<div class="spielerImage">
+					
+							<img src="/netzwerk/imagedownload/379402779304830775_686468632256901642-120-150-yC3r0qM0.jpg" />
+
+					
+					
+				</div>
+				<div class="spielerName">Libiseller Ingo Rudolf</div>
+			</div>
+		</li>
+	
+	
+</ul>
+<br class="clear" />
+
+		
+		
+		
+		
+			
+
+
+	<div class="headline">Tor</div>
+	<ul class="tormann">
+		
+		
+	</ul>
+	<br class="clear" />
+	
+	<div class="headline">Verteidigung</div>
+	<ul class="verteidigung">
+		
+		
+	</ul>
+	<br class="clear" />
+	
+	<div class="headline">Mittelfeld</div>
+	<ul class="mittelfeld">
+		
+		
+	</ul>
+	<br class="clear" />
+	
+	<div class="headline">Sturm</div>
+	<ul class="sturm">
+		
+		
+	</ul>
+	<br class="clear" />
+		
+		
+
+		<div class="headline">Noch ohne Position</div>
+		<ul class="sturm">
+			
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Aichner Thomas' href='/netzwerk/spielerdetails/379402779304830775_100094~744919086407570354~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686586846937596014-120-150-8BgefbAx.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Aichner Thomas</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Berger Christian' href='/netzwerk/spielerdetails/379402779304830775_100094~744919086676005811~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686586927468232830-120-150-gousQxsl.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Berger Christian</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Fuchs Philipp' href='/netzwerk/spielerdetails/379402779304830775_100094~744919086676005812~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686587076718346407-120-150-xHtfRS3p.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Fuchs Philipp</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Gasser David' href='/netzwerk/spielerdetails/379402779304830775_100094~744919086944441269~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686587145706258605-120-150-ge97oRJ8.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Gasser David</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Jans Ewald' href='/netzwerk/spielerdetails/379402779304830775_100094~747784507658079345~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_526279335278887201-120-150-xkqXDEWd.JPG" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Jans Ewald</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Lenzhofer David' href='/netzwerk/spielerdetails/379402779304830775_100094~745460124511625639~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_604860887987817950-120-150-7b7qhOU5.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Lenzhofer David</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Libiseller Ingo Rudolf' href='/netzwerk/spielerdetails/379402779304830775_100094~744919199418897336~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686587496014528715-120-150-hZWTCdd8.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Libiseller Ingo Rudolf</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Lugger Philipp' href='/netzwerk/spielerdetails/379402779304830775_100094~744919199418897337~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_605305694671840569-120-150-RrLTFPRa.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Lugger Philipp</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Monitzer Andreas' href='/netzwerk/spielerdetails/379402779304830775_100094~744919199418897338~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686684193713540064-120-150-2dEYEj94.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Monitzer Andreas</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Moser Alexander' href='/netzwerk/spielerdetails/379402779304830775_100094~744919199687332795~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_605306020284048711-120-150-yAKwOIwu.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Moser Alexander</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Moser Manuel' href='/netzwerk/spielerdetails/379402779304830775_100094~744919199687332796~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686684246595324902-120-150-zF5bVEyM.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Moser Manuel</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Neunh&auml;userer Marcus' href='/netzwerk/spielerdetails/379402779304830775_100094~745460377377825208~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_604861090388151812-120-150-EbAJWcah.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Neunh&auml;userer Marcus</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Ortner Lukas' href='/netzwerk/spielerdetails/379402779304830775_100094~744919199687332797~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686684469665188856-120-150-461HX8hv.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Ortner Lukas</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Ortner Marco' href='/netzwerk/spielerdetails/379402779304830775_100094~744919199955768254~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686684317462285292-120-150-Mjab06d.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Ortner Marco</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Pranter Kevin' href='/netzwerk/spielerdetails/379402779304830775_100094~744919272970212287~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686684778634398762-120-150-O3oYuueL.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Pranter Kevin</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Reisinger Lukas' href='/netzwerk/spielerdetails/379402779304830775_100094~744919273238647744~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686684833395231792-120-150-bWVGC8LL.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Reisinger Lukas</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Rohracher Georg Peter' href='/netzwerk/spielerdetails/379402779304830775_100094~744919273238647745~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686684905604369462-120-150-3OikloS8.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Rohracher Georg Peter</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Schneider Michael' href='/netzwerk/spielerdetails/379402779304830775_100094~744919273238647746~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686685047338290246-120-150-thugQoKi.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Schneider Michael</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Steinlechner Robert Christian' href='/netzwerk/spielerdetails/379402779304830775_100094~744919273507083203~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686685119278992460-120-150-NMG5hs.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Steinlechner Robert Christian</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Stolzlechner Julian' href='/netzwerk/spielerdetails/379402779304830775_100094~744919273775518660~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686685192025001042-120-150-UBon0ckZ.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Stolzlechner Julian</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Tagger Dominik' href='/netzwerk/spielerdetails/379402779304830775_100094~744919273775518661~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686685267186928728-120-150-ze5LUZPi.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Tagger Dominik</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Unterassinger Thomas' href='/netzwerk/spielerdetails/379402779304830775_100094~744919348669010886~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686685402209963143-120-150-hmNjvpYl.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Unterassinger Thomas</div>
+	</div>
+</a></li>
+			
+				<li>
+
+
+
+
+
+<a title='Spielerdetails Zeiner Johannes' href='/netzwerk/spielerdetails/379402779304830775_100094~746325786698191879~0.htm?awVerband=K_' class="spielerDetail">
+	<div class="spieler rounded_corners">
+		<div class="spielerImage">
+			
+					<img src="/netzwerk/imagedownload/379402779304830775_686685572934913177-120-150-hQBZzzQ.jpg" />
+
+			
+			
+			
+		</div>
+		<div class="spielerName">Zeiner Johannes</div>
+	</div>
+</a></li>
+			
+		</ul>
+		<br class="clear" />
+	</div>
+
+
+				</div>
+				<div id="right">
+					
+						
+
+<script type="text/javascript" >
+	$(document).ready(function() {
+		$.get("/online/bannerVereinshomepages/705555987159085035_737080403407226222~737080456289011099_0,de.html", function(data) {
+			$("#ds_banner").html(data);
+			FV.initScrollableAds();
+		});
+	});
+</script>
+<div id="ds_banner"></div>
+
+					
+					
+
+
+
+
+
+
+
+	<div class="sidebox rounded_corners">
+		
+			<div class="sidebox_headline">Unterliga West</div>
+			<ul>
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+					
+					
+					
+					
+					
+					
+					
+				
+				
+				
+					<li id="tabelle">
+						<a href='
+									
+											
+											
+											
+											
+											
+									/datenservice/portal/verein/mannschaftenTabelleErgebnisse.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C739244736717465919&amp;awVerband=K_
+								'>
+							&gt; Tabelle &amp; Ergebnisse
+						</a>
+					</li>
+				
+				
+				
+					<li id="tabelleHeimAuswaerts">
+						<a href='
+									
+											
+											
+											
+											
+											
+									/datenservice/portal/verein/mannschaftenTabelleHeimAuswaerts.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C739244736717465919&amp;awVerband=K_
+								'>
+							&gt; Heim- / Ausw&auml;rtstabelle
+						</a>
+					</li>
+
+					<li id="tabelleHinRueckrunde">
+						<a href='
+									
+											
+											
+											
+											
+											
+									/datenservice/portal/verein/mannschaftenTabelleHinRueckrunde.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C739244736717465919&amp;awVerband=K_
+								'>
+							&gt; Tabelle Hinrunde / R&uuml;ckrunde
+						</a>
+					</li>
+				
+
+				
+
+				
+					<li id="torschuetzen">
+						<a href='
+									
+											
+											
+											
+											
+											
+									/datenservice/portal/verein/mannschaftenTorschuetzen.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C739244736717465919&amp;awVerband=K_
+								'>
+							&gt; Torsch&uuml;tzen
+						</a>
+					</li>
+				
+		
+				
+					<li id="kartenstatistik">
+						<a href='
+									
+											
+											
+											
+											
+											
+									/datenservice/portal/verein/mannschaftenKartenstatistik.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C739244736717465919&amp;awVerband=K_
+								'>
+							&gt; Kartenstatistik
+						</a>
+					</li>
+				
+			</ul>
+		
+		
+		<div class="sidebox_headline">Spielpl&auml;ne</div>
+		<ul>
+			
+				
+					<li id="spielplanMeisterschaft">
+						<a href='
+									
+											
+											
+											
+											
+											
+									/datenservice/portal/verein/mannschaftenSpielplanMeisterschaft.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C739244736717465919&amp;awVerband=K_
+								'>
+							&gt; Meisterschaft
+						</a>
+					</li>
+				
+			
+
+			
+				<li id="spielplanCup">
+					<a href='
+								
+										
+										
+										
+										
+										
+								/datenservice/portal/verein/mannschaftenSpielplanCup.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C739244736717465919&amp;awVerband=K_
+							'>
+						&gt; Cup
+					</a>
+				</li>
+			
+
+			<li id="spielplanFreundschaftsspiele">
+				<a href='
+							
+									
+									
+									
+									
+									
+							/datenservice/portal/verein/mannschaftenSpielplanFreundschaftsspiele.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C739244736717465919&amp;awVerband=K_
+						'>
+					&gt; Freundschaftsspiele
+				</a>
+			</li>
+		</ul>
+		
+		<div class="sidebox_headline">Kader &amp; Spielort</div>
+		<ul>
+			<li id="kader">
+				<a href='
+							
+									
+									
+									
+									
+									
+							/datenservice/portal/verein/mannschaftenKader.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;saisonId=100066%7C728499523851922243&amp;mannschaftsId=100092%7C739244736717465919&amp;awVerband=K_
+						'>
+					&gt; Mannschaftskader
+				</a>
+			</li>
+	
+			<li id="spielort">
+				
+				<a href='
+							
+									
+									
+									
+									
+							/datenservice/portal/verein/spielort.ds?~cid=1&~ctoken=3d4007d97cbd1f&amp;vereinsNr=9206&amp;sektionsId=485215725%7C665234623999405507&amp;spielortId=475275713%7C231479568808153686&amp;awVerband=K_
+						'>
+					&gt; Aguntstadion Nu&szlig;dorf/Debant
+				</a>
+			</li>
+		</ul>
+	</div>
+	
+	
+	
+		<div class="sidebox rounded_corners">
+			<div class="sidebox_headline">N&auml;chstes Spiel</div>
+			<a href="/netzwerk/spieldetails/379402779304830775_100071-746137833897985520.htm?show=vorschau&awVerband=K_" target="_blank">
+	<div class="spielankuendigung rounded_corners" >
+		<div class="datum">Sa, 30. Juli, 18:00 Uhr<span>KM</span></div>
+		<div class="logos">
+			<div class="logoContainer heim">
+					<img src="/netzwerk/imagedownload/379402779304830775_334424693145146039-100-100-BZu3vgbV.jpg" title="Nußdorf" />
+			</div>
+			<div class="logoContainer gast">
+					<img src="/netzwerk/imagedownload/379402779304830775_736665782827374384-100-100-XezU6g54.jpg" title="Nötsch" />
+			</div>
+		</div>
+		<div class="mannschaften">
+			<div class="heim">Nußdorf</div>
+			<div class="gast">Nötsch</div>
+		</div>
+		<div class="bewerb">
+			Unterliga West
+				, 1. Runde
+		</div>
+	</div>
+</a>
+			<br class="clear" />
+		</div>
+	
+
+					
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="button rounded_corners">
+	<a href="http://www.silbergrau.at" target="_blank">
+		<img src="/datenservice/images/portal/silbergrau.gif" />
+	</a>
+</div>
+
+
+
+	
+	
+	
+
+
+
+
+	
+	
+
+
+				</div>
+				<br class="clear" />
+			</div>
+		</div>
+	</div>
+	
+		<div id="disclaimer">
+	(c) K&auml;rntner Fu&szlig;ballverband, jegliches verwendete Material ist urheberrechtlich gesch&uuml;tzt - siehe 
+		<a href="/ooefv/content/565012306513886675_0_569628808221628263,de.html" target="_blank">Nutzungsbedingungen</a>
+</div>
+
+	
+	<div id="oewa">
+	<!-- OEWA VERSION="1.6" -->
+	<script type="text/javascript">
+		<!--
+		var OEWA="http://oefb.oewabox.at/cgi-bin/ivw/CP/RedCont/Sport/Fussball/fussballoesterreich.at";
+		document.write("<div><img src=\""+OEWA+"?r="+escape(document.referrer)+"&d="+(new Date()).getTime()+"\" width=\"1\" height=\"1\" /></div>");
+		// -->
+	</script>
+	<noscript>
+		<div><img src="http://oefb.oewabox.at/cgi-bin/ivw/CP/RedCont/Sport/Fussball/fussballoesterreich.at" width="1" height="1" /></div>
+	</noscript>
+	<!-- /OEWA -->
+</div>
+</body>
+</html>

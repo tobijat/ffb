@@ -1,0 +1,110 @@
+div#Confirmlist {
+    background-color: #99CC99;
+    width: 99%;
+    clear: both;
+    visibility: visible;
+    position: relative;
+    padding: 4px;
+    font-size: 10pt;
+}
+
+div#administration_playertoteam {
+    width:99%;
+    padding:5px;
+    margin-left:auto;
+    margin-right:auto;
+    background-color:#99CC99;
+    font-size: 10pt;
+}
+
+div#playername {
+    clear:both;
+}
+div#playernationality {
+    clear:both;
+}
+div#playerresult {
+    clear:both;
+}
+div#players {
+    clear:both;
+}
+div#Teams {
+    background-color: #CCFFCC;
+    clear:both;
+    padding:5px;
+}
+div#PlayerToTeams {
+    background-color: #CCFFCC;
+    clear:both;
+    padding:5px;
+}
+div#playerhead{
+	width: 100%;
+}
+
+div#playerinfo {
+	width: 100%;
+	float: left;
+	clear: both;
+}
+
+div#playerhead_name, div#playerhead_nationality, div#playerhead_position, div#playerhead_price, div#playerhead_delete, div#playerhead_hasaction {
+	color: red;
+	text-align: center;
+	font-weight: bold;
+	float: left;
+	margin-right: 5px;
+}
+
+div#playerbody_name, div#playerbody_nationality, div#playerbody_position, div#playerbody_price, div#playerbody_delete, div#playerbody_hasaction {
+	color: maroon;
+	float: left;
+	margin-right: 5px;
+}
+
+div#playerhead_name , div#playerbody_name {
+	min-width: 20%;
+	width: 20%;
+}
+
+div#playerhead_nationality, div#playerbody_nationality {
+	min-width: 80px;
+	min-height: 15px;
+	text-align: center;
+}
+
+div#playerhead_position, div#playerbody_position {
+	min-width: 70px;
+	text-align: center;
+}
+
+div#playerhead_price, div#playerbody_price {
+	min-width: 50px;
+	text-align: center;
+}
+
+div#playerhead_delete, div#playerbody_delete {
+	min-width: 50px;
+}
+
+div#playerhead_hasaction, div#playerbody_hasaction {
+	min-width: 50px;
+	text-align: center;
+}
+
+
+div#playerbody_hasaction img{
+	width: 16px;
+	height: 16px;
+}
+
+.delete {
+	display: inline;
+	float: left;
+}
+
+#flagimg {
+	width: 20px;
+	height: 15px;
+}

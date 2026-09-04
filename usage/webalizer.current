@@ -1,0 +1,2793 @@
+# Webalizer V2.21-02 Incremental Data - 02/21/2010 23:42:33
+2010 2 21 23 42 33
+122142 25481 310 616 98 111 319569364 3742 492 0
+28 10 5058 1 21
+1870 832 7275861 20 56 20
+891 774 6044295 12 71 12
+1254 630 6739533 15 64 15
+616 584 6539591 15 32 14
+739 716 7076655 22 52 20
+11695 786 12609330 22 223 17
+26467 1729 31624660 22 239 20
+17574 2757 30437170 31 460 29
+2348 1078 10547425 24 177 22
+5491 1873 18315743 23 365 22
+7850 3012 33568540 23 321 30
+1444 894 11901968 29 313 36
+636 523 6887326 25 48 26
+918 777 9354225 30 95 28
+4433 2209 41166911 32 485 34
+10134 2011 29207310 27 304 33
+1011 738 6961596 20 54 22
+19460 1487 18780297 24 164 24
+4177 301 3895685 26 30 22
+2173 1016 12054865 27 151 24
+961 754 8580378 28 38 23
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+3237 694 8246017 42
+344 339 4095140 25
+184 179 1725103 20
+202 202 2455785 10
+192 177 2394225 25
+185 181 1853232 19
+187 178 1791322 25
+336 327 4549068 26
+663 607 5297410 53
+4529 1267 17099904 204
+4713 1638 21240559 298
+12356 2466 40703186 325
+6184 970 11395917 123
+5036 1611 19289316 320
+7239 1790 23959030 347
+5774 1795 20012472 338
+4249 1892 21377445 418
+12076 1993 22209958 329
+15765 1253 18287850 253
+15907 1174 16692129 149
+6408 741 11555805 93
+5695 1793 18116501 76
+4724 1036 12350428 101
+5957 1178 12871562 123
+0
+0
+0
+25481
+0
+0
+0
+0
+0
+23
+0
+4
+462
+0
+96087
+0
+0
+0
+0
+0
+15
+70
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+# -urls- 
+/images/ffb/countdown/0ra.gif
+1 5 3328220791965954605 1812 0 0
+/images/ffb/symbols/sort.png
+1 19 3904674951393849646 344 0 0
+/script/ffb/news.js
+0 274 7017222212790874723 38311 0 0
+/images/ffb/flags/ned.gif
+1 3 324299535361 1080 0 0
+/images/ffb/shirts/shirt_NUSSDORF.png
+1 65 4121411783022948654 97907 0 0
+/images/ffb/profiles/avatar/54d0089e494a85547a6301e43e3fdd52.png
+1 14 3334409964561646135 22059 0 0
+/administration/matchround/getMostWanted.xml
+0 31 1254177034 50197 0 0
+/images/ffb/players/15/333.jpg
+1 4 8319104452916308343 12393 0 0
+/images/ffb/symbols/symbol_score.png
+1 118 7738710717702764897 120150 0 0
+/images/ffb/players/32/715.jpg
+1 27 3615884936708239673 287272 0 0
+/images/ffb/flags/drautal.gif
+1 101 7023196937266933356 664416 0 0
+/images/ffb/awards/ball_washed64x64.png
+1 12 0 29940 0 0
+/images/ffb/players/92/3667.jpg
+1 10 891163443064147125 19716 0 0
+/images/ffb/countdown/alls.gif
+1 6609 18446537709120915662 220068 0 0
+/script/user/login.js
+0 224 498499846095832880 69281 0 0
+/resource/foe_teamdata/nussdorf.html
+0 5 0 168325 0 0
+/script/ffb/gamemgmt.js
+0 280 0 90442 0 0
+/images/ffb/shirts/shirt_HERMAGOR.png
+1 67 0 75348 0 0
+/usage/ctry_usage_201002.png
+1 2 0 5326 0 0
+/images/ffb/symbols/green-smiley-face464x64.png
+1 2 0 4050 0 0
+/images/admin/navigation/nav_start.png
+1 197 0 199464 0 0
+/
+0 601 0 7179777 198 123
+/usage/nmm_flags/ru.png
+1 2 0 970 0 0
+/ffb/registration
+0 2 0 25194 0 0
+/images/ffb/flags/aus.gif
+1 3 0 1134 0 0
+/images/ffb/symbols/symbol_game_010.png
+1 251 0 418438 0 0
+/ffbapi/matchdata/getGoals.xml
+0 415 0 521729 0 0
+/script/admin/ads.js
+0 19 0 37620 0 0
+/administration/game/setSelectedGame.xml
+0 13 0 2583 0 0
+/administration/teamParserHelpers/updateStatusDescription.xml
+0 2 0 384 0 0
+/images/ffb/countdown/5ra.gif
+1 3 0 1290 0 0
+/resource/foe_teamdata/rothenthurn.html
+0 2 7355230318195125815 75342 0 0
+/script/ffb/lineup_v2.js
+0 67 7165897045451879480 141656 0 0
+/tobias gritschacher
+0 1 3690982469118459904 12249 0 0
+/resource/foe_teamdata/sachsenburg.html
+0 1 7233113282661395766 33651 0 0
+/images/ffb/symbols/sternhalb.gif
+1 170 7885630523738188129 6468 0 0
+/include/ffb/myteam.css
+0 136 3616733756309635072 2514 0 0
+/administration/team/getTeamListForGame.xml
+0 76 4121125952932687411 224721 0 0
+/images/ffb/players/14/368.jpg
+1 3 7885630523469821287 11616 0 0
+/script/constants.js
+0 1212 6032573037439757878 63482 0 0
+/images/ffb/flags/mkd.gif
+1 2 3831781737125197105 764 0 0
+/regeln
+0 1 7362667909793935475 12249 0 0
+/images/ffb/profiles/avatar/60fefcc51b6e9a26cf8d876019f0f43c.jpg
+1 1 3543546984318449197 1090 0 0
+/images/ffb/flags/tun.gif
+1 2 499846638959 750 0 0
+/images/ffb/players/32/714.jpg
+1 19 7595371814887645486 213917 0 0
+/welcome/reference
+0 41 72057594037927936 243502 26 16
+/images/ffb/shirts/shirt_PENK.png
+1 2 21070593453535280 4848 0 0
+/images/ffb/flags/alg.gif
+1 3 4123099529009639981 1110 0 0
+/images/ffb/symbols/Facebook-32.png
+1 3 0 14982 0 0
+/images/ffb/players/92/3666.jpg
+1 10 7218828720372347763 22019 0 0
+/images/ffb/countdown/allr.gif
+1 877 4107282860166792830 206304 0 0
+/images/ffb/profiles/photo/1f1e1baeefad4a1140276f5ff5656782.jpg
+1 109 7738710717702764897 1135160 0 0
+/images/ffb/flags/fro.gif
+1 2 21040145809617715 740 0 0
+/welcome/reference/https://partnernet.amazon.de
+0 1 8314902952814933108 13158 0 0
+/images/ffb/countdown/0sa.gif
+1 6175 8387231025723420208 25972 0 0
+/include/admin/fifa_playermanagement.css
+0 1 0 252 0 0
+/images/ffb/shirts/shirt_MAGDALEN.png
+1 65 30064684352 86706 0 0
+/ffb/user/invite.html
+0 3 886378291149474979 31909 0 0
+/images/admin/navigation/nav_award.png
+1 200 427848557478282806 817488 0 0
+/ffbapi/team/getPlayers.xml
+0 50 0 455437 0 0
+/images/ffb/awards/fourth48x48.png
+1 15 7958824813261226059 14760 0 0
+/administration/awards/setAwardGroup.xml
+0 3 3329626877433217024 429 0 0
+/welcome/ffb@tobijat.at
+0 1 3978698485123919157 12249 0 0
+/images/ffb/flags/pol.gif
+1 2 1952804398 720 0 0
+/images/ffb/flags/cze.gif
+1 2 8314877663155399987 724 0 0
+/images/ffb/profiles/photo/a3537f6f0bc2f48c2f2c0bfc937d5fa4.jpg
+1 2 3543828450771875897 113516 0 0
+/users///accounts/inc/include.php
+0 1 0 13057 1 0
+/include/ffb/registration.css
+0 58 1258759564 17230 0 0
+/images/ffb/symbols/sternganz.gif
+1 172 8746403241625479214 5698 0 0
+/images/ffb/navigation/nav_shop.png
+1 724 4049017539982805756 15998 0 0
+/images/ffb/flags/gre.gif
+1 3 4035506741100675072 1104 0 0
+/images/ffb/profiles/photo/2643be604cb126b3f382f8167969fbbd.jpg
+1 4 3615608972191281970 447772 0 0
+/images/ffb/awards/bronze48x48_disabled.png
+1 3 3329906364615243825 2234 0 0
+/images/ffb/flags/kaz.gif
+1 2 8387231026663811437 748 0 0
+/administration/team
+0 19 7171939 3137620 1 1
+/administration/player
+0 5 3257291309578349683 386568 0 0
+/images/ffb/countdown/5sa.gif
+1 6216 8028622276951027321 23897 0 0
+/images/ffb/navigation/nav_logout.png
+1 822 7958824813261226059 399465 0 0
+/administration/playermanagement/insertNewPlayer.xml
+0 6 3256727247326347264 1433 0 0
+/include/ffb/news.css
+0 246 3256724854170189899 4830 0 0
+/images/ffb/symbols/symbol_phone.png
+1 60 72057594037927936 18505 0 0
+/administration/ads/addAd.xml
+0 5 127960735704428 710 0 0
+/images/ffb/symbols/symbol_game_012.jpg
+1 232 7451601607058482273 506115 0 0
+/include/ffb/statistics.css
+0 365 127960739573611 8900 0 0
+/images/ffb/flags/usa.gif
+1 3 3329059723650019585 1101 0 0
+/ffb/team/getTeamPlayers.xml
+0 21 7308830297018884457 295814 0 0
+/images/ffb/profiles/avatar/5ff66ab977d6fc9ff5d713cc11924935.gif
+1 109 7885639555903484974 29811 0 0
+/resource/foe_teamdata/matrei.html
+0 1 3762525702993292593 32316 0 0
+/ffb
+0 604 3762811563232723200 8961898 114 45
+/users/login
+0 1 32762621194232110 59 1 1
+/images/ffb/symbols/symbol_home.png
+1 69 3256441391381821744 22870 0 0
+/images/ffb/players/92/3665.jpg
+1 10 6629862929480166969 24084 0 0
+/images/ffb/flags/nzl.gif
+1 3 127960739180137 1107 0 0
+/users/bedingungen
+0 1 4049017539982805713 13139 0 0
+/welcome/tobias gritschacher
+0 1 1952804398 12249 0 0
+/images/ffb/awards/silver48x48.png
+1 11 0 7280 0 0
+/images/ffb/symbols/calendar.png
+1 90 3474861825441398784 4004 0 0
+/images/ffb/flags/tri.gif
+1 24 7885639555903484974 754 0 0
+/administration/player/getPartList.xml
+0 8 7814700146967459889 124944 0 0
+/ffb/forum
+0 1 7885639555903484974 11199 0 0
+/images/ffb/flags/mlt.gif
+1 2 0 738 0 0
+/area_config_ffb.xml
+0 1 150323855361 12458 0 0
+/script/ffb/statistics.js
+0 129 817978815230708653 34860 0 0
+/users/registration/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 91480819154747784 15082 0 0
+/ffb/lineup/getMatchroundAndTeams.xml
+0 92 3558176003822990641 616163 0 0
+/administration/playermanagement/testPlayermanagement.xml
+0 30 3258409517195604525 155970 0 0
+/ffb/options/getLineupOptions.xml
+0 268 4121410489362153472 135282 0 0
+/images/ffb/flags/fuernitz.gif
+1 3 3256505434860683264 158874 0 0
+/images/ffb/symbols/confcuplogo.gif
+1 3 0 20124 0 0
+/images/ffb/flags/arm.gif
+1 2 7020105119373866546 726 0 0
+/administration/news
+0 14 4778883465517872694 718452 1 0
+/users/account
+0 69 3345175498193776944 4538954 1 0
+/images/ffb/flags/srb.gif
+1 87 3345452605259933044 3808 0 0
+/usage/usage.png
+1 5 29793 15372 0 0
+/images/ffb/flags/irq.gif
+1 2 3329908546575937838 722 0 0
+/users/registration/forgottenPassword.html
+0 43 86754964376989237 111138 37 30
+/images/ffb/symbols/symbol_shoes.png
+1 94 7308830297018884457 36722 0 0
+/administration/playermanagement
+0 16 4120850155043815424 187370 0 2
+/images/ffb/awards/ball_silver64x64.png
+1 15 3330473501386604544 19072 0 0
+/images/ffb/profiles/avatar/9498ffa0d2f3e7b6411846c3366c39eb.jpg
+1 1 3905516107853803057 1090 0 0
+/script/admin/foe_team_parser.js
+0 69 8100115554493412418 236603 0 0
+/images/ffb/symbols/stats_goal.gif
+1 152 3977855164064268288 15380 0 0
+/ffb@tobijat.at
+0 1 8011395184920064624 12249 0 0
+/users/account/account
+0 1 72057594037927936 65725 0 0
+/images/ffb/flags/bih.gif
+1 2 3543826243172499456 726 0 0
+/images/ffb/flags/hun.gif
+1 2 7310519193990293607 714 0 0
+/script/ffb/info_popup.js
+0 220 3977009648232116792 17603 0 0
+/images/ffb/symbols/stats_change_in.gif
+1 65 8386034994285994607 2244 0 0
+/images/ffb/flags/isr.gif
+1 2 321356825089 732 0 0
+/users/registration/forgottenpassword.html
+0 1 3472330517635689472 5678 0 0
+/passwort vergessen
+0 1 0 12249 0 0
+/accounts/inc/include.php
+0 1 4107564335138603124 13057 0 0
+/images/ffb/flags/ban.gif
+1 8 127960739573611 722 0 0
+/images/ffb/flags/lux.gif
+1 2 82295684137267 736 0 0
+/images/ffb/profiles/avatar/avatar_na.png
+1 78 3544895856694020802 250822 0 0
+/images/ffb/flags/egy.gif
+1 196 8747167186582318388 7260 0 0
+/images/ffb/symbols/symbol_credits.png
+1 131 3832898828038111232 127152 0 0
+/images/ffb/players/92/3664.jpg
+1 10 3544665170661933056 108651 0 0
+/images/ffb/flags/sco.gif
+1 2 8675461403033039406 756 0 0
+/ffb/astore
+0 14 3760837974203183670 137381 1 1
+/users/registration/getPassword.html
+0 1 3258122544845237552 59 0 0
+/script/ffb/matchdata.js
+0 550 3329622686320375809 204878 0 0
+/images/ffb/players/15/341.jpg
+1 3 1253831209 12165 0 0
+/images/ffb/symbols/gameover.png
+1 1 0 11969 0 0
+/administration/ads/getAdInfo.xml
+0 15 579674246969174016 14465 0 0
+/administration/game/getGameList.xml
+0 14 4294967296 37142 0 0
+/ffbapi/statistics/getGoals.xml
+0 12 0 241635 0 0
+/welcome/impressum
+0 1 0 12249 0 0
+/administration/awards/getAwards.xml
+0 73 0 137934 0 0
+/ffb/user/getUsersWithTeams.xml
+0 131 0 601392 0 0
+/images/ffb/countdown/3ra.gif
+1 3 0 1269 0 0
+/script/admin/match.js
+0 2 0 1154 0 0
+/images/ffb/profiles/photo/93855dad7268b535842b3f56c8d4cf7e.png
+1 2 0 8100 0 0
+/include/ffb/login.css
+0 246 0 39298 0 0
+/users/registration/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 0 14192 0 0
+/images/ffb/flags/mne.gif
+1 2 0 476 0 0
+/resource/foe_teamdata/noetsch.html
+0 1 0 35419 0 0
+/administration/playermanagement/updateName.xml
+0 17 0 3444 0 0
+/images/ffb/symbols/stats_top.png
+1 5 0 4219 0 0
+/resource/foe_teamdata/stall.html
+0 1 0 33004 0 0
+/administration/ads
+0 22 0 297857 0 0
+/ffbapi/matchround/getMatchesForTeam.xml
+0 144 0 2338567 0 0
+/administration/awards/fireFacebookComment.xml
+0 2 0 218 0 0
+/resource/foe_teamdata/feffernitz.html
+0 2 0 61422 0 0
+/usage/daily_usage_201002.png
+1 2 0 6680 0 0
+/images/ffb/flags/gmuend.gif
+1 149 0 853670 0 0
+/script/admin/matchpoints.js
+0 28 0 139411 0 0
+/images/ffb/symbols/symbol_user.png
+1 119 0 170532 0 0
+/script/admin/transfermarkt_team_array.js
+0 21 0 2868 0 0
+/images/ffb/flags/matrei.gif
+1 125 0 1170860 0 0
+/images/ffb/countdown/8ra.gif
+1 3 0 1395 0 0
+/images/ffb/flags/brb.gif
+1 25 0 1104 0 0
+/images/ffb/symbols/stats_lineup.png
+1 120 0 127640 0 0
+/images/ffb/players/92/3663.jpg
+1 10 0 98935 0 0
+/welcome/reference/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 0 13401 0 0
+/ffb/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 0 14048 0 0
+/administration/matchpoints
+0 28 0 310590 1 1
+/ffb/ffbacbook
+0 1 0 12033 1 0
+/images/ffb/players/32/609.jpg
+1 17 0 174422 0 0
+/users/registration/impressum
+0 1 0 12139 0 0
+/welcome/
+0 1 580381095371997200 14461 0 0
+/users/anmelden
+0 1 0 12249 0 0
+/images/ffb/flags/cmr.gif
+1 104 0 5904 0 0
+/images/ffb/flags/aze.gif
+1 2 3347692301787999852 740 0 0
+/administration/playermanagement/updateForeignId.xml
+0 2 7883950468944245293 423 0 0
+/script/admin/fifa_playermanagement.js
+0 1 0 5075 0 0
+/include/admin/standard.css
+0 202 0 18699 0 0
+/images/ffb/flags/gam.gif
+1 24 959281422531038630 724 0 0
+/images/ffb/flags/ger.gif
+1 102 555358667578083321 5792 0 0
+/images/ffb/shirts/shirt_FEFFERNITZ.png
+1 67 92888215514513821 83760 0 0
+/images/ffb/awards/winner32x32.png
+1 1 7092170386535612416 1578 0 0
+/images/ffb/symbols/sternzero.gif
+1 171 7810776871697741672 18414 0 0
+/administration/playermanagement/testFOE.html
+0 28 3257008739381817650 162534 3 0
+/ffb/matchround/getMatchround.xml
+0 3 3616726951336607819 16811 0 0
+/ffbapi/matchdata/getCards.xml
+0 415 7885639555903484974 886505 0 0
+/administration/playermanagement/updateStatusDescription.xml
+0 1 7628142 217 0 0
+/script/admin/player.js
+0 2 7596553776747344942 2384 0 0
+/images/ffb/countdown/3sa.gif
+1 6265 1266276611 23916 0 0
+/administration/teamParserHelpers/updateName.xml
+0 51 3543549163054563328 11482 0 0
+/images/ffb/flags/ltu.gif
+1 2 8386035028696196460 724 0 0
+/images/ffb/symbols/symbol_effectivity.png
+1 73 3257563992753780992 8076 0 0
+/images/ffb/symbols/edit.png
+1 9 499846636903 6327 0 0
+/images/ffb/symbols/stats_oppgoal.gif
+1 12 7594244848672074084 2874 0 0
+/script/admin/game.js
+0 1 3544896956205629440 463 0 0
+/administration/foeTeamParser
+0 69 3760841238295150848 762587 3 2
+/images/ffb/navigation/nav_invitation.png
+1 381 3473736757737763635 95745 0 0
+/users/registration///accounts/inc/include.php
+0 1 0 12955 0 0
+/users/registration/getPassword.xml
+0 22 3328548450675929137 3238 0 0
+/x.gif
+1 23 7451601607058482273 282126 0 0
+/ffb/countdown/countdown.xml
+0 1648 3760841238295150848 923346 0 0
+/images/ffb/flags/penk.gif
+1 4 1255559538 113466 0 0
+/images/ffb/flags/den.gif
+1 3 7596554927999954998 1122 0 0
+/images/ffb/flags/bra.gif
+1 188 28015 6973 0 0
+/ffb/ffbfacbook
+0 1 4107564335138603008 12033 0 0
+/images/ffb/flags/ita.gif
+1 187 3256724854170189898 7320 0 0
+/images/ffb/symbols/stats_time.png
+1 177 7310519193990293607 11102 0 0
+/ffb/matchround/getPastAndCurrentMatchrounds.xml
+0 8 3257563992753780992 704696 0 0
+/administration/match/getMatchesForRound.xml
+0 31 0 189666 0 0
+/images/ffb/countdown/8sa.gif
+1 6307 7854277750139046177 26714 0 0
+/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 7939337486557655602 13048 0 0
+/images/ffb/players/32/569.jpg
+1 19 28015 171662 0 0
+/ffb/game/getGameList.xml
+0 501 3546867281042604032 1314618 0 0
+/images/ffb/players/32/608.jpg
+1 18 3544664071150239744 31994 0 0
+/images/admin/navigation/nav_matchround.png
+1 181 116 80100 0 0
+/images/ffb/flags/cyp.gif
+1 2 3975890332426253617 730 0 0
+/welcome/gerald musser
+0 1 7595371814887645486 12249 0 0
+/script/admin/playermanagement.js
+0 22 3906362719006176049 52074 0 0
+/images/ffb/navigation/nav_player.png
+1 811 3977855164064268288 178364 0 0
+/script/ffb/awards.js
+0 160 3330748586227282226 5122 0 0
+/fantasyfootball/user/score.html
+0 1 579808524826755304 0 1 1
+/images/ffb/flags/nga.gif
+1 3 0 1113 0 0
+/usage/nmm_flags/gb.png
+1 3 1046539983885897423 2940 0 0
+/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 0 13401 0 0
+/images/ffb/profiles/photo/773c9420841fbed1f68355c8d427a7cd.jpg
+1 10 0 113516 0 0
+/images/ffb/flags/mex.gif
+1 3 0 1098 0 0
+/welcome/zurÃ¼ck
+0 1 0 13139 0 0
+/administration/playermanagement/loadPlayerlistFromUrl.xml
+0 38 0 1309349 0 0
+/ffb/statistics/getRoundStats.xml
+0 218 0 215915 0 0
+/ffb/awards/facebookAwards.html
+0 7 0 928 1 0
+/include/admin/administration.css
+0 202 0 11109 0 0
+/images/ffb/profiles/photo/profile_na.png
+1 30 0 267630 0 0
+/images/ffb/flags/swe.gif
+1 2 0 734 0 0
+/images/ffb/players/94/3958.jpg
+1 2 0 7350 0 0
+/images/ffb/flags/feffernitz.gif
+1 117 0 862920 0 0
+/images/ffb/flags/treffen.gif
+1 3 0 73989 0 0
+/images/ffb/flags/sachsenburg.gif
+1 117 0 1349931 0 0
+/users/account/account/accountDetails.html
+0 1 0 65725 0 0
+/usage/nmm_flags/id.png
+1 2 0 1012 0 0
+/include/admin/ads.css
+0 19 0 3630 0 0
+/usage/nmm_flags/us.png
+1 2 0 1650 0 0
+/welcome/help/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 0 15082 0 0
+/images/ffb/flags/alb.gif
+1 2 0 740 0 0
+/images/ffb/awards/ball_brown64x64.png
+1 17 0 44242 0 0
+/users/gerald musser
+0 1 0 12249 0 0
+/images/ffb/symbols/symbol_game_na.png
+1 47 0 2012629 0 0
+/images/ffb/flags/prk.gif
+1 3 0 1098 0 0
+/ffbapi/table/getTableForGame.xml
+0 43 0 248920 0 0
+/script/ffb/countdown.js
+0 908 4049068363290324534 162423 0 0
+/users/regeln
+0 1 7022364162814640203 12249 0 0
+/images/ffb/profiles/photo/male_profile_na.png
+1 33 0 243384 0 0
+/ffbapi/matchround/getAllMatchrounds.xml
+0 447 7627054 41681289 0 0
+/images/ffb/players/32/568.jpg
+1 20 21153276959470129 149126 0 0
+/ffb/bestteam/getBestTeam.xml
+0 123 7595371814887645486 891257 0 0
+/ffb/user/getUserDetails.xml
+0 303 0 620784 0 0
+/images/ffb/players/32/3119.jpg
+1 17 7421932185911489038 30125 0 0
+/images/ffb/symbols/symb_err_anim.gif
+1 65 7277816997835631815 36168 0 0
+/administration/admintools/checkInconsistentPlayers.xml
+0 3 72057594037927936 174080 0 0
+/images/ffb/loading/ajax-loader-medium.gif
+1 355 7018142236691935789 142060 0 0
+/ffb/userteam/getUserteamForRound.xml
+0 154 3543545896933261312 1117925 0 0
+/images/ffb/profiles/avatar/8b50960ef4d6c95dc8c1562e85e0a362.jpg
+1 1 87030941912937006 1090 0 0
+/images/ffb/countdown/1ra.gif
+1 4 72057594037927936 1269 0 0
+/include/admin/matchpoints.css
+0 28 0 451 0 0
+/images/ffb/shirts/shirt_BLANK.png
+1 14 18446744069414586569 13188 0 0
+/administration/ads/getSlotInfo.xml
+0 32 894822665006222520 6040 0 0
+/welcome/reference/https://\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 141021175277158978 13299 0 0
+/images/ffb/symbols/delete.png
+1 123 8603411771525330035 6457 0 0
+/images/ffb/navigation/nav_results.png
+1 818 323481137153 397176 0 0
+/locations of visitors to this page
+0 1 3906982627906682955 12139 0 0
+/images/ffb/flags/and.gif
+1 2 72057594037927936 742 0 0
+/script/ffb/loadtable.js
+0 2 3543542602693345280 646 0 0
+/administration/twitter/twitterMsg.xml
+0 16 8386035028696196460 11291 0 0
+/resource/foe_teamdata/magdalen.html
+0 1 3543542594862134322 31135 0 0
+/resource/foe_teamdata/hermagor.html
+0 2 3328784845642411571 52950 0 0
+/images/ffb/backgrounds/soccer_field_round.png
+1 169 3543831757896692786 1073962 0 0
+/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 3761972739191369728 14192 0 0
+/images/ffb/profiles/avatar/af6f9a0199cab735ec568ce6ee373899.jpg
+1 2 7854277750139058003 9680 0 0
+/administration/ads/updateAdSlotEntry.xml
+0 4 1258241307 588 0 0
+/fantasyfootball/teammanagement/bestteam.html
+0 2 3689061846468341297 22572 1 1
+/welcome/help
+0 53 3905238996664724786 630786 23 11
+/users/registration/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 5740187374935223862 13401 0 0
+/images/ffb/flags/est.gif
+1 2 7523097598722077540 728 0 0
+/images/ffb/flags/lie.gif
+1 2 0 718 0 0
+/administration/match
+0 3 3328778244327877938 449784 0 0
+/script/ffb/ranking.js
+0 170 16392755203125095986 10120 0 0
+/images/ffb/flags/fin.gif
+1 2 32757949330844517 742 0 0
+/images/ffb/symbols/symbol_check.png
+1 2 7218553520548045870 9944 0 0
+/images/ffb/countdown/6ra.gif
+1 3 8371762216850450281 1338 0 0
+/images/ffb/symbols/stats_assist.gif
+1 72 1180226781524930105 1892 0 0
+/images/ffb/flags/nir.gif
+1 2 82290011341109 734 0 0
+/images/ffb/flags/ukr.gif
+1 3 7308327844984351084 1080 0 0
+/script/ffb/poll.js
+0 244 72057594037957729 31144 0 0
+/images/ffb/symbols/symbol_ulwest.gif
+1 104 7451601607058482273 351747 0 0
+/images/ffb/flags/chi.gif
+1 3 8387231026780908914 1092 0 0
+/administration/teamParserHelpers/insertPlayerToPlayerteam.xml
+0 7 3256446677728362570 1301 0 0
+/images/ffb/symbols/symbol_game_008.png
+1 64 7133701809759779319 269816 0 0
+/images/ffb/symbols/stats_card_y.gif
+1 90 7002654795918306405 18132 0 0
+/ffb/userscore
+0 450 1952525933 5249719 13 8
+/images/ffb/players/32/567.jpg
+1 18 7308327844985790839 134894 0 0
+/images/ffb/symbols/status_pos.png
+1 195 3615606773084468736 15393 0 0
+/fantasyfootball/teammanagement/myteam.html
+0 1 7163375852442365490 10780 1 1
+/administration/foeTeamParser/testCrit.xml
+0 6 3328777166173713454 1996 0 0
+/images/ffb/players/32/606.jpg
+1 18 8314045556899408231 130684 0 0
+/images/ffb/players/32/3118.jpg
+1 17 8317304086823193336 50224 0 0
+/images/ffb/flags/sillian.gif
+1 3 0 129537 0 0
+/ffb/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 890600475930594482 14192 0 0
+/robots.txt
+0 307 8589934592 3486982 0 0
+/administration/awards/setAward.xml
+0 34 452337245530949275 5249 0 0
+/ffb/bestteam
+0 88 0 1172298 3 2
+/resource/foe_teamdata/jennersdorf.html
+0 2 0 66980 0 0
+/script/ffb/playerinfo.js
+0 550 0 278014 0 0
+/images/ffb/flags/geo.gif
+1 2 0 758 0 0
+/users/registration
+0 105 0 6313683 23 14
+/images/ffb/flags/uae.gif
+1 24 0 722 0 0
+/images/ffb/loading/ajax-loader-in-progress.gif
+1 483 0 23716 0 0
+/images/ffb/flags/stall.gif
+1 117 0 1045080 0 0
+/ffbapi/statistics/getCards.xml
+0 7 0 357444 0 0
+/images/ffb/flags/irl.gif
+1 2 0 742 0 0
+/images/ffb/symbols/stats_change_out.gif
+1 62 0 2266 0 0
+/images/ffb/countdown/1sa.gif
+1 6218 0 24966 0 0
+/images/ffb/symbols/stats_flop.png
+1 5 0 4041 0 0
+/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 7002589661762500409 14192 0 0
+/script/ffb/userscore.js
+0 3 7738710717702764897 3286 0 0
+/administration/awards/getUserAwardsFinished.xml
+0 35 7507056871734324791 28763 0 0
+/usage/nmm_flags/lv.png
+1 2 72057594037927936 1270 0 0
+/images/ffb/symbols/allstar.gif
+1 10 116 9150 0 0
+/welcome/help/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 322463662081 13048 0 0
+/images/ffb/flags/jam.gif
+1 24 3345738485950079858 730 0 0
+/images/admin/navigation/nav_match.png
+1 185 8371690562732765550 806880 0 0
+/administration/matchround/getList.xml
+0 31 3543830666149888000 238171 0 0
+/ffb/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 322131949569 13189 0 0
+/images/ffb/symbols/symbol_game_007.png
+1 238 8026310012822171240 3119447 0 0
+/ffb/user/teestCalcRanking.html
+0 1 7594245669090575160 49 1 0
+/images/ffb/countdown/6sa.gif
+1 6259 3330473707561811968 25204 0 0
+/images/ffb/players/32/566.jpg
+1 20 3617014156608287026 150566 0 0
+/administration/playermanagement/updatePlayerteamStatus.xml
+0 34 13258931761513903415 6554 0 0
+/favicon.ico
+0 45 4107282860166805331 440491 0 0
+/images/ffb/awards/winner48x48.png
+1 11 7023196937266933356 15160 0 0
+/images/ffb/players/32/3117.jpg
+1 17 1068198877455265333 30684 0 0
+/ffb/game/setSelectedGame.xml
+0 60 3345452605259933044 11925 0 0
+/administration/ads/getSlotAllocation.xml
+0 37 21092394254544947 60091 0 0
+/images/ffb/awards/winner48x48_disabled.png
+1 3 3472887977811456611 2839 0 0
+/images/ffb/symbols/stats_owngoal.gif
+1 122 1952525933 20539 0 0
+/images/ffb/players/32/577.jpg
+1 16 7259782813249122862 76511 0 0
+/include/ffb/gamemgmt.css
+0 273 0 23419 0 0
+/ffb/userscore/getUserscoresForRound.xml
+0 114 34359690624 2352209 0 0
+/images/ffb/flags/arg.gif
+1 218 887785678918126759 7320 0 0
+/images/admin/navigation/nav_logout.png
+1 209 421656004910908973 213048 0 0
+/images/ffb/navigation/nav_topflop.png
+1 815 3256439192358500352 180710 0 0
+/script/ffb/start.js
+0 246 8604240790508432499 13668 0 0
+/administration/ads/getAds.xml
+0 22 3472607593739728182 294482 0 0
+/images/admin/navigation/nav_coach.png
+1 184 33058115804358002 102744 0 0
+/usage/nmm_flags/cz.png
+1 3 3543542602693345280 1950 0 0
+/images/ffb/players/32/3775.jpg
+1 19 3348814963407284584 53594 0 0
+/images/ffb/shirts/shirt_ADMIRAVILLACH.png
+1 70 21225772349994039 94520 0 0
+/images/ffb/flags/isl.gif
+1 2 7881702290525926968 746 0 0
+/images/ffb/flags/bah.gif
+1 2 14705661473367076401 702 0 0
+/ffbapi/matchround/getMatchesForRound.xml
+0 303 5428226079568441646 1211229 0 0
+/usage/hourly_usage_201002.png
+1 2 7023196937266933356 4343 0 0
+/include/ffb/playerstats.css
+0 539 7523097598722077540 40992 0 0
+/resource/foe_teamdata/irschen.html
+0 9 3330750789545506305 338346 0 0
+/images/ffb/flags/gha.gif
+1 3 3258416113507106816 1074 0 0
+/images/ffb/symbols/symbol_game_006.png
+1 37 3761119436278476336 162808 0 0
+/resource/Registrierung.pdf
+0 11 3760841234000183296 173536 0 0
+/resource/foe_teamdata/admiravillach.html
+0 9 127960739573611 109533 0 0
+/images/ffb/players/32/565.jpg
+1 23 3530822107863391631 177386 0 0
+/images/ffb/symbols/Facebook-64_2.png
+1 4 3834301856464645430 37180 0 0
+/images/ffb/shirts/shirt_IRSCHEN.png
+1 7 3543827342670311737 28668 0 0
+/images/ffb/players/32/3116.jpg
+1 17 3615601297005507183 32474 0 0
+/images/ffb/navigation/nav_team.png
+1 810 3891391553024819200 216988 0 0
+/images/ffb/navigation/nav_login.png
+1 230 3975896942380922422 592085 0 0
+/users/registration/forgottenPassword.html  ///accounts/inc/include.php
+0 1 3345175498193778481 12814 0 0
+/images/ffb/players/32/576.jpg
+1 17 5413382861572092978 125614 0 0
+/images/ffb/flags/crc.gif
+1 2 3762530083860393266 718 0 0
+/welcome/copyright by fifa
+0 1 8386034985507645556 12249 0 0
+/images/admin/navigation/nav_news.png
+1 192 3615599089454757176 241930 0 0
+/images/ffb/flags/jpn.gif
+1 3 7738710717702764897 1098 0 0
+/images/ffb/profiles/avatar/91c03a6ebdc8d740dade8d2f79201048.jpg
+1 1 7171939 4840 0 0
+/images/ffb/symbols/status_neg.png
+1 65 5395555311320315185 1430 0 0
+/ffb/user/getUserscoresForRound.xml
+0 3 7507056871734324785 48795 0 0
+/images/ffb/backgrounds/beapartofit.gif
+1 189 3543824077686833152 195734 0 0
+/welcome/help/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 3904674947166186805 13299 0 0
+/usage/usage_201002.html
+0 2 32757949195906926 17488 0 2
+/images/ffb/flags/bel.gif
+1 2 3544946662687452721 718 0 0
+/images/ffb/awards/award_trophy_32.png
+1 14 4120911774939611136 23490 0 0
+/administration/fifa_playermanagement
+0 1 7627054 13096 0 0
+/images/ffb/countdown/4ra.gif
+1 3 3688784549669502976 1359 0 0
+/users/tobias gritschacher
+0 1 0 12249 0 0
+/images/ffb/players/32/598.jpg
+1 8 1148701579000479860 50078 0 0
+/script/ffb/ffbfacebook.js
+0 4 741979429039573659 2840 0 0
+/ffb/awards/getAllUserAwards.xml
+0 73 306249507791111318 244084 0 0
+/users/ffb@tobijat.at
+0 1 7958824813261226059 12249 0 0
+/images/ffb/flags/par.gif
+1 3 5692831403973017600 1089 0 0
+/ffb/game/checkSelectedGame.xml
+0 443 8746403241625479214 65085 0 0
+/script/ffb/userscore_v2.js
+0 396 21183719050131257 448152 0 0
+/users/impressum
+0 1 3762758588179677184 12139 0 0
+/images/ffb/flags/landskron.gif
+1 118 3760837965613249331 1050282 0 0
+/images/ffb/players/32/564.jpg
+1 18 3530822107863394669 121444 0 0
+/impressum
+0 1 0 13139 0 0
+/images/ffb/players/32/603.jpg
+1 17 3348814963407284584 163074 0 0
+/users/registration/gerald musser
+0 1 3328221701572919296 12249 0 0
+/images/ffb/awards/bronze48x48.png
+1 11 4051320141625950208 7865 0 0
+/images/ffb/navigation/nav_start.png
+1 839 3472889077256236592 324129 0 0
+/ffb/images/profile/photo/2643be604cb126b3f382f8167969fbbd.jpg
+1 1 1258327928 12727 0 0
+/resource/foe_teamdata/rennweg.html
+0 81 8387231026747370593 2501719 1 2
+/script/ffb/myteam_v2.js
+0 84 3329907447030754872 96289 0 0
+/images/ffb/players/32/575.jpg
+1 18 32757949330844517 135212 0 0
+/images/ffb/flags/cam.gif
+1 24 3978420312960270336 734 0 0
+/ffb/user/score.html
+0 5 3760841238295150848 54791 1 0
+/sei kostenlos dabei
+0 1 1257550378 13139 0 0
+/anmelden
+0 1 7002589678926313520 12249 0 0
+/images/ffb/flags/grl.gif
+1 144 4107564335138603008 10980 0 0
+/images/ffb/flags/rothenthurn.gif
+1 91 3544664071150239744 1168812 0 0
+/images/ffb/awards/fourth48x48_disabled.png
+1 2 7809639107817385584 444 0 0
+/images/ffb/shirts/shirt_NOETSCH.png
+1 67 7002654795918306405 94000 0 0
+/ffb/user/getUserscore.xml
+0 9 4048229434975584256 355419 0 0
+/images/ffb/shirts/shirt_LANDSKRON.png
+1 67 7308327844984351084 82395 0 0
+/images/ffb/navigation/nav_left.png
+1 11 87029855102054449 69435 0 0
+/images/ffb/backgrounds/sa10.png
+1 203 7814700146968049453 10408332 0 0
+/ffb/ffbfacebook
+0 14 8371762216850450281 43639 1 1
+/ffb/news/getNewsList.xml
+0 528 0 1026776 0 0
+/registrieren
+0 1 82329640370483 12249 0 0
+/beapartofit.gif
+1 2 3762810460150985572 21282 0 0
+/images/ffb/flags/esp.gif
+1 190 7308327844985467765 7560 0 0
+/ffb/userscore/getUserscore.xml
+0 467 3834815082705996503 18579386 0 0
+/administration/team/getListForGame.xml
+0 3 4035506741100675072 141 0 0
+/images/admin/navigation/nav_results.png
+1 186 3256445789428265522 193496 0 0
+/images/ffb/shirts/shirt_SACHSENBURG.png
+1 63 8604240790508432499 65715 0 0
+/users/registration/activate.html
+0 6 3834021463850024960 64668 0 0
+/images/ffb/flags/kor.gif
+1 4 1952804398 1540 0 0
+/resource/foe_teamdata/eberau.html
+0 2 7627054 69526 0 0
+/images/ffb/players/32/597.jpg
+1 19 3762810743786595688 140371 0 0
+/ffb/matchround/getPastAndRunningMatchrounds.xml
+0 565 0 44186688 0 0
+/script/user/registration.js
+0 42 4294967296 15336 0 0
+/images/ffb/flags/lva.gif
+1 2 957029584062057886 726 0 0
+/images/ffb/shirts/shirt_LIND.png
+1 122 521299675697645448 100527 0 0
+/ffb/player/testDynPrice.xml
+0 7 1340053979520 16316 0 0
+/include/ffb/lineup_v2.css
+0 64 8746403241625479214 46280 0 0
+/images/ffb/flags/mda.gif
+1 2 116 734 0 0
+/images/ffb/countdown/4sa.gif
+1 6295 3689065116032394345 26030 0 0
+/usage/nmm_flags/au.png
+1 2 3474577927049394225 1754 0 0
+/images/ffb/players/32/563.jpg
+1 17 127960739573611 93988 0 0
+/ffbapi/matchround/getMatchById.xml
+0 415 4047949060251990061 437029 0 0
+/images/ffb/players/32/602.jpg
+1 16 3688783644239998520 151058 0 0
+/resource/foe_teamdata/lind.html
+0 87 8747167449652489317 3869719 4 1
+/images/ffb/shirts/shirt_RENNWEG.png
+1 119 7308901717963334446 91770 0 0
+/images/admin/navigation/nav_ads.png
+1 192 3689909539918983725 110020 0 0
+/ffb/player/retrievePlayerInfos.xml
+0 2 4049068354680455168 98 0 0
+/images/ffb/flags/hon.gif
+1 3 1262302132 1101 0 0
+/images/admin/navigation/nav_mail.png
+1 189 29797 88974 0 0
+/users/registration/ffb@tobijat.at
+0 1 3976728164699221346 44 0 0
+/images/ffb/players/32/574.jpg
+1 16 7310601557722293619 114698 0 0
+/images/ffb/flags/civ.gif
+1 187 0 7360 0 0
+/images/ffb/flags/por.gif
+1 88 87596107885130546 6273 0 0
+/images/ffb/shirts/shirt_GMUEND.png
+1 116 3344314653608193635 80869 0 0
+/users/login/loginAjax.xml
+0 114 3330473707561811968 23315 0 0
+/images/ffb/shirts/shirt_MATREI.png
+1 61 3617004243840532736 75450 0 0
+/images/ffb/flags/svn.gif
+1 3 1263511870 1086 0 0
+/images/ffb/symbols/symbol_globe.png
+1 71 3891391553024819309 29305 0 0
+/users/account/accountDetails.html
+0 258 3615884945298175537 7286141 1 1
+/ffb/teammanagement/lineup.html
+0 1 7171939 13005 0 0
+/welcome/reference/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 4048858576471812195 14192 0 0
+/ffb/lineup
+0 98 3690468113367511865 1241858 6 6
+/images/admin/navigation/nav_config.png
+1 184 5400024581273760305 119124 0 0
+/users/start
+0 1 8746403241625479214 12249 0 0
+/images/ffb/shirts/shirt_DRAUTAL.png
+1 21 7810776871697741672 48620 0 0
+/images/ffb/players/32/719.jpg
+1 18 85622467366761006 32974 0 0
+/images/ffb/symbols/symbol_game_003.png
+1 81 3348814963407284584 3778861 0 0
+/administration/start
+0 153 3328783758948317233 1069027 3 0
+/ffb/player/getPlayerStats.xml
+0 47 3761118362486320436 76853 0 0
+/usage/nmm_flags/at.png
+1 2 7810776871697741672 1010 0 0
+/images/ffb/players/32/562.jpg
+1 19 3832898832333078784 133100 0 0
+/administration/teamParserHelpers/updatePlayerteamStatus.xml
+0 81 0 15621 0 0
+/images/admin/navigation/nav_player.png
+1 181 3832894451566326328 94428 0 0
+/administration/ffbtwitter/twitterMsg.xml
+0 16 13993811287313821233 13568 0 0
+/script/ffb/userprofile.js
+0 137 3616727145502552365 290251 0 0
+/include/admin/awards.css
+0 35 3904674947166186805 1535 0 0
+/images/ffb/players/32/573.jpg
+1 18 0 142604 0 0
+/images/ffb/flags/smr.gif
+1 2 326417514496 734 0 0
+/include/ffb/standard.css
+0 1151 785327224002972466 370796 0 0
+/include/ffb/help.css
+0 18 391819197810017716 5355 0 0
+/images/ffb/flags/blr.gif
+1 2 3546866181530995554 722 0 0
+/images/ffb//loading/ajax-loader-medium.gif
+1 169 8028622276951027321 96048 0 0
+/ffb/user/score_v2.html
+0 2 3761119427671698993 22541 0 0
+/images/ffb/flags/uru.gif
+1 3 3618691998615076864 1119 0 0
+/images/ffb/awards/award_group_trophy_gold_64
+0 5 7165897045451879993 32566 5 0
+/images/ffb/backgrounds/beapartofit2.gif
+1 45 127960739573611 26315 0 0
+/images/ffb/flags/col.gif
+1 24 7595371814887645486 706 0 0
+/images/ffb/flags/nussdorf.gif
+1 127 3834021455296802354 597828 0 0
+/images/ffb/navigation/nav_forum.png
+1 796 86189815484133934 166425 0 0
+/images/admin/navigation/nav_admin_start.png
+1 197 499846638959 111672 0 0
+/ffb/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 4107564335138603008 13401 0 0
+/images/ffb/countdown/2ra.gif
+1 3 8371752355282961220 1287 0 0
+/ffb/myteam
+0 135 3978421395325976832 1773163 6 5
+/images/ffb/flags/tur.gif
+1 2 1257550378 742 0 0
+/images/ffb/flags/hermagor.gif
+1 119 8604240790508432499 1219800 0 0
+/images/ffb/profiles/photo/70308abd068ca7c2088e117eed1e30f2.jpg
+1 1 3687663276200899121 113516 0 0
+/include/ffb/userscore.css
+0 394 499846638959 39565 0 0
+/users/registration/tobias gritschacher
+0 1 4035225266128874695 13139 0 0
+/images/ffb/symbols/symbol_game_002.png
+1 64 3471486087534031664 316511 0 0
+/ffb/matchdata/getMatchData.xml
+0 82 7521981565278301752 1620778 0 0
+/images/ffb/flags/irschen.gif
+1 91 3833181436885612848 1057349 0 0
+/ffbapi/matchround/getNextMatches.xml
+0 2310 3546638781001118209 12798629 0 0
+/welcome/reference/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 499917925998 13299 0 0
+/images/ffb/players/32/572.jpg
+1 18 7595371814887645486 126544 0 0
+/images/ffb/countdown/7ra.gif
+1 3 1255732485 1257 0 0
+/images/ffb/flags/rom.gif
+1 2 0 726 0 0
+/welcome/reference/https://\ + gaJsHost + \google-analytics.com/ga.js
+0 1 3474527112516356821 14192 0 0
+/ffb/userscore/copyNat.html
+0 3 16491724443730784558 14551 0 0
+/administration/awards/calculateAllAwards.xml
+0 1 29793 156 0 0
+/users/registration/function.include
+0 21 8371762216850450281 779 0 0
+/images/ffb/symbols/change.png
+1 31 3904118607099867444 1370 0 0
+/images/ffb/flags/eng.gif
+1 197 7310237426196294969 7340 0 0
+/images/ffb/flags/cro.gif
+1 103 1254003951 5824 0 0
+/users/registrieren
+0 1 3617851950142403073 12139 0 0
+/images/ffb/flags/wal.gif
+1 2 7002590765585871665 744 0 0
+/images/ffb/loading/ajax_loader_small_bar.gif
+1 29 86187629195179566 31291 0 0
+/users/registration/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 6363395303446302281 14048 0 0
+/images/ffb/symbols/stats_point.png
+1 156 876031542 13400 0 0
+/script/forum/loadtable.js
+0 3 1109309874369793970 1938 0 0
+/images/ffb/flags/bul.gif
+1 2 0 720 0 0
+/images/ffb/shirts/shirt_BLANK_RED.png
+1 14 629669191024380179 12044 0 0
+/script/ffb/bestteam_v2.js
+0 65 233909330658001812 43480 0 0
+/administration/team/getList.xml
+0 37 8314877464660672587 776152 0 0
+/images/ffb/players/32/717.jpg
+1 21 3677190419456602929 169957 0 0
+/images/ffb/symbols/info.png
+1 150 7738710717702764897 16338 0 0
+/images/ffb/flags/magdalen.gif
+1 129 7885639555903484974 1521013 0 0
+/script/user/account.js
+0 157 3546867281042604032 39274 0 0
+/images/ffb/players/92/3669.jpg
+1 10 0 21242 0 0
+/images/ffb/symbols/symbol_game_001.png
+1 70 3330184536745194032 3566111 0 0
+/images/ffb/profiles/avatar/3a746d69b61854aaab055580b2abd7d3.jpg
+1 2 29797 5930 0 0
+/images/ffb/symbols/stats_card_r.gif
+1 11 7738710717702764897 3267 0 0
+/images/ffb/countdown/2sa.gif
+1 6233 14361699056171953718 23022 0 0
+/ffb/user/getUsersWithTeam.xml
+0 1 3690472494167306542 49 0 0
+/images/ffb/symbols/symbol_profile.png
+1 61 8026386939893411955 30650 0 0
+/images/ffb/navigation/nav_user.png
+1 1010 8371762216850450281 479264 0 0
+/ffbapi/matchround/getActualMatches.xml
+0 2310 82352529998129 12762750 0 0
+/images/ffb/symbols/nav_forum.png
+1 171 1952525933 146454 0 0
+/images/ffb/flags/rsa.gif
+1 3 16013434686709248302 1089 0 0
+/images/ffb/players/32/571.jpg
+1 19 3330190922603298890 129044 0 0
+/images/ffb/symbols/lind_logo.gif
+1 3 7885639555903484974 10890 0 0
+/images/ffb/players/32/610.jpg
+1 17 127960739573611 166214 0 0
+/images/ffb/flags/nor.gif
+1 2 3689065116032394345 752 0 0
+/images/ffb/profiles/photo/female_profile_na.png
+1 6 82301313220921 97344 0 0
+/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 3688779284848192821 13048 0 0
+/pictory/addAlbum/deleteUselessAlbums.html
+0 2 3328500072147595566 3567 0 0
+/images/ffb/players/14/359.jpg
+1 3 3975896938069176371 11154 0 0
+/images/ffb/symbols/stats.png
+1 1 7133701809759767830 10184 0 0
+/ffb/matchround/getPastMatchrounds_v2.xml
+0 86 4107564335138603008 6431638 0 0
+/ffb/poll/getPolls.xml
+0 443 14397975028475375161 48730 0 0
+/resource/foe_teamdata/landskron.html
+0 17 0 647547 0 0
+/include/ffb/account.css
+0 143 8299628583533229879 13067 0 0
+/welcome/copyright by uefa
+0 1 1254436154 12249 0 0
+/images/ffb/flags/noetsch.gif
+1 127 8070450532252827622 1251747 0 0
+/images/ffb/flags/svk.gif
+1 3 127960739573611 1083 0 0
+/images/admin/navigation/nav_team.png
+1 181 4107564335138603008 114876 0 0
+/images/ffb/countdown/7sa.gif
+1 6372 3688784545374535754 23292 0 0
+/script/admin/awards.js
+0 35 3347411947798425701 13470 0 0
+/ffb/player/getPlayerInfo_v2.xml
+0 54 320958754561 527535 0 0
+/usage/nmm_flags/de.png
+1 2 3329627084350107697 1068 0 0
+/ffb/statistics/getUserStats.xml
+0 130 1952525925 57620 0 0
+/ffb/forum/forum.html
+0 25 0 274885 2 1
+/images/ffb/navigation/nav_profile.png
+1 453 18214956302336 253812 0 0
+/images/ffb/profiles/avatar/394b440406dfaea27e6a70aba0789a68.png
+1 22 0 87384 0 0
+/images/ffb/flags/lind.gif
+1 198 0 771540 0 0
+/images/ffb/flags/rus.gif
+1 2 0 722 0 0
+/images/ffb/flags/fra.gif
+1 197 0 7320 0 0
+/images/ffb/awards/silver48x48_disabled.png
+1 2 0 474 0 0
+/images/ffb/players/32/716.jpg
+1 16 0 35219 0 0
+/administration/game/getGamesForAdmin.xml
+0 163 0 516463 0 0
+/images/ffb/shirts/shirt_STALL.png
+1 66 0 66626 0 0
+/ffb/player/getPlayerInfo.xml
+0 174 0 2323724 0 0
+/images/ffb/players/92/3668.jpg
+1 10 0 27773 0 0
+/usage/
+0 10 0 9246 0 2
+/images/ffb/navigation/nav_help.png
+1 987 0 521383 0 0
+/images/ffb/players/image_na.gif
+1 106 0 79844 0 0
+/gerald musser
+0 1 0 12249 0 0
+/images/ffb/flags/vat.gif
+1 2 0 1746 0 0
+/administration/game/checkSelectedGame.xml
+0 151 0 22196 0 0
+/ffb/player/getPlayerInfoImg.img
+0 63 0 2853525 0 0
+/images/ffb/awards/award_group_trophy_gold_64.png
+1 15 0 69492 0 0
+/administration/awards
+0 45 0 451594 0 0
+/images/ffb/flags/aut.gif
+1 313 0 7942 0 0
+/images/ffb/flags/admiravillach.gif
+1 119 0 101988 0 0
+/images/ffb/flags/rennweg.gif
+1 155 0 1158096 0 0
+/images/ffb/flags/sui.gif
+1 3 0 996 0 0
+/images/ffb/players/32/570.jpg
+1 12 0 61667 0 0
+/administration/teamParserHelpers/insertNewPlayer.xml
+0 40 0 8579 0 0
+/script/prototype.js
+0 1220 0 2012410 0 0
+/images/ffb/symbols/email_go.png
+1 3 0 2262 0 0
+/resource/foe_teamdata/drautal.html
+0 54 0 1607459 0 1
+/ffb/user/testCalcRanking.html
+0 12 0 11364 0 0
+/images/ffb/symbols/stats_card_yr.gif
+1 147 0 33770 0 0
+/include/ffb/poll.css
+0 246 0 7420 0 0
+/images/ffb/shirts/shirt_ROTHENTHURN.png
+1 10 0 44019 0 0
+/resource/foe_teamdata/gmuend.html
+0 1 0 34627 0 0
+/usage/menu.html
+0 5 0 1280 0 0
+/include/ffb/matchdata.css
+0 545 83020681052416 23492 0 0
+/include/ffb/myteam_v2.css
+0 147 3257848749253210669 27145 0 0
+/administration/matchround
+0 53 29797 2466249 0 0
+/administration/ads/setAd.xml
+0 2 3615603461731463481 250 0 0
+/include/admin/playermanagement.css
+0 89 7738710717702764897 328 0 0
+/welcome/help/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/\ + gaJsHost + \google-analytics.com/ga.js
+0 1 3832059939270242865 14192 0 0
+/administration/foeTeamParser/loadPlayerlistFromUrl.xml
+0 191 3472606477081719352 15387457 0 0
+/images/ffb/players/32/2521.jpg
+1 17 7165897045451880498 28658 0 0
+/images/ffb/symbols/sterntot.gif
+1 170 0 6380 0 0
+/images/ffb/navigation/nav_forum_newpost.png
+1 20 1080036021517881154 102096 0 0
+# End Of Table - urls
+# -sites- (monthly)
+203-6-203-67.reed-elsevier.com.au
+0 37 36 464857 1 1265820140
+/welcome/copyright by fifa
+msnbot-65-55-207-96.search.msn.com
+0 6 6 95260 3 1266397466
+/users/registration/forgottenPassword.html
+66.220.146.246
+0 1 1 1090 0 0
+-
+66.220.146.248
+0 3 3 4435 0 0
+-
+66.220.146.249
+0 2 2 9509 1 1266240142
+/images/ffb/awards/award_group_trophy_gold_64
+93-82-64-83.adsl.highway.telekom.at
+0 35 35 273242 1 1266677310
+/
+msnbot-65-55-106-158.search.msn.com
+0 2 2 15401 1 1266725395
+/users/registration/forgottenPassword.html
+91-115-223-101.adsl.highway.telekom.at
+0 99 98 819680 1 1265893242
+/
+219.142.53.12
+0 1 1 13057 0 0
+-
+msnbot-65-55-207-25.search.msn.com
+0 5 5 41401 3 1266433584
+/users/registration
+219.142.53.16
+0 1 1 13070 1 1266064215
+/welcome/help
+66.220.146.250
+0 2 2 8959 1 1265627929
+/images/ffb/awards/award_group_trophy_gold_64
+81-223-94-10.villach-ost.xdsl-line.inode.at
+0 669 658 6909840 3 1265929674
+/ffb/astore
+msnbot-65-55-106-228.search.msn.com
+0 4 4 42864 2 1266259435
+/
+msnbot-207-46-194-222.search.msn.com
+0 3 2 26988 1 1266127492
+/
+port-92-203-71-186.dynamic.qsc.de
+0 22 22 282724 1 1265070038
+/
+msnbot-65-55-107-179.search.msn.com
+0 3 2 28033 1 1266777573
+/
+msnbot-207-46-199-200.search.msn.com
+0 2 2 12299 0 0
+-
+joshua.christian-schmidt.org
+0 1 1 10670 0 0
+-
+dhcp-077-251-037-204.chello.nl
+0 40 39 768123 1 1266579364
+/welcome/reference
+93-82-92-234.adsl.highway.telekom.at
+0 572 322 3463881 5 1266417636
+/ffb/lineup
+213.5.70.38
+0 3 3 39617 1 1266136099
+/
+114.59.117.111
+0 6 0 1974 0 0
+-
+h081217146070.dyn.cm.kabsi.at
+0 9 9 60098 0 0
+-
+msnbot-65-55-106-114.search.msn.com
+0 1 1 13401 1 1266618329
+/
+msnbot-207-46-204-187.search.msn.com
+0 1 1 13670 0 0
+-
+baiduspider-220-181-7-70.crawl.baidu.com
+0 1 1 13568 1 1266791773
+/
+95-26-61-228.broadband.corbina.ru
+0 3 3 41782 1 1266390963
+/
+188-23-53-128.adsl.highway.telekom.at
+0 861 24 304252 2 1265035329
+/
+b3090908.crawl.yahoo.net
+0 19 17 151407 5 1265326962
+/
+out-w244.tfbnw.net
+0 2 2 5112 0 0
+-
+msnbot-65-55-106-163.search.msn.com
+0 2 2 1736 1 1266433527
+/
+dd10924.kasserver.com
+0 6871 6871 73941163 0 0
+-
+msnbot-65-55-207-30.search.msn.com
+0 4 4 28233 2 1266765352
+/welcome/help
+msnbot-65-55-207-70.search.msn.com
+0 2 2 20924 1 1266240894
+/welcome/reference
+193.186.86.61
+0 4 3 37471 0 0
+-
+mail.wvm.at
+0 4 4 15776 0 0
+-
+d86-33-39-27.cust.tele2.at
+0 33 32 318295 1 1265036969
+/
+msnbot-65-55-106-233.search.msn.com
+0 2 2 14341 1 1266648987
+/users/registration/forgottenPassword.html
+61.135.162.189
+0 1 1 646 1 1266326410
+/
+61.135.169.39
+0 1 1 12814 1 1266287023
+/
+out-w247.tfbnw.net
+0 1 1 1090 0 0
+-
+msnbot-65-55-106-181.search.msn.com
+0 5 5 19962 3 1266399146
+/
+crawl-66-249-65-10.googlebot.com
+0 4 3 33234 2 1265053172
+/ffb
+out.248.01.snc1.facebook.com
+0 1 1 7869 0 0
+-
+msnbot-65-55-106-211.search.msn.com
+0 2 2 20234 1 1266675958
+/welcome/reference
+msnbot-65-55-106-110.search.msn.com
+0 3 3 26419 2 1266655404
+/welcome/help
+msnbot-207-46-199-199.search.msn.com
+0 1 1 12792 0 0
+-
+dd10636.kasserver.com
+0 295 293 9831263 5 1266258748
+/resource/foe_teamdata/eberau.html
+ec2-67-202-0-31.compute-1.amazonaws.com
+0 4 4 52318 2 1266100005
+/
+ec2-75-101-219-131.compute-1.amazonaws.com
+0 4 4 48119 2 1266673280
+/
+msnbot-207-46-204-192.search.msn.com
+0 1 1 13401 0 0
+-
+msnbot-65-55-207-136.search.msn.com
+0 2 2 12996 0 0
+-
+80-121-105-200.adsl.highway.telekom.at
+0 36 36 379926 0 0
+-
+ec2-75-101-230-83.compute-1.amazonaws.com
+0 2 2 24694 1 1265680700
+/
+78-106-52-174.broadband.corbina.ru
+0 6 5 142520 1 1265448230
+/
+msnbot-207-46-199-177.search.msn.com
+0 2 2 22682 0 0
+-
+msnbot-65-55-216-10.search.msn.com
+0 5 4 23300 2 1266455644
+/welcome/reference
+207.46.199.43
+0 1 1 13848 0 0
+-
+ng.aihit.com
+0 8 7 147749 1 1266295522
+/
+207.46.199.52
+0 1 1 12955 0 0
+-
+b3091274.crawl.yahoo.net
+0 65 59 435770 18 1266199605
+/
+207.46.199.53
+0 1 1 12814 0 0
+-
+crawl-10c.cuil.com
+0 16 16 163130 0 0
+-
+msnbot-65-55-207-123.search.msn.com
+0 2 2 20814 1 1266131152
+/welcome/reference
+91-115-211-129.adsl.highway.telekom.at
+0 34 34 356145 0 0
+-
+77.117.246.180.wireless.dyn.drei.com
+0 33 33 21318 0 0
+-
+p57b8bc51.dip.t-dialin.net
+0 1 0 329 0 0
+-
+msnbot-65-55-207-132.search.msn.com
+0 3 2 28590 1 1266004557
+/
+212-183-60-59.adsl.highway.telekom.at
+0 1531 525 7125237 1 1266259472
+/
+gw1.ovh.net
+0 4 4 51883 1 1265949316
+/accounts/inc/include.php
+msnbot-65-55-106-139.search.msn.com
+0 1 1 13670 1 1266728065
+/
+125.165.50.170
+0 3 0 987 0 0
+-
+msnbot-65-55-207-101.search.msn.com
+0 6 4 53705 2 1266654119
+/
+msnbot-207-46-195-237.search.msn.com
+0 1 1 1090 0 0
+-
+msnbot-207-46-199-182.search.msn.com
+0 1 1 1090 0 0
+-
+91-115-212-197.adsl.highway.telekom.at
+0 137 137 1185527 2 1265398474
+/ffb/user/score_v2.html
+msnbot-207-46-199-191.search.msn.com
+0 1 1 11902 0 0
+-
+65.55.108.136
+0 2 2 27696 1 1266033521
+/
+212-183-62-17.adsl.highway.telekom.at
+0 7994 1160 19835125 3 1266337242
+/ffb/myteam
+msnbot-65-55-207-95.search.msn.com
+0 1 1 13070 1 1266181434
+/welcome/help
+213162066150.public.t-mobile.at
+0 1 1 1535 0 0
+-
+65.55.108.148
+0 3 2 1621 1 1265575400
+/
+msnbot-65-55-106-227.search.msn.com
+0 1 1 66578 1 1266783191
+/users/registration
+93-82-74-67.adsl.highway.telekom.at
+0 331 315 3593339 2 1265411101
+/ffb/myteam
+188-23-48-112.adsl.highway.telekom.at
+0 98 29 275980 1 1266266882
+/
+u15285622.onlinehome-server.com
+0 22 13 67934 1 1265012307
+/welcome/reference
+93-82-92-108.adsl.highway.telekom.at
+0 69 36 120338 3 1266091911
+/ffb
+119.252.133.20
+0 1 0 329 0 0
+-
+msnbot-65-55-106-135.search.msn.com
+0 1 1 13845 1 1265957638
+/
+msnbot-65-55-106-205.search.msn.com
+0 2 2 26259 1 1266545994
+/welcome/help
+altona.netuse.de
+0 32 32 334762 0 0
+-
+91-114-238-255.adsl.highway.telekom.at
+0 79 43 27778 0 0
+-
+msnbot-65-55-106-184.search.msn.com
+0 4 4 23273 2 1266680456
+/welcome/reference
+spider03.yandex.ru
+0 41 35 358371 23 1266737172
+/
+219.142.53.9
+0 1 1 7076 1 1266063800
+/welcome/reference
+crawl-66-249-65-40.googlebot.com
+0 36 26 281402 6 1266318991
+/ffb/forum/forum.html
+80.120.254.148
+0 9 9 60098 0 0
+-
+msnbot-65-55-207-51.search.msn.com
+0 2 2 23694 1 1265689702
+/
+91-115-211-38.adsl.highway.telekom.at
+0 24 24 262082 1 1265374419
+/
+188-23-49-180.adsl.highway.telekom.at
+0 1198 270 3719384 1 1266492621
+/ffb/userscore
+212-183-62-64.adsl.highway.telekom.at
+0 319 96 1251403 4 1266360808
+/ffb
+93-82-88-180.adsl.highway.telekom.at
+0 3521 0 0 0 0
+-
+188-23-253-91.adsl.highway.telekom.at
+0 97 31 402842 1 1265731388
+/ffb
+188.45.151.42
+0 34 34 323580 1 1265484886
+/
+188.20.25.114
+0 88 87 664190 1 1265716309
+/
+188-23-55-72.adsl.highway.telekom.at
+0 14070 635 10209483 4 1266522221
+/ffb
+ec2-75-101-254-111.compute-1.amazonaws.com
+0 2 2 27696 1 1266238104
+/
+ec2-75-101-234-253.compute-1.amazonaws.com
+0 2 2 26740 1 1265890268
+/
+msnbot-65-55-106-131.search.msn.com
+0 2 2 13340 0 0
+-
+85.233.41.64.dynamic.cablesurf.de
+0 4 4 15776 0 0
+-
+security.lightspeedsystems.com
+0 12 12 241824 1 1265883070
+/users/registration/getPassword.html
+crawl-66-249-65-18.googlebot.com
+0 56 54 567647 6 1265957312
+/
+out-w250.tfbnw.net
+0 3 3 6752 0 0
+-
+msnbot-65-55-215-74.search.msn.com
+0 2 2 74490 1 1265718807
+/users/registration
+93-82-74-53.adsl.highway.telekom.at
+0 95 95 850842 1 1266025749
+/ffb/userscore
+msnbot-65-55-106-210.search.msn.com
+0 2 2 1736 1 1266461669
+/welcome/reference
+65.55.107.182
+0 2 2 25319 1 1265826087
+/welcome/help
+msnbot-207-46-199-198.search.msn.com
+0 2 2 21450 0 0
+-
+p54a7afd8.dip0.t-ipconnect.de
+0 2 2 11525 0 0
+-
+msnbot-65-55-207-126.search.msn.com
+0 1 1 66578 1 1266038125
+/users/registration
+93-82-65-128.adsl.highway.telekom.at
+0 34 34 356145 0 0
+-
+msnbot-207-46-199-46.search.msn.com
+0 1 1 14291 0 0
+-
+0x50a47a86.boanxx8.dynamic.dsl.tele.dk
+0 22 22 259335 1 1266508327
+/
+ec2-174-129-136-94.compute-1.amazonaws.com
+0 4 4 49009 2 1266508769
+/
+msnbot-65-55-207-135.search.msn.com
+0 4 4 102375 2 1266788515
+/
+out-w245.tfbnw.net
+0 1 1 4022 0 0
+-
+plane03.yandex.ru
+0 3 3 42324 1 1266011770
+/
+msnbot-207-46-199-185.search.msn.com
+0 1 1 10780 0 0
+-
+baiduspider-123-125-66-20.crawl.baidu.com
+0 1 1 14192 0 0
+-
+baiduspider-123-125-66-24.crawl.baidu.com
+0 1 1 10780 0 0
+-
+out-w248.tfbnw.net
+0 2 2 8959 0 0
+-
+msnbot-65-55-207-98.search.msn.com
+0 4 4 3472 2 1266474537
+/users/registration
+mk093111015049.a1.net
+0 9 9 60098 0 0
+-
+80.120.247.206
+0 1054 234 2731512 1 1265735639
+/ffb
+out.246.01.snc1.facebook.com
+0 1 1 7869 0 0
+-
+msnbot-65-55-207-122.search.msn.com
+0 1 1 7076 1 1266789926
+/welcome/reference
+baiduspider-220-181-7-14.crawl.baidu.com
+0 1 1 13057 1 1266298971
+/
+msnbot-207-46-199-42.search.msn.com
+0 1 1 1090 0 0
+-
+91-115-208-43.adsl.highway.telekom.at
+0 315 35 565351 1 1265456224
+/users/account/accountDetails.html
+crawl307.exabot.com
+0 79 58 634662 51 1266742353
+/ffb
+crawl-66-249-67-170.googlebot.com
+0 1 0 0 0 0
+-
+msnbot-207-46-195-227.search.msn.com
+0 1 1 13670 0 0
+-
+msnbot-65-55-207-76.search.msn.com
+0 2 2 14233 0 0
+-
+msnbot-65-55-106-138.search.msn.com
+0 1 1 66578 1 1266583947
+/users/registration
+msnbot-65-55-207-100.search.msn.com
+0 6 4 55294 2 1266667767
+/
+baiduspider-220-181-7-36.crawl.baidu.com
+0 1 1 12955 1 1266250625
+/
+msnbot-65-55-207-45.search.msn.com
+0 5 4 54146 2 1266610412
+/
+msnbot-207-46-194-172.search.msn.com
+0 5 4 199250 1 1265981105
+/
+baiduspider-123-125-66-64.crawl.baidu.com
+0 1 1 13670 1 1266791803
+/
+somehost254.bluecoat.com
+0 2 1 11674 1 1265358394
+/
+crawlh004.ayell.org
+0 2 2 27696 1 1266001251
+/
+188-23-52-25.adsl.highway.telekom.at
+0 144 121 1320242 3 1265128467
+/
+80-121-116-143.adsl.highway.telekom.at
+0 34 34 21964 0 0
+-
+msnbot-65-55-106-107.search.msn.com
+0 2 2 25902 1 1266290008
+/
+ec2-75-101-246-104.compute-1.amazonaws.com
+0 3 2 21633 1 1265000523
+/
+msnbot-65-55-106-187.search.msn.com
+0 4 4 47219 2 1266181012
+/
+72.14.193.4
+0 1 1 646 0 0
+-
+msnbot-207-46-199-190.search.msn.com
+0 1 1 10780 0 0
+-
+93-82-79-152.adsl.highway.telekom.at
+0 32 32 348859 1 1265415445
+/welcome/help
+xeron.cronosit.lv
+0 6 5 114421 1 1265924858
+/
+213162066167.public.t-mobile.at
+0 23 22 268509 1 1265454117
+/
+91-115-208-185.adsl.highway.telekom.at
+0 43 43 27778 0 0
+-
+baiduspider-220-181-7-50.crawl.baidu.com
+0 1 1 13427 1 1266709229
+/
+188-23-54-145.adsl.highway.telekom.at
+0 344 237 3071591 3 1266165651
+/ffb
+msnbot-65-55-207-23.search.msn.com
+0 2 2 16061 1 1265423076
+/users/registration/forgottenPassword.html
+dd15510.kasserver.com
+0 1 1 3675 0 0
+-
+93-82-94-199.adsl.highway.telekom.at
+0 1549 557 17829995 6 1266251595
+/administration/foeTeamParser
+msnbot-65-55-207-72.search.msn.com
+0 3 2 27697 1 1266304673
+/
+crawl-66-249-65-37.googlebot.com
+0 10 8 53789 2 1265737570
+/fantasyfootball/teammanagement/bestteam.html
+77.118.255.231.wireless.dyn.drei.com
+0 22 22 225994 0 0
+-
+ec2-174-129-59-49.compute-1.amazonaws.com
+0 2 2 27586 1 1265990043
+/
+93-82-79-10.adsl.highway.telekom.at
+0 2596 0 0 0 0
+-
+213162066145.public.t-mobile.at
+0 1 1 12894 1 1266261792
+/
+msnbot-65-55-106-134.search.msn.com
+0 2 2 27586 1 1266036745
+/
+91-115-222-106.adsl.highway.telekom.at
+0 2 2 1292 1 1266325915
+/
+msnbot-207-46-195-232.search.msn.com
+0 1 1 14461 0 0
+-
+server.bogtube.com
+0 1 1 12814 0 0
+-
+91-114-230-52.adsl.highway.telekom.at
+0 671 211 2148616 3 1265672535
+/
+msnbot-65-55-106-204.search.msn.com
+0 2 2 81316 1 1266146962
+/users/registration
+msnbot-207-46-195-241.search.msn.com
+0 1 1 14192 0 0
+-
+93-82-95-173.adsl.highway.telekom.at
+0 32 21 83634 1 1265827285
+/
+msnbot-65-55-207-50.search.msn.com
+0 5 5 46318 3 1266616016
+/users/registration/forgottenPassword.html
+ec2-174-129-65-79.compute-1.amazonaws.com
+0 2 2 26693 1 1266064474
+/
+91-115-211-142.adsl.highway.telekom.at
+0 59 41 493164 1 1265492733
+/
+91-114-234-167.adsl.highway.telekom.at
+0 8 8 99424 0 0
+-
+msnbot-207-46-199-49.search.msn.com
+0 1 1 14461 0 0
+-
+b3091106.crawl.yahoo.net
+0 28 24 229179 8 1266642983
+/
+gu2.phc.univie.ac.at
+0 2 2 1292 1 1265644942
+/ffb/awards/facebookAwards.html
+dslb-092-076-071-107.pools.arcor-ip.net
+0 2 2 1292 1 1265546570
+/
+zep14.it-austria.net
+0 1 1 2539 0 0
+-
+80.122.198.38
+0 80 16 62625 1 1265029946
+/ffb/forum/forum.html
+msnbot-65-55-106-231.search.msn.com
+0 1 1 7076 1 1266532435
+/welcome/reference
+ns.km31539.keymachine.de
+0 1 1 11902 1 1265751209
+/
+jyxo-crawler12.streaming.cesnet.cz
+0 8 7 88807 4 1266681646
+/
+xan.metajob.at
+0 2 2 20031 1 1266100357
+/welcome/reference
+out.250.01.snc1.facebook.com
+0 1 1 7869 1 1265715913
+/images/ffb/awards/award_group_trophy_gold_64
+msnbot-65-55-207-125.search.msn.com
+0 2 2 1736 1 1265798184
+/welcome/reference
+217.10.60.85
+0 4 3 1938 1 1265358395
+/ffb
+msnbot-65-55-207-134.search.msn.com
+0 2 2 20375 1 1266570806
+/welcome/reference
+91-115-209-206.adsl.highway.telekom.at
+0 77 43 429187 0 0
+-
+mk090152200230.a1.net
+0 1 1 646 1 1265631419
+/
+crawl-66-249-71-2.googlebot.com
+0 9 7 76176 2 1265126419
+/
+87-238-84-64.amazon.com
+0 34 28 301153 11 1266756139
+/
+msnbot-207-46-199-184.search.msn.com
+0 1 1 12249 0 0
+-
+msnbot-65-55-3-197.search.msn.com
+0 2 2 28812 1 1266704574
+/
+65.55.232.12
+0 3 3 15459 1 1266550327
+/welcome/help
+123-3-84-247.static.dsl.dodo.com.au
+0 1 1 2539 0 0
+-
+msnbot-65-55-207-48.search.msn.com
+0 2 2 16061 1 1265248295
+/users/registration/forgottenPassword.html
+out.snc1.facebook.com
+0 2 2 8959 1 1265885658
+/images/ffb/awards/award_group_trophy_gold_64
+207.46.204.230
+0 1 1 13848 0 0
+-
+207.46.204.236
+0 1 1 14738 0 0
+-
+207.46.204.239
+0 1 1 12814 0 0
+-
+msnbot-207-46-199-193.search.msn.com
+0 1 1 10780 0 0
+-
+93-82-93-58.adsl.highway.telekom.at
+0 792 350 3962424 10 1265991060
+/administration/playermanagement/testFOE.html
+212-183-51-67.adsl.highway.telekom.at
+0 5867 1111 15811659 3 1265905933
+/ffb
+88.131.106.31
+0 2 2 26012 1 1266129612
+/
+crawl-66-249-65-45.googlebot.com
+0 31 18 225245 5 1266602838
+/
+84.119.107.201
+0 147 29 297204 1 1264983587
+/
+80-80-246-31.stat.stw-net.at
+0 4 4 15776 0 0
+-
+crawl-66-249-65-56.googlebot.com
+0 6 3 36753 1 1265747339
+/
+91-115-218-16.adsl.highway.telekom.at
+0 8297 293 7562073 1 1265479935
+/ffb
+194.8.75.96
+0 3 3 36637 1 1265883093
+/
+bzq-114-71-13.static.bezeqint.net
+0 18 17 338843 1 1266304492
+/welcome/reference
+msnbot-207-46-195-226.search.msn.com
+0 1 1 13401 0 0
+-
+baiduspider-220-181-7-39.crawl.baidu.com
+0 1 1 15082 1 1266556520
+/
+91-115-212-45.adsl.highway.telekom.at
+0 13084 1299 9358951 3 1265658892
+/administration/ads
+msnbot-207-46-199-201.search.msn.com
+0 2 2 11870 0 0
+-
+out-w246.tfbnw.net
+0 2 2 11891 1 1266247997
+/images/ffb/awards/award_group_trophy_gold_64
+ec2-174-129-93-123.compute-1.amazonaws.com
+0 2 2 26662 1 1266112245
+/
+91-114-227-237.adsl.highway.telekom.at
+0 52 43 424694 0 0
+-
+188-23-51-215.adsl.highway.telekom.at
+0 3854 6 21214 1 1266583226
+/ffb
+msnbot-207-46-199-180.search.msn.com
+0 1 1 1090 0 0
+-
+65.55.218.158
+0 2 2 14242 1 1266580680
+/users/registration/forgottenPassword.html
+65.55.218.159
+0 2 2 79877 1 1266660325
+/users/registration
+msnbot-65-55-106-207.search.msn.com
+0 2 2 25388 1 1265861393
+/
+ec2-75-101-241-159.compute-1.amazonaws.com
+0 2 2 81039 1 1266718139
+/users/registration
+msnbot-65-55-106-186.search.msn.com
+0 3 3 15784 2 1266661619
+/
+65.55.218.160
+0 3 3 80651 2 1266694888
+/users/registration
+91-115-217-215.adsl.highway.telekom.at
+0 16498 343 8546644 1 1265572501
+/ffb/userscore
+crawl-66-249-65-60.googlebot.com
+0 37 25 188792 13 1265669254
+/
+199.subnet110-136-161.speedy.telkom.net.id
+0 1 0 329 0 0
+-
+msnbot-65-55-207-53.search.msn.com
+0 1 1 10780 1 1265354168
+/
+msnbot-65-55-207-93.search.msn.com
+0 1 1 10780 1 1265482410
+/
+201-243-225-210.dyn.dsl.cantv.net
+0 2 1 8366 1 1266632074
+/
+msnbot-65-55-106-155.search.msn.com
+0 4 4 34424 2 1266229674
+/users/registration/forgottenPassword.html
+out-w249.tfbnw.net
+0 2 2 3895 0 0
+-
+msnbot-65-55-207-22.search.msn.com
+0 3 2 22454 1 1265342411
+/
+112.110.25.204
+0 1 0 329 0 0
+-
+72.10.120.161
+0 22 21 262159 1 1265306604
+/
+62-47-192-38.adsl.highway.telekom.at
+0 37 36 392398 1 1266242789
+/users/registration
+msnbot-65-55-37-179.search.msn.com
+0 2 2 23804 1 1265760291
+/
+93-82-88-11.adsl.highway.telekom.at
+0 4567 1123 10921658 2 1265808161
+/ffb
+msnbot-65-55-106-133.search.msn.com
+0 1 1 41 0 0
+-
+msnbot-207-46-195-231.search.msn.com
+0 1 1 13670 0 0
+-
+p54a1c4bd.dip.t-dialin.net
+0 43 43 424694 0 0
+-
+msnbot-65-55-216-55.search.msn.com
+0 2 2 10821 0 0
+-
+65.55.110.142
+0 1 1 50 1 1266623881
+/users/registration/forgottenPassword.html
+crawl-66-249-65-7.googlebot.com
+0 2 2 21712 1 1265492749
+/
+msnbot-65-55-106-182.search.msn.com
+0 2 2 26228 1 1266531327
+/welcome/help
+msnbot-207-46-195-240.search.msn.com
+0 1 1 1090 0 0
+-
+msnbot-65-55-215-76.search.msn.com
+0 2 2 20814 1 1266237477
+/welcome/reference
+crawlh005.ayell.org
+0 6 6 117572 1 1266112437
+/users/registration
+msnbot-65-55-207-119.search.msn.com
+0 3 3 40710 2 1266508794
+/
+piano1.yandex.ru
+0 2 2 21450 1 1265202546
+/
+b3090811.crawl.yahoo.net
+0 4 4 29396 1 1266729502
+/
+mk092248106167.a1.net
+0 13 13 162842 0 0
+-
+ec2-67-202-2-164.compute-1.amazonaws.com
+0 2 2 21560 1 1265451249
+/
+mk092248096246.a1.net
+0 4 4 2584 1 1265558495
+/
+crawl-66-249-65-42.googlebot.com
+0 6 4 54977 1 1266175579
+/
+69.63.181.250
+0 1 1 2255 0 0
+-
+69.63.181.251
+0 6 6 17416 0 0
+-
+91-114-169-175.adsl.highway.telekom.at
+0 9649 933 19739341 1 1265589187
+/ffb/userscore
+msnbot-65-55-207-137.search.msn.com
+0 1 1 54962 1 1265350301
+/users/registration
+194.149.247.24
+0 1 0 329 0 0
+-
+msnbot-65-55-106-230.search.msn.com
+0 8 8 39029 4 1266326695
+/welcome/help
+ec2-67-202-62-167.compute-1.amazonaws.com
+0 8 8 164476 1 1266794344
+/welcome/
+msnbot-65-55-216-11.search.msn.com
+0 2 2 29021 1 1266772105
+/
+crawl5.dotnetdotcom.org
+0 13 12 179401 5 1266690151
+/
+msnbot-65-55-107-181.search.msn.com
+0 3 3 31887 2 1266558898
+/welcome/help
+80.120.2.197
+0 36 36 39240 0 0
+-
+93-80-30-254.broadband.corbina.ru
+0 6 5 170170 1 1265869773
+/
+msnbot-207-46-204-241.search.msn.com
+0 1 1 13057 0 0
+-
+207.46.195.224
+0 1 1 13738 0 0
+-
+207.46.195.225
+0 1 1 12947 0 0
+-
+b3090978.crawl.yahoo.net
+0 4 4 31097 1 1266286094
+/
+212-183-57-193.adsl.highway.telekom.at
+0 15 12 42634 1 1266275809
+/ffb
+baiduspider-123-125-66-15.crawl.baidu.com
+0 1 1 11902 0 0
+-
+localhost
+0 23 23 241032 1 1265191523
+/
+207.46.195.232
+0 1 1 13704 0 0
+-
+msnbot-65-55-207-29.search.msn.com
+0 2 2 27350 1 1266551338
+/
+94-23-145-228.kimsufi.com
+0 3 3 147170 1 1266101087
+/users/registration
+207.46.195.237
+0 1 1 14738 0 0
+-
+chello213047158168.22.11.vie.surfer.at
+0 128 124 983581 2 1265320339
+/
+91-114-225-150.adsl.highway.telekom.at
+0 34 34 356145 0 0
+-
+91-114-228-230.adsl.highway.telekom.at
+0 2216 19 287816 1 1265541852
+/ffb/user/score_v2.html
+msnbot-65-55-207-133.search.msn.com
+0 2 2 21560 1 1265162255
+/
+dsl-189-156-48-122-dyn.prod-infinitum.com.mx
+0 3 2 27231 1 1266332535
+/
+hk2-lr670301g.super-goo.com
+0 2 2 22450 1 1265377486
+/
+188-23-57-143.adsl.highway.telekom.at
+0 82 63 1485665 1 1266060288
+/
+msnbot-207-46-199-183.search.msn.com
+0 2 2 22340 0 0
+-
+msnbot-65-55-207-47.search.msn.com
+0 2 2 24498 1 1265821044
+/
+ec2-204-236-211-119.compute-1.amazonaws.com
+0 2 2 27693 1 1266109998
+/
+baiduspider-123-125-66-44.crawl.baidu.com
+0 1 1 12955 0 0
+-
+chello084115136232.3.graz.surfer.at
+0 8662 4550 47296382 55 1266780799
+/
+msnbot-65-55-106-109.search.msn.com
+0 6 6 42328 3 1266018474
+/welcome/reference
+msnbot-65-55-109-213.search.msn.com
+0 6 6 99275 1 1266736654
+/users/registration
+out.251.01.snc1.facebook.com
+0 1 1 2255 0 0
+-
+88.117.135.94
+0 473 269 1976630 4 1266791925
+/users/account/accountDetails.html
+baiduspider-220-181-7-23.crawl.baidu.com
+0 1 1 14082 1 1266376191
+/
+# End Of Table - sites (monthly)
+# -sites- (daily)
+msnbot-65-55-106-158.search.msn.com
+0 2 2 15401 1 1266725395
+/users/registration/forgottenPassword.html
+msnbot-65-55-107-179.search.msn.com
+0 3 2 28033 1 1266777573
+/
+msnbot-207-46-204-187.search.msn.com
+0 1 1 13670 0 0
+-
+baiduspider-220-181-7-70.crawl.baidu.com
+0 1 1 13568 1 1266791773
+/
+dd10924.kasserver.com
+0 480 480 5789614 0 0
+-
+msnbot-65-55-207-30.search.msn.com
+0 2 2 26497 1 1266765352
+/welcome/help
+crawl-10c.cuil.com
+0 1 1 13670 0 0
+-
+91-115-211-129.adsl.highway.telekom.at
+0 34 34 356145 0 0
+-
+msnbot-65-55-106-139.search.msn.com
+0 1 1 13670 1 1266728065
+/
+msnbot-65-55-106-227.search.msn.com
+0 1 1 66578 1 1266783191
+/users/registration
+spider03.yandex.ru
+0 2 2 27889 1 1266737172
+/
+msnbot-65-55-207-135.search.msn.com
+0 2 2 27885 1 1266788515
+/
+msnbot-65-55-207-122.search.msn.com
+0 1 1 7076 1 1266789926
+/welcome/reference
+crawl307.exabot.com
+0 2 0 0 2 1266742353
+/ffb
+msnbot-207-46-195-227.search.msn.com
+0 1 1 13670 0 0
+-
+baiduspider-123-125-66-64.crawl.baidu.com
+0 1 1 13670 1 1266791803
+/
+msnbot-207-46-195-232.search.msn.com
+0 1 1 14461 0 0
+-
+87-238-84-64.amazon.com
+0 3 2 28823 1 1266756139
+/
+crawl-66-249-65-45.googlebot.com
+0 4 2 27775 0 0
+-
+ec2-75-101-241-159.compute-1.amazonaws.com
+0 2 2 81039 1 1266718139
+/users/registration
+msnbot-207-46-195-231.search.msn.com
+0 1 1 13670 0 0
+-
+b3090811.crawl.yahoo.net
+0 4 4 29396 1 1266729502
+/
+ec2-67-202-62-167.compute-1.amazonaws.com
+0 8 8 164476 1 1266794344
+/welcome/
+msnbot-65-55-216-11.search.msn.com
+0 2 2 29021 1 1266772105
+/
+91-114-225-150.adsl.highway.telekom.at
+0 34 34 356145 0 0
+-
+chello084115136232.3.graz.surfer.at
+0 105 55 532628 4 1266780799
+/
+msnbot-65-55-109-213.search.msn.com
+0 6 6 99275 1 1266736654
+/users/registration
+88.117.135.94
+0 256 105 776633 1 1266791925
+/users/account/accountDetails.html
+# End Of Table - sites (daily)
+# -referrers- 
+http://www.gemura.com/page/de/fun/ffb
+0 3
+http://ffb.tobijat.at/welcome/reference
+1 18
+http://ffb.gemura.com/forum/sandbox-f2/topic70.html
+0 4
+http://ffb.tobijat.at/administration/start
+1 1774
+http://ffb.tobijat.at/
+1 5166
+http://ffb.tobijat.at/ffb/registration
+1 18
+http://images.google.de/imgres
+0 4
+- (Direct Request)
+0 9011
+http://ffb.tobijat.at/administration/playermanagement/testFOE.html
+1 262
+http://www.grauezelle.net/forum/search.php
+0 1
+http://ffb.tobijat.at/administration/foeTeamParser
+1 1907
+http://website.svlind.at/report
+0 11
+http://www.tillintallin.de/2008/06/fusball-trikot-icon-set-zur-fusball-em-2008/
+0 1
+http://ffb.gemura.com/forum/member61/
+0 1
+http://ffb.tobijat.at/robots.txt
+1 4
+http://ffb.tobijat.at/resource/foe_teamdata/drautal.html
+1 110
+http://ffb.gemura.com/forum/unterliga-west-kaernten-f9/topic45.html
+0 6
+http://www.facebook.com/
+0 5
+http://www.ffb.tobijat.at/ffb/userscore
+1 7
+http://ffb.tobijat.at/ffb/user/score_v2.html
+1 11
+http://ffb.tobijat.at/welcome/help
+1 22
+http://ffb.tobijat.at/ffb/forum/forum.html
+1 163
+http://ffb.tobijat.at/usage/usage_201002.html
+1 26
+http://ffb.tobijat.at/ffb/ffbfacbook
+1 1
+http://ffb.gemura.com/forum/unterliga-west-kaernten-f9/topic46.html
+0 3
+http://ffb.tobijat.at/resource/Registrierung.pdf
+1 2
+http://ffb.tobijat.at/ffb/bestteam
+1 4949
+http://ffb.gemura.com/forum/unterliga-west-kaernten-f9/topic51.html
+0 2
+http://ffb.gemura.com/forum/off-topic-f16/http-skichallenge-orf-at-t66.html
+0 7
+http://ffb.tobijat.at/ffb/awards/facebookAwards.html
+1 2
+http://ffb.tobijat.at/administration/playermanagement
+1 289
+http://www.ffb.tobijat.at/ffb/lineup
+1 51
+http://ffb.tobijat.at/index.php
+1 3
+http://ffb.tobijat.at/usage/
+1 15
+http://ffb.tobijat.at/usage/index.html
+1 7
+http://ffb.tobijat.at/ffb/user/invite.html
+1 11
+http://apps.facebook.com/ffbtobijat/
+0 10
+http://website.svlind.at/statisticsCards
+0 13
+http://ffb.tobijat.at/users/account
+1 496
+http://www.ffb.tobijat.at/ffb/myteam
+1 21
+http://ffb.tobijat.at/administration/ads
+1 293
+http://www.google.at/url
+0 1
+http://ffb.tobijat.at/ffb/lineup
+1 2551
+http://images.google.co.ve/imgres
+0 2
+http://ffb.tobijat.at/administration/matchround
+1 57
+http://www.tobijat.at
+0 1
+http://ffb.gemura.com/forum/wm-quali-2010-suedafrika-f13/wm-2010-qualifiziert-t67.html
+0 1
+http://ffb.tobijat.at/ffb/myteam
+1 20187
+http://ffb.gemura.com/forum/unterliga-west-kaernten-f9/topic54.html
+0 2
+http://ffb.tobijat.at/ffb/ffbacbook
+1 24
+http://ffb.tobijat.at/ffb/user/score.html
+1 3417
+http://images.google.co.in/imgres
+0 1
+http://www.facebook.com/home.php
+0 3
+http://ffb.gemura.com/forum/ucp.php
+0 1
+http://ffb.tobijat.at/images/profile/photos/2643be604cb126b3f382f8167969fbbd.jpg
+1 1
+http://ffb.gemura.com/forum/unterliga-west-kaernten-f9/topic10.html
+0 2
+http://www.ffb.tobijat.at/ffb
+1 84
+http://www.facebook.com/profile.php
+0 3
+http://images.google.co.id/imglanding
+0 9
+http://ffb.tobijat.at/ffb/forum
+1 2
+http://ffb.tobijat.at/users/registration
+1 387
+http://ffb.tobijat.at/users/registration/forgottenPassword.html
+1 4
+http://upload.wikimedia.org/wikipedia/de/thumb/7/79/Logo_Fifa_World_Cup_2010_South_Africa.svg/525px-Logo_Fifa_World_Cup_2010_South_Africa.svg.png
+0 2
+http://ffb.tobijat.at/ffb/teammanagement/lineup.html
+1 18
+http://localhost/ads/
+0 1
+http://ffb.gemura.com/forum/unterliga-west-kaernten-f9/topic34.html
+0 1
+http://ffb.tobijat.at/ffb/userscore
+1 43551
+http://ffb.gemura.com/forum/
+0 2
+http://ffb.tobijat.at/administration/awards
+1 840
+http://ffb.tobijat.at/users/account/accountDetails.html
+1 1676
+http://images.google.dk/imgres
+0 1
+http://ffb.tobijat.at/administration/match
+1 96
+http://ffb.tobijat.at/users/registration/activate.html
+1 28
+http://ffb.gemura.com/rss/admin/rssAdmin.php
+0 1
+http://ffb.gemura.com/forum/member59/
+0 1
+http://ffb.tobijat.at/ffb/ffbfacebook
+1 42
+http://ffb.gemura.com/forum/bundesliga-aut-f10/topic4.html
+0 2
+http://ffb.gemura.com/forum/off-topic-f16/http-skichallenge-orf-at-t66-10.html
+0 1
+http://website.svlind.at/
+0 10
+http://www.google.at/search
+0 1
+http://ffb.tobijat.at/resource/foe_teamdata/lind.html
+1 151
+http://ffb.tobijat.at/administration/player
+1 27
+http://ffb.tobijat.at/ffb/astore
+1 126
+http://ffb.tobijat.at/ffb/images/profile/photo/2643be604cb126b3f382f8167969fbbd.jpg
+1 3
+http://www.ffb.tobijat.at/
+1 56
+http://www.immune-systems.eu
+0 1
+http://ffb.gemura.com/forum/unterliga-west-kaernten-f9/topic47-10.html
+0 1
+http://ffb.tobijat.at/administration/fifa_playermanagement
+1 5
+http://ffb.tobijat.at/administration/matchpoints
+1 715
+http://images.google.com/imgres
+0 6
+http://ffb.tobijat.at/administration/team
+1 201
+http://website.svlind.at/players
+0 621
+http://ffb.tobijat.at/ffb
+1 22428
+http://ffb.tobijat.at/images/ffb/profiles/avatar/3a746d69b61854aaab055580b2abd7d3.jpg
+1 1
+http://www.baidu.com/s
+0 1
+http://ffb.tobijat.at/area_config_ffb.xml
+1 15
+http://ffb.tobijat.at/administration/news
+1 52
+http://website.svlind.at/statistics
+0 8
+# End Of Table - referrers
+# -agents- 
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; GTB6.3; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.3072
+0 80
+ia_archiver (+http://www.alexa.com/site/help/webmasters; crawler@alexa.com)
+0 3
+Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7 (.NET CLR 3.5.30729)
+0 2
+Mozilla/5.0 (Windows; U; Windows NT 6.1; de; rv:1.9.2) Gecko/20100115 Firefox/3.6 GTBDFff GTB7.0
+0 36
+Mozilla/5.0 (Twiceler-0.9 http://www.cuil.com/twiceler/robot.html)
+0 16
+Googlebot-Image/1.0
+0 54
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0; GTB6.4; SLCC1; .NET CLR 2.0.50727; Media Center PC 5.0; eSobi
+0 212
+Java/1.6.0_17
+0 40
+facebookplatform/1.0 (+http://developers.facebook.com)
+0 34
+Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7
+0 103
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; .NET CLR 3.0.4506.2152; .N
+0 9
+Baiduspider+(+http://www.baidu.com/search/spider.htm)
+0 12
+Mozilla/5.0 (Windows; U; Windows NT 6.1; de; rv:1.9.2) Gecko/20100115 Firefox/3.6
+0 15
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; GTB0.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4
+0 1054
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; WWIEPlugin; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; 
+0 4
+Mozilla/5.0 (Windows; U; Windows NT 6.1; de; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7 (.NET CLR 3.5.30729)
+0 75
+Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.0.17) Gecko/2009122116 Firefox/3.0.17 FBSMTWB
+0 99
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; WOW64; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CL
+0 43
+Mozilla/5.0 (compatible; spbot/1.2; +http://www.seoprofiler.com/bot/ )
+0 14
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 1.1.4322)
+0 59
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; GTB6; .NET CLR 1.1.4322; InfoPath.2)
+0 24
+Mediapartners-Google
+0 53
+Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.0.1) Gecko/2008070208 Firefox/3.0.1
+0 53
+Mozilla/5.0 (compatible; spbot/2.0; +http://www.seoprofiler.com/bot/ )
+0 14
+Yandex/1.01.001 (compatible; Win16; m)
+0 2
+msnbot/2.0b (+http://search.msn.com/msnbot.htm).
+0 2
+Mozilla/5.0 (Windows; U; Windows NT 6.1; de-DE) AppleWebKit/531.21.8 (KHTML, like Gecko) Version/4.0.4 Safari/531.21.10
+0 304
+Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.1.3) Gecko/20090824 Firefox/3.5.3 (.NET CLR 3.5.30729)
+0 669
+Mozilla/5.0 (Windows; U; Windows NT 5.0; ru; rv:1.8.0.10) Gecko/20070216 Firefox/1.5.0.10
+0 1
+Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_1; de-de) AppleWebKit/531.9 (KHTML, like Gecko) Version/4.0.3 Safari/531.9
+0 1
+Mozilla/5.0 (compatible; spbot/1.0; +http://www.seoprofiler.com/bot/ )
+0 8
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.2;  SLCC1;  .NET CLR 1.1.4322;  .NET CLR 2.0.40607)
+0 3
+Mozilla/5.0 (compatible; Exabot/3.0 (BiggerBetter); +http://www.exabot.com/go/robot)
+0 79
+ichiro/4.0 (http://help.goo.ne.jp/door/crawler.html)
+0 2
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; GTB6.4; .NET CLR 2.0.50727)
+0 35
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; Trident/4.0; GTB6.3)
+0 4
+Mozilla/5.0 (Windows; U; Windows NT 6.1; en-GB; rv:1.9.2) Gecko/20100115 Firefox/3.6 (.NET CLR 3.5.30729)
+0 98905
+Mozilla/5.0 (compatible; dotSemantic/1.0; +http://www.dotsemantic.org)
+0 1
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727)
+0 77
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; InfoPath.2; .NET CLR 3
+0 2
+Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.1.7) Gecko/20091221 (GMX/1.6.2) Firefox/3.5.7 (.NET CLR 3.5.30729)
+0 34
+msnbot-media/1.1 (+http://search.msn.com/msnbot.htm)
+0 15
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0; Trident/4.0)
+0 1
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727)
+0 5
+Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.0.17) Gecko/2009122116 Firefox/3.0.17
+0 96
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; Trident/4.0; GTB6.4; .NET CLR 1.1.4322)
+0 22
+Mozilla/5.0 (Windows; U; Windows NT 6.1; de; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7
+0 34
+Mozilla/5.0 (Windows; U; Windows NT 6.1; id; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7
+0 1
+Mozilla/5.0
+0 4
+Opera/9.80 (Windows NT 6.1; U; en) Presto/2.2.15 Version/10.10
+0 265
+Mozilla/5.0 (Windows; U; Windows NT 5.1; vi; rv:1.9.2) Gecko/20100115 Firefox/3.6
+0 23
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;  SV1;  .NET CLR 1.1.4322;  .NET CLR 2.0.50727;  .NET CLR 3.0.04506.648)
+0 6
+Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)
+0 87
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; .NET CLR 1.0.3705; .NET CLR 1.1.4322; .NET CLR 2.0.50727; InfoPath.1; MS-R
+0 3
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; InfoPath.1; .NET CLR 2.0.50727; .NET CLR 1.1.4322; MS-RTC LM 8; .NET CLR 3
+0 2
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; GTB6; .NET CLR 1.1.4322; .NET CLR 2.0.50727)
+0 4
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; ru) Opera 8.01
+0 6
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)
+0 22
+DoCoMo/2.0 N905i(c100;TB;W24H16) (compatible; Googlebot-Mobile/2.1; +http://www.google.com/bot.html)
+0 4
+Mozilla/5.0 (compatible; Purebot/1.1; +http://www.puritysearch.net/)
+0 6
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0; GTB6; SLCC1; .NET CLR 2.0.50727; Media Center PC 5.0; .NET CL
+0 39
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0; GTB6.3; SLCC1; .NET CLR 2.0.50727; Media Center PC 5.0; InfoPath.2; .NET C
+0 32
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; GTB6.3; .NET CLR 2.0.50727; eSobiSubscriber 2.0.4.16; .NET CL
+0 55
+Mozilla/5.0 (Windows; U; Windows NT 6.0; de-DE) AppleWebKit/531.21.8 (KHTML, like Gecko) Version/4.0.4 Safari/531.21.10
+0 9
+Opera/9.00 (Windows NT 5.1; U; en)
+0 3
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.2; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152
+0 4
+Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.1.8) Gecko/20100202 Firefox/3.5.8
+0 73
+Mozilla/5.0 (compatible; AMZNKAssocBot/4.0)
+0 34
+Speedy Spider (http://www.entireweb.com/about/search_tech/speedy_spider/)
+0 2
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.2;  SV1;  .NET CLR 1.1.4322;  .NET CLR 2.0.40607)
+0 1
+Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1) Gecko/20090624 Firefox/3.5
+0 4
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; InfoPath.2; OfficeLiveConnector.1.3; OfficeLivePatch.0.0; msn
+0 3
+Mozilla/5.0 (Windows; U; Windows NT 6.0; de; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7 (.NET CLR 3.5.30729)
+0 881
+Jyxobot/1
+0 8
+Yandex/1.01.001 (compatible; Win16; H)
+0 3
+Mozilla/5.0 (compatible; aiHitBot/2.0.2-DM +http://www.aihit.com)
+0 8
+Yandex/1.01.001 (compatible; Win16; I)
+0 41
+Mozilla/4.0 (compatible; MSIE 5.0; Windows 2000) Opera 6.0 [en]
+0 6
+Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.0.1) Gecko/2008070208 Firefox/3.0.1
+0 1
+Eurobot/1.1 (http://eurobot.ayell.eu)
+0 8
+Mozilla/5.0 (compatible; Yahoo! Slurp/3.0; http://help.yahoo.com/help/us/ysearch/slurp)
+0 95
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; WOW64; Trident/4.0; GTB6.4; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729;
+0 111
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.432
+0 2
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; KTXN)
+0 3
+Mozilla/5.0 (compatible; spbot/1.1; +http://www.seoprofiler.com/bot/ )
+0 2
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152
+0 256
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0; GTB6.3; SLCC1; .NET CLR 2.0.50727; Media Center PC 5.0; eSobi
+0 5
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; .NET CL
+0 36
+Mozilla/5.0 (compatible; MetaJobBot; http://www.metajob.at/crawler)
+0 2
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; WOW64; Trident/4.0; GTB6.4; SLCC1; .NET CLR 2.0.50727; Media Center PC 5.0
+0 52
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0; SLCC1; .NET CLR 2.0.50727; Media Center PC 5.0; .NET CLR 3.0.
+0 1
+Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7 (.NET CLR 3.5.30729)
+0 104
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.3
+0 575
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0; GTB6.4; SLCC1; .NET CLR 2.0.50727; Media Center PC 5.0; .NET 
+0 2
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0; SLCC1; .NET CLR 2.0.50727; InfoPath.2; .NET CLR 3.5.30729; .NET CLR 3.0.30
+0 34
+Opera/9.80 (Windows NT 6.0; U; de) Presto/2.2.15 Version/10.10
+0 7709
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0; SLCC1; .NET CLR 2.0.50727; Media Center PC 5.0; .NET CLR 3.5.
+0 59
+librabot/2.0 (+http://academic.research.microsoft.com/)
+0 3
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.
+0 1
+Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.2) Gecko/20100115 Firefox/3.6
+0 22
+Mozilla/4.0 (compatible; MSIE 7.0;Windows NT 5.1;.NET CLR 1.1.4322;.NET CLR 2.0.50727;.NET CLR 3.0.04506.30)
+0 12
+Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/532.5 (KHTML, like Gecko) Chrome/4.0.249.78 Safari/532.5
+0 430
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)
+0 32
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; (R1 1.1); .NET CLR 1.1.4322)
+0 7
+Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)
+0 25
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727)
+0 9
+Mozilla/5.0 (compatible; DotBot/1.1; http://www.dotnetdotcom.org/, crawler@dotnetdotcom.org)
+0 13
+msnbot/2.0b (+http://search.msn.com/msnbot.htm)
+0 228
+Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0)
+0 3
+Mozilla/5.0 (Windows; U; Windows NT 6.1; en-GB; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7 (.NET CLR 3.5.30729)
+0 1036
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; .NET CLR 1.0.3705; .NET CLR 1.1.4322)
+0 3
+# End Of Table - agents
+# -search strings- 
+south africa 2010
+1
+fifa world cup 2010
+2
+sudafrica 2010
+1
+help imagesi-
+2
+ffb
+2
+sudafrica
+2
+# End Of Table - search strings
+# -usernames- 
+# End Of Table - usernames
+0
+# -notfounderrors- 
+# End Of Table - notfounderrors

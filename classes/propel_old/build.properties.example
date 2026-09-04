@@ -1,0 +1,7 @@
+# Copy to build.properties and fill in local credentials.
+# build.properties is gitignored and must not be committed.
+propel.project = ffb
+propel.database = mysql
+propel.database.url = mysql:host=127.0.0.1;dbname=YOUR_DB_NAME
+propel.database.user = YOUR_DB_USER
+propel.database.password = YOUR_DB_PASSWORD

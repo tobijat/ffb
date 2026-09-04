@@ -1,0 +1,71 @@
+#gm_selected_game {
+    width: 99%;
+    text-align:center;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+#gm_game_list {
+    margin-left:auto;
+    margin-right:auto;
+    width: 99%;
+    min-height:180px;
+    text-align:center;
+    padding-left:5px;
+    padding-right:5px;
+}
+
+div.gm_game_list_main {
+	display:-moz-inline-box;
+    display:inline-block;
+    margin-left:auto;
+    margin-right:auto;
+    width: 647px;
+    text-align:center;
+}
+
+div.gm_game_list_title {
+    margin-left:auto;
+    margin-right:auto;
+    margin-bottom:3px;
+    width: 100%;
+    text-align:center;
+    font-family:Kristen ITC;
+	font-size:11pt;
+	font-weight:bold;
+}
+
+/* round gm_game_list_element div */
+.rounddiv_gm_game_list_element {
+	background:transparent;
+    float:left;
+	display:-moz-inline-box;
+    display:inline-block;
+    width: 200px;
+	margin-right:10px;
+}
+div.gm_game_list_element {
+    background-color: #CCFFCC;
+	padding:10px;
+	/*border:solid #CCFFCC 5px;*/
+	text-align:center;
+	font-family:Kristen ITC;
+	font-size:10pt;
+	font-weight:bold;
+}
+/* ***** */
+
+div.gm_game_list_element:hover {
+	background-color: #BBFFBB;
+	/*border-right:solid #FF0000 5px;*/
+	/*border-left:solid #FF0000 5px;*/
+}
+
+div.gm_game_list_element_image {
+    margin-bottom:3px;
+}
+
+div.gm_game_list_element_text {
+
+}
+

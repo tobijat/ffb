@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <directory name="Exif">
+    <tag type="0x010e" name="Image Description" desc="          "/>
+    <tag type="0x010f" name="Make" desc="NIKON"/>
+    <tag type="0x0110" name="Model" desc="E5600"/>
+    <tag type="0x0112" name="Orientation" desc="Top, left side (Horizontal / normal)"/>
+    <tag type="0x011a" name="X Resolution" desc="300 dots per inch"/>
+    <tag type="0x011b" name="Y Resolution" desc="300 dots per inch"/>
+    <tag type="0x0128" name="Resolution Unit" desc="Inch"/>
+    <tag type="0x0131" name="Software" desc="E5600v1.0"/>
+    <tag type="0x0132" name="Date/Time" desc="2009:08:25 21:17:02"/>
+    <tag type="0x0213" name="YCbCr Positioning" desc="Datum point"/>
+    <tag type="0x829a" name="Exposure Time" desc="10/601 sec"/>
+    <tag type="0x829d" name="F-Number" desc="F2,9"/>
+    <tag type="0x8822" name="Exposure Program" desc="Program normal"/>
+    <tag type="0x8827" name="ISO Speed Ratings" desc="50"/>
+    <tag type="0x9000" name="Exif Version" desc="2.20"/>
+    <tag type="0x9003" name="Date/Time Original" desc="2009:08:25 21:17:02"/>
+    <tag type="0x9004" name="Date/Time Digitized" desc="2009:08:25 21:17:02"/>
+    <tag type="0x9101" name="Components Configuration" desc="YCbCr"/>
+    <tag type="0x9102" name="Compressed Bits Per Pixel" desc="4 bits/pixel"/>
+    <tag type="0x9204" name="Exposure Bias Value" desc="0 EV"/>
+    <tag type="0x9205" name="Max Aperture Value" desc="F2,8"/>
+    <tag type="0x9207" name="Metering Mode" desc="Multi-segment"/>
+    <tag type="0x9208" name="Light Source" desc="Unknown"/>
+    <tag type="0x9209" name="Flash" desc="Flash fired, auto"/>
+    <tag type="0x920a" name="Focal Length" desc="5,7 mm"/>
+    <tag type="0x9286" name="User Comment" desc=""/>
+    <tag type="0xa000" name="FlashPix Version" desc="1.00"/>
+    <tag type="0xa001" name="Color Space" desc="sRGB"/>
+    <tag type="0xa002" name="Exif Image Width" desc="2592 pixels"/>
+    <tag type="0xa003" name="Exif Image Height" desc="1944 pixels"/>
+    <tag type="0xa300" name="File Source" desc="Digital Still Camera (DSC)"/>
+    <tag type="0xa301" name="Scene Type" desc="Directly photographed image"/>
+    <tag type="0xa401" name="Custom Rendered" desc="Normal process"/>
+    <tag type="0xa402" name="Exposure Mode" desc="Auto exposure"/>
+    <tag type="0xa403" name="White Balance" desc="Auto white balance"/>
+    <tag type="0xa404" name="Digital Zoom Ratio" desc="Digital zoom not used."/>
+    <tag type="0xa405" name="Focal Length 35" desc="34mm"/>
+    <tag type="0xa406" name="Scene Capture Type" desc="Standard"/>
+    <tag type="0xa407" name="Gain Control" desc="None"/>
+    <tag type="0xa408" name="Contrast" desc="None"/>
+    <tag type="0xa409" name="Saturation" desc="None"/>
+    <tag type="0xa40a" name="Sharpness" desc="None"/>
+    <tag type="0xa40c" name="Subject Distance Range" desc="Unknown"/>
+    <tag type="0x0103" name="Compression" desc="JPEG (old-style)"/>
+    <tag type="0x0201" name="Thumbnail Offset" desc="4596 bytes"/>
+    <tag type="0x0202" name="Thumbnail Length" desc="8966 bytes"/>
+    <tag type="0xf001" name="Thumbnail Data" desc="[8966 bytes of thumbnail data]"/>
+  </directory>
+  <directory name="Nikon Makernote">
+    <tag type="0x0001" name="Firmware Version" desc="

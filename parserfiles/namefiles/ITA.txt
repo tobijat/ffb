@@ -1,0 +1,21 @@
+﻿de Sanctis,Morgan,ITA,s_5880_2008_2.jpg;
+Curci,Gianluca,ITA,s_24001_2007_1.jpg;
+Buffon,Gianluigi,ITA,s_5023_2008_1.jpg;
+Amelia,Marco,ITA,s_16810_2008_1.jpg;
+Cassetti,Marco,ITA,s_16975_2008_1.jpg;
+Cannavaro,Fabio,ITA,s_5775_2007_2.jpg;
+Legrottaglie,Nicola,ITA,s_5925_2008_1.jpg;
+Dossena,Andrea,ITA,s_21863_2007_1.jpg;
+Barzagli,Andrea,ITA,s_7109_2008_1.jpg;
+Zambrotta,Gianluca,ITA,s_5757_2008_1.jpg;
+Nocerino,Antonio,ITA,s_22203_2008_1.jpg;
+Palombo,Angelo,ITA,s_6793_2008_1.jpg;
+de Rossi,Daniele,ITA,s_5947_2008_1.jpg;
+Camoranesi,Mauro,ITA,s_5762_2008_1.jpg;
+Pirlo,Andrea,ITA,s_5817_2008_1.jpg;
+Aquilani,Alberto,ITA,s_5957_2008_1.jpg;
+Gilardino,Alberto,ITA,s_5878_2007_1.jpg;
+Iaquinta,Vincenzo,ITA,s_5904_2008_1.jpg;
+del Piero,Alessandro,ITA,s_4289_2008_1.jpg;
+Toni,Luca,ITA,s_5980_2008_1.jpg;
+di Natale,Antonio,ITA,s_6031_2007_2.jpg

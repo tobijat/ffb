@@ -1,0 +1,86 @@
+RewriteEngine on
+
+# htaccess f�r FFB
+
+# umleitung f�r wartungsarbeiten mit ausnahme
+#Tobi Exception
+#RewriteCond %{REMOTE_ADDR} !^77.119.129.73 [NC]
+#RewriteCond %{REMOTE_ADDR} !^127.0.0.1 [NC]
+
+#www.tobijat.at - Exception:
+RewriteCond %{REMOTE_ADDR} !^85.13.134.41 [NC]
+
+#Geri Exception
+RewriteCond %{REMOTE_ADDR} !^84.115.136.168 [NC]
+
+#Umleitung
+#RewriteRule ^(.*)$ maintenance.html [L,QSA]
+
+#WM Logo 2010
+Redirect /images/ffb/backgrounds/wml2010.png http://upload.wikimedia.org/wikipedia/de/thumb/7/79/Logo_Fifa_World_Cup_2010_South_Africa.svg/525px-Logo_Fifa_World_Cup_2010_South_Africa.svg.png
+
+
+# Changes /index.php?module=users&class=login&event=getUser&presenter=html to /users/login/getUser.html
+RewriteRule ^xd_receiver.htm(.*) - [L]
+RewriteRule ^google7dab302111c988ed.html(.*) - [L]
+RewriteRule ^script/ - [L]
+RewriteRule ^images/ - [L]
+RewriteRule ^include/ - [L]
+RewriteRule ^modules/ - [L]
+RewriteRule ^classes/ - [L]
+RewriteRule ^parserfiles/ - [L]
+RewriteRule ^resource/ - [L]
+RewriteRule ^robots.txt - [L]
+
+# Local dev: map localhost to ffb subdomain
+RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-d
+RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-f
+RewriteCond %{HTTP_HOST} ^(localhost|127\.0\.0\.1)(:\d+)?$ [NC]
+RewriteRule ^(.*)([^/]*)/([^/]*)/([^/]*)\.([^\.]*)$ index.php?module=$1&class=$3&event=$4&presenter=$5&subdomain=ffb [L,QSA]
+
+RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-d
+RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-f
+RewriteCond %{HTTP_HOST} ^(localhost|127\.0\.0\.1)(:\d+)?$ [NC]
+RewriteRule ^(.*)([^/]*)/([^/]*)$ index.php?module=$1&class=$3&subdomain=ffb [L,QSA]
+
+RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-d
+RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-f
+RewriteCond %{HTTP_HOST} ^(localhost|127\.0\.0\.1)(:\d+)?$ [NC]
+RewriteRule ^(.*)([^/]*)$ index.php?module=$1&subdomain=ffb [L,QSA]
+
+RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-d
+RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-f
+RewriteCond %{HTTP_HOST} !^www\.(sportsfan\.at|sportsfan\.local)$ [NC]
+RewriteCond %{HTTP_HOST} ^(www\.)?([a-z0-9_-]+)\.(sportsfan\.at|sportsfan\.local)$ [NC]
+RewriteRule ^(.*)([^/]*)/([^/]*)/([^/]*)\.([^\.]*)$ index.php?module=$1&class=$3&event=$4&presenter=$5&subdomain=%2 [L,QSA]
+
+# Changes /index.php?module=users&class=login to /users/login
+RewriteRule ^script/ - [L]
+RewriteRule ^images/ - [L]
+RewriteRule ^include/ - [L]
+RewriteRule ^modules/ - [L]
+RewriteRule ^classes/ - [L]
+RewriteRule ^parserfiles/ - [L]
+RewriteRule ^resource/ - [L]
+RewriteRule ^robots.txt - [L]
+RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-d
+RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-f
+RewriteCond %{HTTP_HOST} !^www\.(sportsfan\.at|sportsfan\.local)$ [NC]
+RewriteCond %{HTTP_HOST} ^(www\.)?([a-z0-9_-]+)\.(sportsfan\.at|sportsfan\.local)$ [NC]
+RewriteRule ^(.*)([^/]*)/([^/]*)$ index.php?module=$1&class=$3&subdomain=%2 [L,QSA]
+
+# Changes /index.php?module=welcome to /welcome
+RewriteRule ^script/ - [L]
+RewriteRule ^images/ - [L]
+RewriteRule ^bilder/ - [L]
+RewriteRule ^modules/ - [L]
+RewriteRule ^classes/ - [L]
+RewriteRule ^include/ - [L]
+RewriteRule ^parserfiles/ - [L]
+RewriteRule ^resource/ - [L]
+RewriteRule ^robots.txt - [L]
+RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-d
+RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-f
+RewriteCond %{HTTP_HOST} !^www\.(sportsfan\.at|sportsfan\.local)$ [NC]
+RewriteCond %{HTTP_HOST} ^(www\.)?([a-z0-9_-]+)\.(sportsfan\.at|sportsfan\.local)$ [NC]
+RewriteRule ^(.*)([^/]*)$ index.php?module=$1&subdomain=%2 [L,QSA]

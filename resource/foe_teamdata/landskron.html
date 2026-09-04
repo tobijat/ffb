@@ -1,0 +1,1277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html>
+<!-- blue Version 7.2.0.22  --><!-- Silbergrau blue, (c) Silbergrau Consulting &amp; Software GmbH, Linz, AUSTRIA 2000-2010, all rights reserved. (blue@silbergrau.com, www.silbergrau.com)
+ Licensed exclusively for Silbergrau Consulting &amp; Software GmbH
+ ** DEVELOPMENT LICENSE ONLY, not to be used in production systems  -->
+
+
+<head>
+    <script type="text/javascript" src="/fv/javascript/rssticker/rssticker_src.js?awVerband=K_">
+	/***********************************************
+	 * RSS Pausing Scroller- cp Dynamic Drive (http://www.dynamicdrive.com)
+	 * This notice MUST stay intact for legal use
+	 * Visit http://www.dynamicdrive.com/dynamicindex17/rsspausescroller/ for source code and documentation
+	 ***********************************************/
+	</script>
+
+	  <script language="JavaScript" type="text/JavaScript">
+	//<![CDATA[
+    function grid_select(url, reference) {
+      if( typeof(reference) != "undefined" && reference !=  "") {
+        document.location=url+"&cal_id="+reference;
+      } else {
+        alert('Bitte zuerst Zeile zur Bearbeitung markieren.');
+      }
+    }
+    function appendSelectedGridCalId(link, reference) {
+      hideProgressBar();
+      if( typeof(reference) != "undefined" && reference !=  "") {
+        link.href += "&cal_id=" + reference;
+        //window.open(url+"&cal_id="+reference, '_blank');
+        if (window.event) { window.event.returnValue=true; }
+        return true;
+      } else {
+        alert('Bitte zuerst Zeile zur Bearbeitung markieren.');
+        if (window.event) { window.event.returnValue=false; }
+        return false;
+      }
+    }
+	//]]>
+  </script>
+
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" language="javascript" src="/fv/javascript/combined/dhtml_pink_cookies.js?awVerband=K_"></script>
+    <script type="text/javascript" language="javascript" src="/fv/javascript/XulMenu.js?awVerband=K_"></script>
+    
+    
+    <script type="text/javascript" src="/fv/javascript/jquery/jquery-1.3.2.min.js"></script>
+ 	<script type="text/javascript" src="/fv/javascript/jquery/jquery.cycle-2.73.all.js"></script>
+    
+	<title>Fussball Online</title>
+
+	
+	    <link rel="stylesheet" type="text/css" href="/fv/styles/K/menu_menuStyles_ticker_portalVerein.css?awVerband=K_" />
+    
+     
+    
+    
+</head>
+
+<body style="margin: 0">
+	
+	
+	
+	
+
+	
+		<div align="center">
+  <a href="http://www.kfv-fussball.at"><img src="http://www.fussballoesterreich.at/kfv_old/img/header_verlauf2.gif" width="945" height="74" border="0" alt="K&auml;rntner Fu&szlig;ballverband" /></a><br />
+  <img src="http://www.fussballoesterreich.at/kfv_old/img/wiese_dummy2.gif" width="945" height="170" alt="" /><br />
+</div>
+
+<table border="0" cellspacing="0" cellpadding="0" align="center" class="main" style="width: 945px; background-color:#175489;">
+  <tr>
+    <td style="vertical-align: top;">
+	
+
+	<table width="100%" cellpadding="0" cellspacing="0" >
+		<tr>
+		  <td colspan="2">
+			<table width="100%" cellpadding="0" cellspacing="0">
+			<tr>
+			  <td height="15" valign="top" class="channelleiste">
+			    <table width="100%" border="0" cellpadding="0" cellspacing="0">
+			      <tr>
+			        <td>
+					  <table cellspacing="0" cellpadding="0" id="menu1" class="XulMenu">
+					    <tr>
+					      <?xml version="1.0" encoding="UTF-8"?>
+					      <td>
+					    	<a class="button" target="_top" href="/fv/portal/verein/aktuelles.pu?verbandKuerzel=K&amp;awVerband=K_&amp;vereinNr=9124">AKTUELLES</a>
+					      </td>
+					      <td>
+					    	<a class="button" target="_top">VEREIN</a>
+					    	<div class="section">
+						    	<a class="item" target="_top" href="/fv/portal/verein/displayFunktionaere.pu?verbandKuerzel=K&amp;awVerband=K_&amp;vereinNr=9124">Funktion&auml;re</a>
+						    	<a class="item" target="_top" href="/fv/portal/verein/displayTrainer.pu?verbandKuerzel=K&amp;awVerband=K_&amp;vereinNr=9124">Trainer</a>
+						    	
+						    	<a class="item" target="_top" href="/fv/portal/verein/stammdaten/displayStammdaten.pu?verbandKuerzel=K&amp;awVerband=K_&amp;vereinNr=9124">Vereinsdaten</a>
+					    	</div>
+					      </td>
+						  <td>
+							<a class="button" target="_top" href="/fv/portal/verein/displayMannschaften.pu?verbandKuerzel=K&amp;awVerband=K_&amp;vereinNr=9124">MANNSCHAFTEN</a>
+						  </td>
+						  <td>
+						  	
+						  	
+						  	
+						  		
+								<a class="button" target="_top" href="/fv/portal/verein/displaySportplatz.pu?verbandKuerzel=K&amp;awVerband=K_&amp;vereinNr=9124&amp;spielort=475275713|231479568271282753">SPORTPLATZ</a>
+							
+						  </td>
+						  <td>
+							<a class="button" target="_top" href="/fv/datenserviceVerein/displayDatenservice.pu?verbandKuerzel=K&amp;awVerband=K_&amp;vereinNr=9124">DATENSERVICE</a>
+						  </td>
+						  <td>
+							<a class="button" target="_top" href="/kfv" >ZUM VERBAND...</a>
+						  </td>
+				    	</tr>
+				  	  </table>
+				  	</td>
+				  </tr>
+			    </table>
+			  </td>
+			</tr>
+		    </table>
+		  </td>
+		</tr>
+		<tr>
+			<td width="100%" style="padding-top:2px; vertical-align: top;" class="contentBorderLeft">
+				
+					    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td valign="top" align="left">
+      <table width="100%">
+        <tr>
+          <th class="headline" >
+		    Kampfmannschaft
+    	    
+	      	  &nbsp;-&nbsp;
+		 	  Unterliga West
+		    
+          </th>
+        </tr>
+        <tr>
+          <td class="infoBody" >
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+#mannschaftsSponsorLeft {
+/*	width: 100%; */
+	text-align: left;
+}
+#mannschaftsSponsorRight {
+/*	width: 100%; */
+	text-align: right;
+}
+</style>
+
+<style type="text/css">
+	div.fadeMannschaft1 ul,
+	div.fadeMannschaft2 ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		text-align: left;
+	}
+</style>
+
+
+<script type="text/javascript">
+	$(document).ready(function(){
+		
+			$('.fadeMannschaft1 ul').cycle({ 
+				speed:   3000,
+				timeoutFn: calculateTimeoutFadeMannschaft1
+			});
+		
+			$('.fadeMannschaft2 ul').cycle({ 
+				speed:   3000,
+				timeoutFn: calculateTimeoutFadeMannschaft2
+			});
+		
+
+	});
+
+	function calculateTimeoutFadeMannschaft(listName) {
+	    var actListItem = document.getElementById(listName);
+	    var timeout = parseInt(actListItem.getAttribute("timeout"));
+	    if (timeout>0) {
+		    return timeout*1000;
+	    }
+	    return 5000; 
+	}
+
+	
+				function calculateTimeoutFadeMannschaft1(currElement, nextElement, opts, isForward) { 
+				    var index = opts.currSlide;
+					var listName = "fadeMannschaft_568878553136048295-"+index;
+			
+					return calculateTimeoutFadeMannschaft(listName);
+				}
+			
+				function calculateTimeoutFadeMannschaft2(currElement, nextElement, opts, isForward) { 
+				    var index = opts.currSlide;
+					var listName = "fadeMannschaft_568878553136048295-"+index;
+			
+					return calculateTimeoutFadeMannschaft(listName);
+				}
+			
+</script>
+
+
+<table class="kaderTable"> 
+  <tbody>
+  
+  
+  <tr>
+    <td align="center" colspan="6"> 
+      <table>
+        <tr>
+
+          <td width="20%" >
+	        <table>
+	          <tr>
+	            <td id="specialRow" align="center" >
+	          	    <div id="kaderHeader">Hauptsponsor</div>
+	                <div class="fadeMannschaft1">
+	                	
+				    </div>
+	                <div>&nbsp;</div>
+	            </td>
+	          </tr>
+	        </table>
+          </td>
+          <td valign="top" align="center">
+	        <table>
+	          <tbody>
+	            <tr>
+
+
+ 	      
+	        
+	          <td align="center" id="specialRow" >
+	            
+	            <div id="kaderHeader">Trainer</div>
+	            <div>
+			      <table >
+	            	<tr>
+	          	      <td class="portalImage">	        
+  	                    <img alt='Kunic Dragan 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_510486658651851827-84-105-08mtxRRC.JPG?awVerband=K_'/>
+  	                  </td>
+  	                </tr>
+  	              </table>
+	            </div>
+	            <div>
+	        	  <a class="portalLink" href="/fv/portal/verein/selectTrainer.pu?trainerType=0&trainerOid=100086|568878721445079209&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">
+	                Kunic&nbsp;
+	                Dragan&nbsp;
+	              </a>
+	            </div>
+	          </td>
+	        
+	      
+          
+            
+              <td align="center" id="specialRow">
+                
+                <div id="kaderHeader">Co-Trainer</div>
+                <div>
+			      <table>
+	        	    <tr>
+	          	      <td class="portalImage">	        
+  	                    <img alt='Pirker Herwig 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_510487567842742271-84-105-AGzvg2kb.JPG?awVerband=K_'/>
+  	                  </td>
+  	               </tr>
+  	              </table>
+                </div>
+                <div>
+                  <a class="portalLink" href="/fv/portal/verein/selectTrainer.pu?trainerType=1&trainerOid=100086|578155262389249224&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">
+                    Pirker&nbsp;
+                    Herwig Arno&nbsp;
+                  </a>
+                </div>
+              </td>
+            
+          
+	      
+	        
+	          <td align="center" id="specialRow">
+	            
+	            <div id="kaderHeader">TW-Trainer</div>
+	            <div>
+	          	  <table >
+	        	    <tr>
+	          	      <td class="portalImage">	        
+  	                    <img alt='Lenuweit Thomas 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_511003186719843453-84-105-HwXDJOLR.JPG?awVerband=K_'/>
+  	                  </td>
+  	                </tr>
+  	              </table>
+	            </div>
+	            <div>
+	              <a class="portalLink" href="/fv/portal/verein/selectTrainer.pu?trainerType=2&trainerOid=100086|578155262389249225&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">
+	                Lenuweit&nbsp;
+	                Thomas&nbsp;
+	              </a>
+	            </div>
+	          </td>
+	        
+	      
+
+
+	            </tr>
+	          </tbody>
+  	        </table>
+	      </td>
+	      <td width="20%" align="right" rowspan="3">
+	        <table>
+	          <tr>
+	            <td id="specialRow" align="center" >
+	          	    <div id="kaderHeader">Nebensponsor</div>
+	                <div class="fadeMannschaft2">
+		                
+				    </div>
+	              	<div>&nbsp;</div>
+	            </td>
+	          </tr>
+	        </table>
+	      </td>
+
+        </tr>
+      </table>
+    </td>
+  </tr>  
+  
+  
+
+  <tr><td align="center" colspan="6">
+    <div id="kaderHeader">Tor</div>
+  </td></tr>
+  
+  <tr>
+  <td align="center" colspan="6"> 
+    <table >
+      <tr>
+        
+      </tr>
+    </table>
+  </td>
+</tr>
+
+  
+  <tr><td align="center" colspan="6">
+    <div id="kaderHeader">Verteidigung</div>
+  </td></tr>
+  
+<tr>    
+  <td>
+    <table width="100%"><tr>
+            
+    </tr></table>
+  </td>
+  
+</tr>
+
+  
+  <tr><td align="center" colspan="6">
+    <div id="kaderHeader">Mittelfeld</div>
+  </td></tr>
+  
+<tr>    
+  <td>
+    <table width="100%"><tr>
+            
+    </tr></table>
+  </td>
+  
+</tr>
+
+  
+  <tr><td align="center" colspan="6">
+    <div id="kaderHeader">Sturm</div>
+  </td></tr>
+  
+<tr>    
+  <td>
+    <table width="100%"><tr>
+            
+    </tr></table>
+  </td>
+  
+</tr>
+
+  
+  <tr><td align="center" colspan="6">
+    <div id="kaderHeader">Noch ohne Spielposition</div>
+  </td></tr>
+  
+<tr>    
+  <td>
+    <table width="100%"><tr>
+      
+	    
+	  	  </tr></table></td></tr>
+		  <tr><td><table width="100%"><tr>
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Arneitz Julian 2009.jpg' border='0' src='/netzwerk/imagedownload/379402779304830775_581037545405761532-84-105-oxlpfqu.jpg?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|581038327358245781&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Arneitz&nbsp;Julian</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Berger Martin 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525087198117538979-84-105-7qYj11W7.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576757034701916871&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Berger&nbsp;Martin</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Brunner Lukas 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_516813737370952977-84-105-LEWhzGdY.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|581522468156603058&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Brunner&nbsp;Lukas</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Colombo Kevin 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525087437293530283-84-105-INvjrc4n.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|586605389613239095&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Colombo&nbsp;Kevin</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Debriacher Dominik 2009.jpg' border='0' src='/netzwerk/imagedownload/379402779304830775_580597825050649761-84-105-icEls3aN.jpg?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|580555986700464432&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Debriacher&nbsp;Dominik</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Engelhard Kevin 2009.jpg' border='0' src='/netzwerk/imagedownload/379402779304830775_541276416181864352-84-105-FcvXAuAk.jpg?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576757034701916869&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Engelhardt&nbsp;Kevin Ramadani</a>
+	      </div>
+	    </td>  
+  	      
+      
+	    
+	  	  </tr></table></td></tr>
+		  <tr><td><table width="100%"><tr>
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Engelhardt Ronald 2009.jpg' border='0' src='/netzwerk/imagedownload/379402779304830775_580596994242913120-84-105-fI50dEJ5.jpg?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|580598280585618633&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Engelhardt&nbsp;Ronald Ibrahim</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Erlacher Michael 2009.jpg' border='0' src='/netzwerk/imagedownload/379402779304830775_580597436624544835-84-105-DVXY6pRn.jpg?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|580555986700464431&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Erlacher&nbsp;Michael Gunter</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Fina Patrick 2009.jpg' border='0' src='/netzwerk/imagedownload/379402779304830775_580597291937833968-84-105-hE4fc0Pc.jpg?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|580555986700464430&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Fina&nbsp;Patrick Andreas</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Funk Alexander 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525086596016811147-84-105-RSqNZqp.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576757034433481411&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Funk&nbsp;Alexander</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Gasser Gerome 2009.jpg' border='0' src='/netzwerk/imagedownload/379402779304830775_580595030369116515-84-105-sRvCADTr.jpg?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|580555986432028971&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Gasser&nbsp;Jerome Horst</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Gilgenreiner Thomas 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_516801637105917084-84-105-A7tKiFB.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576757034165045945&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Gilgenreiner&nbsp;Thomas</a>
+	      </div>
+	    </td>  
+  	      
+      
+	    
+	  	  </tr></table></td></tr>
+		  <tr><td><table width="100%"><tr>
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Gybser Gernot 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525082750678903382-84-105-XLfGtbOU.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576757034433481405&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Gypser&nbsp;Gernot</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Hasslinger Alexander 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525084737906584477-84-105-bV0lwWsM.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|588207081974962540&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Hasslinger&nbsp;Alexander</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Hohenberger Peter 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525082024292559369-84-105-bEmzubW.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576757034165045944&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Hohenberger&nbsp;Peter</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='untitled.bmp' border='0' src='/netzwerk/imagedownload/379402779304830775_580595655286858189-84-105-6peF6jmy.bmp?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|580555986432028973&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Majer&nbsp;Marcell Rene</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Mayer Lukas 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525082475532560966-84-105-8Z7RbWLE.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|580555986432028972&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Mayer&nbsp;Lukas</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Preissl Martin 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525087315155397799-84-105-EyR1lneV.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|588937436335255859&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Preissl&nbsp;Martin</a>
+	      </div>
+	    </td>  
+  	      
+      
+	    
+	  	  </tr></table></td></tr>
+		  <tr><td><table width="100%"><tr>
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Preissl Stefan 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525082628809206346-84-105-OnY6PA.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576757034433481404&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Preissl&nbsp;Stefan</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Rrustemi Egzon 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525087539835874479-84-105-xH0YiHfx.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|581038327358245782&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Rrustemi&nbsp;Egzon</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Schaub J�rgen 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525082101065099789-84-105-9xwtZmq.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576757034433481403&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Schaub&nbsp;Jürgen Helmut</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Schaunig Martin 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525087014507687067-84-105-PiWnTRL2.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576757034701916870&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Schaunig&nbsp;Martin</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Schneider Florian 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525087113023499423-84-105-l3BRETr6.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|627616262262941247&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Schneider&nbsp;Florian</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Schneider Julian 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525083266611849978-84-105-HoOjdwhY.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576757034433481409&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Schneider&nbsp;Julian</a>
+	      </div>
+	    </td>  
+  	      
+      
+	    
+	  	  </tr></table></td></tr>
+		  <tr><td><table width="100%"><tr>
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Slunka Martin 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_516803418175167911-84-105-xyKp8Y2D.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576757034433481402&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Slunka&nbsp;Martin Peter klaus</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Stroj Alexander 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525083367006710554-84-105-YOGQZ4aK.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576757034433481412&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Stroj&nbsp;Alexander</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Thurner Richard 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525082867179891290-84-105-ZuCmp5Mb.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576757034433481406&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Thurner&nbsp;Richard</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Weissensteiner Stefan 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525086500722224245-84-105-jOmUrS3b.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576757034433481410&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Weissensteiner&nbsp;Stefan</a>
+	      </div>
+	    </td>  
+  	      
+      
+	      
+	    <td id="pictureCells" align="center" width="16%">
+	      <div>
+      		<table>
+        	  <tr>
+          	    <td class="portalImage">	
+          	      
+				    <img alt='Wilpernig Stefan 2008.JPG' border='0' src='/netzwerk/imagedownload/379402779304830775_525084974398221222-84-105-Iu8bnDjJ.JPG?awVerband=K_'/>
+          	      
+          	      
+          	      
+          	      
+ 	            </td>
+ 	          </tr>
+ 	        </table>
+	      </div>
+	      <div>
+	        <a class="portalLink" href="/fv/portal/verein/selectSpieler.pu?spielerOid=100094|576757034433481408&vereinOid=100095|160862876639102249&verbandKuerzel=K&vereinNr=9124&awVerband=K_&mannschaftOid=100092|568878553136048295 ">Wilpernig&nbsp;Stefan</a>
+	      </div>
+	    </td>  
+  	      
+            
+    </tr></table>
+  </td>
+  
+</tr>        
+  
+
+  </tbody>
+</table>
+  
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+				
+			</td>
+			<td width="180" style="vertical-align:top;" class="contentBorderRight">
+				
+					
+
+
+
+
+
+
+<style type="text/css">
+	td.fade ul,
+	td.fadeVerein1 ul,
+	td.fadeVerein2 ul,
+	td.fadeVerein3 ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		text-align: left;
+	}
+</style>
+
+
+<script type="text/javascript">
+	$(document).ready(function(){
+		
+			$('.fadeVerein1 ul').cycle({ 
+				speed:   3000,
+				timeoutFn: calculateTimeoutFadeVerein1
+			});
+		
+			$('.fadeVerein2 ul').cycle({ 
+				speed:   3000,
+				timeoutFn: calculateTimeoutFadeVerein2
+			});
+		
+			$('.fadeVerein3 ul').cycle({ 
+				speed:   3000,
+				timeoutFn: calculateTimeoutFadeVerein3
+			});
+		
+	});
+
+	function calculateTimeoutVerein(listName) {
+	    var actListItem = document.getElementById(listName);
+	    var timeout = parseInt(actListItem.getAttribute("timeout"));
+	    if (timeout>0) {
+		    return timeout*1000;
+	    }
+	    return 5000; 
+	}
+
+	
+				function calculateTimeoutFadeVerein1(currElement, nextElement, opts, isForward) { 
+				    var index = opts.currSlide;
+					var listName = "fadeVEREIN_1-"+index;
+			
+					return calculateTimeoutVerein(listName);
+				}
+			
+				function calculateTimeoutFadeVerein2(currElement, nextElement, opts, isForward) { 
+				    var index = opts.currSlide;
+					var listName = "fadeVEREIN_2-"+index;
+			
+					return calculateTimeoutVerein(listName);
+				}
+			
+				function calculateTimeoutFadeVerein3(currElement, nextElement, opts, isForward) { 
+				    var index = opts.currSlide;
+					var listName = "fadeVEREIN_3-"+index;
+			
+					return calculateTimeoutVerein(listName);
+				}
+			
+</script>
+
+
+<table width="180" style="text-align: center;" >
+	<tr>
+		<td style="padding-top: 10px;" class="fadeVerein1">
+			
+		</td>
+	</tr>
+	
+	<tr>
+		<td style="padding-top: 10px;" class="fadeVerein2">
+			
+		</td>
+	</tr>
+
+	<tr><td>&nbsp;</td></tr>
+
+	<tr>
+		<td style="padding-top: 10px;" class="fadeVerein3">
+			
+		</td>
+	</tr>
+</table>
+
+				
+			</td>
+		</tr>
+	</table>
+	<script type="text/javascript">
+	    var menu1 = new XulMenu("menu1");
+	    menu1.arrow1 = "../pictures/arrow1.gif";
+	    menu1.arrow2 = "../pictures/arrow2.gif";
+	    menu1.init();
+	</script>
+	
+	
+		    </td>
+  </tr>
+  <tr>
+    <td><img src="http://www.fussballoesterreich.at/kfv/img/partner.gif" width="945" height="104" usemap="#Map" border="0" alt="" /></td>
+  </tr>
+  <tr>
+  	<td style="background-color:white;" >
+	  <div class="disclaimer" align="center">
+	  (c) K&auml;rntner Fu&szlig;ballverband, jegliches verwendete Material ist urheberrechtlich gesch&uuml;tzt - siehe <a href="/kfv/page/322686385937910644_322686427545406325_337898492762475863,de.html">Nutzungsbedingungen</a>
+	  </div>
+	<td>
+  </tr>
+</table>
+	
+</body>
+
+</html>
