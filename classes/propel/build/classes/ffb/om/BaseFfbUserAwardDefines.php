@@ -92,12 +92,6 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 	protected $user_award_defines_image;
 
 	/**
-	 * The value for the user_award_defines_facebook_description field.
-	 * @var        string
-	 */
-	protected $user_award_defines_facebook_description;
-
-	/**
 	 * The value for the user_award_defines_description field.
 	 * @var        string
 	 */
@@ -256,16 +250,6 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 	public function getUserAwardDefinesImage()
 	{
 		return $this->user_award_defines_image;
-	}
-
-	/**
-	 * Get the [user_award_defines_facebook_description] column value.
-	 * 
-	 * @return     string
-	 */
-	public function getUserAwardDefinesFacebookDescription()
-	{
-		return $this->user_award_defines_facebook_description;
 	}
 
 	/**
@@ -503,26 +487,6 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 	} // setUserAwardDefinesImage()
 
 	/**
-	 * Set the value of [user_award_defines_facebook_description] column.
-	 * 
-	 * @param      string $v new value
-	 * @return     FfbUserAwardDefines The current object (for fluent API support)
-	 */
-	public function setUserAwardDefinesFacebookDescription($v)
-	{
-		if ($v !== null) {
-			$v = (string) $v;
-		}
-
-		if ($this->user_award_defines_facebook_description !== $v) {
-			$this->user_award_defines_facebook_description = $v;
-			$this->modifiedColumns[] = FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_FACEBOOK_DESCRIPTION;
-		}
-
-		return $this;
-	} // setUserAwardDefinesFacebookDescription()
-
-	/**
 	 * Set the value of [user_award_defines_description] column.
 	 * 
 	 * @param      string $v new value
@@ -589,8 +553,7 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 			$this->user_award_defines_aim_automatic = ($row[$startcol + 8] !== null) ? (boolean) $row[$startcol + 8] : null;
 			$this->user_award_defines_aim_function_name = ($row[$startcol + 9] !== null) ? (string) $row[$startcol + 9] : null;
 			$this->user_award_defines_image = ($row[$startcol + 10] !== null) ? (string) $row[$startcol + 10] : null;
-			$this->user_award_defines_facebook_description = ($row[$startcol + 11] !== null) ? (string) $row[$startcol + 11] : null;
-			$this->user_award_defines_description = ($row[$startcol + 12] !== null) ? (string) $row[$startcol + 12] : null;
+			$this->user_award_defines_description = ($row[$startcol + 11] !== null) ? (string) $row[$startcol + 11] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -599,7 +562,7 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 				$this->ensureConsistency();
 			}
 
-			return $startcol + 13; // 13 = FfbUserAwardDefinesPeer::NUM_COLUMNS - FfbUserAwardDefinesPeer::NUM_LAZY_LOAD_COLUMNS).
+			return $startcol + 12; // 12 = FfbUserAwardDefinesPeer::NUM_COLUMNS - FfbUserAwardDefinesPeer::NUM_LAZY_LOAD_COLUMNS).
 
 		} catch (Exception $e) {
 			throw new PropelException("Error populating FfbUserAwardDefines object", $e);
@@ -978,9 +941,6 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 				return $this->getUserAwardDefinesImage();
 				break;
 			case 11:
-				return $this->getUserAwardDefinesFacebookDescription();
-				break;
-			case 12:
 				return $this->getUserAwardDefinesDescription();
 				break;
 			default:
@@ -1018,8 +978,7 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 			$keys[8] => $this->getUserAwardDefinesAimAutomatic(),
 			$keys[9] => $this->getUserAwardDefinesAimFunctionName(),
 			$keys[10] => $this->getUserAwardDefinesImage(),
-			$keys[11] => $this->getUserAwardDefinesFacebookDescription(),
-			$keys[12] => $this->getUserAwardDefinesDescription(),
+			$keys[11] => $this->getUserAwardDefinesDescription(),
 		);
 		if ($includeForeignObjects) {
 			if (null !== $this->aFfbUserAward) {
@@ -1090,9 +1049,6 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 				$this->setUserAwardDefinesImage($value);
 				break;
 			case 11:
-				$this->setUserAwardDefinesFacebookDescription($value);
-				break;
-			case 12:
 				$this->setUserAwardDefinesDescription($value);
 				break;
 		} // switch()
@@ -1130,8 +1086,7 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 		if (array_key_exists($keys[8], $arr)) $this->setUserAwardDefinesAimAutomatic($arr[$keys[8]]);
 		if (array_key_exists($keys[9], $arr)) $this->setUserAwardDefinesAimFunctionName($arr[$keys[9]]);
 		if (array_key_exists($keys[10], $arr)) $this->setUserAwardDefinesImage($arr[$keys[10]]);
-		if (array_key_exists($keys[11], $arr)) $this->setUserAwardDefinesFacebookDescription($arr[$keys[11]]);
-		if (array_key_exists($keys[12], $arr)) $this->setUserAwardDefinesDescription($arr[$keys[12]]);
+		if (array_key_exists($keys[11], $arr)) $this->setUserAwardDefinesDescription($arr[$keys[11]]);
 	}
 
 	/**
@@ -1154,7 +1109,6 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 		if ($this->isColumnModified(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_AIM_AUTOMATIC)) $criteria->add(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_AIM_AUTOMATIC, $this->user_award_defines_aim_automatic);
 		if ($this->isColumnModified(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_AIM_FUNCTION_NAME)) $criteria->add(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_AIM_FUNCTION_NAME, $this->user_award_defines_aim_function_name);
 		if ($this->isColumnModified(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_IMAGE)) $criteria->add(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_IMAGE, $this->user_award_defines_image);
-		if ($this->isColumnModified(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_FACEBOOK_DESCRIPTION)) $criteria->add(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_FACEBOOK_DESCRIPTION, $this->user_award_defines_facebook_description);
 		if ($this->isColumnModified(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_DESCRIPTION)) $criteria->add(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_DESCRIPTION, $this->user_award_defines_description);
 
 		return $criteria;
@@ -1227,7 +1181,6 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 		$copyObj->setUserAwardDefinesAimAutomatic($this->user_award_defines_aim_automatic);
 		$copyObj->setUserAwardDefinesAimFunctionName($this->user_award_defines_aim_function_name);
 		$copyObj->setUserAwardDefinesImage($this->user_award_defines_image);
-		$copyObj->setUserAwardDefinesFacebookDescription($this->user_award_defines_facebook_description);
 		$copyObj->setUserAwardDefinesDescription($this->user_award_defines_description);
 
 		if ($deepCopy) {
@@ -1485,7 +1438,6 @@ abstract class BaseFfbUserAwardDefines extends BaseObject  implements Persistent
 		$this->user_award_defines_aim_automatic = null;
 		$this->user_award_defines_aim_function_name = null;
 		$this->user_award_defines_image = null;
-		$this->user_award_defines_facebook_description = null;
 		$this->user_award_defines_description = null;
 		$this->alreadyInSave = false;
 		$this->alreadyInValidation = false;

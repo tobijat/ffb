@@ -26,7 +26,7 @@ abstract class BaseWebUserPeer {
 	const TM_CLASS = 'WebUserTableMap';
 	
 	/** The total number of columns. */
-	const NUM_COLUMNS = 19;
+	const NUM_COLUMNS = 18;
 
 	/** The number of lazy-loaded columns. */
 	const NUM_LAZY_LOAD_COLUMNS = 0;
@@ -57,9 +57,6 @@ abstract class BaseWebUserPeer {
 
 	/** the column name for the USER_ADMIN field */
 	const USER_ADMIN = 'web_user.USER_ADMIN';
-
-	/** the column name for the USER_FACEBOOK_ID field */
-	const USER_FACEBOOK_ID = 'web_user.USER_FACEBOOK_ID';
 
 	/** the column name for the USER_NATIONALITY field */
 	const USER_NATIONALITY = 'web_user.USER_NATIONALITY';
@@ -104,12 +101,12 @@ abstract class BaseWebUserPeer {
 	 * e.g. self::$fieldNames[self::TYPE_PHPNAME][0] = 'Id'
 	 */
 	private static $fieldNames = array (
-		BasePeer::TYPE_PHPNAME => array ('UserId', 'UserNickname', 'UserPassword', 'UserEmail', 'UserFname', 'UserLname', 'UserGender', 'UserStatus', 'UserAdmin', 'UserFacebookId', 'UserNationality', 'UserDateBirth', 'UserIp', 'UserLip', 'UserDateRegister', 'UserDateLlogin', 'UserDateLaction', 'UserActivationCode', 'UserMailservice', ),
-		BasePeer::TYPE_STUDLYPHPNAME => array ('userId', 'userNickname', 'userPassword', 'userEmail', 'userFname', 'userLname', 'userGender', 'userStatus', 'userAdmin', 'userFacebookId', 'userNationality', 'userDateBirth', 'userIp', 'userLip', 'userDateRegister', 'userDateLlogin', 'userDateLaction', 'userActivationCode', 'userMailservice', ),
-		BasePeer::TYPE_COLNAME => array (self::USER_ID, self::USER_NICKNAME, self::USER_PASSWORD, self::USER_EMAIL, self::USER_FNAME, self::USER_LNAME, self::USER_GENDER, self::USER_STATUS, self::USER_ADMIN, self::USER_FACEBOOK_ID, self::USER_NATIONALITY, self::USER_DATE_BIRTH, self::USER_IP, self::USER_LIP, self::USER_DATE_REGISTER, self::USER_DATE_LLOGIN, self::USER_DATE_LACTION, self::USER_ACTIVATION_CODE, self::USER_MAILSERVICE, ),
-		BasePeer::TYPE_RAW_COLNAME => array ('USER_ID', 'USER_NICKNAME', 'USER_PASSWORD', 'USER_EMAIL', 'USER_FNAME', 'USER_LNAME', 'USER_GENDER', 'USER_STATUS', 'USER_ADMIN', 'USER_FACEBOOK_ID', 'USER_NATIONALITY', 'USER_DATE_BIRTH', 'USER_IP', 'USER_LIP', 'USER_DATE_REGISTER', 'USER_DATE_LLOGIN', 'USER_DATE_LACTION', 'USER_ACTIVATION_CODE', 'USER_MAILSERVICE', ),
-		BasePeer::TYPE_FIELDNAME => array ('user_id', 'user_nickname', 'user_password', 'user_email', 'user_fname', 'user_lname', 'user_gender', 'user_status', 'user_admin', 'user_facebook_id', 'user_nationality', 'user_date_birth', 'user_ip', 'user_lip', 'user_date_register', 'user_date_llogin', 'user_date_laction', 'user_activation_code', 'user_mailservice', ),
-		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, )
+		BasePeer::TYPE_PHPNAME => array ('UserId', 'UserNickname', 'UserPassword', 'UserEmail', 'UserFname', 'UserLname', 'UserGender', 'UserStatus', 'UserAdmin', 'UserNationality', 'UserDateBirth', 'UserIp', 'UserLip', 'UserDateRegister', 'UserDateLlogin', 'UserDateLaction', 'UserActivationCode', 'UserMailservice', ),
+		BasePeer::TYPE_STUDLYPHPNAME => array ('userId', 'userNickname', 'userPassword', 'userEmail', 'userFname', 'userLname', 'userGender', 'userStatus', 'userAdmin', 'userNationality', 'userDateBirth', 'userIp', 'userLip', 'userDateRegister', 'userDateLlogin', 'userDateLaction', 'userActivationCode', 'userMailservice', ),
+		BasePeer::TYPE_COLNAME => array (self::USER_ID, self::USER_NICKNAME, self::USER_PASSWORD, self::USER_EMAIL, self::USER_FNAME, self::USER_LNAME, self::USER_GENDER, self::USER_STATUS, self::USER_ADMIN, self::USER_NATIONALITY, self::USER_DATE_BIRTH, self::USER_IP, self::USER_LIP, self::USER_DATE_REGISTER, self::USER_DATE_LLOGIN, self::USER_DATE_LACTION, self::USER_ACTIVATION_CODE, self::USER_MAILSERVICE, ),
+		BasePeer::TYPE_RAW_COLNAME => array ('USER_ID', 'USER_NICKNAME', 'USER_PASSWORD', 'USER_EMAIL', 'USER_FNAME', 'USER_LNAME', 'USER_GENDER', 'USER_STATUS', 'USER_ADMIN', 'USER_NATIONALITY', 'USER_DATE_BIRTH', 'USER_IP', 'USER_LIP', 'USER_DATE_REGISTER', 'USER_DATE_LLOGIN', 'USER_DATE_LACTION', 'USER_ACTIVATION_CODE', 'USER_MAILSERVICE', ),
+		BasePeer::TYPE_FIELDNAME => array ('user_id', 'user_nickname', 'user_password', 'user_email', 'user_fname', 'user_lname', 'user_gender', 'user_status', 'user_admin', 'user_nationality', 'user_date_birth', 'user_ip', 'user_lip', 'user_date_register', 'user_date_llogin', 'user_date_laction', 'user_activation_code', 'user_mailservice', ),
+		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, )
 	);
 
 	/**
@@ -119,12 +116,12 @@ abstract class BaseWebUserPeer {
 	 * e.g. self::$fieldNames[BasePeer::TYPE_PHPNAME]['Id'] = 0
 	 */
 	private static $fieldKeys = array (
-		BasePeer::TYPE_PHPNAME => array ('UserId' => 0, 'UserNickname' => 1, 'UserPassword' => 2, 'UserEmail' => 3, 'UserFname' => 4, 'UserLname' => 5, 'UserGender' => 6, 'UserStatus' => 7, 'UserAdmin' => 8, 'UserFacebookId' => 9, 'UserNationality' => 10, 'UserDateBirth' => 11, 'UserIp' => 12, 'UserLip' => 13, 'UserDateRegister' => 14, 'UserDateLlogin' => 15, 'UserDateLaction' => 16, 'UserActivationCode' => 17, 'UserMailservice' => 18, ),
-		BasePeer::TYPE_STUDLYPHPNAME => array ('userId' => 0, 'userNickname' => 1, 'userPassword' => 2, 'userEmail' => 3, 'userFname' => 4, 'userLname' => 5, 'userGender' => 6, 'userStatus' => 7, 'userAdmin' => 8, 'userFacebookId' => 9, 'userNationality' => 10, 'userDateBirth' => 11, 'userIp' => 12, 'userLip' => 13, 'userDateRegister' => 14, 'userDateLlogin' => 15, 'userDateLaction' => 16, 'userActivationCode' => 17, 'userMailservice' => 18, ),
-		BasePeer::TYPE_COLNAME => array (self::USER_ID => 0, self::USER_NICKNAME => 1, self::USER_PASSWORD => 2, self::USER_EMAIL => 3, self::USER_FNAME => 4, self::USER_LNAME => 5, self::USER_GENDER => 6, self::USER_STATUS => 7, self::USER_ADMIN => 8, self::USER_FACEBOOK_ID => 9, self::USER_NATIONALITY => 10, self::USER_DATE_BIRTH => 11, self::USER_IP => 12, self::USER_LIP => 13, self::USER_DATE_REGISTER => 14, self::USER_DATE_LLOGIN => 15, self::USER_DATE_LACTION => 16, self::USER_ACTIVATION_CODE => 17, self::USER_MAILSERVICE => 18, ),
-		BasePeer::TYPE_RAW_COLNAME => array ('USER_ID' => 0, 'USER_NICKNAME' => 1, 'USER_PASSWORD' => 2, 'USER_EMAIL' => 3, 'USER_FNAME' => 4, 'USER_LNAME' => 5, 'USER_GENDER' => 6, 'USER_STATUS' => 7, 'USER_ADMIN' => 8, 'USER_FACEBOOK_ID' => 9, 'USER_NATIONALITY' => 10, 'USER_DATE_BIRTH' => 11, 'USER_IP' => 12, 'USER_LIP' => 13, 'USER_DATE_REGISTER' => 14, 'USER_DATE_LLOGIN' => 15, 'USER_DATE_LACTION' => 16, 'USER_ACTIVATION_CODE' => 17, 'USER_MAILSERVICE' => 18, ),
-		BasePeer::TYPE_FIELDNAME => array ('user_id' => 0, 'user_nickname' => 1, 'user_password' => 2, 'user_email' => 3, 'user_fname' => 4, 'user_lname' => 5, 'user_gender' => 6, 'user_status' => 7, 'user_admin' => 8, 'user_facebook_id' => 9, 'user_nationality' => 10, 'user_date_birth' => 11, 'user_ip' => 12, 'user_lip' => 13, 'user_date_register' => 14, 'user_date_llogin' => 15, 'user_date_laction' => 16, 'user_activation_code' => 17, 'user_mailservice' => 18, ),
-		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, )
+		BasePeer::TYPE_PHPNAME => array ('UserId' => 0, 'UserNickname' => 1, 'UserPassword' => 2, 'UserEmail' => 3, 'UserFname' => 4, 'UserLname' => 5, 'UserGender' => 6, 'UserStatus' => 7, 'UserAdmin' => 8, 'UserNationality' => 9, 'UserDateBirth' => 10, 'UserIp' => 11, 'UserLip' => 12, 'UserDateRegister' => 13, 'UserDateLlogin' => 14, 'UserDateLaction' => 15, 'UserActivationCode' => 16, 'UserMailservice' => 17, ),
+		BasePeer::TYPE_STUDLYPHPNAME => array ('userId' => 0, 'userNickname' => 1, 'userPassword' => 2, 'userEmail' => 3, 'userFname' => 4, 'userLname' => 5, 'userGender' => 6, 'userStatus' => 7, 'userAdmin' => 8, 'userNationality' => 9, 'userDateBirth' => 10, 'userIp' => 11, 'userLip' => 12, 'userDateRegister' => 13, 'userDateLlogin' => 14, 'userDateLaction' => 15, 'userActivationCode' => 16, 'userMailservice' => 17, ),
+		BasePeer::TYPE_COLNAME => array (self::USER_ID => 0, self::USER_NICKNAME => 1, self::USER_PASSWORD => 2, self::USER_EMAIL => 3, self::USER_FNAME => 4, self::USER_LNAME => 5, self::USER_GENDER => 6, self::USER_STATUS => 7, self::USER_ADMIN => 8, self::USER_NATIONALITY => 9, self::USER_DATE_BIRTH => 10, self::USER_IP => 11, self::USER_LIP => 12, self::USER_DATE_REGISTER => 13, self::USER_DATE_LLOGIN => 14, self::USER_DATE_LACTION => 15, self::USER_ACTIVATION_CODE => 16, self::USER_MAILSERVICE => 17, ),
+		BasePeer::TYPE_RAW_COLNAME => array ('USER_ID' => 0, 'USER_NICKNAME' => 1, 'USER_PASSWORD' => 2, 'USER_EMAIL' => 3, 'USER_FNAME' => 4, 'USER_LNAME' => 5, 'USER_GENDER' => 6, 'USER_STATUS' => 7, 'USER_ADMIN' => 8, 'USER_NATIONALITY' => 9, 'USER_DATE_BIRTH' => 10, 'USER_IP' => 11, 'USER_LIP' => 12, 'USER_DATE_REGISTER' => 13, 'USER_DATE_LLOGIN' => 14, 'USER_DATE_LACTION' => 15, 'USER_ACTIVATION_CODE' => 16, 'USER_MAILSERVICE' => 17, ),
+		BasePeer::TYPE_FIELDNAME => array ('user_id' => 0, 'user_nickname' => 1, 'user_password' => 2, 'user_email' => 3, 'user_fname' => 4, 'user_lname' => 5, 'user_gender' => 6, 'user_status' => 7, 'user_admin' => 8, 'user_nationality' => 9, 'user_date_birth' => 10, 'user_ip' => 11, 'user_lip' => 12, 'user_date_register' => 13, 'user_date_llogin' => 14, 'user_date_laction' => 15, 'user_activation_code' => 16, 'user_mailservice' => 17, ),
+		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, )
 	);
 
 	/**
@@ -205,7 +202,6 @@ abstract class BaseWebUserPeer {
 			$criteria->addSelectColumn(WebUserPeer::USER_GENDER);
 			$criteria->addSelectColumn(WebUserPeer::USER_STATUS);
 			$criteria->addSelectColumn(WebUserPeer::USER_ADMIN);
-			$criteria->addSelectColumn(WebUserPeer::USER_FACEBOOK_ID);
 			$criteria->addSelectColumn(WebUserPeer::USER_NATIONALITY);
 			$criteria->addSelectColumn(WebUserPeer::USER_DATE_BIRTH);
 			$criteria->addSelectColumn(WebUserPeer::USER_IP);
@@ -225,7 +221,6 @@ abstract class BaseWebUserPeer {
 			$criteria->addSelectColumn($alias . '.USER_GENDER');
 			$criteria->addSelectColumn($alias . '.USER_STATUS');
 			$criteria->addSelectColumn($alias . '.USER_ADMIN');
-			$criteria->addSelectColumn($alias . '.USER_FACEBOOK_ID');
 			$criteria->addSelectColumn($alias . '.USER_NATIONALITY');
 			$criteria->addSelectColumn($alias . '.USER_DATE_BIRTH');
 			$criteria->addSelectColumn($alias . '.USER_IP');

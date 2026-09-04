@@ -14,7 +14,6 @@ array('symbol'=>'nav_player.png','name'=>'Mannschaft','link'=>'ffb/myteam'),
 array('symbol'=>'nav_topflop.png','name'=>'Top&Flop','link'=>'ffb/bestteam'),
 array('symbol'=>'nav_results.png','name'=>'Rangliste','link'=>'ffb/userscore'),
 //array('symbol'=>'nav_fav.png','name'=>'Statistiken','link'=>'ffb/stats'), //disabled for WM 2014 -> not very usable
-array('symbol'=>'nav_facebook.png','name'=>'Facebook','link'=>'ffb/facebook'), //added for WM 2014 instead of forum
 //array('symbol'=>$forum_symbol,'name'=>'Forum','link'=>'ffb/forum/forum.html'), //__FORUM__ //forum disabled for WM 2014
 array('symbol'=>'nav_help.png','name'=>'Regeln','link'=>'users/help','style'=>'small'),
 //array('symbol'=>'nav_invitation.png','name'=>'Einladen','link'=>'ffb/user/invite.html','style'=>'small'),

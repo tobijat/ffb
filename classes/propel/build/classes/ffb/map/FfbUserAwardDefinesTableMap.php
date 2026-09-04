@@ -48,7 +48,6 @@ class FfbUserAwardDefinesTableMap extends TableMap {
 		$this->addColumn('USER_AWARD_DEFINES_AIM_AUTOMATIC', 'UserAwardDefinesAimAutomatic', 'BOOLEAN', true, null, true);
 		$this->addColumn('USER_AWARD_DEFINES_AIM_FUNCTION_NAME', 'UserAwardDefinesAimFunctionName', 'VARCHAR', true, 255, null);
 		$this->addColumn('USER_AWARD_DEFINES_IMAGE', 'UserAwardDefinesImage', 'VARCHAR', true, 255, null);
-		$this->addColumn('USER_AWARD_DEFINES_FACEBOOK_DESCRIPTION', 'UserAwardDefinesFacebookDescription', 'VARCHAR', true, 255, null);
 		$this->addColumn('USER_AWARD_DEFINES_DESCRIPTION', 'UserAwardDefinesDescription', 'LONGVARCHAR', true, null, null);
 		// validators
 	} // initialize()

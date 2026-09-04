@@ -17,7 +17,6 @@
  * @method     FfbUserAwardDefinesQuery orderByUserAwardDefinesAimAutomatic($order = Criteria::ASC) Order by the user_award_defines_aim_automatic column
  * @method     FfbUserAwardDefinesQuery orderByUserAwardDefinesAimFunctionName($order = Criteria::ASC) Order by the user_award_defines_aim_function_name column
  * @method     FfbUserAwardDefinesQuery orderByUserAwardDefinesImage($order = Criteria::ASC) Order by the user_award_defines_image column
- * @method     FfbUserAwardDefinesQuery orderByUserAwardDefinesFacebookDescription($order = Criteria::ASC) Order by the user_award_defines_facebook_description column
  * @method     FfbUserAwardDefinesQuery orderByUserAwardDefinesDescription($order = Criteria::ASC) Order by the user_award_defines_description column
  *
  * @method     FfbUserAwardDefinesQuery groupByUserAwardDefinesId() Group by the user_award_defines_id column
@@ -31,7 +30,6 @@
  * @method     FfbUserAwardDefinesQuery groupByUserAwardDefinesAimAutomatic() Group by the user_award_defines_aim_automatic column
  * @method     FfbUserAwardDefinesQuery groupByUserAwardDefinesAimFunctionName() Group by the user_award_defines_aim_function_name column
  * @method     FfbUserAwardDefinesQuery groupByUserAwardDefinesImage() Group by the user_award_defines_image column
- * @method     FfbUserAwardDefinesQuery groupByUserAwardDefinesFacebookDescription() Group by the user_award_defines_facebook_description column
  * @method     FfbUserAwardDefinesQuery groupByUserAwardDefinesDescription() Group by the user_award_defines_description column
  *
  * @method     FfbUserAwardDefinesQuery leftJoin($relation) Adds a LEFT JOIN clause to the query
@@ -60,7 +58,6 @@
  * @method     FfbUserAwardDefines findOneByUserAwardDefinesAimAutomatic(boolean $user_award_defines_aim_automatic) Return the first FfbUserAwardDefines filtered by the user_award_defines_aim_automatic column
  * @method     FfbUserAwardDefines findOneByUserAwardDefinesAimFunctionName(string $user_award_defines_aim_function_name) Return the first FfbUserAwardDefines filtered by the user_award_defines_aim_function_name column
  * @method     FfbUserAwardDefines findOneByUserAwardDefinesImage(string $user_award_defines_image) Return the first FfbUserAwardDefines filtered by the user_award_defines_image column
- * @method     FfbUserAwardDefines findOneByUserAwardDefinesFacebookDescription(string $user_award_defines_facebook_description) Return the first FfbUserAwardDefines filtered by the user_award_defines_facebook_description column
  * @method     FfbUserAwardDefines findOneByUserAwardDefinesDescription(string $user_award_defines_description) Return the first FfbUserAwardDefines filtered by the user_award_defines_description column
  *
  * @method     array findByUserAwardDefinesId(int $user_award_defines_id) Return FfbUserAwardDefines objects filtered by the user_award_defines_id column
@@ -74,7 +71,6 @@
  * @method     array findByUserAwardDefinesAimAutomatic(boolean $user_award_defines_aim_automatic) Return FfbUserAwardDefines objects filtered by the user_award_defines_aim_automatic column
  * @method     array findByUserAwardDefinesAimFunctionName(string $user_award_defines_aim_function_name) Return FfbUserAwardDefines objects filtered by the user_award_defines_aim_function_name column
  * @method     array findByUserAwardDefinesImage(string $user_award_defines_image) Return FfbUserAwardDefines objects filtered by the user_award_defines_image column
- * @method     array findByUserAwardDefinesFacebookDescription(string $user_award_defines_facebook_description) Return FfbUserAwardDefines objects filtered by the user_award_defines_facebook_description column
  * @method     array findByUserAwardDefinesDescription(string $user_award_defines_description) Return FfbUserAwardDefines objects filtered by the user_award_defines_description column
  *
  * @package    propel.generator.ffb.om
@@ -442,28 +438,6 @@ abstract class BaseFfbUserAwardDefinesQuery extends ModelCriteria
 			}
 		}
 		return $this->addUsingAlias(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_IMAGE, $userAwardDefinesImage, $comparison);
-	}
-
-	/**
-	 * Filter the query on the user_award_defines_facebook_description column
-	 * 
-	 * @param     string $userAwardDefinesFacebookDescription The value to use as filter.
-	 *            Accepts wildcards (* and % trigger a LIKE)
-	 * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
-	 *
-	 * @return    FfbUserAwardDefinesQuery The current query, for fluid interface
-	 */
-	public function filterByUserAwardDefinesFacebookDescription($userAwardDefinesFacebookDescription = null, $comparison = null)
-	{
-		if (null === $comparison) {
-			if (is_array($userAwardDefinesFacebookDescription)) {
-				$comparison = Criteria::IN;
-			} elseif (preg_match('/[\%\*]/', $userAwardDefinesFacebookDescription)) {
-				$userAwardDefinesFacebookDescription = str_replace('*', '%', $userAwardDefinesFacebookDescription);
-				$comparison = Criteria::LIKE;
-			}
-		}
-		return $this->addUsingAlias(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_FACEBOOK_DESCRIPTION, $userAwardDefinesFacebookDescription, $comparison);
 	}
 
 	/**

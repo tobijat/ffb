@@ -26,7 +26,7 @@ abstract class BaseWebUserPermissionsPeer {
 	const TM_CLASS = 'WebUserPermissionsTableMap';
 	
 	/** The total number of columns. */
-	const NUM_COLUMNS = 8;
+	const NUM_COLUMNS = 5;
 
 	/** The number of lazy-loaded columns. */
 	const NUM_LAZY_LOAD_COLUMNS = 0;
@@ -39,15 +39,6 @@ abstract class BaseWebUserPermissionsPeer {
 
 	/** the column name for the USER_PERMISSIONS_FFB_MAILSERVICE_INFO field */
 	const USER_PERMISSIONS_FFB_MAILSERVICE_INFO = 'web_user_permissions.USER_PERMISSIONS_FFB_MAILSERVICE_INFO';
-
-	/** the column name for the USER_PERMISSIONS_FFB_FACEBOOK field */
-	const USER_PERMISSIONS_FFB_FACEBOOK = 'web_user_permissions.USER_PERMISSIONS_FFB_FACEBOOK';
-
-	/** the column name for the USER_PERMISSIONS_PICTORY_FACEBOOK field */
-	const USER_PERMISSIONS_PICTORY_FACEBOOK = 'web_user_permissions.USER_PERMISSIONS_PICTORY_FACEBOOK';
-
-	/** the column name for the USER_PERMISSIONS_FACEBOOK_CONNECTED field */
-	const USER_PERMISSIONS_FACEBOOK_CONNECTED = 'web_user_permissions.USER_PERMISSIONS_FACEBOOK_CONNECTED';
 
 	/** the column name for the USER_PERMISSIONS_FFB_VISIBLE_PROFILE field */
 	const USER_PERMISSIONS_FFB_VISIBLE_PROFILE = 'web_user_permissions.USER_PERMISSIONS_FFB_VISIBLE_PROFILE';
@@ -71,12 +62,12 @@ abstract class BaseWebUserPermissionsPeer {
 	 * e.g. self::$fieldNames[self::TYPE_PHPNAME][0] = 'Id'
 	 */
 	private static $fieldNames = array (
-		BasePeer::TYPE_PHPNAME => array ('UserId', 'UserPermissionsFfbMailserviceReminder', 'UserPermissionsFfbMailserviceInfo', 'UserPermissionsFfbFacebook', 'UserPermissionsPictoryFacebook', 'UserPermissionsFacebookConnected', 'UserPermissionsFfbVisibleProfile', 'UserPermissionsPictoryVisibleProfile', ),
-		BasePeer::TYPE_STUDLYPHPNAME => array ('userId', 'userPermissionsFfbMailserviceReminder', 'userPermissionsFfbMailserviceInfo', 'userPermissionsFfbFacebook', 'userPermissionsPictoryFacebook', 'userPermissionsFacebookConnected', 'userPermissionsFfbVisibleProfile', 'userPermissionsPictoryVisibleProfile', ),
-		BasePeer::TYPE_COLNAME => array (self::USER_ID, self::USER_PERMISSIONS_FFB_MAILSERVICE_REMINDER, self::USER_PERMISSIONS_FFB_MAILSERVICE_INFO, self::USER_PERMISSIONS_FFB_FACEBOOK, self::USER_PERMISSIONS_PICTORY_FACEBOOK, self::USER_PERMISSIONS_FACEBOOK_CONNECTED, self::USER_PERMISSIONS_FFB_VISIBLE_PROFILE, self::USER_PERMISSIONS_PICTORY_VISIBLE_PROFILE, ),
-		BasePeer::TYPE_RAW_COLNAME => array ('USER_ID', 'USER_PERMISSIONS_FFB_MAILSERVICE_REMINDER', 'USER_PERMISSIONS_FFB_MAILSERVICE_INFO', 'USER_PERMISSIONS_FFB_FACEBOOK', 'USER_PERMISSIONS_PICTORY_FACEBOOK', 'USER_PERMISSIONS_FACEBOOK_CONNECTED', 'USER_PERMISSIONS_FFB_VISIBLE_PROFILE', 'USER_PERMISSIONS_PICTORY_VISIBLE_PROFILE', ),
-		BasePeer::TYPE_FIELDNAME => array ('user_id', 'user_permissions_ffb_mailservice_reminder', 'user_permissions_ffb_mailservice_info', 'user_permissions_ffb_facebook', 'user_permissions_pictory_facebook', 'user_permissions_facebook_connected', 'user_permissions_ffb_visible_profile', 'user_permissions_pictory_visible_profile', ),
-		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, )
+		BasePeer::TYPE_PHPNAME => array ('UserId', 'UserPermissionsFfbMailserviceReminder', 'UserPermissionsFfbMailserviceInfo', 'UserPermissionsFfbVisibleProfile', 'UserPermissionsPictoryVisibleProfile', ),
+		BasePeer::TYPE_STUDLYPHPNAME => array ('userId', 'userPermissionsFfbMailserviceReminder', 'userPermissionsFfbMailserviceInfo', 'userPermissionsFfbVisibleProfile', 'userPermissionsPictoryVisibleProfile', ),
+		BasePeer::TYPE_COLNAME => array (self::USER_ID, self::USER_PERMISSIONS_FFB_MAILSERVICE_REMINDER, self::USER_PERMISSIONS_FFB_MAILSERVICE_INFO, self::USER_PERMISSIONS_FFB_VISIBLE_PROFILE, self::USER_PERMISSIONS_PICTORY_VISIBLE_PROFILE, ),
+		BasePeer::TYPE_RAW_COLNAME => array ('USER_ID', 'USER_PERMISSIONS_FFB_MAILSERVICE_REMINDER', 'USER_PERMISSIONS_FFB_MAILSERVICE_INFO', 'USER_PERMISSIONS_FFB_VISIBLE_PROFILE', 'USER_PERMISSIONS_PICTORY_VISIBLE_PROFILE', ),
+		BasePeer::TYPE_FIELDNAME => array ('user_id', 'user_permissions_ffb_mailservice_reminder', 'user_permissions_ffb_mailservice_info', 'user_permissions_ffb_visible_profile', 'user_permissions_pictory_visible_profile', ),
+		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, )
 	);
 
 	/**
@@ -86,12 +77,12 @@ abstract class BaseWebUserPermissionsPeer {
 	 * e.g. self::$fieldNames[BasePeer::TYPE_PHPNAME]['Id'] = 0
 	 */
 	private static $fieldKeys = array (
-		BasePeer::TYPE_PHPNAME => array ('UserId' => 0, 'UserPermissionsFfbMailserviceReminder' => 1, 'UserPermissionsFfbMailserviceInfo' => 2, 'UserPermissionsFfbFacebook' => 3, 'UserPermissionsPictoryFacebook' => 4, 'UserPermissionsFacebookConnected' => 5, 'UserPermissionsFfbVisibleProfile' => 6, 'UserPermissionsPictoryVisibleProfile' => 7, ),
-		BasePeer::TYPE_STUDLYPHPNAME => array ('userId' => 0, 'userPermissionsFfbMailserviceReminder' => 1, 'userPermissionsFfbMailserviceInfo' => 2, 'userPermissionsFfbFacebook' => 3, 'userPermissionsPictoryFacebook' => 4, 'userPermissionsFacebookConnected' => 5, 'userPermissionsFfbVisibleProfile' => 6, 'userPermissionsPictoryVisibleProfile' => 7, ),
-		BasePeer::TYPE_COLNAME => array (self::USER_ID => 0, self::USER_PERMISSIONS_FFB_MAILSERVICE_REMINDER => 1, self::USER_PERMISSIONS_FFB_MAILSERVICE_INFO => 2, self::USER_PERMISSIONS_FFB_FACEBOOK => 3, self::USER_PERMISSIONS_PICTORY_FACEBOOK => 4, self::USER_PERMISSIONS_FACEBOOK_CONNECTED => 5, self::USER_PERMISSIONS_FFB_VISIBLE_PROFILE => 6, self::USER_PERMISSIONS_PICTORY_VISIBLE_PROFILE => 7, ),
-		BasePeer::TYPE_RAW_COLNAME => array ('USER_ID' => 0, 'USER_PERMISSIONS_FFB_MAILSERVICE_REMINDER' => 1, 'USER_PERMISSIONS_FFB_MAILSERVICE_INFO' => 2, 'USER_PERMISSIONS_FFB_FACEBOOK' => 3, 'USER_PERMISSIONS_PICTORY_FACEBOOK' => 4, 'USER_PERMISSIONS_FACEBOOK_CONNECTED' => 5, 'USER_PERMISSIONS_FFB_VISIBLE_PROFILE' => 6, 'USER_PERMISSIONS_PICTORY_VISIBLE_PROFILE' => 7, ),
-		BasePeer::TYPE_FIELDNAME => array ('user_id' => 0, 'user_permissions_ffb_mailservice_reminder' => 1, 'user_permissions_ffb_mailservice_info' => 2, 'user_permissions_ffb_facebook' => 3, 'user_permissions_pictory_facebook' => 4, 'user_permissions_facebook_connected' => 5, 'user_permissions_ffb_visible_profile' => 6, 'user_permissions_pictory_visible_profile' => 7, ),
-		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, )
+		BasePeer::TYPE_PHPNAME => array ('UserId' => 0, 'UserPermissionsFfbMailserviceReminder' => 1, 'UserPermissionsFfbMailserviceInfo' => 2, 'UserPermissionsFfbVisibleProfile' => 3, 'UserPermissionsPictoryVisibleProfile' => 4, ),
+		BasePeer::TYPE_STUDLYPHPNAME => array ('userId' => 0, 'userPermissionsFfbMailserviceReminder' => 1, 'userPermissionsFfbMailserviceInfo' => 2, 'userPermissionsFfbVisibleProfile' => 3, 'userPermissionsPictoryVisibleProfile' => 4, ),
+		BasePeer::TYPE_COLNAME => array (self::USER_ID => 0, self::USER_PERMISSIONS_FFB_MAILSERVICE_REMINDER => 1, self::USER_PERMISSIONS_FFB_MAILSERVICE_INFO => 2, self::USER_PERMISSIONS_FFB_VISIBLE_PROFILE => 3, self::USER_PERMISSIONS_PICTORY_VISIBLE_PROFILE => 4, ),
+		BasePeer::TYPE_RAW_COLNAME => array ('USER_ID' => 0, 'USER_PERMISSIONS_FFB_MAILSERVICE_REMINDER' => 1, 'USER_PERMISSIONS_FFB_MAILSERVICE_INFO' => 2, 'USER_PERMISSIONS_FFB_VISIBLE_PROFILE' => 3, 'USER_PERMISSIONS_PICTORY_VISIBLE_PROFILE' => 4, ),
+		BasePeer::TYPE_FIELDNAME => array ('user_id' => 0, 'user_permissions_ffb_mailservice_reminder' => 1, 'user_permissions_ffb_mailservice_info' => 2, 'user_permissions_ffb_visible_profile' => 3, 'user_permissions_pictory_visible_profile' => 4, ),
+		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, )
 	);
 
 	/**
@@ -166,18 +157,12 @@ abstract class BaseWebUserPermissionsPeer {
 			$criteria->addSelectColumn(WebUserPermissionsPeer::USER_ID);
 			$criteria->addSelectColumn(WebUserPermissionsPeer::USER_PERMISSIONS_FFB_MAILSERVICE_REMINDER);
 			$criteria->addSelectColumn(WebUserPermissionsPeer::USER_PERMISSIONS_FFB_MAILSERVICE_INFO);
-			$criteria->addSelectColumn(WebUserPermissionsPeer::USER_PERMISSIONS_FFB_FACEBOOK);
-			$criteria->addSelectColumn(WebUserPermissionsPeer::USER_PERMISSIONS_PICTORY_FACEBOOK);
-			$criteria->addSelectColumn(WebUserPermissionsPeer::USER_PERMISSIONS_FACEBOOK_CONNECTED);
 			$criteria->addSelectColumn(WebUserPermissionsPeer::USER_PERMISSIONS_FFB_VISIBLE_PROFILE);
 			$criteria->addSelectColumn(WebUserPermissionsPeer::USER_PERMISSIONS_PICTORY_VISIBLE_PROFILE);
 		} else {
 			$criteria->addSelectColumn($alias . '.USER_ID');
 			$criteria->addSelectColumn($alias . '.USER_PERMISSIONS_FFB_MAILSERVICE_REMINDER');
 			$criteria->addSelectColumn($alias . '.USER_PERMISSIONS_FFB_MAILSERVICE_INFO');
-			$criteria->addSelectColumn($alias . '.USER_PERMISSIONS_FFB_FACEBOOK');
-			$criteria->addSelectColumn($alias . '.USER_PERMISSIONS_PICTORY_FACEBOOK');
-			$criteria->addSelectColumn($alias . '.USER_PERMISSIONS_FACEBOOK_CONNECTED');
 			$criteria->addSelectColumn($alias . '.USER_PERMISSIONS_FFB_VISIBLE_PROFILE');
 			$criteria->addSelectColumn($alias . '.USER_PERMISSIONS_PICTORY_VISIBLE_PROFILE');
 		}

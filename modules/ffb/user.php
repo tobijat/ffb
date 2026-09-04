@@ -115,7 +115,6 @@ class user extends FFB_Auth_User {
 			}
 
 			$user_arr['user_perm_profile'] = $user_perms->getUserPermissionsFfbVisibleProfile();
-			$user_arr['user_perm_facebook'] = $user_perms->getUserPermissionsFacebookConnected();
 
 			if(!$user_arr['user_fname']) {
 				$user_arr['user_fname'] = 0;
@@ -146,9 +145,6 @@ class user extends FFB_Auth_User {
 			}
 			if(!$user_arr['user_perm_profile']) {
 				$user_arr['user_perm_profile'] = 0;
-			}
-			if(!$user_arr['user_perm_facebook']) {
-				$user_arr['user_perm_facebook'] = 0;
 			}
 		}
 		return $user_arr;

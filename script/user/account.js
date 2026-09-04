@@ -23,7 +23,6 @@ help_array["user_details_avatar_delete"] = "<b>Avatarbild zur&uuml;cksetzen</b><
 help_array["user_details_photo_delete"] = "<b>Profilfoto zur&uuml;cksetzen</b><br>Wenn du JA ausw&auml;hlst, wird dein Profilfoto auf das Standard-Bild zur&uuml;ckgesetzt.";
 help_array["user_permissions_ffb_mailservice_info"] = "<b>Infos per Mail erhalten</b><br>Wenn du JA ausw&auml;hlst, bekommst du wichtige Informationen von Fantasy Football an deine E-Mail Adresse geschickt.";
 help_array["user_permissions_ffb_mailservice_reminder"] = "<b>Erinnerungen per Mail erhalten</b><br>Wenn du JA ausw&auml;hlst, bekommst du Aufstellungserinnerungen f&uuml;r die Ligen an denen du teilnimmst an deine E-Mail Adresse geschickt.";
-help_array["user_permissions_ffb_facebook"] = "<b>Facebook-Zugriff erlauben</b><br>Wenn du JA ausw&auml;hlst, kann Fantasy Football Informationen an dein Facebook-Profil senden.";
 help_array["user_permissions_ffb_visible_profile"] = "<b>Gesamtes Profil anzeigen</b><br>Wenn du JA ausw&auml;hlst, wird dein vollst&auml;ndiges Profil auf der Profil-Seite angezeigt. Zus&auml;tzlich zu den normalen Daten werden dann auch <em>Vorname</em>, <em>Nachname</em> und <em>Telefonnummer</em> angezeigt.";
 
 function dispRegHelp(name){

@@ -82,12 +82,6 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	protected $user_admin;
 
 	/**
-	 * The value for the user_facebook_id field.
-	 * @var        string
-	 */
-	protected $user_facebook_id;
-
-	/**
 	 * The value for the user_nationality field.
 	 * @var        string
 	 */
@@ -321,16 +315,6 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	public function getUserAdmin()
 	{
 		return $this->user_admin;
-	}
-
-	/**
-	 * Get the [user_facebook_id] column value.
-	 * 
-	 * @return     string
-	 */
-	public function getUserFacebookId()
-	{
-		return $this->user_facebook_id;
 	}
 
 	/**
@@ -716,26 +700,6 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 	} // setUserAdmin()
 
 	/**
-	 * Set the value of [user_facebook_id] column.
-	 * 
-	 * @param      string $v new value
-	 * @return     WebUser The current object (for fluent API support)
-	 */
-	public function setUserFacebookId($v)
-	{
-		if ($v !== null) {
-			$v = (string) $v;
-		}
-
-		if ($this->user_facebook_id !== $v) {
-			$this->user_facebook_id = $v;
-			$this->modifiedColumns[] = WebUserPeer::USER_FACEBOOK_ID;
-		}
-
-		return $this;
-	} // setUserFacebookId()
-
-	/**
 	 * Set the value of [user_nationality] column.
 	 * 
 	 * @param      string $v new value
@@ -1084,16 +1048,15 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 			$this->user_gender = ($row[$startcol + 6] !== null) ? (string) $row[$startcol + 6] : null;
 			$this->user_status = ($row[$startcol + 7] !== null) ? (string) $row[$startcol + 7] : null;
 			$this->user_admin = ($row[$startcol + 8] !== null) ? (boolean) $row[$startcol + 8] : null;
-			$this->user_facebook_id = ($row[$startcol + 9] !== null) ? (string) $row[$startcol + 9] : null;
-			$this->user_nationality = ($row[$startcol + 10] !== null) ? (string) $row[$startcol + 10] : null;
-			$this->user_date_birth = ($row[$startcol + 11] !== null) ? (string) $row[$startcol + 11] : null;
-			$this->user_ip = ($row[$startcol + 12] !== null) ? (string) $row[$startcol + 12] : null;
-			$this->user_lip = ($row[$startcol + 13] !== null) ? (string) $row[$startcol + 13] : null;
-			$this->user_date_register = ($row[$startcol + 14] !== null) ? (string) $row[$startcol + 14] : null;
-			$this->user_date_llogin = ($row[$startcol + 15] !== null) ? (string) $row[$startcol + 15] : null;
-			$this->user_date_laction = ($row[$startcol + 16] !== null) ? (string) $row[$startcol + 16] : null;
-			$this->user_activation_code = ($row[$startcol + 17] !== null) ? (string) $row[$startcol + 17] : null;
-			$this->user_mailservice = ($row[$startcol + 18] !== null) ? (string) $row[$startcol + 18] : null;
+			$this->user_nationality = ($row[$startcol + 9] !== null) ? (string) $row[$startcol + 9] : null;
+			$this->user_date_birth = ($row[$startcol + 10] !== null) ? (string) $row[$startcol + 10] : null;
+			$this->user_ip = ($row[$startcol + 11] !== null) ? (string) $row[$startcol + 11] : null;
+			$this->user_lip = ($row[$startcol + 12] !== null) ? (string) $row[$startcol + 12] : null;
+			$this->user_date_register = ($row[$startcol + 13] !== null) ? (string) $row[$startcol + 13] : null;
+			$this->user_date_llogin = ($row[$startcol + 14] !== null) ? (string) $row[$startcol + 14] : null;
+			$this->user_date_laction = ($row[$startcol + 15] !== null) ? (string) $row[$startcol + 15] : null;
+			$this->user_activation_code = ($row[$startcol + 16] !== null) ? (string) $row[$startcol + 16] : null;
+			$this->user_mailservice = ($row[$startcol + 17] !== null) ? (string) $row[$startcol + 17] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -1102,7 +1065,7 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 				$this->ensureConsistency();
 			}
 
-			return $startcol + 19; // 19 = WebUserPeer::NUM_COLUMNS - WebUserPeer::NUM_LAZY_LOAD_COLUMNS).
+			return $startcol + 18; // 18 = WebUserPeer::NUM_COLUMNS - WebUserPeer::NUM_LAZY_LOAD_COLUMNS).
 
 		} catch (Exception $e) {
 			throw new PropelException("Error populating WebUser object", $e);
@@ -1619,33 +1582,30 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 				return $this->getUserAdmin();
 				break;
 			case 9:
-				return $this->getUserFacebookId();
-				break;
-			case 10:
 				return $this->getUserNationality();
 				break;
-			case 11:
+			case 10:
 				return $this->getUserDateBirth();
 				break;
-			case 12:
+			case 11:
 				return $this->getUserIp();
 				break;
-			case 13:
+			case 12:
 				return $this->getUserLip();
 				break;
-			case 14:
+			case 13:
 				return $this->getUserDateRegister();
 				break;
-			case 15:
+			case 14:
 				return $this->getUserDateLlogin();
 				break;
-			case 16:
+			case 15:
 				return $this->getUserDateLaction();
 				break;
-			case 17:
+			case 16:
 				return $this->getUserActivationCode();
 				break;
-			case 18:
+			case 17:
 				return $this->getUserMailservice();
 				break;
 			default:
@@ -1680,16 +1640,15 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 			$keys[6] => $this->getUserGender(),
 			$keys[7] => $this->getUserStatus(),
 			$keys[8] => $this->getUserAdmin(),
-			$keys[9] => $this->getUserFacebookId(),
-			$keys[10] => $this->getUserNationality(),
-			$keys[11] => $this->getUserDateBirth(),
-			$keys[12] => $this->getUserIp(),
-			$keys[13] => $this->getUserLip(),
-			$keys[14] => $this->getUserDateRegister(),
-			$keys[15] => $this->getUserDateLlogin(),
-			$keys[16] => $this->getUserDateLaction(),
-			$keys[17] => $this->getUserActivationCode(),
-			$keys[18] => $this->getUserMailservice(),
+			$keys[9] => $this->getUserNationality(),
+			$keys[10] => $this->getUserDateBirth(),
+			$keys[11] => $this->getUserIp(),
+			$keys[12] => $this->getUserLip(),
+			$keys[13] => $this->getUserDateRegister(),
+			$keys[14] => $this->getUserDateLlogin(),
+			$keys[15] => $this->getUserDateLaction(),
+			$keys[16] => $this->getUserActivationCode(),
+			$keys[17] => $this->getUserMailservice(),
 		);
 		return $result;
 	}
@@ -1749,33 +1708,30 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 				$this->setUserAdmin($value);
 				break;
 			case 9:
-				$this->setUserFacebookId($value);
-				break;
-			case 10:
 				$this->setUserNationality($value);
 				break;
-			case 11:
+			case 10:
 				$this->setUserDateBirth($value);
 				break;
-			case 12:
+			case 11:
 				$this->setUserIp($value);
 				break;
-			case 13:
+			case 12:
 				$this->setUserLip($value);
 				break;
-			case 14:
+			case 13:
 				$this->setUserDateRegister($value);
 				break;
-			case 15:
+			case 14:
 				$this->setUserDateLlogin($value);
 				break;
-			case 16:
+			case 15:
 				$this->setUserDateLaction($value);
 				break;
-			case 17:
+			case 16:
 				$this->setUserActivationCode($value);
 				break;
-			case 18:
+			case 17:
 				$this->setUserMailservice($value);
 				break;
 		} // switch()
@@ -1811,16 +1767,15 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 		if (array_key_exists($keys[6], $arr)) $this->setUserGender($arr[$keys[6]]);
 		if (array_key_exists($keys[7], $arr)) $this->setUserStatus($arr[$keys[7]]);
 		if (array_key_exists($keys[8], $arr)) $this->setUserAdmin($arr[$keys[8]]);
-		if (array_key_exists($keys[9], $arr)) $this->setUserFacebookId($arr[$keys[9]]);
-		if (array_key_exists($keys[10], $arr)) $this->setUserNationality($arr[$keys[10]]);
-		if (array_key_exists($keys[11], $arr)) $this->setUserDateBirth($arr[$keys[11]]);
-		if (array_key_exists($keys[12], $arr)) $this->setUserIp($arr[$keys[12]]);
-		if (array_key_exists($keys[13], $arr)) $this->setUserLip($arr[$keys[13]]);
-		if (array_key_exists($keys[14], $arr)) $this->setUserDateRegister($arr[$keys[14]]);
-		if (array_key_exists($keys[15], $arr)) $this->setUserDateLlogin($arr[$keys[15]]);
-		if (array_key_exists($keys[16], $arr)) $this->setUserDateLaction($arr[$keys[16]]);
-		if (array_key_exists($keys[17], $arr)) $this->setUserActivationCode($arr[$keys[17]]);
-		if (array_key_exists($keys[18], $arr)) $this->setUserMailservice($arr[$keys[18]]);
+		if (array_key_exists($keys[9], $arr)) $this->setUserNationality($arr[$keys[9]]);
+		if (array_key_exists($keys[10], $arr)) $this->setUserDateBirth($arr[$keys[10]]);
+		if (array_key_exists($keys[11], $arr)) $this->setUserIp($arr[$keys[11]]);
+		if (array_key_exists($keys[12], $arr)) $this->setUserLip($arr[$keys[12]]);
+		if (array_key_exists($keys[13], $arr)) $this->setUserDateRegister($arr[$keys[13]]);
+		if (array_key_exists($keys[14], $arr)) $this->setUserDateLlogin($arr[$keys[14]]);
+		if (array_key_exists($keys[15], $arr)) $this->setUserDateLaction($arr[$keys[15]]);
+		if (array_key_exists($keys[16], $arr)) $this->setUserActivationCode($arr[$keys[16]]);
+		if (array_key_exists($keys[17], $arr)) $this->setUserMailservice($arr[$keys[17]]);
 	}
 
 	/**
@@ -1841,7 +1796,6 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 		if ($this->isColumnModified(WebUserPeer::USER_GENDER)) $criteria->add(WebUserPeer::USER_GENDER, $this->user_gender);
 		if ($this->isColumnModified(WebUserPeer::USER_STATUS)) $criteria->add(WebUserPeer::USER_STATUS, $this->user_status);
 		if ($this->isColumnModified(WebUserPeer::USER_ADMIN)) $criteria->add(WebUserPeer::USER_ADMIN, $this->user_admin);
-		if ($this->isColumnModified(WebUserPeer::USER_FACEBOOK_ID)) $criteria->add(WebUserPeer::USER_FACEBOOK_ID, $this->user_facebook_id);
 		if ($this->isColumnModified(WebUserPeer::USER_NATIONALITY)) $criteria->add(WebUserPeer::USER_NATIONALITY, $this->user_nationality);
 		if ($this->isColumnModified(WebUserPeer::USER_DATE_BIRTH)) $criteria->add(WebUserPeer::USER_DATE_BIRTH, $this->user_date_birth);
 		if ($this->isColumnModified(WebUserPeer::USER_IP)) $criteria->add(WebUserPeer::USER_IP, $this->user_ip);
@@ -1920,7 +1874,6 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 		$copyObj->setUserGender($this->user_gender);
 		$copyObj->setUserStatus($this->user_status);
 		$copyObj->setUserAdmin($this->user_admin);
-		$copyObj->setUserFacebookId($this->user_facebook_id);
 		$copyObj->setUserNationality($this->user_nationality);
 		$copyObj->setUserDateBirth($this->user_date_birth);
 		$copyObj->setUserIp($this->user_ip);
@@ -3587,7 +3540,6 @@ abstract class BaseWebUser extends BaseObject  implements Persistent
 		$this->user_gender = null;
 		$this->user_status = null;
 		$this->user_admin = null;
-		$this->user_facebook_id = null;
 		$this->user_nationality = null;
 		$this->user_date_birth = null;
 		$this->user_ip = null;

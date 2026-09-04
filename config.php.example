@@ -87,13 +87,6 @@ define('FFB_BOARD_DB_NAME','YOUR_BOARD_DB_NAME');
 define('FFB_BOARD_DB_USER','YOUR_BOARD_DB_USER');
 define('FFB_BOARD_DB_PASSWORD','YOUR_BOARD_DB_PASSWORD');
 
-// Facebook application credentials
-define('FFB_FACEBOOK_API_KEY','YOUR_FACEBOOK_API_KEY');
-define('FFB_FACEBOOK_APP_SECRET','YOUR_FACEBOOK_APP_SECRET');
-define('FFB_FACEBOOK_APP_ID','YOUR_FACEBOOK_APP_ID');
-define('FFB_FACEBOOK_SESSION_KEY','YOUR_FACEBOOK_SESSION_KEY');
-define('FFB_FACEBOOK_USER_ID','YOUR_FACEBOOK_USER_ID');
-
 //zusätzliche INCLUDE-Paths
 set_include_path("classes/propel/build/classes" . PATH_SEPARATOR . get_include_path());
 

@@ -6,8 +6,6 @@ var shirtImages_ = 'images/ffb/shirts/';
 var images_ = 'images/ffb/';
 var imagesPictory_ = 'images/pictory/';
 
-var ffbFbApiId_ = '174717021208';
-
 var GOALIE = 0;
 var DEFENCE = 1;
 var MIDFIELD = 2;

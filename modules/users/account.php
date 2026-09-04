@@ -69,7 +69,6 @@ class account extends FFB_Auth_User
             $user['user_lname'] = $exist_user->getUserLname();
             $user['user_nationality'] = $exist_user->getUserNationality();
             $user['user_mailservice'] = $exist_user->getUserMailservice();
-            $user['user_permissions_facebook_connected'] = $exist_perm->getUserPermissionsFacebookConnected();
             $birthdate = strtotime($exist_user->getUserDateBirth());
             if(!$birthdate) {
             	//echo 'birth: '.$birthdate;
@@ -103,18 +102,7 @@ class account extends FFB_Auth_User
             } else {
 				$user['user_permissions_ffb_mailservice_info'] = 1;
 			}
-			if($user['user_permissions_facebook_connected']) {
-				if(strcmp($exist_perm->getUserPermissionsFfbFacebook(), '0') == 0) {
-	            	$user['user_permissions_ffb_facebook'] = 0;
-	            } else {
-					$user['user_permissions_ffb_facebook'] = 1;
-				}
-			} else {
-				$user['user_permissions_ffb_facebook'] = -1;
-			}
             $user['user_permissions_ffb_visible_profile'] = $exist_perm->getUserPermissionsFfbVisibleProfile();
-            //$user['user_permissions_pictory_visible_profile'] = $exist_perm->getUserPermissionsPictoryVisibleProfile();
-            //$user['user_permissions_pictory_facebook'] = $exist_perm->getUserPermissionsPictoryFacebook();
 
             $this->post = $user;
         } else {
@@ -337,15 +325,6 @@ class account extends FFB_Auth_User
 			}
 			if($_POST['user_permissions_ffb_mailservice_info'] == 0) {
 				$chg_user_perm->setUserPermissionsFfbMailserviceInfo(0);
-			}
-
-			if($chg_user->getUserFacebookId()) {
-				if($_POST['user_permissions_ffb_facebook'] == 1 && strcmp($chg_user_perm->getUserPermissionsFfbFacebook(), '0') == 0) {
-					$chg_user_perm->setUserPermissionsFfbFacebook(md5(uniqid(time())));
-				}
-				if($_POST['user_permissions_ffb_facebook'] == 0) {
-					$chg_user_perm->setUserPermissionsFfbFacebook(0);
-				}
 			}
 
 			$chg_user_perm->setUserPermissionsFfbVisibleProfile($_POST['user_permissions_ffb_visible_profile']);

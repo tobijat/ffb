@@ -41,7 +41,6 @@ class FfbUserAwardFinishedTableMap extends TableMap {
 		$this->addForeignKey('USER_AWARD_FINISHED_USER_ID', 'UserAwardFinishedUserId', 'INTEGER', 'web_user', 'USER_ID', true, null, null);
 		$this->addForeignKey('USER_AWARD_FINISHED_AWARD_DEFINES_ID', 'UserAwardFinishedAwardDefinesId', 'INTEGER', 'ffb_user_award_defines', 'USER_AWARD_DEFINES_ID', true, null, null);
 		$this->addColumn('USER_AWARD_FINISHED_DATE', 'UserAwardFinishedDate', 'TIMESTAMP', false, null, null);
-		$this->addColumn('USER_AWARD_FINISHED_FACEBOOK_STREAM_ID', 'UserAwardFinishedFacebookStreamId', 'VARCHAR', true, 255, null);
 		// validators
 	} // initialize()
 

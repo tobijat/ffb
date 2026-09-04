@@ -40,9 +40,6 @@ class WebUserPermissionsTableMap extends TableMap {
 		$this->addForeignPrimaryKey('USER_ID', 'UserId', 'INTEGER' , 'web_user', 'USER_ID', true, null, null);
 		$this->addColumn('USER_PERMISSIONS_FFB_MAILSERVICE_REMINDER', 'UserPermissionsFfbMailserviceReminder', 'VARCHAR', true, 255, null);
 		$this->addColumn('USER_PERMISSIONS_FFB_MAILSERVICE_INFO', 'UserPermissionsFfbMailserviceInfo', 'VARCHAR', true, 255, null);
-		$this->addColumn('USER_PERMISSIONS_FFB_FACEBOOK', 'UserPermissionsFfbFacebook', 'VARCHAR', true, 255, null);
-		$this->addColumn('USER_PERMISSIONS_PICTORY_FACEBOOK', 'UserPermissionsPictoryFacebook', 'VARCHAR', true, 255, null);
-		$this->addColumn('USER_PERMISSIONS_FACEBOOK_CONNECTED', 'UserPermissionsFacebookConnected', 'BOOLEAN', true, null, false);
 		$this->addColumn('USER_PERMISSIONS_FFB_VISIBLE_PROFILE', 'UserPermissionsFfbVisibleProfile', 'BOOLEAN', true, null, false);
 		$this->addColumn('USER_PERMISSIONS_PICTORY_VISIBLE_PROFILE', 'UserPermissionsPictoryVisibleProfile', 'BOOLEAN', true, null, false);
 		// validators

@@ -46,7 +46,6 @@ class WebUserTableMap extends TableMap {
 		$this->addColumn('USER_GENDER', 'UserGender', 'VARCHAR', false, 255, '');
 		$this->addColumn('USER_STATUS', 'UserStatus', 'VARCHAR', true, 255, 'active');
 		$this->addColumn('USER_ADMIN', 'UserAdmin', 'BOOLEAN', true, null, false);
-		$this->addColumn('USER_FACEBOOK_ID', 'UserFacebookId', 'VARCHAR', true, 255, null);
 		$this->addColumn('USER_NATIONALITY', 'UserNationality', 'VARCHAR', false, 255, null);
 		$this->addColumn('USER_DATE_BIRTH', 'UserDateBirth', 'TIMESTAMP', false, null, null);
 		$this->addColumn('USER_IP', 'UserIp', 'VARCHAR', true, 255, null);

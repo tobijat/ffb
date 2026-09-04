@@ -76,7 +76,6 @@ function loadMatchroundGames(round_id) {
  		var matches = xmlResponse.getElementsByTagName('XML_Serializer_Tag');
  		var toDisplay='<hr>select a match to edit<br><b>\r\n';
  		var twitterMsg = '';
- 		var facebookMsg= '';
  		if(matches.length)
  		  toDisplay += matches[0].getElementsByTagName('match_round_name')[0].firstChild.nodeValue + '</b><br>';
  		for(var i=0;i<matches.length;i++) {
@@ -108,7 +107,6 @@ function loadMatchroundGames(round_id) {
 			 				homescore + ':' + guestscore + ' ' +
 			 				matches[i].getElementsByTagName('match_guestteam_name')[0].firstChild.nodeValue + ' ';
 
-			 facebookMsg += tmpMsg + "\r\n";
 			 var spaces = '';
 			 var newTwitter = (twitterMsg.length % 140);
 			 newTwitter += tmpMsg.length;
@@ -130,22 +128,6 @@ function loadMatchroundGames(round_id) {
 		twitterMsg =	'<form name="twitter" id="twitter">Twitter:<br/><textarea name="twittermsg" id="twittermsg" cols="40" rows="5">' + twitterMsg + '</textarea>' +
 						'<br/><input type="button" value="send to twitter" onclick="javascript:sendTwitterMsg(); return;" /></form><br/>';
 		dropLineW3('Twitter', twitterMsg);
-
-		//facebookMsg		=	'<input type="button" onclick="callPublish(\''+facebookMsg+ '\',null,null);return false;" value="Ergebnisse an FB Wall senden" />';
-		facebookMsg	=	'<form name="facebook" id="facebook">Facebook:<br/>' +
-						//'Titel: <input type="text" size="20" name="name" id="name" value="' + matches[0].getElementsByTagName('match_round_name')[0].firstChild.nodeValue + '"><br>' +
-						'<textarea name="fbcomment" id="fbcomment" cols="40" rows="5">' +
-						matches[0].getElementsByTagName('match_round_name')[0].firstChild.nodeValue + "\r\n" +facebookMsg + '</textarea>' +
-						'<input type="hidden" name="fbuid" id="fbuid" value="' + ffbFbApiId_ + '">' +
-						'<br/><input type="button" onclick="sendFacebookMsg(\'\',null,\'facebook\');return false;" value="Ergebnisse an FB Wall senden" />';
-						//'<br/><input type="button" onclick="callPublish(\'\',null,null);alert(\'done\');return false;" value="Ergebnisse an FB Wall senden" />';
-
-
-
-
-						//<input type="button" value="send to facebook" onclick="javascript:sendFacebookMsg(' + ffbFbApiId_.toString() + ',' + ffbFbApiId_.toString() +  ',\'facebook\'); return;" /></form><br/>';
-		//alert(facebookMsg);
-		dropLineW3('Facebook', facebookMsg);
 
 
 		},

@@ -2,26 +2,19 @@
 
 /**
  * ADMIN - AWARDS-Klasse;
- * AWARDS hinzufügen/ändern/löschen - an facebook senden
+ * AWARDS hinzufügen/ändern/löschen
  *
  * @author Gerald Musser
  * @copyright 10/2009
  * @version 0.5
  *
  */
-require_once('modules/ffbapi/facebook-platform/php/facebook.php');
 
 class awards extends FFB_Auth_AdminFfb {
 
 	private $automaticUpdates 		=	1;
-	private $fbAppKey	 			= 	FFB_FACEBOOK_API_KEY;
-	private $fbAppSecret 			=	FFB_FACEBOOK_APP_SECRET;
-	private $fbConnect				= 	null;
 	private $localUserUpdates		=	0;
 	private $goalFinishers			= 	null;
-	private $fbInfiniteSessionKey	=	FFB_FACEBOOK_SESSION_KEY;
-	private $fbSessionExpires		=	0;
-	private $fbUserId				=	FFB_FACEBOOK_USER_ID;
 
 	public function __construct() {
         parent::__construct();
@@ -73,7 +66,6 @@ class awards extends FFB_Auth_AdminFfb {
 			$tmp[$index]['auto']	= 	($listElem->getUserAwardDefinesAimAutomatic()>0)? $listElem->getUserAwardDefinesAimAutomatic()	: 0;
 			$tmp[$index]['image']	= 	($listElem->getUserAwardDefinesImage())			? $listElem->getUserAwardDefinesImage()			: " ";
 			$tmp[$index]['descr']	= 	($listElem->getUserAwardDefinesDescription())	? $listElem->getUserAwardDefinesDescription()	: " ";
-			$tmp[$index]['fbdescr']	= 	($listElem->getUserAwardDefinesFacebookDescription())?$listElem->getUserAwardDefinesFacebookDescription():" ";
 			$index++;
 		}
 		$this->userAwardDefines		=	$tmp;
@@ -115,61 +107,6 @@ class awards extends FFB_Auth_AdminFfb {
 
     }
 
-    public function getOutstandingAwardsToFb() {
-    	//from constructor
-		$this->allusers		=	'';
-
-		$criteria	=	new Criteria();
-
-    	$criteria->addJoin(WebUserPeer::USER_ID, FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_USER_ID, Criteria::LEFT_JOIN);
-    	$criteria->addJoin(FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_AWARD_DEFINES_ID, FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_ID, Criteria::INNER_JOIN);
-    	$criteria->addJoin(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_AWARD_ID, FfbUserAwardPeer::USER_AWARD_ID, Criteria::INNER_JOIN);
-		$criteria->add(WebUserPeer::USER_FACEBOOK_ID, NULL, Criteria::NOT_EQUAL);
-		$criteria->add(FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_FACEBOOK_STREAM_ID, NULL, Criteria::EQUAL);
-		$criteria->addAscendingOrderByColumn(FfbUserAwardPeer::USER_AWARD_ID);
-		$criteria->addAscendingOrderByColumn(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_RANK);
-		$criteria->addAscendingOrderByColumn(WebUserPeer::USER_NICKNAME);
-
-		$notSendAwards	=	FfbUserAwardFinishedPeer::doSelect($criteria);
-		$count			=	0;
-		$tmp			=	array();
-		//print_r($notSendAwards);
-
-		if($notSendAwards[0]->getUserAwardFinishedId()) {
-			foreach($notSendAwards AS &$notSend) {
-				$webUser				=	$notSend->getWebUser();
-				$tmp[$count]['user_id']			=	$webUser->getUserId();
-				$tmp[$count]['user_nickname']	=	$webUser->getUserNickname();
-
-				$awardInfo				=	$notSend->getFfbUserAwardDefines();
-				$tmp[$count]['award_rank']		=	$awardInfo->getUserAwardDefinesRankName();
-
-				$awardInfo				=	$awardInfo->getFfbUserAward();
-				$tmp[$count]['award_name']		=	$awardInfo->getUserAwardName();
-
-				$tmp[$count]['user_award_finished_id']	=	$notSend->getUserAwardFinishedId();
-
-				//'free' memory'
-				$notSend				=	null;
-
-
-				//$tmp[]			=	$notSend->getWebUser();
-				$count++;
-			}
-		}
-		//print_r($notSendAwards);
-
-		$this->notSendIndex	=	$count;
-		$this->notSendAwards=	$tmp;
-
-
-		//$this->tmp = $notSendAwards;
-
-		// [wrapped: Could not build SQL for expression: web_user.USER_FACEBOOK_ID NOT_EQUAL NULL]
-
-    }
-
-
     public function createAward() {
     	$name 		=	trim($_REQUEST['award_name']);
     	$groupID 	=	trim($_REQUEST['group_award_id']);
@@ -180,7 +117,6 @@ class awards extends FFB_Auth_AdminFfb {
     	$DBTable	=	trim($_REQUEST['award_dbtable']);
     	$operator	= 	trim($_REQUEST['award_operator']);
     	$descr		=	trim($_REQUEST['award_description']);
-    	$fbdescr	=	trim($_REQUEST['award_fb_description']);
     	$image		=	trim($_REQUEST['award_image']);
     	$criteria 	=	new Criteria();
     	$criteria->add(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_AWARD_ID, $groupID);
@@ -212,7 +148,6 @@ class awards extends FFB_Auth_AdminFfb {
     	$newAward->setUserAwardDefinesAimDbtable($DBTable);
     	$newAward->setUserAwardDefinesAimOperator($operator);
     	$newAward->setUserAwardDefinesDescription($descr);
-    	$newAward->setUserAwardDefinesFacebookDescription($fbdescr);
    		$newAward->setUserAwardDefinesImage($image);
     	$newAward->save();
 
@@ -251,7 +186,6 @@ class awards extends FFB_Auth_AdminFfb {
     	$DBTable	=	trim($_REQUEST['award_dbtable']);
     	$operator	= 	trim($_REQUEST['award_operator']);
     	$descr		=	trim($_REQUEST['award_description']);
-    	$fbdescr	=	trim($_REQUEST['award_fb_description']);
     	$image		=	trim($_REQUEST['award_image']);
 
     	if(!$name || !$awardID || !$rank || !$aim || !$DBTable) {
@@ -273,7 +207,6 @@ class awards extends FFB_Auth_AdminFfb {
     		$oldAward->setUserAwardDefinesAimDbtable($DBTable);
     		$oldAward->setUserAwardDefinesAimOperator($operator);
     		$oldAward->setUserAwardDefinesDescription($descr);
-    		$oldAward->setUserAwardDefinesFacebookDescription($fbdescr);
     		$oldAward->setUserAwardDefinesImage($image);
 
     		$oldAward->save();
@@ -416,23 +349,6 @@ class awards extends FFB_Auth_AdminFfb {
 							$user	=	WebUserPeer::retrieveByPK($uid);
 							$tmp['usernick']=$user->getUserNickname();
 
-							//FACEBOOK NOTIFICATION HERE
-							$webUser	=	WebUserPeer::retrieveByPK($uid);
-							if($webUser->getUserFacebookId()) {
-								$groupAward 	=	FfbUserAwardPeer::retrieveByPK($awardToCalculate->getUserAwardDefinesAwardId());
-
-								$fbComment 		=	$awardToCalculate->getUserAwardDefinesFacebookDescription();
-								$fbName			=	$groupAward->getUserAwardName() . ", " . $awardToCalculate->getUserAwardDefinesRankName();
-								$fbDescription	=	$awardToCalculate->getUserAwardDefinesDescription();
-								$fbImages[]		=	FFB_BASE_PATH.FFB_IMAGE_PATH.$groupAward->getUserAwardImage();
-								$fbImages[]		= 	FFB_BASE_PATH.FFB_IMAGE_PATH.$awardToCalculate->getUserAwardDefinesImage();
-								$fbAwardFinishedId=$newAward->getUserAwardFinishedId();
-
-								//TODO UNCOMMENT WHEN FINISHED
-								//$this->fireFacebookComment($fbComment, $webUser->getUserFacebookId(), $fbName, $fbDescription, $fbImages, $fbAwardFinishedId, 1);
-							}
-							//END
-
 							$goalFinishers[]=	$tmp;
 							$this->localUserUpdates++;
 						}
@@ -496,22 +412,7 @@ class awards extends FFB_Auth_AdminFfb {
 					$exist_af->setUserAwardFinishedUserId($user->getUserId());
 					$exist_af->setUserAwardFinishedAwardDefinesId($definedAward->getUserAwardDefinesId());
 					$exist_af->setUserAwardFinishedDate(date('Y-m-d H:m:i', time()));
-					//$exist_af->setUserAwardFinishedFacebookStreamId($user->getUserFacebookId());
 					$exist_af->save();
-
-					if($user->getUserFacebookId()!=null) {
-								$groupAward 	=	FfbUserAwardPeer::retrieveByPK($definedAward->getUserAwardDefinesAwardId());
-
-								$fbComment 		=	$definedAward->getUserAwardDefinesFacebookDescription();
-								$fbName			=	$groupAward->getUserAwardName() . ", " . $definedAward->getUserAwardDefinesRankName();
-								$fbDescription	=	$definedAward->getUserAwardDefinesDescription();
-								$fbImages[]		=	FFB_BASE_PATH.FFB_IMAGE_PATH.$groupAward->getUserAwardImage();
-								$fbImages[]		= 	FFB_BASE_PATH.FFB_IMAGE_PATH.$definedAward->getUserAwardDefinesImage();
-								$fbAwardFinishedId=$exist_af->getUserAwardFinishedId();
-
-								//TODO UNCOMMENT WHEN FINISHED
-								//$this->fireFacebookComment($fbComment, $user->getUserFacebookId(), $fbName, $fbDescription, $fbImages, $fbAwardFinishedId, 1);
-					}
 
 				}
 				//echo 'ok<br>';
@@ -545,7 +446,6 @@ class awards extends FFB_Auth_AdminFfb {
 			$awardInfo				=	FfbUserAwardDefinesPeer::doSelectJoinFfbUserAward($criteria);
 			//$tmp['award_descr']		=	$awardInfo->getUserAwardDefinesDescription();
 			if($awardInfo) {
-				$tmp['award_fb_descr']	=	($awardInfo[0]->getUserAwardDefinesFacebookDescription())?	$awardInfo[0]->getUserAwardDefinesFacebookDescription()	:	" ";
 				$tmp['award_descr']		=	($awardInfo[0]->getUserAwardDefinesDescription())		?	$awardInfo[0]->getUserAwardDefinesDescription()	:	" ";
 				$tmp['award_image']		=	($awardInfo[0]->getUserAwardDefinesImage())				?	$awardInfo[0]->getUserAwardDefinesImage() : "-";
 				$tmp['group_image']		=	($awardInfo[0]->getFfbUserAward()->getUserAwardImage())	?	$awardInfo[0]->getFfbUserAward()->getUserAwardImage() : "-";
@@ -559,7 +459,6 @@ class awards extends FFB_Auth_AdminFfb {
 			//print_r($awa)
 			foreach($awardFinishers AS $finished) {
 				$tmp			=	array();
-				$tmp['fbuid']	=	($finished->getWebUser()->getUserFacebookId())	? $finished->getWebUser()->getUserFacebookId() : '-' ;
 				$tmp['nick']	=	$finished->getWebUser()->getUserNickname();
 				$tmp['date']	=	$finished->getUserAwardFinishedDate();
 				$tmp['fid']		=	$finished->getUserAwardFinishedId();
@@ -581,214 +480,6 @@ class awards extends FFB_Auth_AdminFfb {
 		}
 
 	}
-
-	public function fireFacebookU2UComment($fbComment="", $fbUserId="", $fbName="", $fbDescription="", $fbImages="", $ffbAwardFinishedId="", $fbSenderFbId="") {
-		$this->allusers = null;
-		if(!$fbComment)
-			$fbComment	=	trim($_REQUEST['fbcomment']);
-		if(!$fbUserId)
-			$fbUserId	=	trim($_REQUEST['fbuid']);
-		if(!$fbName)
-			$fbName		=	trim($_REQUEST['name']);
-		if(!$fbDescription)
-			$fbDescription=	trim($_REQUEST['description']);
-		if(!$fbImages){
-			$fbImages	=	explode(",", trim($_REQUEST['images']));
-			//array(	'type' => 'image', 'src' => 'http://ffb.tobijat.at/images/admin/navigation/nav_news.png', 'href' => 'http://ffb.tobijat.at/start')
-		}
-
-		if(!$fbSenderFbId) {
-			$fbSenderFbId =	trim($_REQUEST['fbsenderid']);
-			if(!$fbSenderFbId)
-				$fbSenderFbId = $fbUserId;
-		}
-
-		if(!$fbComment || !$fbUserId )
-			return;
-		if($fbImages) {
-			foreach($fbImages AS $elem) {
-				$tmp2			=	array();
-				$tmp2['type']	=	'image';
-				$tmp2['src']	=	$elem;
-				$tmp2['href']	=	FFB_BASE_PATH ."ffb/facebook/facebookUser.html?fbid=$fbUserId";
-				$tmp[]			=	$tmp2;
-			}
-			$fbImages		=	$tmp;
-		}
-		//session_start();
-
-		//$this->sid= session_id();
-		//$this->decoded = "%22%3A%223c88f7ae6386494fa4a2f7a2-100000079177121%22%2C%22";
-		//return;
-		if(!$this->fbConnect)
-			$this->fbConnect	=	new Facebook($this->fbAppKey, $this->fbAppSecret);
-		//$fbUID = $this->fbConnect->require_login();
-
-		if(!isset($_REQUEST["application"]))
-			$result			=	$this->fbConnect->api_client->stream_publish($fbComment, null, null, $fbUserId, $fbSenderFbId);
-		else {
-			//$this->fbConnect->api_client->user = $this->fbUserId;
-			$this->fbConnect->api_client->session_key = $this->fbInfiniteSessionKey;
-			$this->fbConnect->api_client->expires = 0;
-
-			$title = $_REQUEST['name'];
-			if(!$title)
-				$title = ' ';
-
-			$result			=	$this->fbConnect->api_client->stream_publish(trim($title."\r\n".$fbComment),null, null,$fbUserId, $fbUserId);
-			//100000079177121
-			$this->result	=	$result;
-
-		}
-
-
-	}
-
-	public function fbReturn() {
-		$this->htmlFile = 'dummy.php';
-		$this->request = $_REQUEST;
-	}
-
-
-
-	public function fireFacebookComment($fbComment="", $fbUserId="", $fbName="", $fbDescription="", $fbImages="", $ffbAwardFinishedId="", $quiet=0, $fbSenderFbId="")	{
-		//?fbcomment={*actor*} hat 3 Spielrunden-Siege errungen.
-		//&fbuid=100000851709484
-		//&name=Tabellenführer, Blech
-		//&images=http://soccer.sportsfan.at/images/ffb/awards/ball_brown64x64.png,http://soccer.sportsfan.at/images/ffb/awards/blech48x48.png
-		//&description=Gewinne 3 Spielrunden.
-		//&ffbAwardFinishedId=374
-
-
-		if(!$fbComment)
-			$fbComment	=	trim($_REQUEST['fbcomment']);
-		if(!$fbUserId)
-			$fbUserId	=	trim($_REQUEST['fbuid']);
-		if(!$fbName)
-			$fbName		=	trim($_REQUEST['name']);
-		if(!$fbDescription)
-			$fbDescription=	trim($_REQUEST['description']);
-		if(!$fbImages){
-			$fbImages	=	explode(",", trim($_REQUEST['images']));
-			//array(	'type' => 'image', 'src' => 'http://ffb.tobijat.at/images/admin/navigation/nav_news.png', 'href' => 'http://ffb.tobijat.at/start')
-		}
-
-		if(!$fbSenderFbId) {
-			$fbSenderFbId =	trim($_REQUEST['fbsenderid']);
-			if(!$fbSenderFbId)
-				$fbSenderFbId = $fbUserId;
-		}
-
-
-		if(!$ffbAwardFinishedId)
-			$ffbAwardFinishedId		=	trim($_REQUEST['ffbAwardFinishedId']);
-		$tmp 		=	array();
-		foreach($fbImages AS $elem) {
-			$tmp2			=	array();
-			$tmp2['type']	=	'image';
-			$tmp2['src']	=	$elem;
-			$tmp2['href']	=	FFB_BASE_PATH ."ffb/pub/facebookAwards.html?fbid=$fbUserId";
-			$tmp[]			=	$tmp2;
-		}
-		$fbImages		=	$tmp;
-		$awardFinished	=	FfbUserAwardFinishedPeer::retrieveByPK($ffbAwardFinishedId);
-		$ffbUserId		=	$awardFinished->getUserAwardFinishedUserId();
-		$ffbPermissions	=	WebUserPermissionsPeer::retrieveByPK($ffbUserId);
-
-
-
-		//$this->img = array_chunk($fbImages, 1, false);
-		//return;
-
-		if(!$fbComment || !$fbUserId || ($ffbPermissions->getUserPermissionsFacebookConnected() == 0) || (strcmp($ffbPermissions->getUserPermissionsFfbFacebook(), "0") == 0  ) )
-			return;
-
-		if(!$this->fbConnect)
-			$this->fbConnect	=	new Facebook($this->fbAppKey, $this->fbAppSecret, true);
-		/*
-		$secret = $this->fbAppSecret; // where 'Secret Key' is your application secret key
-		$args = array(
-			'argument1' => $fbUserId,
-			'argument2' => $fbComment); // insert the actual arguments for your request in place of these example args
-			$request_str = '';
-			foreach ($args as $key => $value) {
-				$request_str .= $key . '=' . $value; // Note that there is no separator.
-			}
-		$sig = $request_str . $secret;
-		$sig = md5($sig);	*/
-		  /**
-   * Publish a post to the user's stream.
-   *
-   * @param $message        the user's message
-   * @param $attachment     the post's attachment (optional)
-   * @param $action links   the post's action links (optional)
-   * @param $target_id      the user on whose wall the post will be posted
-   *                        (optional)
-   * @param $uid            the actor (defaults to session user)
-   * @return string the post id
-   */
-		$attachment = array(
-      		'name' => $fbName, //name: The title of the post. The post should fit on one line in a user's stream; make sure you account for the width of any thumbnail. gaanz oben
-      		'href' => FFB_BASE_PATH."ffb/pub/facebookAwards.html?fbid=$fbUserId", //href: The URL to the source of the post referenced in the name. The URL should not be longer than 1024 characters.
-      		'caption' => $fbComment, //caption: A subtitle for the post that should describe why the user posted the item or the action the user took. This field can contain plain text only, as well as the {*actor*} token, which gets replaced by a link to the profile of the session user. The caption should fit on one line in a user's stream; make sure you account for the width of any thumbnail.
-      		'description' => $fbDescription, //'Die Auszeichnung bekommt man bei xxx und yyy', //description: Descriptive text about the story. This field can contain plain text only and should be no longer than is necessary for a reader to understand the story.
-
-      		//properties: An array of key/value pairs that provide more information about the post. The properties array can contain plain text and links only. To include a link, the value of the property should be a dictionary with 'text' and 'href' attributes.
-      		//'properties' => array(	'category' => array('text' => 'Fantasy Football ffb.tobijat.at', 'href' => 'http://ffb.tobijat.at/ffb')	  ),
-			//media: Rich media that provides visual content for the post. media is an array that contains one of the following types: image, flash, mp3, or video, which are described below. Make sure you specify only one of these types in your post.
-			'media' => array( $fbImages[1], $fbImages[0] )
-			);
-		//$action_links = array(
-		//	array('text' => 'Recaption this', 'href' => 'http://mine.icanhascheezburger.com/default.aspx?tiid=1192742&recap=1#step2'));
-   		//$action_links = array(    'text' => 'Fantasy Football ffb.tobijat.at',  'href' => 'http://apps.facebook.com/ffbtobijat/' );
-//parameter uid or session key required
-   		$result			=	$this->fbConnect->api_client->stream_publish($fbName, $attachment, null, $fbUserId, $fbSenderFbId);
-		//$response		=	$this->fbConnect->api_client->notifications_send($this->fbAppiKey, microtime(true), $sig, "1.0", $fbUserId, $fbComment, session_id(), "XML", "", 'app_to_user');
-		if($quiet==0)
-			$this->response	=	$result;
-		if($ffbAwardFinishedId) {
-			$awardFinished->setUserAwardFinishedFaceBookStreamId($result);
-			$awardFinished->save();
-		}
-
-
-
-	}
-
-
-
-	public function retrieveAwardInfosAndSendToFB() {
-		$this->allusers =	null;
-		$finishedID		=	intval($_REQUEST['user_award_finished_id']);
-		if(!$finishedID)
-			return;
-		$finishedAward	=	FfbUserAwardFinishedPeer::retrieveByPK($finishedID);
-		if(!$finishedAward)
-			return;
-		$user			=	WebUserPeer::retrieveByPK($finishedAward->getUserAwardFinishedUserId());
-		$definedAward	=	FfbUserAwardDefinesPeer::retrieveByPK($finishedAward->getUserAwardFinishedAwardDefinesId());
-
-
-		if($user->getUserFacebookId()!=null) {
-			$groupAward 	=	FfbUserAwardPeer::retrieveByPK($definedAward->getUserAwardDefinesAwardId());
-			$fbComment 		=	$definedAward->getUserAwardDefinesFacebookDescription();
-			$fbName			=	$groupAward->getUserAwardName() . ", " . $definedAward->getUserAwardDefinesRankName();
-			$fbDescription	=	$definedAward->getUserAwardDefinesDescription();
-			$fbImages[]		=	FFB_BASE_PATH.FFB_IMAGE_PATH.$groupAward->getUserAwardImage();
-			$fbImages[]		= 	FFB_BASE_PATH.FFB_IMAGE_PATH.$definedAward->getUserAwardDefinesImage();
-			//$fbAwardFinishedId=$exist_af->getUserAwardFinishedId();
-
-			//TODO UNCOMMENT WHEN FINISHED
-			$this->fireFacebookComment($fbComment, $user->getUserFacebookId(), $fbName, $fbDescription, $fbImages, $finishedID, 1);
-		}
-		$finishedAward	=	FfbUserAwardFinishedPeer::retrieveByPK($finishedID);
-		$fbStreamID		=	$finishedAward->getUserAwardFinishedFacebookStreamId();
-		if($fbStreamID)
-			$this->fbStreamId	=	$fbStreamID;
-		else
-			$this->fbStreamId	=	'error';
-	}
-
 
 	public function __default() {
 		$this->getAwardGroups();
@@ -957,10 +648,4 @@ class awards extends FFB_Auth_AdminFfb {
 	//-----
 
 
-	public function testFacebook() {
-		$facebook = new Facebook($this->fbAppKey, $this->fbAppSecret);
-		$infinite_key_array = $facebook->api_client->auth_getSession('NLTCC8');
-		$this->infiniteKey=$infinite_key_array;
-		//print_r($infinite_key_array);
-	}
 }

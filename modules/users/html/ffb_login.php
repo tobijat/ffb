@@ -417,16 +417,11 @@ function newsticker()
 					<!-- Google Plus -->
 					<g:plusone size="small" href="http://soccer.sportsfan.at"></g:plusone>
 					<script type="text/javascript">gapi.plusone.go();</script>
-					<!-- Facebook Page -->
-					<a href="http://soccer.sportsfan.at/ffb/facebook" target="_new" title="SoccerSportsfan auf Facebook"><img style="border:0;" src="<?php  echo $FFB_BASE_PATH.FFB_IMAGE_PATH."symbols/facebook_420x420.png";?>" width="32px" alt="SoccerSportsfan auf Facebook"/></a>&nbsp;&nbsp;
 					<!-- Twitter -->
 					<a href="http://www.twitter.com/fsoccer" target="_new" style="border:0px;"><img style="border:0px;" src="http://twitter-badges.s3.amazonaws.com/t_small-a.png" alt="Follow fsoccer on Twitter" width="30px"/></a>&nbsp;&nbsp;
 					<!-- RSS Feed -->
 					<!-- disabled for WM 2014 - not working anymore -->
 					<!--<a href="http://feeds2.feedburner.com/ffbat" target="_new" title="Soccer Sportsfan RSS"><img style="border:0;" src="<?php  echo $FFB_BASE_PATH.FFB_IMAGE_PATH."symbols/rss_256x256.png";?>" width="32px" alt="Soccer Sportsfan RSS"/></a>-->
-					<hr />
-					<!-- Facebook Likes -->
-					<iframe src="http://www.facebook.com/plugins/like.php?href=http%3A%2F%2Fsoccer.sportsfan.at&amp;layout=standard&amp;show_faces=true&amp;width=300&amp;action=like&amp;font=segoe+ui&amp;colorscheme=dark" scrolling="no" frameborder="0" allowTransparency="true" style="border:none; overflow:hidden; width:300px; height:80px;"></iframe>
 				</div>
 
 				<!-- Info Image //-->

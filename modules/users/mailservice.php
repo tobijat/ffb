@@ -65,38 +65,6 @@ class mailservice extends FFB_Auth_No
         }
 	}
 
-	public function cancelFb() {
-    	$this->session->destroy();
-
-		$cancel_code = $_GET['id'];
-        $this->navFile = $this->config->area_prefix.'_registration_navigation.php';
-        $this->htmlFile = $this->config->area_prefix.'_login.php';
-        $errors = array();
-
-        if($cancel_code) {
-            $criteria = new Criteria();
-            $criteria->add(WebUserPermissionsPeer::USER_PERMISSIONS_FFB_FACEBOOK, $cancel_code);
-            $criteria->setLimit(1);
-            $items = WebUserPermissionsPeer::doSelect($criteria);
-            if($items) {
-                $user = $items[0];
-               	$user->setUserPermissionsFfbFacebook(0);
-               	$user->save();
-
-                $this->user_answer = 'Du bekommst in Zukunft keine Meldungen von SoccerSportsfan mehr auf deine Facebook-Pinnwand. Du kannst dieses Service unter "Profil" wieder aktivieren.';
-                $this->user_status = STATUS_CODE_SUCCESS;
-            } else {
-                $errors[] = 'Der Link ist ung&uuml;tig oder wurde bereits verwendet. Eventuell wurden die Facebook-Meldungen bereits deaktiviert.';
-                $this->user_status = STATUS_CODE_ERROR;
-                $this->errors = $errors;
-            }
-        } else {
-            $errors[] = 'Der Link ist ung&uuml;tig oder wurde bereits verwendet. Eventuell wurden die Facebook-Meldungen bereits deaktiviert.';
-            $this->user_status = STATUS_CODE_ERROR;
-            $this->errors = $errors;
-        }
-	}
-
     public function __destruct()
     {
         parent::__destruct();

@@ -10,13 +10,11 @@
  * @method     FfbUserAwardFinishedQuery orderByUserAwardFinishedUserId($order = Criteria::ASC) Order by the user_award_finished_user_id column
  * @method     FfbUserAwardFinishedQuery orderByUserAwardFinishedAwardDefinesId($order = Criteria::ASC) Order by the user_award_finished_award_defines_id column
  * @method     FfbUserAwardFinishedQuery orderByUserAwardFinishedDate($order = Criteria::ASC) Order by the user_award_finished_date column
- * @method     FfbUserAwardFinishedQuery orderByUserAwardFinishedFacebookStreamId($order = Criteria::ASC) Order by the user_award_finished_facebook_stream_id column
  *
  * @method     FfbUserAwardFinishedQuery groupByUserAwardFinishedId() Group by the user_award_finished_id column
  * @method     FfbUserAwardFinishedQuery groupByUserAwardFinishedUserId() Group by the user_award_finished_user_id column
  * @method     FfbUserAwardFinishedQuery groupByUserAwardFinishedAwardDefinesId() Group by the user_award_finished_award_defines_id column
  * @method     FfbUserAwardFinishedQuery groupByUserAwardFinishedDate() Group by the user_award_finished_date column
- * @method     FfbUserAwardFinishedQuery groupByUserAwardFinishedFacebookStreamId() Group by the user_award_finished_facebook_stream_id column
  *
  * @method     FfbUserAwardFinishedQuery leftJoin($relation) Adds a LEFT JOIN clause to the query
  * @method     FfbUserAwardFinishedQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
@@ -37,13 +35,11 @@
  * @method     FfbUserAwardFinished findOneByUserAwardFinishedUserId(int $user_award_finished_user_id) Return the first FfbUserAwardFinished filtered by the user_award_finished_user_id column
  * @method     FfbUserAwardFinished findOneByUserAwardFinishedAwardDefinesId(int $user_award_finished_award_defines_id) Return the first FfbUserAwardFinished filtered by the user_award_finished_award_defines_id column
  * @method     FfbUserAwardFinished findOneByUserAwardFinishedDate(string $user_award_finished_date) Return the first FfbUserAwardFinished filtered by the user_award_finished_date column
- * @method     FfbUserAwardFinished findOneByUserAwardFinishedFacebookStreamId(string $user_award_finished_facebook_stream_id) Return the first FfbUserAwardFinished filtered by the user_award_finished_facebook_stream_id column
  *
  * @method     array findByUserAwardFinishedId(int $user_award_finished_id) Return FfbUserAwardFinished objects filtered by the user_award_finished_id column
  * @method     array findByUserAwardFinishedUserId(int $user_award_finished_user_id) Return FfbUserAwardFinished objects filtered by the user_award_finished_user_id column
  * @method     array findByUserAwardFinishedAwardDefinesId(int $user_award_finished_award_defines_id) Return FfbUserAwardFinished objects filtered by the user_award_finished_award_defines_id column
  * @method     array findByUserAwardFinishedDate(string $user_award_finished_date) Return FfbUserAwardFinished objects filtered by the user_award_finished_date column
- * @method     array findByUserAwardFinishedFacebookStreamId(string $user_award_finished_facebook_stream_id) Return FfbUserAwardFinished objects filtered by the user_award_finished_facebook_stream_id column
  *
  * @package    propel.generator.ffb.om
  */
@@ -261,28 +257,6 @@ abstract class BaseFfbUserAwardFinishedQuery extends ModelCriteria
 			}
 		}
 		return $this->addUsingAlias(FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_DATE, $userAwardFinishedDate, $comparison);
-	}
-
-	/**
-	 * Filter the query on the user_award_finished_facebook_stream_id column
-	 * 
-	 * @param     string $userAwardFinishedFacebookStreamId The value to use as filter.
-	 *            Accepts wildcards (* and % trigger a LIKE)
-	 * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
-	 *
-	 * @return    FfbUserAwardFinishedQuery The current query, for fluid interface
-	 */
-	public function filterByUserAwardFinishedFacebookStreamId($userAwardFinishedFacebookStreamId = null, $comparison = null)
-	{
-		if (null === $comparison) {
-			if (is_array($userAwardFinishedFacebookStreamId)) {
-				$comparison = Criteria::IN;
-			} elseif (preg_match('/[\%\*]/', $userAwardFinishedFacebookStreamId)) {
-				$userAwardFinishedFacebookStreamId = str_replace('*', '%', $userAwardFinishedFacebookStreamId);
-				$comparison = Criteria::LIKE;
-			}
-		}
-		return $this->addUsingAlias(FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_FACEBOOK_STREAM_ID, $userAwardFinishedFacebookStreamId, $comparison);
 	}
 
 	/**
