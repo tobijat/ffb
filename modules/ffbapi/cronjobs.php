@@ -135,7 +135,7 @@ class cronjobs extends FFB_Auth_Api {
       $text = "Hallo {*nickname*}!\n";
       $text .= "Du bist auf http://soccer.sportsfan.at zum Fantasy Soccer Spiel angemeldet und hast bereits an der Liga ";
       $text .= $mr->getFfbGame()->getGameTitle()." teilgenommen.\n";
-      $text .= "Die Deadline f�r folgende Spielrunde ist bald erreicht und du hast noch keine Mannschaft aufgestellt:\n\n";
+      $text .= "Die Deadline für folgende Spielrunde ist bald erreicht und du hast noch keine Mannschaft aufgestellt:\n\n";
       $text .= $mr->getFfbGame()->getGameTitle().' - '.$mr->getMatchroundTitle()."\n";
       $text .= "Deadline: ".date('d.m.Y H:i', strtotime($mr->getMatchroundStartdate()))."\n\n";
       $text .= "Melde dich auf http://soccer.sportsfan.at an und stell unter \"Aufstellung\" deine Mannschaft zusammen.";

@@ -7,8 +7,8 @@
  * @copyright 04/2008
  * @version 0.1
  *
- * Basis-Klasse für Module die DB, Sessions und User-Management brauchen;
- * Stellt Session-Objekt und User-Objekt zur Verfügung und wird von der FFB_Object_DB abgeleitet
+ * Basis-Klasse fÃ¼r Module die DB, Sessions und User-Management brauchen;
+ * Stellt Session-Objekt und User-Objekt zur VerfÃ¼gung und wird von der FFB_Object_DB abgeleitet
  *
  */
 

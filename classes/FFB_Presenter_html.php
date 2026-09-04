@@ -94,7 +94,7 @@ class FFB_Presenter_html extends FFB_Presenter_common {
         }
     }
 
-    //__get-Interceptor: liefert bei Anfrage die gewünschte Eigenschaft aus den DATA-Array des Moduls zurück;
+    //__get-Interceptor: liefert bei Anfrage die gewÃ¼nschte Eigenschaft aus den DATA-Array des Moduls zurÃ¼ck;
     public function __get($property) {
         if(isset($this->data[$property])) {
             return $this->data[$property];

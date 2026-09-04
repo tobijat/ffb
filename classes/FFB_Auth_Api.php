@@ -7,7 +7,7 @@
  * @copyright 03/2010
  * @version 0.2
  *
- * Authentication-Klasse für API Authentication;
+ * Authentication-Klasse fÃ¼r API Authentication;
  *
  */
 

@@ -2,7 +2,7 @@
 
 /**
  * ADMIN - MATCHROUND-Klasse;
- * Matchrounds hinzuf�gen/�ndern/l�schen
+ * Matchrounds hinzufügen/ündern/lüschen
  *
  * @author Gritschacher, Musser
  * @copyright 05/2008
@@ -45,7 +45,7 @@ class matchround extends FFB_Auth_AdminFfb {
         $this->getList();
     }
 
-    //gesamte Matchround-Liste holen (f�r aktuell eingestelltes game)
+    //gesamte Matchround-Liste holen (für aktuell eingestelltes game)
     public function getList() {
         $criteria = new Criteria();
         $criteria->add(FfbMatchroundPeer::MATCHROUND_GAME_ID, $this->session->game_id_admin);
@@ -53,7 +53,7 @@ class matchround extends FFB_Auth_AdminFfb {
         $this->getMatchroundByCriteria($criteria);
     }
 
-    //eine Matchround �ndern - bestehende Daten holen
+    //eine Matchround ündern - bestehende Daten holen
     private function changeItem($id) {
         $matchround = array();
         if($id) {
@@ -78,7 +78,7 @@ class matchround extends FFB_Auth_AdminFfb {
         $this->administration_modus = 'update';
     }
 
-    //neue matchround hinzuf�gen
+    //neue matchround hinzufügen
     private function addItem() {
         $new_item = new FfbMatchround();
         $new_item->setMatchroundTitle($_POST['matchround_title']);
@@ -137,7 +137,7 @@ class matchround extends FFB_Auth_AdminFfb {
         return true;
     }
 
-    //Matchround l�schen
+    //Matchround lüschen
     private function deleteItem($id) {
         $item = FfbMatchroundPeer::retrieveByPK($id);
 

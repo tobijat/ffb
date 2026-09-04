@@ -5,7 +5,7 @@
  * Aufgaben:
  * -parsen der URL in Modul/Klasse/Event und Typ des Presenters
  * -aufrufen des Moduls, der Klasse (im Modul), der Methode (in der Klasse)
- * -das ausgef쓍ret Modul wird dann weitergegeben an den Presenter, der dann alle weiteren Aufgaben 쓇enimmt (zB: HTML anzeigen)
+ * -das ausgef체hrte Modul wird dann weitergegeben an den Presenter, der dann alle weiteren Aufgaben 체bernimmt (zB: HTML anzeigen)
  *
  * @author Gritschacher Tobias
  * @copyright 12/2009
@@ -103,7 +103,7 @@ class FFB_Controller {
         $classFile = 'modules/'.$this->module.'/'.$this->class.'.php';
         if(file_exists($classFile)) {
             require_once($classFile);
-            //jedes Modul kann ein zus쓙zliches, optionales Config-File haben - dieses wird hier eingelesen
+            //jedes Modul kann ein zus채tzliches, optionales Config-File haben - dieses wird hier eingelesen
             $configFile = 'modules/'.$this->module.'/config.php';
             if(file_exists($configFile))
                 require_once($configFile);
@@ -115,7 +115,7 @@ class FFB_Controller {
                     }
                     $instance->moduleName = $this->module;
                     $instance->subdomainName = $this->subdomain;
-                    //Authentication 쓇erpr쓋en
+                    //Authentication 체berpr체fen
                     if($instance->authenticate()) {
                         try {
                             $instance->presenter = 'FFB_Presenter_'.$this->presenter;

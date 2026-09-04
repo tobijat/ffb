@@ -7,7 +7,7 @@
  * @copyright 04/2008
  * @version 0.1 
  * 
- * Factory für die Presenter;
+ * Factory fÃ¼r die Presenter;
  *    
  */
 

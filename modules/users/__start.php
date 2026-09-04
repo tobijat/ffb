@@ -2,7 +2,7 @@
 
 /**
  * USER-Start-Klasse;
- * USER-Startseite anzeigen / nicht authentifizierte Seite f�r jedes Modul
+ * USER-Startseite anzeigen / nicht authentifizierte Seite für jedes Modul
  *
  * @author Gritschacher Tobias
  * @copyright 02/2010
