@@ -9,7 +9,6 @@ array('symbol'=>'nav_help.png','name'=>'Regeln','link'=>'users/help','style'=>'s
 //array('symbol'=>'nav_invitation.png','name'=>'Einladen','link'=>'ffb/user/invite.html','style'=>'small'),
 array('symbol'=>'nav_user.png','name'=>'Account','link'=>'users/account','style'=>'small'),
 array('symbol'=>'nav_profile.png','name'=>'Profil','link'=>'users/account/accountDetails.html','style'=>'small'),
-array('symbol'=>'nav_shop.png','name'=>'Sportshop','link'=>'ffb/astore','style'=>'small'),
 array('symbol'=>'nav_logout.png','name'=>'Ausloggen','link'=>'users/logout','style'=>'small')
 );
 ?>

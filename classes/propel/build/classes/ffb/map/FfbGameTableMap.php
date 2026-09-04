@@ -61,7 +61,6 @@ class FfbGameTableMap extends TableMap {
     $this->addRelation('FfbUserscore', 'FfbUserscore', RelationMap::ONE_TO_MANY, array('game_id' => 'userscore_game_id', ), 'CASCADE', null);
     $this->addRelation('FfbAdmin', 'FfbAdmin', RelationMap::ONE_TO_MANY, array('game_id' => 'admin_game_id', ), 'CASCADE', null);
     $this->addRelation('FfbOptions', 'FfbOptions', RelationMap::ONE_TO_MANY, array('game_id' => 'options_game_id', ), 'CASCADE', null);
-    $this->addRelation('FfbAdsAllocation', 'FfbAdsAllocation', RelationMap::ONE_TO_MANY, array('game_id' => 'ads_allocation_game_id', ), 'CASCADE', null);
 	} // buildRelations()
 
 } // FfbGameTableMap

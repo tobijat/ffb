@@ -13,7 +13,6 @@
 abstract class FFB_Module extends FFB_Object_Web {
     protected $data = array();
     public $config;
-	protected $advert;
     public $name;
     public $presenter;
     public $tplFile;
@@ -28,9 +27,7 @@ abstract class FFB_Module extends FFB_Object_Web {
         $this->subdomainName = isset($_REQUEST['subdomain']) ? $_REQUEST['subdomain'] : null;
         $this->name = $this->me->getName();
     	$this->registry->setConfiguration(new FFB_Configuration($this->subdomainName));
-    	$this->registry->setAdvertising(new FFB_Advertising($this->session));
     	$this->config = $this->registry->getConfiguration();
-    	$this->advert = $this->registry->getAdvertising();
     }
 
     //__default-Methode muss es immer geben

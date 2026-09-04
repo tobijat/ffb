@@ -60,10 +60,6 @@
  * @method     FfbGameQuery rightJoinFfbOptions($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbOptions relation
  * @method     FfbGameQuery innerJoinFfbOptions($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbOptions relation
  *
- * @method     FfbGameQuery leftJoinFfbAdsAllocation($relationAlias = null) Adds a LEFT JOIN clause to the query using the FfbAdsAllocation relation
- * @method     FfbGameQuery rightJoinFfbAdsAllocation($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbAdsAllocation relation
- * @method     FfbGameQuery innerJoinFfbAdsAllocation($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbAdsAllocation relation
- *
  * @method     FfbGame findOne(PropelPDO $con = null) Return the first FfbGame matching the query
  * @method     FfbGame findOneOrCreate(PropelPDO $con = null) Return the first FfbGame matching the query, or a new FfbGame object populated from the query conditions when no match is found
  *
@@ -854,70 +850,6 @@ abstract class BaseFfbGameQuery extends ModelCriteria
 		return $this
 			->joinFfbOptions($relationAlias, $joinType)
 			->useQuery($relationAlias ? $relationAlias : 'FfbOptions', 'FfbOptionsQuery');
-	}
-
-	/**
-	 * Filter the query by a related FfbAdsAllocation object
-	 *
-	 * @param     FfbAdsAllocation $ffbAdsAllocation  the related object to use as filter
-	 * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
-	 *
-	 * @return    FfbGameQuery The current query, for fluid interface
-	 */
-	public function filterByFfbAdsAllocation($ffbAdsAllocation, $comparison = null)
-	{
-		return $this
-			->addUsingAlias(FfbGamePeer::GAME_ID, $ffbAdsAllocation->getAdsAllocationGameId(), $comparison);
-	}
-
-	/**
-	 * Adds a JOIN clause to the query using the FfbAdsAllocation relation
-	 * 
-	 * @param     string $relationAlias optional alias for the relation
-	 * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
-	 *
-	 * @return    FfbGameQuery The current query, for fluid interface
-	 */
-	public function joinFfbAdsAllocation($relationAlias = null, $joinType = Criteria::INNER_JOIN)
-	{
-		$tableMap = $this->getTableMap();
-		$relationMap = $tableMap->getRelation('FfbAdsAllocation');
-		
-		// create a ModelJoin object for this join
-		$join = new ModelJoin();
-		$join->setJoinType($joinType);
-		$join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
-		if ($previousJoin = $this->getPreviousJoin()) {
-			$join->setPreviousJoin($previousJoin);
-		}
-		
-		// add the ModelJoin to the current object
-		if($relationAlias) {
-			$this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
-			$this->addJoinObject($join, $relationAlias);
-		} else {
-			$this->addJoinObject($join, 'FfbAdsAllocation');
-		}
-		
-		return $this;
-	}
-
-	/**
-	 * Use the FfbAdsAllocation relation FfbAdsAllocation object
-	 *
-	 * @see       useQuery()
-	 * 
-	 * @param     string $relationAlias optional alias for the relation,
-	 *                                   to be used as main alias in the secondary query
-	 * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
-	 *
-	 * @return    FfbAdsAllocationQuery A secondary query class using the current class as primary query
-	 */
-	public function useFfbAdsAllocationQuery($relationAlias = null, $joinType = Criteria::INNER_JOIN)
-	{
-		return $this
-			->joinFfbAdsAllocation($relationAlias, $joinType)
-			->useQuery($relationAlias ? $relationAlias : 'FfbAdsAllocation', 'FfbAdsAllocationQuery');
 	}
 
 	/**

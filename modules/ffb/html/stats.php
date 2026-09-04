@@ -54,9 +54,6 @@
 
     <div id="Mainleft">
 		<div>
-			<div style="float:left; display:inline; margin-left:3%;">
-				<div id="statsSlot"><?= $this->adStatsSlot;?></div>
-			</div>
 			<h1>&Uuml;bersicht <span style="font-size:33%; font-style:italic;">alpha</span></h1>
 
 		</div>

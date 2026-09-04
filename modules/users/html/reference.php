@@ -83,10 +83,6 @@
 					            * Fu&szlig;ball&ouml;sterreich: <a href="http://www.fussballoesterreich.at" target="_blank">http://www.fussballoesterreich.at</a>
 					            <br>
 					            * Webhosting: <a href="http://www.all-inkl.com/index.php?partner=189340" target="_blank">http://www.all-inkl.com</a>
-								<br />
-					            * Google AdSense:<a href="https://www.google.com/adsense/login/de/" target="_blank">https://www.google.com/adsense/login/de/</a>
-					            <br />
-					            * AmazonPartnerNet:<a href="https://partnernet.amazon.de/" target="_blank">https://partnernet.amazon.de/</a>
 					            <br />
 					        </div>
 					    </div>

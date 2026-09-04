@@ -391,9 +391,6 @@ abstract class BaseFfbGamePeer {
 		// Invalidate objects in FfbOptionsPeer instance pool, 
 		// since one or more of them may be deleted by ON DELETE CASCADE/SETNULL rule.
 		FfbOptionsPeer::clearInstancePool();
-		// Invalidate objects in FfbAdsAllocationPeer instance pool, 
-		// since one or more of them may be deleted by ON DELETE CASCADE/SETNULL rule.
-		FfbAdsAllocationPeer::clearInstancePool();
 	}
 
 	/**
@@ -760,12 +757,6 @@ abstract class BaseFfbGamePeer {
 			
 			$criteria->add(FfbOptionsPeer::OPTIONS_GAME_ID, $obj->getGameId());
 			$affectedRows += FfbOptionsPeer::doDelete($criteria, $con);
-
-			// delete related FfbAdsAllocation objects
-			$criteria = new Criteria(FfbAdsAllocationPeer::DATABASE_NAME);
-			
-			$criteria->add(FfbAdsAllocationPeer::ADS_ALLOCATION_GAME_ID, $obj->getGameId());
-			$affectedRows += FfbAdsAllocationPeer::doDelete($criteria, $con);
 		}
 		return $affectedRows;
 	}

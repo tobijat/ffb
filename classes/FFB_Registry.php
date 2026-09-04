@@ -23,7 +23,6 @@ class FFB_Registry {
 	}
 
 	const KEY_CONFIGURATION = 'config';
-	const KEY_ADVERTISING = 'advert';
 
     protected function get($var) {
     	if(isset($this->values[$var])) {
@@ -40,16 +39,8 @@ class FFB_Registry {
 		$this->set(self::KEY_CONFIGURATION, $config);
 	}
 
-	public function setAdvertising(FFB_Advertising $advert) {
-		$this->set(self::KEY_ADVERTISING, $advert);
-	}
-
 	public function getConfiguration() {
 		return $this->get(self::KEY_CONFIGURATION);
-	}
-
-	public function getAdvertising() {
-		return $this->get(self::KEY_ADVERTISING);
 	}
 
 	private function __clone() {

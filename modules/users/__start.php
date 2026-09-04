@@ -17,16 +17,6 @@ class __start extends FFB_Auth_No {
     }
 
     public function __default() {
-    	if($this->config->area_load_ads == 1) {
-    		$this->adLeft = $this->advert->getAd('start links');
-			$this->adRight = $this->advert->getAd('start rechts');
-			$this->adBottomRight = $this->advert->getAd('login rechts unten');
-		}
-		//villacher ads permanent (WM 2014)
-		//$this->adVillacherBier = $this->advert->getAd('VillacherBierStartseiteRU');
-        //guarana brause ads permanent (EM 2016)
-        $this->adGuaranaBrause = $this->advert->getAd('GuaranaBrauseStartseiteRU');
-
         if($this->session->user_id > 0) {
         	$destination = 'http://'.$_SERVER['SERVER_NAME'].'/'.$this->config->area_prefix;
 			header("Location: $destination");

@@ -127,16 +127,6 @@
 		    <b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
 		</div>
 
-  <!--div class="rounddiv_mainrightads"-->
-		<div class="roundcorner_dark">
-			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
-			<div id="Mainright_ads">
-				<?= $this->adBottomRight;?>
-			</div>
-			<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
-		</div>
-	<!--/div-->
-
 		<div class="roundcorner_dark">
 			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 			<div id="Mainright_comments">
@@ -169,13 +159,6 @@
 
         echo " </div>\r\n";
 
-          if($this->adCommentText[0]) {
-            echo  '<div class="userCommentAd"><div class="userCommentHead" style="font-size:50%;"></div>';
-            echo  '<div class="userCommentBody" style="margin-left:25px;">';
-            echo  $this->adCommentText[0] ."</div>\r\n";
-            echo  '<div class="userCommentFooter"></div></div>';
-          }
-
         echo '<div id="comments_2">';
 
           for(;$index<count($this->comments) && $index<7;$index++) {
@@ -188,13 +171,6 @@
 
         echo " </div>\r\n";
 
-          if($this->adCommentText[1]) {
-            echo  '<div class="userCommentAd"><div class="userCommentHead" style="font-size:50%;"></div>';
-            echo  '<div class="userCommentBody" style="margin-left:25px;">';
-            echo  $this->adCommentText[1] ."</div>\r\n";
-            echo  '<div class="userCommentFooter"></div></div>';
-          }
-
         echo '<div id="comments_3">';
 
           for(;$index<count($this->comments) && $index<15;$index++) {
@@ -206,13 +182,6 @@
           }
 
         echo " </div>\r\n";
-
-          if($this->adCommentText[2]) {
-            echo  '<div class="userCommentAd"><div class="userCommentHead" style="font-size:50%;"></div>';
-            echo  '<div class="userCommentBody" style="margin-left:25px;">';
-            echo  $this->adCommentText[2] ."</div>\r\n";
-            echo  '<div class="userCommentFooter"></div></div>';
-          }
 
          echo '<div id="comments_4">';
 

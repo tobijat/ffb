@@ -13,25 +13,15 @@ class test extends FFB_Auth_No {
 
 	public function __construct() {
         parent::__construct();
-        //require_once('adallocator.php');
         $this->HTMLFile	=	"test.php";
-        //$this->ads	=	new adallocator();
     }
 
     public function __default() {
     }
     
     public function testme() {
-      $ads[]  = $this->advert->getAd('CommentsText');
-      $ads[]  = $this->advert->getAd('CommentsText');
-      $ads[]  = $this->advert->getAd('CommentsText');
-      $this->adCommentText  = $ads;
-       
       require_once('comments.php');
       comments::loadInto($this, 'myteam', null, DEFAULT_COMMENT_NUMBER, false);
-      //require_once('adallocator.php');
-        
-      //print_r($this->adCommentText);
     }
 
 	public function localhost() {

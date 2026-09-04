@@ -242,11 +242,7 @@ function newsticker()
                 	<div class="mtxt" Id="mtxt" >Herzlich Willkommen!</div>
           <!-- NewsTicker End-->
 
-					<div style="background:transparent; text-align:center; float:left; width:25%; margin-top:0px;">
-						<?php $this->adLeft ? print($this->adLeft) : print('&NonBreakingSpace;')?>
-					</div>
-
-					<div style="text-align:center; float:left; width:48%; margin-top:10px;">
+					<div style="text-align:center; margin-top:10px;">
 						<img id="imgfront" src="<?= FFB_BASE_PATH?><?= FFB_IMAGE_PATH?>backgrounds/france16_353.png" width="353px" style="border:0" />
 			            <br /><br />
 			            <div class="ffb_infos">
@@ -309,10 +305,6 @@ function newsticker()
 			            <br />
 
 		            </div>
-
-					<div style="text-align:center; float:right; width:25%; margin-top:00px;">
-						<?php $this->adRight ? print($this->adRight) : print('&NonBreakingSpace;')?>
-					</div>
 
 					<div style="clear:both;"></div>
 					<br><br>
@@ -402,34 +394,6 @@ function newsticker()
 		    <b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
 		</div>
 	</div>
-
-    <!-- no Villacher ad for EM 2016 -->
-
-	<div class="rounddiv_mainrightads">
-		<div class="roundcorner_dark">
-			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
-		    <div id="Mainright_villacher">
-		    	<?php  if($this->adGuaranaBrause)
-		    		echo $this->adGuaranaBrause;
-	    		?>
-	    		
-			</div>
-		    <b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
-		</div>
-	</div>
-
-
-	<!-- Ad Slot
-	<div class="rounddiv_mainrightads">
-		<div class="roundcorner_dark">
-			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
-		    <div id="Mainright_ads">
-		  		<?php //echo $this->adBottomRight;?>
-		    </div>
-		    <b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
-		</div>
-	</div>
-	//-->
 
     <div class="rounddiv_footer">
 		<div class="roundcorner_dark">

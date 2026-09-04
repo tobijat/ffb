@@ -13,7 +13,6 @@ array('symbol'=>'nav_config.png','name'=>'configuration','link'=>'administration
 array('symbol'=>'nav_mail.png','name'=>'mailservice','link'=>'administration/mailservice'),
 array('symbol'=>'nav_news.png','name'=>'news','link'=>'administration/news'),
 array('symbol'=>'nav_award.png','name'=>'awards','link'=>'administration/awards'),
-array('symbol'=>'nav_ads.png','name'=>'ads','link'=>'administration/ads'),
 array('symbol'=>'nav_logout.png','name'=>'logout','link'=>'users/logout')
 );
 ?>
