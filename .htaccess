@@ -1,8 +1,8 @@
 RewriteEngine on
 
-# htaccess f�r FFB
+# htaccess für FFB
 
-# umleitung f�r wartungsarbeiten mit ausnahme
+# umleitung für wartungsarbeiten mit ausnahme
 #Tobi Exception
 #RewriteCond %{REMOTE_ADDR} !^77.119.129.73 [NC]
 #RewriteCond %{REMOTE_ADDR} !^127.0.0.1 [NC]
@@ -19,6 +19,11 @@ RewriteCond %{REMOTE_ADDR} !^84.115.136.168 [NC]
 #WM Logo 2010
 Redirect /images/ffb/backgrounds/wml2010.png http://upload.wikimedia.org/wikipedia/de/thumb/7/79/Logo_Fifa_World_Cup_2010_South_Africa.svg/525px-Logo_Fifa_World_Cup_2010_South_Africa.svg.png
 
+# Laravel platform (Phase 2 strangler) — keep out of legacy index.php
+RewriteRule ^platform/public(?:/|$) - [L]
+RewriteRule ^platform$ /platform/public/ [R=302,L]
+RewriteCond %{REQUEST_URI} !^/platform/public
+RewriteRule ^platform/(.*)$ /platform/public/$1 [R=302,L]
 
 # Changes /index.php?module=users&class=login&event=getUser&presenter=html to /users/login/getUser.html
 RewriteRule ^xd_receiver.htm(.*) - [L]

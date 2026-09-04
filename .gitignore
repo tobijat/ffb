@@ -1,11 +1,9 @@
 # Local credential / config files (use the matching *.example stubs)
-/config.php
 /area_config_ffb.xml
 /area_config_soccer.xml
 /old_area_config_ffb.xml
 /classes/propel/build.properties
 /classes/propel/runtime-conf.xml
-/classes/propel/build/conf/ffb-conf.php
 /classes/propel_old/build.properties
 /classes/propel_old/runtime-conf.xml
 /classes/propel_old/build/conf/ffb-conf.php
@@ -25,6 +23,11 @@
 /tests/.ffb_test_fixture.json
 /composer.phar
 
+# Laravel platform (also covered by platform/.gitignore)
+/platform/vendor/
+/platform/node_modules/
+/platform/.env
+
 # OS / editor
 .DS_Store
 Thumbs.db
@@ -34,9 +37,11 @@ Thumbs.db
 .vscode/
 *.sublime-*
 
-# Env / secrets catch-all
+# Env / secrets catch-all — commit .env.example only
 .env
 .env.*
+!.env.example
+!platform/.env.example
 *.pem
 *.key
 credentials.json
