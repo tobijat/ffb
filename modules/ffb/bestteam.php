@@ -35,8 +35,11 @@ class bestteam extends FFB_Auth_User {
 	}
 
 	public function getBestTeam() {
-		$matchround_id = $_REQUEST['matchround_id'];
-		$type = $_REQUEST['type'];
+		$matchround_id = $_REQUEST['matchround_id'] ?? null;
+		$type = $_REQUEST['type'] ?? 'top';
+		if ($type !== 'top' && $type !== 'flop') {
+			$type = 'top';
+		}
 		$systems = array();
 		$systems[0] = array(1,3,4,3);
 		$systems[1] = array(1,3,5,2);
@@ -58,7 +61,7 @@ class bestteam extends FFB_Auth_User {
 		if($type == 'top') {
 			$team_score = -100000;
 			$team_price = 0;
-		} elseif($type == 'flop') {
+		} else { // flop
 			$team_score = 100000;
 			$team_price = 0;
 		}
