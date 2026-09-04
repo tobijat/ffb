@@ -158,11 +158,14 @@
               }
               $criteria->addAscendingOrderByColumn(FfbGamePeer::GAME_ARCHIVE);
               $criteria->addAscendingOrderByColumn(FfbGamePeer::GAME_TITLE);
+              $this->getGamesByCriteria($criteria);
           } else {
-              echo "No Games for this Admin available!";
-              exit();
+              // Keep XML/AJAX contract: empty list instead of plain-text exit.
+              $this->num_results = 0;
+              $this->games = array();
+              $this->administration_answer = 'No Games for this Admin available!';
+              $this->administration_status = STATUS_CODE_ERROR;
           }
-          $this->getGamesByCriteria($criteria);
       }
 
       private function getGamesByCriteria($criteria) {

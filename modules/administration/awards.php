@@ -21,16 +21,18 @@ class awards extends FFB_Auth_AdminFfb {
 
         $this->htmlFile = 'awards.php';
         $this->goalFinishers =	array();
-        if($_POST['newgroupawardname']) {
+        if(!empty($_POST['newgroupawardname'])) {
         	$this->createNewAwardGroup();
         	$this->getAwardGroups();
         }
 
-
-        $criteria = new Criteria();
-        $criteria->addAscendingOrderByColumn(WebUserPeer::USER_ID);
-        $this->allusers = WebUserPeer::doSelect($criteria);
-
+        // Propel OM objects cannot be XML-serialized (PHP 8 protected props).
+        // Only load the full user list for HTML admin pages.
+        if (($_GET['presenter'] ?? '') !== 'xml') {
+            $criteria = new Criteria();
+            $criteria->addAscendingOrderByColumn(WebUserPeer::USER_ID);
+            $this->allusers = WebUserPeer::doSelect($criteria);
+        }
     }
 
     private function getAwardGroups() {
