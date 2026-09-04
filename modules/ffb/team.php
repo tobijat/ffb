@@ -2,7 +2,7 @@
 
 /**
  * FFB-Module - TEAM-Klasse;
- * kann alle Teams oder ein spezielles Team zurückgeben
+ * kann alle Teams oder ein spezielles Team zurÃ¼ckgeben
  *
  * @author Gritschacher, Musser
  * @copyright 06/2008
@@ -42,7 +42,7 @@ class team extends FFB_Auth_User {
                 $criteria->addOr($c1);
             }
         } else {
-            $criteria->add(FfbTeamPeer::TEAM_ID, 0); //unmögliches criterium, damit keine Teams gefunden werden
+            $criteria->add(FfbTeamPeer::TEAM_ID, 0); //unmÃ¶gliches criterium, damit keine Teams gefunden werden
         }
         $this->getTeamsByCriteria($criteria);
     }

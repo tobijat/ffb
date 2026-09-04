@@ -7,7 +7,7 @@
  * @copyright 04/2008
  * @version 0.1
  *
- * Basis-Klasse für so ziemlich alles
+ * Basis-Klasse fÃ¼r so ziemlich alles
  *
  */
 

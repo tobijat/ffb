@@ -2,7 +2,7 @@
 
 /**
  * FFB-Module - PLAYER-Klasse;
- * gibt Infos �ber player zur�ck
+ * gibt Infos über player zurück
  *
  * @author Gritschacher Tobias, Musser
  * @copyright 09/2008

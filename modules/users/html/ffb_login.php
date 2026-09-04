@@ -161,7 +161,7 @@ function newsticker()
 -->
 </script>
 
-<!-- Dieses Tag in den Head-Bereich oder direkt vor dem schlie�enden Body-Tag einf�gen -->
+<!-- Dieses Tag in den Head-Bereich oder direkt vor dem schlieüenden Body-Tag einfügen -->
 <!-- google +1 Button Script-->
 <script type="text/javascript" src="https://apis.google.com/js/plusone.js">
   {lang: 'de', parsetags: 'explicit'}
@@ -398,7 +398,7 @@ function newsticker()
 						                <div id="formline_center">
 						                    <a href="javascript:void(0);" onclick="javascript:forgottenPassword();">Passwort vergessen?</a>
 						                    <a href="<?php  echo FFB_BASE_PATH."users/registration";?>" title="neuen Benutzer anlegen">Registrieren</a>
-						                    <!--dummy login f�r geris handy browser-->
+						                    <!--dummy login für geris handy browser-->
 						                    <!--a href="javascript:authenticate();" style="font-size:50%;" onclick="javascript:authenticate();return;" title="Login" >&nbsp;L&nbsp;</a-->
 						                    <!--end-->
 						                </div>

@@ -27,14 +27,14 @@ class FFB_Mail {
 	private $config;
 
 	/**
-	* @param $config config-Objekt des aufrufenden Moduls / einfach $this->config �bergeben
+	* @param $config config-Objekt des aufrufenden Moduls / einfach $this->config übergeben
 	* @param $to_array Array mit den user_ids an die gemailt werden soll
 	* @param $subject Subject der Email
 	* @param $message der Body der Email
 	* @param $type 'reminder' (geht nur an die im $to_array, die den Reminder aktiviert haben)
 	* 			   'info' (geht nur an die im $to_array, die Infomails aktiviert haben)
 	* 			   'force' (geht an alle in $to_array - nur im Notfall verwenden!!)
-	* @param $sender String der angibt wer gesendet hat - nur f�rs Log
+	* @param $sender String der angibt wer gesendet hat - nur fürs Log
 	*
 	* */
 	public function __construct($config, $to_array, $subject, $message, $type, $sender='N/A', $message_html='') {

@@ -2,7 +2,7 @@
 
 /**
  * ADMIN - TEAM-Klasse;
- * Teams hinzuf�gen/�ndern/l�schen
+ * Teams hinzufügen/ündern/lüschen
  *
  * @author Gritschacher, Musser
  * @copyright 05/2008
@@ -264,7 +264,7 @@ class team extends FFB_Auth_AdminFfb {
         $this->administration_modus = 'update';
     }
 
-    //neues Team hinzuf�gen
+    //neues Team hinzufügen
     private function addItem() {
         $new_item = new FfbTeam();
         $new_item->setTeamName($_POST['team_name']);
@@ -377,7 +377,7 @@ class team extends FFB_Auth_AdminFfb {
         return $return;
     }
 
-    //Team l�schen
+    //Team lüschen
     private function deleteItem($id) {
         $item = FfbTeamPeer::retrieveByPK($id);
 

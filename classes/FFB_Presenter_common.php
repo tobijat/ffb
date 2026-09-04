@@ -8,7 +8,7 @@
  * @version 0.1 
  * 
  * Presenter Basis-Klasse: Hat Zugang zu Sessions und User-Objekt;
- * bekommt Modul übergeben; 
+ * bekommt Modul Ã¼bergeben; 
  */
 
 abstract class FFB_Presenter_common extends FFB_Object_Web {

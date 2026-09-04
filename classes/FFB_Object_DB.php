@@ -7,8 +7,8 @@
  * @copyright 05/2008
  * @version 0.2
  *
- * Basis-Klasse für alle Module die eine DB benötigen;
- * stellt Zugang zur Datenbank über Propel her
+ * Basis-Klasse fÃ¼r alle Module die eine DB benÃ¶tigen;
+ * stellt Zugang zur Datenbank Ã¼ber Propel her
  *
  */
 
@@ -39,7 +39,7 @@ abstract class FFB_Object_DB extends FFB_Object {
 
     public function __destruct() {
         parent::__destruct();
-        // Do not disconnect the shared PEAR connection here — other module
+        // Do not disconnect the shared PEAR connection here â€” other module
         // instances (and subsequent requests in the same process) still need it.
     }
 }

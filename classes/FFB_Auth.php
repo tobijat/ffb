@@ -7,7 +7,7 @@
  * @copyright 04/2008
  * @version 0.1
  *
- * Klasse für Module die vorher Authentication benötigen;
+ * Klasse fÃ¼r Module die vorher Authentication benÃ¶tigen;
  * die Methode authenticate() muss implementiert sein
  *
  */

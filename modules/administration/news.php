@@ -2,7 +2,7 @@
 
 /**
  * ADMIN - NEWS-Klasse;
- * News hinzufügen/ändern/löschen
+ * News hinzufÃ¼gen/Ã¤ndern/lÃ¶schen
  *
  * @author Gritschacher Tobias
  * @copyright 10/2008
@@ -66,7 +66,7 @@ class news extends FFB_Auth_AdminFfb {
         $this->news = $news;
     }
 
-    //einen Newseintrag ändern - bestehende Daten holen
+    //einen Newseintrag Ã¤ndern - bestehende Daten holen
     private function changeItem($id) {
         $news = array();
         if($id) {
@@ -85,7 +85,7 @@ class news extends FFB_Auth_AdminFfb {
         $this->administration_modus = 'update';
     }
 
-    //neuen Newseintrag hinzufügen
+    //neuen Newseintrag hinzufÃ¼gen
     private function addItem() {
         $new_item = new FfbNews();
         $new_item->setNewsTitle($_POST['news_title']);
@@ -131,7 +131,7 @@ class news extends FFB_Auth_AdminFfb {
         return true;
     }
 
-    //Newseintrag löschen
+    //Newseintrag lÃ¶schen
     private function deleteItem($id) {
         $item = FfbNewsPeer::retrieveByPK($id);
 

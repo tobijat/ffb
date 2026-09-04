@@ -7,7 +7,7 @@
  * @copyright 05/2008
  * @version 0.1
  *
- * Authentication-Klasse für allgemeine Admin Authentication;
+ * Authentication-Klasse fÃ¼r allgemeine Admin Authentication;
  *
  */
 

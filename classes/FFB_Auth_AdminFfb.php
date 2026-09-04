@@ -7,7 +7,7 @@
  * @copyright 09/2008
  * @version 0.1
  *
- * Authentication-Klasse für Ffb Admin Authentication;
+ * Authentication-Klasse fÃ¼r Ffb Admin Authentication;
  *
  */
 

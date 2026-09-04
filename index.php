@@ -1,8 +1,8 @@
 <?php
 
 /**
- * sorgt daf�r, dass alle Klassen geladen werden k�nnen, l�d die config.php und ruft den Controller auf;
- * ist sonst f�r nix mehr zust�ndig; 
+ * sorgt dafür, dass alle Klassen geladen werden können, lädt die config.php und ruft den Controller auf;
+ * ist sonst für nix mehr zuständig; 
  *  
  * @author Gritschacher, Musser
  * @copyright 05/2008
@@ -18,7 +18,7 @@ spl_autoload_register(function ($class) {
 	    include_once $classfile;
 });  //damit das propel auch zufrieden is
 
-//Controller aufrufen und ihm jede weitere Verantwortung �berlassen
+//Controller aufrufen und ihm jede weitere Verantwortung überlassen
 $controller = new FFB_Controller();
 
 ?>

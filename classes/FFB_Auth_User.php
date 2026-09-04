@@ -7,9 +7,9 @@
  * @copyright 07/2010
  * @version 0.2
  *
- * Authentication-Klasse f�r User Authentication;
+ * Authentication-Klasse für User Authentication;
  * wenn erfolgreich eingeloggt wurde, dann ist die user_id in der Session > 0;
- * Kann leicht adaptiert und ge�ndert werden, wenn n�tig;
+ * Kann leicht adaptiert und geündert werden, wenn nütig;
  *
  * v0.2 - login timeout added
  *

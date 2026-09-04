@@ -2,7 +2,7 @@
 
 /**
  * ADMIN - PLAYER-Klasse;
- * Player hinzufügen/ändern/löschen
+ * Player hinzufÃ¼gen/Ã¤ndern/lÃ¶schen
  *
  * @author Gritschacher, Musser
  * @copyright 05/2008
@@ -155,7 +155,7 @@ class player extends FFB_Auth_AdminFfb {
         $this->players = $players;
     }
 
-    //einen Player ändern - bestehende Daten holen
+    //einen Player Ã¤ndern - bestehende Daten holen
     private function changeItem($id) {
         $player = array();
         if($id) {
@@ -174,7 +174,7 @@ class player extends FFB_Auth_AdminFfb {
         $this->administration_modus = 'update';
     }
 
-    //neuen Player hinzufügen
+    //neuen Player hinzufÃ¼gen
     private function addItem() {
         $new_item = new FfbPlayer();
         $new_item->setPlayerLname($_POST['player_lname']);
@@ -271,7 +271,7 @@ class player extends FFB_Auth_AdminFfb {
         return $return;
     }
 
-    //Player löschen
+    //Player lÃ¶schen
     private function deleteItem($id) {
         $item = FfbPlayerPeer::retrieveByPK($id);
 
@@ -323,7 +323,7 @@ class player extends FFB_Auth_AdminFfb {
         return true;
     }
 
-    //Import-File für PLayerToTeam validieren
+    //Import-File fÃ¼r PLayerToTeam validieren
     private function validateImportPtt() {
         $errors = array();
 

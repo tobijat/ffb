@@ -2,7 +2,7 @@
 
 /**
  * ADMIN - FOETEAMPARSER-Klasse;
- * Fuﬂball ÷sterreich Team Parser
+ * Fu√üball √ñsterreich Team Parser
  *
  * @author Gritschacher Tobias
  * @copyright 02/2010

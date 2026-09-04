@@ -2,7 +2,7 @@
 
 /**
  * ADMIN - MATCH-Klasse;
- * Matches hinzufügen/ändern/löschen
+ * Matches hinzufÃ¼gen/Ã¤ndern/lÃ¶schen
  *
  * @author Gritschacher, Musser
  * @copyright 05/2008
@@ -58,7 +58,7 @@ class match extends FFB_Auth_AdminFfb {
                 $criteria->addOr($c1);
             }
         } else {
-            //nicht erfüllbare bedingung, damit kein match angezeigt wird
+            //nicht erfÃ¼llbare bedingung, damit kein match angezeigt wird
             $criteria->addOr(FfbMatchPeer::MATCH_ID, 0);
         }
 
@@ -67,7 +67,7 @@ class match extends FFB_Auth_AdminFfb {
         $this->getMatchByCriteria($criteria);
     }
 
-    //ein Match ändern - bestehende Daten holen
+    //ein Match Ã¤ndern - bestehende Daten holen
     private function changeItem($id) {
         $team = array();
         if($id) {
@@ -93,7 +93,7 @@ class match extends FFB_Auth_AdminFfb {
         $this->administration_modus = 'update';
     }
 
-    //neues match hinzufügen
+    //neues match hinzufÃ¼gen
     private function addItem() {
         $new_item = new FfbMatch();
         $new_item->setMatchRound($_POST['match_round']);
@@ -149,7 +149,7 @@ class match extends FFB_Auth_AdminFfb {
         return true;
     }
 
-    //Match löschen
+    //Match lÃ¶schen
     private function deleteItem($id) {
         $item = FfbMatchPeer::retrieveByPK($id);
 

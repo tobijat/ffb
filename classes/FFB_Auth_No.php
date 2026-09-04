@@ -7,7 +7,7 @@
  * @copyright 04/2008
  * @version 0.1 
  * 
- * Klasse für Module die keine Authentication benötigen;
+ * Klasse fÃ¼r Module die keine Authentication benÃ¶tigen;
  * die Methode authenticate() returned immer TRUE   
  */
 
