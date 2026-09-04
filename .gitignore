@@ -18,6 +18,13 @@
 *.log
 /propel.log
 
+# PHPUnit / contract-test tooling (keep app vendor/ untouched)
+/tests/vendor/
+/tests/.phpunit.cache/
+/tests/.ffb_test_user_id
+/tests/.ffb_test_fixture.json
+/composer.phar
+
 # OS / editor
 .DS_Store
 Thumbs.db
