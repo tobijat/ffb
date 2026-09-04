@@ -347,7 +347,7 @@ class poll extends FFB_Auth_User
 		$darkBlueBG = imagecolorallocate ( $img ,25 , 25 , 225);
 		$someKindBlueBG = imagecolorallocate ( $img ,175 , 240 , 240);
   		$filled = imagefill ( $img , 0 , 0 , $someKindBlueBG );
-  		imagestring($img, $this->pollFontNum, 2, $yIndex/10 , utf8_decode($poll->getPollTitle()), $blackText);
+  		imagestring($img, $this->pollFontNum, 2, $yIndex/10 , mb_convert_encoding((string)$poll->getPollTitle(), 'ISO-8859-1', 'UTF-8'), $blackText);
   		imageline($img, $pollHalfSideSpace, $yIndex-3, $this->pollPicWidth-$pollHalfSideSpace, $yIndex-3, $darkBlueBG);
 
 
@@ -362,7 +362,7 @@ class poll extends FFB_Auth_User
   			if($index==1)
   				$color	=	$redBg;
 			imagestring($img, $this->pollFontNum, 5, $yIndex, "$index.", $color);
-			imagestring($img, $this->pollFontNum, $pollHalfSideSpace, $yIndex, utf8_decode($answer->getPollAnswerTitle()), $color );
+			imagestring($img, $this->pollFontNum, $pollHalfSideSpace, $yIndex, mb_convert_encoding((string)$answer->getPollAnswerTitle(), 'ISO-8859-1', 'UTF-8'), $color );
 			$yIndex		+=	10;
   			imagefilledrectangle($img, $pollHalfSideSpace, $yIndex+$this->pollFontNum, $pollHalfSideSpace+$fillSize, $yIndex+$this->pollBarThickness+$this->pollFontNum, $color );
   			$percentage	=	round($percentage*100,0);

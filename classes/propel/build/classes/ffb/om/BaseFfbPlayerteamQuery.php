@@ -100,8 +100,8 @@
  * @method     FfbPlayerteamQuery rightJoinFfbUserteamRelatedByUserteamPlayerId11($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbUserteamRelatedByUserteamPlayerId11 relation
  * @method     FfbPlayerteamQuery innerJoinFfbUserteamRelatedByUserteamPlayerId11($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbUserteamRelatedByUserteamPlayerId11 relation
  *
- * @method     FfbPlayerteam findOne(PropelPDO $con = null) Return the first FfbPlayerteam matching the query
- * @method     FfbPlayerteam findOneOrCreate(PropelPDO $con = null) Return the first FfbPlayerteam matching the query, or a new FfbPlayerteam object populated from the query conditions when no match is found
+ * @method     FfbPlayerteam findOne(?PropelPDO $con = null) Return the first FfbPlayerteam matching the query
+ * @method     FfbPlayerteam findOneOrCreate(?PropelPDO $con = null) Return the first FfbPlayerteam matching the query, or a new FfbPlayerteam object populated from the query conditions when no match is found
  *
  * @method     FfbPlayerteam findOneByPlayerteamId(int $playerteam_id) Return the first FfbPlayerteam filtered by the playerteam_id column
  * @method     FfbPlayerteam findOneByPlayerteamPlayerId(int $playerteam_player_id) Return the first FfbPlayerteam filtered by the playerteam_player_id column

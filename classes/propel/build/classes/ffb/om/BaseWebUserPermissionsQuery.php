@@ -26,8 +26,8 @@
  * @method     WebUserPermissionsQuery rightJoinWebUser($relationAlias = null) Adds a RIGHT JOIN clause to the query using the WebUser relation
  * @method     WebUserPermissionsQuery innerJoinWebUser($relationAlias = null) Adds a INNER JOIN clause to the query using the WebUser relation
  *
- * @method     WebUserPermissions findOne(PropelPDO $con = null) Return the first WebUserPermissions matching the query
- * @method     WebUserPermissions findOneOrCreate(PropelPDO $con = null) Return the first WebUserPermissions matching the query, or a new WebUserPermissions object populated from the query conditions when no match is found
+ * @method     WebUserPermissions findOne(?PropelPDO $con = null) Return the first WebUserPermissions matching the query
+ * @method     WebUserPermissions findOneOrCreate(?PropelPDO $con = null) Return the first WebUserPermissions matching the query, or a new WebUserPermissions object populated from the query conditions when no match is found
  *
  * @method     WebUserPermissions findOneByUserId(int $user_id) Return the first WebUserPermissions filtered by the user_id column
  * @method     WebUserPermissions findOneByUserPermissionsFfbMailserviceReminder(string $user_permissions_ffb_mailservice_reminder) Return the first WebUserPermissions filtered by the user_permissions_ffb_mailservice_reminder column

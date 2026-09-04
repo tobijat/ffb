@@ -26,8 +26,8 @@
  * @method     FfbUserAwardQuery rightJoinFfbUserAwardDefines($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbUserAwardDefines relation
  * @method     FfbUserAwardQuery innerJoinFfbUserAwardDefines($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbUserAwardDefines relation
  *
- * @method     FfbUserAward findOne(PropelPDO $con = null) Return the first FfbUserAward matching the query
- * @method     FfbUserAward findOneOrCreate(PropelPDO $con = null) Return the first FfbUserAward matching the query, or a new FfbUserAward object populated from the query conditions when no match is found
+ * @method     FfbUserAward findOne(?PropelPDO $con = null) Return the first FfbUserAward matching the query
+ * @method     FfbUserAward findOneOrCreate(?PropelPDO $con = null) Return the first FfbUserAward matching the query, or a new FfbUserAward object populated from the query conditions when no match is found
  *
  * @method     FfbUserAward findOneByUserAwardId(int $user_award_id) Return the first FfbUserAward filtered by the user_award_id column
  * @method     FfbUserAward findOneByUserAwardName(string $user_award_name) Return the first FfbUserAward filtered by the user_award_name column

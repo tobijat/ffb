@@ -24,7 +24,18 @@ class registration extends FFB_Auth_No
 
     public function __default()
     {
-        $this->post = $_POST;
+        $defaults = array(
+            'user_nickname' => '',
+            'user_email' => '',
+            'user_email_val' => '',
+            'user_fname' => '',
+            'user_lname' => '',
+            'user_birth_day' => '',
+            'user_birth_month' => '',
+            'user_birth_year' => '',
+            'user_nationality' => '',
+        );
+        $this->post = array_merge($defaults, $_POST);
         if (!empty($_POST)) {
             if($this->validate()) {
                 $this->insert();
@@ -197,9 +208,9 @@ class registration extends FFB_Auth_No
 
     //activate account (by link from mail)
     public function activate() {
-        $activation_string = explode('-',$_GET['id']);
-        $activation_code = $activation_string[0];
-        $activation_user = $activation_string[1];
+        $activation_string = explode('-', (string)($_GET['id'] ?? ''));
+        $activation_code = $activation_string[0] ?? '';
+        $activation_user = $activation_string[1] ?? '';
         $this->navFile = $this->config->area_prefix.'_registration_navigation.php';
         $this->htmlFile = $this->config->area_prefix.'_login.php';
         //$this->htmlFile = 'login.php';
@@ -232,9 +243,9 @@ class registration extends FFB_Auth_No
 
     //activate new email address (by link from mail)
     public function activateEmail() {
-        $activation_string = explode('-',$_GET['id']);
-        $activation_code = $activation_string[0];
-        $activation_user = $activation_string[1];
+        $activation_string = explode('-', (string)($_GET['id'] ?? ''));
+        $activation_code = $activation_string[0] ?? '';
+        $activation_user = $activation_string[1] ?? '';
         $this->navFile = $this->config->area_prefix.'_registration_navigation.php';
         $this->htmlFile = $this->config->area_prefix.'_login.php';
         //$this->htmlFile = 'login.php';

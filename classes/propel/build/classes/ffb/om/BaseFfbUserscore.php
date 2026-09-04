@@ -300,11 +300,11 @@ abstract class BaseFfbUserscore extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->userscore_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->userscore_user_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
-			$this->userscore_game_id = ($row[$startcol + 2] !== null) ? (int) $row[$startcol + 2] : null;
-			$this->userscore_total = ($row[$startcol + 3] !== null) ? (int) $row[$startcol + 3] : null;
-			$this->userscore_wc_points = ($row[$startcol + 4] !== null) ? (int) $row[$startcol + 4] : null;
+			$this->userscore_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->userscore_user_id = (($row[$startcol + 1] ?? null) !== null) ? (int) $row[$startcol + 1] : null;
+			$this->userscore_game_id = (($row[$startcol + 2] ?? null) !== null) ? (int) $row[$startcol + 2] : null;
+			$this->userscore_total = (($row[$startcol + 3] ?? null) !== null) ? (int) $row[$startcol + 3] : null;
+			$this->userscore_wc_points = (($row[$startcol + 4] ?? null) !== null) ? (int) $row[$startcol + 4] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -354,7 +354,7 @@ abstract class BaseFfbUserscore extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -395,7 +395,7 @@ abstract class BaseFfbUserscore extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -437,7 +437,7 @@ abstract class BaseFfbUserscore extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -915,7 +915,7 @@ abstract class BaseFfbUserscore extends BaseObject  implements Persistent
 	 * @return     FfbUserscore The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setWebUser(WebUser $v = null)
+	public function setWebUser(?WebUser $v = null)
 	{
 		if ($v === null) {
 			$this->setUserscoreUserId(NULL);
@@ -942,7 +942,7 @@ abstract class BaseFfbUserscore extends BaseObject  implements Persistent
 	 * @return     WebUser The associated WebUser object.
 	 * @throws     PropelException
 	 */
-	public function getWebUser(PropelPDO $con = null)
+	public function getWebUser(?PropelPDO $con = null)
 	{
 		if ($this->aWebUser === null && ($this->userscore_user_id !== null)) {
 			$this->aWebUser = WebUserQuery::create()->findPk($this->userscore_user_id, $con);
@@ -964,7 +964,7 @@ abstract class BaseFfbUserscore extends BaseObject  implements Persistent
 	 * @return     FfbUserscore The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbGame(FfbGame $v = null)
+	public function setFfbGame(?FfbGame $v = null)
 	{
 		if ($v === null) {
 			$this->setUserscoreGameId(NULL);
@@ -991,7 +991,7 @@ abstract class BaseFfbUserscore extends BaseObject  implements Persistent
 	 * @return     FfbGame The associated FfbGame object.
 	 * @throws     PropelException
 	 */
-	public function getFfbGame(PropelPDO $con = null)
+	public function getFfbGame(?PropelPDO $con = null)
 	{
 		if ($this->aFfbGame === null && ($this->userscore_game_id !== null)) {
 			$this->aFfbGame = FfbGameQuery::create()->findPk($this->userscore_game_id, $con);

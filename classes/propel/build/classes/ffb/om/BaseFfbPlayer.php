@@ -364,13 +364,13 @@ abstract class BaseFfbPlayer extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->player_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->player_foreign_id = ($row[$startcol + 1] !== null) ? (string) $row[$startcol + 1] : null;
-			$this->player_fname = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
-			$this->player_lname = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
-			$this->player_nationality = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
-			$this->player_status = ($row[$startcol + 5] !== null) ? (int) $row[$startcol + 5] : null;
-			$this->player_status_description = ($row[$startcol + 6] !== null) ? (string) $row[$startcol + 6] : null;
+			$this->player_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->player_foreign_id = (($row[$startcol + 1] ?? null) !== null) ? (string) $row[$startcol + 1] : null;
+			$this->player_fname = (($row[$startcol + 2] ?? null) !== null) ? (string) $row[$startcol + 2] : null;
+			$this->player_lname = (($row[$startcol + 3] ?? null) !== null) ? (string) $row[$startcol + 3] : null;
+			$this->player_nationality = (($row[$startcol + 4] ?? null) !== null) ? (string) $row[$startcol + 4] : null;
+			$this->player_status = (($row[$startcol + 5] ?? null) !== null) ? (int) $row[$startcol + 5] : null;
+			$this->player_status_description = (($row[$startcol + 6] ?? null) !== null) ? (string) $row[$startcol + 6] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -414,7 +414,7 @@ abstract class BaseFfbPlayer extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -457,7 +457,7 @@ abstract class BaseFfbPlayer extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -499,7 +499,7 @@ abstract class BaseFfbPlayer extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -1039,7 +1039,7 @@ abstract class BaseFfbPlayer extends BaseObject  implements Persistent
 	 * @return     PropelCollection|array WebUserDetails[] List of WebUserDetails objects
 	 * @throws     PropelException
 	 */
-	public function getWebUserDetailss($criteria = null, PropelPDO $con = null)
+	public function getWebUserDetailss($criteria = null, ?PropelPDO $con = null)
 	{
 		if(null === $this->collWebUserDetailss || null !== $criteria) {
 			if ($this->isNew() && null === $this->collWebUserDetailss) {
@@ -1067,7 +1067,7 @@ abstract class BaseFfbPlayer extends BaseObject  implements Persistent
 	 * @return     int Count of related WebUserDetails objects.
 	 * @throws     PropelException
 	 */
-	public function countWebUserDetailss(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+	public function countWebUserDetailss(?Criteria $criteria = null, $distinct = false, ?PropelPDO $con = null)
 	{
 		if(null === $this->collWebUserDetailss || null !== $criteria) {
 			if ($this->isNew() && null === $this->collWebUserDetailss) {
@@ -1248,7 +1248,7 @@ abstract class BaseFfbPlayer extends BaseObject  implements Persistent
 	 * @return     PropelCollection|array FfbPlayerteam[] List of FfbPlayerteam objects
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayerteams($criteria = null, PropelPDO $con = null)
+	public function getFfbPlayerteams($criteria = null, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbPlayerteams || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbPlayerteams) {
@@ -1276,7 +1276,7 @@ abstract class BaseFfbPlayer extends BaseObject  implements Persistent
 	 * @return     int Count of related FfbPlayerteam objects.
 	 * @throws     PropelException
 	 */
-	public function countFfbPlayerteams(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+	public function countFfbPlayerteams(?Criteria $criteria = null, $distinct = false, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbPlayerteams || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbPlayerteams) {

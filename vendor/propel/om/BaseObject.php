@@ -157,7 +157,7 @@ abstract class BaseObject
      *
      * @return boolean
      */
-    public function preSave(PropelPDO $con = null)
+    public function preSave(?PropelPDO $con = null)
     {
         return true;
     }
@@ -167,7 +167,7 @@ abstract class BaseObject
      *
      * @param PropelPDO $con
      */
-    public function postSave(PropelPDO $con = null)
+    public function postSave(?PropelPDO $con = null)
     {
     }
 
@@ -178,7 +178,7 @@ abstract class BaseObject
      *
      * @return boolean
      */
-    public function preInsert(PropelPDO $con = null)
+    public function preInsert(?PropelPDO $con = null)
     {
         return true;
     }
@@ -188,7 +188,7 @@ abstract class BaseObject
      *
      * @param PropelPDO $con
      */
-    public function postInsert(PropelPDO $con = null)
+    public function postInsert(?PropelPDO $con = null)
     {
     }
 
@@ -199,7 +199,7 @@ abstract class BaseObject
      *
      * @return boolean
      */
-    public function preUpdate(PropelPDO $con = null)
+    public function preUpdate(?PropelPDO $con = null)
     {
         return true;
     }
@@ -209,7 +209,7 @@ abstract class BaseObject
      *
      * @param PropelPDO $con
      */
-    public function postUpdate(PropelPDO $con = null)
+    public function postUpdate(?PropelPDO $con = null)
     {
     }
 
@@ -220,7 +220,7 @@ abstract class BaseObject
      *
      * @return boolean
      */
-    public function preDelete(PropelPDO $con = null)
+    public function preDelete(?PropelPDO $con = null)
     {
         return true;
     }
@@ -230,7 +230,7 @@ abstract class BaseObject
      *
      * @param PropelPDO $con
      */
-    public function postDelete(PropelPDO $con = null)
+    public function postDelete(?PropelPDO $con = null)
     {
     }
 

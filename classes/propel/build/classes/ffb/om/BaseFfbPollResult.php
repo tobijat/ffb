@@ -277,11 +277,11 @@ abstract class BaseFfbPollResult extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->poll_result_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->poll_result_poll_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
-			$this->poll_result_user_id = ($row[$startcol + 2] !== null) ? (int) $row[$startcol + 2] : null;
-			$this->poll_result_poll_answer_id = ($row[$startcol + 3] !== null) ? (int) $row[$startcol + 3] : null;
-			$this->poll_result_text = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
+			$this->poll_result_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->poll_result_poll_id = (($row[$startcol + 1] ?? null) !== null) ? (int) $row[$startcol + 1] : null;
+			$this->poll_result_user_id = (($row[$startcol + 2] ?? null) !== null) ? (int) $row[$startcol + 2] : null;
+			$this->poll_result_poll_answer_id = (($row[$startcol + 3] ?? null) !== null) ? (int) $row[$startcol + 3] : null;
+			$this->poll_result_text = (($row[$startcol + 4] ?? null) !== null) ? (string) $row[$startcol + 4] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -334,7 +334,7 @@ abstract class BaseFfbPollResult extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -376,7 +376,7 @@ abstract class BaseFfbPollResult extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -418,7 +418,7 @@ abstract class BaseFfbPollResult extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -912,7 +912,7 @@ abstract class BaseFfbPollResult extends BaseObject  implements Persistent
 	 * @return     FfbPollResult The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPoll(FfbPoll $v = null)
+	public function setFfbPoll(?FfbPoll $v = null)
 	{
 		if ($v === null) {
 			$this->setPollResultPollId(NULL);
@@ -939,7 +939,7 @@ abstract class BaseFfbPollResult extends BaseObject  implements Persistent
 	 * @return     FfbPoll The associated FfbPoll object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPoll(PropelPDO $con = null)
+	public function getFfbPoll(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPoll === null && ($this->poll_result_poll_id !== null)) {
 			$this->aFfbPoll = FfbPollQuery::create()->findPk($this->poll_result_poll_id, $con);
@@ -961,7 +961,7 @@ abstract class BaseFfbPollResult extends BaseObject  implements Persistent
 	 * @return     FfbPollResult The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPollAnswer(FfbPollAnswer $v = null)
+	public function setFfbPollAnswer(?FfbPollAnswer $v = null)
 	{
 		if ($v === null) {
 			$this->setPollResultPollAnswerId(NULL);
@@ -988,7 +988,7 @@ abstract class BaseFfbPollResult extends BaseObject  implements Persistent
 	 * @return     FfbPollAnswer The associated FfbPollAnswer object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPollAnswer(PropelPDO $con = null)
+	public function getFfbPollAnswer(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPollAnswer === null && ($this->poll_result_poll_answer_id !== null)) {
 			$this->aFfbPollAnswer = FfbPollAnswerQuery::create()->findPk($this->poll_result_poll_answer_id, $con);
@@ -1010,7 +1010,7 @@ abstract class BaseFfbPollResult extends BaseObject  implements Persistent
 	 * @return     FfbPollResult The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setWebUser(WebUser $v = null)
+	public function setWebUser(?WebUser $v = null)
 	{
 		if ($v === null) {
 			$this->setPollResultUserId(NULL);
@@ -1037,7 +1037,7 @@ abstract class BaseFfbPollResult extends BaseObject  implements Persistent
 	 * @return     WebUser The associated WebUser object.
 	 * @throws     PropelException
 	 */
-	public function getWebUser(PropelPDO $con = null)
+	public function getWebUser(?PropelPDO $con = null)
 	{
 		if ($this->aWebUser === null && ($this->poll_result_user_id !== null)) {
 			$this->aWebUser = WebUserQuery::create()->findPk($this->poll_result_user_id, $con);

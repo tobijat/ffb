@@ -225,7 +225,7 @@ abstract class BaseWebLog extends BaseObject  implements Persistent
 			// Because propel.useDateTimeClass is TRUE, we return a DateTime object.
 			return $dt;
 		} elseif (strpos($format, '%') !== false) {
-			return strftime($format, $dt->format('U'));
+			return $dt->format(strtr($format, array('%Y'=>'Y','%m'=>'m','%d'=>'d','%H'=>'H','%M'=>'i','%S'=>'s','%A'=>'l','%B'=>'F','%a'=>'D','%b'=>'M','%%'=>'%')));
 		} else {
 			return $dt->format($format);
 		}
@@ -496,16 +496,16 @@ abstract class BaseWebLog extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->log_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->log_user_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
-			$this->log_user_nickname = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
-			$this->log_user_ip = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
-			$this->log_module = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
-			$this->log_class = ($row[$startcol + 5] !== null) ? (string) $row[$startcol + 5] : null;
-			$this->log_event = ($row[$startcol + 6] !== null) ? (string) $row[$startcol + 6] : null;
-			$this->log_presenter = ($row[$startcol + 7] !== null) ? (string) $row[$startcol + 7] : null;
-			$this->log_subdomain = ($row[$startcol + 8] !== null) ? (string) $row[$startcol + 8] : null;
-			$this->log_date = ($row[$startcol + 9] !== null) ? (string) $row[$startcol + 9] : null;
+			$this->log_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->log_user_id = (($row[$startcol + 1] ?? null) !== null) ? (int) $row[$startcol + 1] : null;
+			$this->log_user_nickname = (($row[$startcol + 2] ?? null) !== null) ? (string) $row[$startcol + 2] : null;
+			$this->log_user_ip = (($row[$startcol + 3] ?? null) !== null) ? (string) $row[$startcol + 3] : null;
+			$this->log_module = (($row[$startcol + 4] ?? null) !== null) ? (string) $row[$startcol + 4] : null;
+			$this->log_class = (($row[$startcol + 5] ?? null) !== null) ? (string) $row[$startcol + 5] : null;
+			$this->log_event = (($row[$startcol + 6] ?? null) !== null) ? (string) $row[$startcol + 6] : null;
+			$this->log_presenter = (($row[$startcol + 7] ?? null) !== null) ? (string) $row[$startcol + 7] : null;
+			$this->log_subdomain = (($row[$startcol + 8] ?? null) !== null) ? (string) $row[$startcol + 8] : null;
+			$this->log_date = (($row[$startcol + 9] ?? null) !== null) ? (string) $row[$startcol + 9] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -552,7 +552,7 @@ abstract class BaseWebLog extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -592,7 +592,7 @@ abstract class BaseWebLog extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -634,7 +634,7 @@ abstract class BaseWebLog extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -1146,7 +1146,7 @@ abstract class BaseWebLog extends BaseObject  implements Persistent
 	 * @return     WebLog The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setWebUser(WebUser $v = null)
+	public function setWebUser(?WebUser $v = null)
 	{
 		if ($v === null) {
 			$this->setLogUserId(NULL);
@@ -1173,7 +1173,7 @@ abstract class BaseWebLog extends BaseObject  implements Persistent
 	 * @return     WebUser The associated WebUser object.
 	 * @throws     PropelException
 	 */
-	public function getWebUser(PropelPDO $con = null)
+	public function getWebUser(?PropelPDO $con = null)
 	{
 		if ($this->aWebUser === null && ($this->log_user_id !== null)) {
 			$this->aWebUser = WebUserQuery::create()->findPk($this->log_user_id, $con);

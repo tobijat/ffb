@@ -86,8 +86,8 @@
  * @method     FfbPlayerstatsQuery rightJoinFfbMatchround($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbMatchround relation
  * @method     FfbPlayerstatsQuery innerJoinFfbMatchround($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbMatchround relation
  *
- * @method     FfbPlayerstats findOne(PropelPDO $con = null) Return the first FfbPlayerstats matching the query
- * @method     FfbPlayerstats findOneOrCreate(PropelPDO $con = null) Return the first FfbPlayerstats matching the query, or a new FfbPlayerstats object populated from the query conditions when no match is found
+ * @method     FfbPlayerstats findOne(?PropelPDO $con = null) Return the first FfbPlayerstats matching the query
+ * @method     FfbPlayerstats findOneOrCreate(?PropelPDO $con = null) Return the first FfbPlayerstats matching the query, or a new FfbPlayerstats object populated from the query conditions when no match is found
  *
  * @method     FfbPlayerstats findOneByPlayerstatsId(int $playerstats_id) Return the first FfbPlayerstats filtered by the playerstats_id column
  * @method     FfbPlayerstats findOneByPlayerstatsPlayerteamId(int $playerstats_playerteam_id) Return the first FfbPlayerstats filtered by the playerstats_playerteam_id column

@@ -20,10 +20,10 @@ class mailservice extends FFB_Auth_No
     public function cancel() {
     	$this->session->destroy();
 
-		$cancel_string = explode('-',$_GET['id']);
-        $cancel_code = $cancel_string[0];
-        $cancel_user = $cancel_string[1];
-        $cancel_type = $_GET['t'];
+		$cancel_string = explode('-', (string)($_GET['id'] ?? ''));
+        $cancel_code = $cancel_string[0] ?? '';
+        $cancel_user = $cancel_string[1] ?? '';
+        $cancel_type = $_GET['t'] ?? '';
         $this->navFile = $this->config->area_prefix.'_registration_navigation.php';
         $this->htmlFile = $this->config->area_prefix.'_login.php';
         $errors = array();

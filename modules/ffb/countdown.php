@@ -18,7 +18,7 @@ class countdown extends FFB_Auth_No
       }
 
 	  public function countdown() {
-	  	if(strcmp($this->session->countdown, 'stop')==0) {
+	  	if(strcmp((string)($this->session->countdown ?? ''), 'stop')==0) {
 	      $this->stop = "1";
 	    } else {
 

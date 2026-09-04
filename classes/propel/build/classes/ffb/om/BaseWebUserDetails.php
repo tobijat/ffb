@@ -293,7 +293,7 @@ abstract class BaseWebUserDetails extends BaseObject  implements Persistent
 			// Because propel.useDateTimeClass is TRUE, we return a DateTime object.
 			return $dt;
 		} elseif (strpos($format, '%') !== false) {
-			return strftime($format, $dt->format('U'));
+			return $dt->format(strtr($format, array('%Y'=>'Y','%m'=>'m','%d'=>'d','%H'=>'H','%M'=>'i','%S'=>'s','%A'=>'l','%B'=>'F','%a'=>'D','%b'=>'M','%%'=>'%')));
 		} else {
 			return $dt->format($format);
 		}
@@ -640,19 +640,19 @@ abstract class BaseWebUserDetails extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->user_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->user_details_avatar = ($row[$startcol + 1] !== null) ? (string) $row[$startcol + 1] : null;
-			$this->user_details_photo = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
-			$this->user_details_website = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
-			$this->user_details_zip = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
-			$this->user_details_street = ($row[$startcol + 5] !== null) ? (string) $row[$startcol + 5] : null;
-			$this->user_details_city = ($row[$startcol + 6] !== null) ? (string) $row[$startcol + 6] : null;
-			$this->user_details_phone = ($row[$startcol + 7] !== null) ? (string) $row[$startcol + 7] : null;
-			$this->user_details_ffb_favourite_team = ($row[$startcol + 8] !== null) ? (int) $row[$startcol + 8] : null;
-			$this->user_details_ffb_own_team = ($row[$startcol + 9] !== null) ? (int) $row[$startcol + 9] : null;
-			$this->user_details_ffb_own_player = ($row[$startcol + 10] !== null) ? (int) $row[$startcol + 10] : null;
-			$this->user_details_ffb_selected_game = ($row[$startcol + 11] !== null) ? (int) $row[$startcol + 11] : null;
-			$this->user_details_last_update = ($row[$startcol + 12] !== null) ? (string) $row[$startcol + 12] : null;
+			$this->user_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->user_details_avatar = (($row[$startcol + 1] ?? null) !== null) ? (string) $row[$startcol + 1] : null;
+			$this->user_details_photo = (($row[$startcol + 2] ?? null) !== null) ? (string) $row[$startcol + 2] : null;
+			$this->user_details_website = (($row[$startcol + 3] ?? null) !== null) ? (string) $row[$startcol + 3] : null;
+			$this->user_details_zip = (($row[$startcol + 4] ?? null) !== null) ? (string) $row[$startcol + 4] : null;
+			$this->user_details_street = (($row[$startcol + 5] ?? null) !== null) ? (string) $row[$startcol + 5] : null;
+			$this->user_details_city = (($row[$startcol + 6] ?? null) !== null) ? (string) $row[$startcol + 6] : null;
+			$this->user_details_phone = (($row[$startcol + 7] ?? null) !== null) ? (string) $row[$startcol + 7] : null;
+			$this->user_details_ffb_favourite_team = (($row[$startcol + 8] ?? null) !== null) ? (int) $row[$startcol + 8] : null;
+			$this->user_details_ffb_own_team = (($row[$startcol + 9] ?? null) !== null) ? (int) $row[$startcol + 9] : null;
+			$this->user_details_ffb_own_player = (($row[$startcol + 10] ?? null) !== null) ? (int) $row[$startcol + 10] : null;
+			$this->user_details_ffb_selected_game = (($row[$startcol + 11] ?? null) !== null) ? (int) $row[$startcol + 11] : null;
+			$this->user_details_last_update = (($row[$startcol + 12] ?? null) !== null) ? (string) $row[$startcol + 12] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -711,7 +711,7 @@ abstract class BaseWebUserDetails extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -755,7 +755,7 @@ abstract class BaseWebUserDetails extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -797,7 +797,7 @@ abstract class BaseWebUserDetails extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -1395,7 +1395,7 @@ abstract class BaseWebUserDetails extends BaseObject  implements Persistent
 	 * @return     WebUserDetails The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setWebUser(WebUser $v = null)
+	public function setWebUser(?WebUser $v = null)
 	{
 		if ($v === null) {
 			$this->setUserId(NULL);
@@ -1421,7 +1421,7 @@ abstract class BaseWebUserDetails extends BaseObject  implements Persistent
 	 * @return     WebUser The associated WebUser object.
 	 * @throws     PropelException
 	 */
-	public function getWebUser(PropelPDO $con = null)
+	public function getWebUser(?PropelPDO $con = null)
 	{
 		if ($this->aWebUser === null && ($this->user_id !== null)) {
 			$this->aWebUser = WebUserQuery::create()->findPk($this->user_id, $con);
@@ -1438,7 +1438,7 @@ abstract class BaseWebUserDetails extends BaseObject  implements Persistent
 	 * @return     WebUserDetails The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbTeamRelatedByUserDetailsFfbFavouriteTeam(FfbTeam $v = null)
+	public function setFfbTeamRelatedByUserDetailsFfbFavouriteTeam(?FfbTeam $v = null)
 	{
 		if ($v === null) {
 			$this->setUserDetailsFfbFavouriteTeam(NULL);
@@ -1465,7 +1465,7 @@ abstract class BaseWebUserDetails extends BaseObject  implements Persistent
 	 * @return     FfbTeam The associated FfbTeam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbTeamRelatedByUserDetailsFfbFavouriteTeam(PropelPDO $con = null)
+	public function getFfbTeamRelatedByUserDetailsFfbFavouriteTeam(?PropelPDO $con = null)
 	{
 		if ($this->aFfbTeamRelatedByUserDetailsFfbFavouriteTeam === null && ($this->user_details_ffb_favourite_team !== null)) {
 			$this->aFfbTeamRelatedByUserDetailsFfbFavouriteTeam = FfbTeamQuery::create()->findPk($this->user_details_ffb_favourite_team, $con);
@@ -1487,7 +1487,7 @@ abstract class BaseWebUserDetails extends BaseObject  implements Persistent
 	 * @return     WebUserDetails The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbTeamRelatedByUserDetailsFfbOwnTeam(FfbTeam $v = null)
+	public function setFfbTeamRelatedByUserDetailsFfbOwnTeam(?FfbTeam $v = null)
 	{
 		if ($v === null) {
 			$this->setUserDetailsFfbOwnTeam(NULL);
@@ -1514,7 +1514,7 @@ abstract class BaseWebUserDetails extends BaseObject  implements Persistent
 	 * @return     FfbTeam The associated FfbTeam object.
 	 * @throws     PropelException
 	 */
-	public function getFfbTeamRelatedByUserDetailsFfbOwnTeam(PropelPDO $con = null)
+	public function getFfbTeamRelatedByUserDetailsFfbOwnTeam(?PropelPDO $con = null)
 	{
 		if ($this->aFfbTeamRelatedByUserDetailsFfbOwnTeam === null && ($this->user_details_ffb_own_team !== null)) {
 			$this->aFfbTeamRelatedByUserDetailsFfbOwnTeam = FfbTeamQuery::create()->findPk($this->user_details_ffb_own_team, $con);
@@ -1536,7 +1536,7 @@ abstract class BaseWebUserDetails extends BaseObject  implements Persistent
 	 * @return     WebUserDetails The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbPlayer(FfbPlayer $v = null)
+	public function setFfbPlayer(?FfbPlayer $v = null)
 	{
 		if ($v === null) {
 			$this->setUserDetailsFfbOwnPlayer(NULL);
@@ -1563,7 +1563,7 @@ abstract class BaseWebUserDetails extends BaseObject  implements Persistent
 	 * @return     FfbPlayer The associated FfbPlayer object.
 	 * @throws     PropelException
 	 */
-	public function getFfbPlayer(PropelPDO $con = null)
+	public function getFfbPlayer(?PropelPDO $con = null)
 	{
 		if ($this->aFfbPlayer === null && ($this->user_details_ffb_own_player !== null)) {
 			$this->aFfbPlayer = FfbPlayerQuery::create()->findPk($this->user_details_ffb_own_player, $con);
@@ -1585,7 +1585,7 @@ abstract class BaseWebUserDetails extends BaseObject  implements Persistent
 	 * @return     WebUserDetails The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbGame(FfbGame $v = null)
+	public function setFfbGame(?FfbGame $v = null)
 	{
 		if ($v === null) {
 			$this->setUserDetailsFfbSelectedGame(NULL);
@@ -1612,7 +1612,7 @@ abstract class BaseWebUserDetails extends BaseObject  implements Persistent
 	 * @return     FfbGame The associated FfbGame object.
 	 * @throws     PropelException
 	 */
-	public function getFfbGame(PropelPDO $con = null)
+	public function getFfbGame(?PropelPDO $con = null)
 	{
 		if ($this->aFfbGame === null && ($this->user_details_ffb_selected_game !== null)) {
 			$this->aFfbGame = FfbGameQuery::create()->findPk($this->user_details_ffb_selected_game, $con);

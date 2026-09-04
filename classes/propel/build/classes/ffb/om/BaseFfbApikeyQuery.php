@@ -24,8 +24,8 @@
  * @method     FfbApikeyQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
  * @method     FfbApikeyQuery innerJoin($relation) Adds a INNER JOIN clause to the query
  *
- * @method     FfbApikey findOne(PropelPDO $con = null) Return the first FfbApikey matching the query
- * @method     FfbApikey findOneOrCreate(PropelPDO $con = null) Return the first FfbApikey matching the query, or a new FfbApikey object populated from the query conditions when no match is found
+ * @method     FfbApikey findOne(?PropelPDO $con = null) Return the first FfbApikey matching the query
+ * @method     FfbApikey findOneOrCreate(?PropelPDO $con = null) Return the first FfbApikey matching the query, or a new FfbApikey object populated from the query conditions when no match is found
  *
  * @method     FfbApikey findOneByApikeyId(int $apikey_id) Return the first FfbApikey filtered by the apikey_id column
  * @method     FfbApikey findOneByApikeyKey(string $apikey_key) Return the first FfbApikey filtered by the apikey_key column

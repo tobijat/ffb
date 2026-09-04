@@ -1965,57 +1965,57 @@ abstract class BaseFfbOptions extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->options_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->options_game_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
-			$this->options_score_minutes = ($row[$startcol + 2] !== null) ? (int) $row[$startcol + 2] : null;
-			$this->options_score_minutes_treshold = ($row[$startcol + 3] !== null) ? (int) $row[$startcol + 3] : null;
-			$this->options_score_minutes_gt = ($row[$startcol + 4] !== null) ? (int) $row[$startcol + 4] : null;
-			$this->options_score_minutes_lt = ($row[$startcol + 5] !== null) ? (int) $row[$startcol + 5] : null;
-			$this->options_score_minutes_lt30 = ($row[$startcol + 6] !== null) ? (int) $row[$startcol + 6] : null;
-			$this->options_score_goals_g = ($row[$startcol + 7] !== null) ? (int) $row[$startcol + 7] : null;
-			$this->options_score_goals_d = ($row[$startcol + 8] !== null) ? (int) $row[$startcol + 8] : null;
-			$this->options_score_goals_m = ($row[$startcol + 9] !== null) ? (int) $row[$startcol + 9] : null;
-			$this->options_score_goals_s = ($row[$startcol + 10] !== null) ? (int) $row[$startcol + 10] : null;
-			$this->options_score_assists = ($row[$startcol + 11] !== null) ? (int) $row[$startcol + 11] : null;
-			$this->options_score_no_oppgoals_g = ($row[$startcol + 12] !== null) ? (int) $row[$startcol + 12] : null;
-			$this->options_score_no_oppgoals_d = ($row[$startcol + 13] !== null) ? (int) $row[$startcol + 13] : null;
-			$this->options_score_no_oppgoals_m = ($row[$startcol + 14] !== null) ? (int) $row[$startcol + 14] : null;
-			$this->options_score_oppgoals_g = ($row[$startcol + 15] !== null) ? (int) $row[$startcol + 15] : null;
-			$this->options_score_oppgoals_d = ($row[$startcol + 16] !== null) ? (int) $row[$startcol + 16] : null;
-			$this->options_score_owngoals = ($row[$startcol + 17] !== null) ? (int) $row[$startcol + 17] : null;
-			$this->options_score_card_y = ($row[$startcol + 18] !== null) ? (int) $row[$startcol + 18] : null;
-			$this->options_score_card_r = ($row[$startcol + 19] !== null) ? (int) $row[$startcol + 19] : null;
-			$this->options_score_card_yr = ($row[$startcol + 20] !== null) ? (int) $row[$startcol + 20] : null;
-			$this->options_score_penalty_saved = ($row[$startcol + 21] !== null) ? (int) $row[$startcol + 21] : null;
-			$this->options_score_penalty_lost = ($row[$startcol + 22] !== null) ? (int) $row[$startcol + 22] : null;
-			$this->options_score_penaltyshootout_save = ($row[$startcol + 23] !== null) ? (int) $row[$startcol + 23] : null;
-			$this->options_score_penaltyshootout_lost = ($row[$startcol + 24] !== null) ? (int) $row[$startcol + 24] : null;
-			$this->options_score_penaltyshootout_hit = ($row[$startcol + 25] !== null) ? (int) $row[$startcol + 25] : null;
-			$this->options_score_high_loss = ($row[$startcol + 26] !== null) ? (int) $row[$startcol + 26] : null;
-			$this->options_score_high_win = ($row[$startcol + 27] !== null) ? (int) $row[$startcol + 27] : null;
-			$this->options_score_high_win_loss_treshold = ($row[$startcol + 28] !== null) ? (int) $row[$startcol + 28] : null;
-			$this->options_status_error = ($row[$startcol + 29] !== null) ? (int) $row[$startcol + 29] : null;
-			$this->options_status_error_validation = ($row[$startcol + 30] !== null) ? (int) $row[$startcol + 30] : null;
-			$this->options_status_success = ($row[$startcol + 31] !== null) ? (int) $row[$startcol + 31] : null;
-			$this->options_status_success_insert = ($row[$startcol + 32] !== null) ? (int) $row[$startcol + 32] : null;
-			$this->options_status_success_update = ($row[$startcol + 33] !== null) ? (int) $row[$startcol + 33] : null;
-			$this->options_status_success_delete = ($row[$startcol + 34] !== null) ? (int) $row[$startcol + 34] : null;
-			$this->options_lineup_max_players = ($row[$startcol + 35] !== null) ? (int) $row[$startcol + 35] : null;
-			$this->options_lineup_max_credits = ($row[$startcol + 36] !== null) ? (int) $row[$startcol + 36] : null;
-			$this->options_lineup_max_players_team = ($row[$startcol + 37] !== null) ? (int) $row[$startcol + 37] : null;
-			$this->options_lineup_min_g = ($row[$startcol + 38] !== null) ? (int) $row[$startcol + 38] : null;
-			$this->options_lineup_min_d = ($row[$startcol + 39] !== null) ? (int) $row[$startcol + 39] : null;
-			$this->options_lineup_min_m = ($row[$startcol + 40] !== null) ? (int) $row[$startcol + 40] : null;
-			$this->options_lineup_min_s = ($row[$startcol + 41] !== null) ? (int) $row[$startcol + 41] : null;
-			$this->options_lineup_max_g = ($row[$startcol + 42] !== null) ? (int) $row[$startcol + 42] : null;
-			$this->options_lineup_max_d = ($row[$startcol + 43] !== null) ? (int) $row[$startcol + 43] : null;
-			$this->options_lineup_max_m = ($row[$startcol + 44] !== null) ? (int) $row[$startcol + 44] : null;
-			$this->options_lineup_max_s = ($row[$startcol + 45] !== null) ? (int) $row[$startcol + 45] : null;
-			$this->options_game_rankmode = ($row[$startcol + 46] !== null) ? (string) $row[$startcol + 46] : null;
-			$this->options_game_pricemode = ($row[$startcol + 47] !== null) ? (string) $row[$startcol + 47] : null;
-			$this->options_game_pointsmode = ($row[$startcol + 48] !== null) ? (string) $row[$startcol + 48] : null;
-			$this->options_game_wcpoints = ($row[$startcol + 49] !== null) ? (string) $row[$startcol + 49] : null;
-			$this->options_game_remind_hours_before = ($row[$startcol + 50] !== null) ? (int) $row[$startcol + 50] : null;
+			$this->options_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->options_game_id = (($row[$startcol + 1] ?? null) !== null) ? (int) $row[$startcol + 1] : null;
+			$this->options_score_minutes = (($row[$startcol + 2] ?? null) !== null) ? (int) $row[$startcol + 2] : null;
+			$this->options_score_minutes_treshold = (($row[$startcol + 3] ?? null) !== null) ? (int) $row[$startcol + 3] : null;
+			$this->options_score_minutes_gt = (($row[$startcol + 4] ?? null) !== null) ? (int) $row[$startcol + 4] : null;
+			$this->options_score_minutes_lt = (($row[$startcol + 5] ?? null) !== null) ? (int) $row[$startcol + 5] : null;
+			$this->options_score_minutes_lt30 = (($row[$startcol + 6] ?? null) !== null) ? (int) $row[$startcol + 6] : null;
+			$this->options_score_goals_g = (($row[$startcol + 7] ?? null) !== null) ? (int) $row[$startcol + 7] : null;
+			$this->options_score_goals_d = (($row[$startcol + 8] ?? null) !== null) ? (int) $row[$startcol + 8] : null;
+			$this->options_score_goals_m = (($row[$startcol + 9] ?? null) !== null) ? (int) $row[$startcol + 9] : null;
+			$this->options_score_goals_s = (($row[$startcol + 10] ?? null) !== null) ? (int) $row[$startcol + 10] : null;
+			$this->options_score_assists = (($row[$startcol + 11] ?? null) !== null) ? (int) $row[$startcol + 11] : null;
+			$this->options_score_no_oppgoals_g = (($row[$startcol + 12] ?? null) !== null) ? (int) $row[$startcol + 12] : null;
+			$this->options_score_no_oppgoals_d = (($row[$startcol + 13] ?? null) !== null) ? (int) $row[$startcol + 13] : null;
+			$this->options_score_no_oppgoals_m = (($row[$startcol + 14] ?? null) !== null) ? (int) $row[$startcol + 14] : null;
+			$this->options_score_oppgoals_g = (($row[$startcol + 15] ?? null) !== null) ? (int) $row[$startcol + 15] : null;
+			$this->options_score_oppgoals_d = (($row[$startcol + 16] ?? null) !== null) ? (int) $row[$startcol + 16] : null;
+			$this->options_score_owngoals = (($row[$startcol + 17] ?? null) !== null) ? (int) $row[$startcol + 17] : null;
+			$this->options_score_card_y = (($row[$startcol + 18] ?? null) !== null) ? (int) $row[$startcol + 18] : null;
+			$this->options_score_card_r = (($row[$startcol + 19] ?? null) !== null) ? (int) $row[$startcol + 19] : null;
+			$this->options_score_card_yr = (($row[$startcol + 20] ?? null) !== null) ? (int) $row[$startcol + 20] : null;
+			$this->options_score_penalty_saved = (($row[$startcol + 21] ?? null) !== null) ? (int) $row[$startcol + 21] : null;
+			$this->options_score_penalty_lost = (($row[$startcol + 22] ?? null) !== null) ? (int) $row[$startcol + 22] : null;
+			$this->options_score_penaltyshootout_save = (($row[$startcol + 23] ?? null) !== null) ? (int) $row[$startcol + 23] : null;
+			$this->options_score_penaltyshootout_lost = (($row[$startcol + 24] ?? null) !== null) ? (int) $row[$startcol + 24] : null;
+			$this->options_score_penaltyshootout_hit = (($row[$startcol + 25] ?? null) !== null) ? (int) $row[$startcol + 25] : null;
+			$this->options_score_high_loss = (($row[$startcol + 26] ?? null) !== null) ? (int) $row[$startcol + 26] : null;
+			$this->options_score_high_win = (($row[$startcol + 27] ?? null) !== null) ? (int) $row[$startcol + 27] : null;
+			$this->options_score_high_win_loss_treshold = (($row[$startcol + 28] ?? null) !== null) ? (int) $row[$startcol + 28] : null;
+			$this->options_status_error = (($row[$startcol + 29] ?? null) !== null) ? (int) $row[$startcol + 29] : null;
+			$this->options_status_error_validation = (($row[$startcol + 30] ?? null) !== null) ? (int) $row[$startcol + 30] : null;
+			$this->options_status_success = (($row[$startcol + 31] ?? null) !== null) ? (int) $row[$startcol + 31] : null;
+			$this->options_status_success_insert = (($row[$startcol + 32] ?? null) !== null) ? (int) $row[$startcol + 32] : null;
+			$this->options_status_success_update = (($row[$startcol + 33] ?? null) !== null) ? (int) $row[$startcol + 33] : null;
+			$this->options_status_success_delete = (($row[$startcol + 34] ?? null) !== null) ? (int) $row[$startcol + 34] : null;
+			$this->options_lineup_max_players = (($row[$startcol + 35] ?? null) !== null) ? (int) $row[$startcol + 35] : null;
+			$this->options_lineup_max_credits = (($row[$startcol + 36] ?? null) !== null) ? (int) $row[$startcol + 36] : null;
+			$this->options_lineup_max_players_team = (($row[$startcol + 37] ?? null) !== null) ? (int) $row[$startcol + 37] : null;
+			$this->options_lineup_min_g = (($row[$startcol + 38] ?? null) !== null) ? (int) $row[$startcol + 38] : null;
+			$this->options_lineup_min_d = (($row[$startcol + 39] ?? null) !== null) ? (int) $row[$startcol + 39] : null;
+			$this->options_lineup_min_m = (($row[$startcol + 40] ?? null) !== null) ? (int) $row[$startcol + 40] : null;
+			$this->options_lineup_min_s = (($row[$startcol + 41] ?? null) !== null) ? (int) $row[$startcol + 41] : null;
+			$this->options_lineup_max_g = (($row[$startcol + 42] ?? null) !== null) ? (int) $row[$startcol + 42] : null;
+			$this->options_lineup_max_d = (($row[$startcol + 43] ?? null) !== null) ? (int) $row[$startcol + 43] : null;
+			$this->options_lineup_max_m = (($row[$startcol + 44] ?? null) !== null) ? (int) $row[$startcol + 44] : null;
+			$this->options_lineup_max_s = (($row[$startcol + 45] ?? null) !== null) ? (int) $row[$startcol + 45] : null;
+			$this->options_game_rankmode = (($row[$startcol + 46] ?? null) !== null) ? (string) $row[$startcol + 46] : null;
+			$this->options_game_pricemode = (($row[$startcol + 47] ?? null) !== null) ? (string) $row[$startcol + 47] : null;
+			$this->options_game_pointsmode = (($row[$startcol + 48] ?? null) !== null) ? (string) $row[$startcol + 48] : null;
+			$this->options_game_wcpoints = (($row[$startcol + 49] ?? null) !== null) ? (string) $row[$startcol + 49] : null;
+			$this->options_game_remind_hours_before = (($row[$startcol + 50] ?? null) !== null) ? (int) $row[$startcol + 50] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -2062,7 +2062,7 @@ abstract class BaseFfbOptions extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -2102,7 +2102,7 @@ abstract class BaseFfbOptions extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -2144,7 +2144,7 @@ abstract class BaseFfbOptions extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -3066,7 +3066,7 @@ abstract class BaseFfbOptions extends BaseObject  implements Persistent
 	 * @return     FfbOptions The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbGame(FfbGame $v = null)
+	public function setFfbGame(?FfbGame $v = null)
 	{
 		if ($v === null) {
 			$this->setOptionsGameId(NULL);
@@ -3093,7 +3093,7 @@ abstract class BaseFfbOptions extends BaseObject  implements Persistent
 	 * @return     FfbGame The associated FfbGame object.
 	 * @throws     PropelException
 	 */
-	public function getFfbGame(PropelPDO $con = null)
+	public function getFfbGame(?PropelPDO $con = null)
 	{
 		if ($this->aFfbGame === null && ($this->options_game_id !== null)) {
 			$this->aFfbGame = FfbGameQuery::create()->findPk($this->options_game_id, $con);

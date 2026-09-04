@@ -67,7 +67,7 @@ class parser extends FFB_Auth_AdminFfb {
 
                             foreach($playerteam_data as $data) {
                                 if($data['picture'] == '' || $data['picture'] == NULL || $data['picture'] == 'null') {
-                                    echo 'FOUND: '.utf8_decode($fname).' '.utf8_decode($lname).' - '.$nationality.'<br>';
+                                    echo 'FOUND: '.mb_convert_encoding((string)$fname, 'ISO-8859-1', 'UTF-8').' '.mb_convert_encoding((string)$lname, 'ISO-8859-1', 'UTF-8').' - '.$nationality.'<br>';
                                     $orig_image = '/www/htdocs/w005c0bf/ffb_onlinetest/images/ffb/players/orig/'.$image;
                                     if(!is_dir('/www/htdocs/w005c0bf/ffb_onlinetest/images/ffb/players/'.$data['team']))
                                         mkdir('/www/htdocs/w005c0bf/ffb_onlinetest/images/ffb/players/'.$data['team']);
@@ -86,7 +86,7 @@ class parser extends FFB_Auth_AdminFfb {
                                 }
                             }
                         } else {
-                            echo '<b>NOT FOUND:</b> '.utf8_decode($fname).' '.utf8_decode($lname).' - '.$nationality.'<br>';
+                            echo '<b>NOT FOUND:</b> '.mb_convert_encoding((string)$fname, 'ISO-8859-1', 'UTF-8').' '.mb_convert_encoding((string)$lname, 'ISO-8859-1', 'UTF-8').' - '.$nationality.'<br>';
                             $new_items++;
                         }
                     }

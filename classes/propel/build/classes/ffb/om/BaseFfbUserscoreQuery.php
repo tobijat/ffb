@@ -30,8 +30,8 @@
  * @method     FfbUserscoreQuery rightJoinFfbGame($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbGame relation
  * @method     FfbUserscoreQuery innerJoinFfbGame($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbGame relation
  *
- * @method     FfbUserscore findOne(PropelPDO $con = null) Return the first FfbUserscore matching the query
- * @method     FfbUserscore findOneOrCreate(PropelPDO $con = null) Return the first FfbUserscore matching the query, or a new FfbUserscore object populated from the query conditions when no match is found
+ * @method     FfbUserscore findOne(?PropelPDO $con = null) Return the first FfbUserscore matching the query
+ * @method     FfbUserscore findOneOrCreate(?PropelPDO $con = null) Return the first FfbUserscore matching the query, or a new FfbUserscore object populated from the query conditions when no match is found
  *
  * @method     FfbUserscore findOneByUserscoreId(int $userscore_id) Return the first FfbUserscore filtered by the userscore_id column
  * @method     FfbUserscore findOneByUserscoreUserId(int $userscore_user_id) Return the first FfbUserscore filtered by the userscore_user_id column

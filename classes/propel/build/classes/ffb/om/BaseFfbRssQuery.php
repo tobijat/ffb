@@ -28,8 +28,8 @@
  * @method     FfbRssQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
  * @method     FfbRssQuery innerJoin($relation) Adds a INNER JOIN clause to the query
  *
- * @method     FfbRss findOne(PropelPDO $con = null) Return the first FfbRss matching the query
- * @method     FfbRss findOneOrCreate(PropelPDO $con = null) Return the first FfbRss matching the query, or a new FfbRss object populated from the query conditions when no match is found
+ * @method     FfbRss findOne(?PropelPDO $con = null) Return the first FfbRss matching the query
+ * @method     FfbRss findOneOrCreate(?PropelPDO $con = null) Return the first FfbRss matching the query, or a new FfbRss object populated from the query conditions when no match is found
  *
  * @method     FfbRss findOneByFfbRssId(int $ffb_rss_id) Return the first FfbRss filtered by the ffb_rss_id column
  * @method     FfbRss findOneByFfbRssTitle(string $ffb_rss_title) Return the first FfbRss filtered by the ffb_rss_title column

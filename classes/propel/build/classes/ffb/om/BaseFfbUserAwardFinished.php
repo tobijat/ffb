@@ -134,7 +134,7 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 			// Because propel.useDateTimeClass is TRUE, we return a DateTime object.
 			return $dt;
 		} elseif (strpos($format, '%') !== false) {
-			return strftime($format, $dt->format('U'));
+			return $dt->format(strtr($format, array('%Y'=>'Y','%m'=>'m','%d'=>'d','%H'=>'H','%M'=>'i','%S'=>'s','%A'=>'l','%B'=>'F','%a'=>'D','%b'=>'M','%%'=>'%')));
 		} else {
 			return $dt->format($format);
 		}
@@ -289,10 +289,10 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 	{
 		try {
 
-			$this->user_award_finished_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->user_award_finished_user_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
-			$this->user_award_finished_award_defines_id = ($row[$startcol + 2] !== null) ? (int) $row[$startcol + 2] : null;
-			$this->user_award_finished_date = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
+			$this->user_award_finished_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->user_award_finished_user_id = (($row[$startcol + 1] ?? null) !== null) ? (int) $row[$startcol + 1] : null;
+			$this->user_award_finished_award_defines_id = (($row[$startcol + 2] ?? null) !== null) ? (int) $row[$startcol + 2] : null;
+			$this->user_award_finished_date = (($row[$startcol + 3] ?? null) !== null) ? (string) $row[$startcol + 3] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -342,7 +342,7 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -383,7 +383,7 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -425,7 +425,7 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -893,7 +893,7 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 	 * @return     FfbUserAwardFinished The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setWebUser(WebUser $v = null)
+	public function setWebUser(?WebUser $v = null)
 	{
 		if ($v === null) {
 			$this->setUserAwardFinishedUserId(NULL);
@@ -920,7 +920,7 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 	 * @return     WebUser The associated WebUser object.
 	 * @throws     PropelException
 	 */
-	public function getWebUser(PropelPDO $con = null)
+	public function getWebUser(?PropelPDO $con = null)
 	{
 		if ($this->aWebUser === null && ($this->user_award_finished_user_id !== null)) {
 			$this->aWebUser = WebUserQuery::create()->findPk($this->user_award_finished_user_id, $con);
@@ -942,7 +942,7 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 	 * @return     FfbUserAwardFinished The current object (for fluent API support)
 	 * @throws     PropelException
 	 */
-	public function setFfbUserAwardDefines(FfbUserAwardDefines $v = null)
+	public function setFfbUserAwardDefines(?FfbUserAwardDefines $v = null)
 	{
 		if ($v === null) {
 			$this->setUserAwardFinishedAwardDefinesId(NULL);
@@ -969,7 +969,7 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 	 * @return     FfbUserAwardDefines The associated FfbUserAwardDefines object.
 	 * @throws     PropelException
 	 */
-	public function getFfbUserAwardDefines(PropelPDO $con = null)
+	public function getFfbUserAwardDefines(?PropelPDO $con = null)
 	{
 		if ($this->aFfbUserAwardDefines === null && ($this->user_award_finished_award_defines_id !== null)) {
 			$this->aFfbUserAwardDefines = FfbUserAwardDefinesQuery::create()->findPk($this->user_award_finished_award_defines_id, $con);

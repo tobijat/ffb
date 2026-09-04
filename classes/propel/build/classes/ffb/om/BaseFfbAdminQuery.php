@@ -26,8 +26,8 @@
  * @method     FfbAdminQuery rightJoinFfbGame($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbGame relation
  * @method     FfbAdminQuery innerJoinFfbGame($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbGame relation
  *
- * @method     FfbAdmin findOne(PropelPDO $con = null) Return the first FfbAdmin matching the query
- * @method     FfbAdmin findOneOrCreate(PropelPDO $con = null) Return the first FfbAdmin matching the query, or a new FfbAdmin object populated from the query conditions when no match is found
+ * @method     FfbAdmin findOne(?PropelPDO $con = null) Return the first FfbAdmin matching the query
+ * @method     FfbAdmin findOneOrCreate(?PropelPDO $con = null) Return the first FfbAdmin matching the query, or a new FfbAdmin object populated from the query conditions when no match is found
  *
  * @method     FfbAdmin findOneByAdminId(int $admin_id) Return the first FfbAdmin filtered by the admin_id column
  * @method     FfbAdmin findOneByAdminUserId(int $admin_user_id) Return the first FfbAdmin filtered by the admin_user_id column

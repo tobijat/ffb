@@ -118,8 +118,8 @@
  * @method     FfbOptionsQuery rightJoinFfbGame($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbGame relation
  * @method     FfbOptionsQuery innerJoinFfbGame($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbGame relation
  *
- * @method     FfbOptions findOne(PropelPDO $con = null) Return the first FfbOptions matching the query
- * @method     FfbOptions findOneOrCreate(PropelPDO $con = null) Return the first FfbOptions matching the query, or a new FfbOptions object populated from the query conditions when no match is found
+ * @method     FfbOptions findOne(?PropelPDO $con = null) Return the first FfbOptions matching the query
+ * @method     FfbOptions findOneOrCreate(?PropelPDO $con = null) Return the first FfbOptions matching the query, or a new FfbOptions object populated from the query conditions when no match is found
  *
  * @method     FfbOptions findOneByOptionsId(int $options_id) Return the first FfbOptions filtered by the options_id column
  * @method     FfbOptions findOneByOptionsGameId(int $options_game_id) Return the first FfbOptions filtered by the options_game_id column

@@ -35,9 +35,9 @@ class comments extends FFB_Auth_User {
     public function addComment() {
       $user_id  = $this->session->user_id;
       $game_id  = $this->session->game_id_player;
-      $location = trim($_POST['location']);
-      $comment  = trim($_POST['comment_text']);
-      $matchroundId = intval($_POST['matchround_id']);
+      $location = trim((string)($_POST['location'] ?? ''));
+      $comment  = trim((string)($_POST['comment_text'] ?? ''));
+      $matchroundId = intval($_POST['matchround_id'] ?? 0);
 
 
       if(!$user_id || !$game_id || !$location || !$comment) { //error  empty
@@ -86,8 +86,8 @@ class comments extends FFB_Auth_User {
 
 
     public function getComments() {
-      $location = trim($_POST['location']);
-      $matchroundID = intval($_POST['matchround_id']);
+      $location = trim((string)($_POST['location'] ?? ''));
+      $matchroundID = intval($_POST['matchround_id'] ?? 0);
       $this->getCommentsParam($location, $matchroundID, $this->maxComments, true);
     }
 
@@ -127,10 +127,11 @@ class comments extends FFB_Auth_User {
         for($i=0; ($i<count($tmpComments)) && ($i<=$maxComments)  ;$i++) {
           $comments[$i]['user_nick']    = $tmpComments[$i]->getWebUser()->getUserNickname();
           $comments[$i]['user_avatar']  = $tmpComments[$i]->getWebUser()->getWebUserDetails()->getUserDetailsAvatar();
+          $commentText = (string)($tmpComments[$i]->getCommentsText() ?? '');
           if($xml==false)
-            $comments[$i]['comment_text'] = nl2br(htmlspecialchars(iconv("UTF-8", "ISO-8859-1", $tmpComments[$i]->getCommentsText()), ENT_QUOTES));
+            $comments[$i]['comment_text'] = nl2br(htmlspecialchars(iconv("UTF-8", "ISO-8859-1", $commentText), ENT_QUOTES));
           else
-            $comments[$i]['comment_text'] = nl2br(htmlspecialchars($tmpComments[$i]->getCommentsText()));
+            $comments[$i]['comment_text'] = nl2br(htmlspecialchars($commentText));
           //$comments[$i]['comment_text'] = utf8_encode(nl2br(htmlspecialchars($tmpComments[$i]->getCommentsText())));
           $comments[$i]['comment_date'] = $tmpComments[$i]->getCommentsDate();
           $comments[$i]['comment_id']   = $tmpComments[$i]->getCommentsId();

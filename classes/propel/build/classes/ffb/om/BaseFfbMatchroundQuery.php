@@ -52,8 +52,8 @@
  * @method     FfbMatchroundQuery rightJoinFfbUserteam($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbUserteam relation
  * @method     FfbMatchroundQuery innerJoinFfbUserteam($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbUserteam relation
  *
- * @method     FfbMatchround findOne(PropelPDO $con = null) Return the first FfbMatchround matching the query
- * @method     FfbMatchround findOneOrCreate(PropelPDO $con = null) Return the first FfbMatchround matching the query, or a new FfbMatchround object populated from the query conditions when no match is found
+ * @method     FfbMatchround findOne(?PropelPDO $con = null) Return the first FfbMatchround matching the query
+ * @method     FfbMatchround findOneOrCreate(?PropelPDO $con = null) Return the first FfbMatchround matching the query, or a new FfbMatchround object populated from the query conditions when no match is found
  *
  * @method     FfbMatchround findOneByMatchroundId(int $matchround_id) Return the first FfbMatchround filtered by the matchround_id column
  * @method     FfbMatchround findOneByMatchroundGameId(int $matchround_game_id) Return the first FfbMatchround filtered by the matchround_game_id column

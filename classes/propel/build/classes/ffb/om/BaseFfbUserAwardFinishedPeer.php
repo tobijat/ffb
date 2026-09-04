@@ -171,7 +171,7 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	 * @param      PropelPDO $con
 	 * @return     int Number of matching rows.
 	 */
-	public static function doCount(Criteria $criteria, $distinct = false, PropelPDO $con = null)
+	public static function doCount(Criteria $criteria, $distinct = false, ?PropelPDO $con = null)
 	{
 		// we may modify criteria, so copy it first
 		$criteria = clone $criteria;
@@ -215,7 +215,7 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelectOne(Criteria $criteria, PropelPDO $con = null)
+	public static function doSelectOne(Criteria $criteria, ?PropelPDO $con = null)
 	{
 		$critcopy = clone $criteria;
 		$critcopy->setLimit(1);
@@ -234,7 +234,7 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelect(Criteria $criteria, PropelPDO $con = null)
+	public static function doSelect(Criteria $criteria, ?PropelPDO $con = null)
 	{
 		return FfbUserAwardFinishedPeer::populateObjects(FfbUserAwardFinishedPeer::doSelectStmt($criteria, $con));
 	}
@@ -251,7 +251,7 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	 * @return     PDOStatement The executed PDOStatement object.
 	 * @see        BasePeer::doSelect()
 	 */
-	public static function doSelectStmt(Criteria $criteria, PropelPDO $con = null)
+	public static function doSelectStmt(Criteria $criteria, ?PropelPDO $con = null)
 	{
 		if ($con === null) {
 			$con = Propel::getConnection(FfbUserAwardFinishedPeer::DATABASE_NAME, Propel::CONNECTION_READ);
@@ -454,7 +454,7 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	 * @param      String    $join_behavior the type of joins to use, defaults to Criteria::LEFT_JOIN
 	 * @return     int Number of matching rows.
 	 */
-	public static function doCountJoinWebUser(Criteria $criteria, $distinct = false, PropelPDO $con = null, $join_behavior = Criteria::LEFT_JOIN)
+	public static function doCountJoinWebUser(Criteria $criteria, $distinct = false, ?PropelPDO $con = null, $join_behavior = Criteria::LEFT_JOIN)
 	{
 		// we're going to modify criteria, so copy it first
 		$criteria = clone $criteria;
@@ -504,7 +504,7 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	 * @param      String    $join_behavior the type of joins to use, defaults to Criteria::LEFT_JOIN
 	 * @return     int Number of matching rows.
 	 */
-	public static function doCountJoinFfbUserAwardDefines(Criteria $criteria, $distinct = false, PropelPDO $con = null, $join_behavior = Criteria::LEFT_JOIN)
+	public static function doCountJoinFfbUserAwardDefines(Criteria $criteria, $distinct = false, ?PropelPDO $con = null, $join_behavior = Criteria::LEFT_JOIN)
 	{
 		// we're going to modify criteria, so copy it first
 		$criteria = clone $criteria;
@@ -686,7 +686,7 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	 * @param      String    $join_behavior the type of joins to use, defaults to Criteria::LEFT_JOIN
 	 * @return     int Number of matching rows.
 	 */
-	public static function doCountJoinAll(Criteria $criteria, $distinct = false, PropelPDO $con = null, $join_behavior = Criteria::LEFT_JOIN)
+	public static function doCountJoinAll(Criteria $criteria, $distinct = false, ?PropelPDO $con = null, $join_behavior = Criteria::LEFT_JOIN)
 	{
 		// we're going to modify criteria, so copy it first
 		$criteria = clone $criteria;
@@ -829,7 +829,7 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	 * @param      String    $join_behavior the type of joins to use, defaults to Criteria::LEFT_JOIN
 	 * @return     int Number of matching rows.
 	 */
-	public static function doCountJoinAllExceptWebUser(Criteria $criteria, $distinct = false, PropelPDO $con = null, $join_behavior = Criteria::LEFT_JOIN)
+	public static function doCountJoinAllExceptWebUser(Criteria $criteria, $distinct = false, ?PropelPDO $con = null, $join_behavior = Criteria::LEFT_JOIN)
 	{
 		// we're going to modify criteria, so copy it first
 		$criteria = clone $criteria;
@@ -879,7 +879,7 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	 * @param      String    $join_behavior the type of joins to use, defaults to Criteria::LEFT_JOIN
 	 * @return     int Number of matching rows.
 	 */
-	public static function doCountJoinAllExceptFfbUserAwardDefines(Criteria $criteria, $distinct = false, PropelPDO $con = null, $join_behavior = Criteria::LEFT_JOIN)
+	public static function doCountJoinAllExceptFfbUserAwardDefines(Criteria $criteria, $distinct = false, ?PropelPDO $con = null, $join_behavior = Criteria::LEFT_JOIN)
 	{
 		// we're going to modify criteria, so copy it first
 		$criteria = clone $criteria;
@@ -1114,7 +1114,7 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doInsert($values, PropelPDO $con = null)
+	public static function doInsert($values, ?PropelPDO $con = null)
 	{
 		if ($con === null) {
 			$con = Propel::getConnection(FfbUserAwardFinishedPeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
@@ -1157,7 +1157,7 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doUpdate($values, PropelPDO $con = null)
+	public static function doUpdate($values, ?PropelPDO $con = null)
 	{
 		if ($con === null) {
 			$con = Propel::getConnection(FfbUserAwardFinishedPeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
@@ -1227,7 +1227,7 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	 public static function doDelete($values, PropelPDO $con = null)
+	 public static function doDelete($values, ?PropelPDO $con = null)
 	 {
 		if ($con === null) {
 			$con = Propel::getConnection(FfbUserAwardFinishedPeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
@@ -1318,7 +1318,7 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	 * @param      PropelPDO $con the connection to use
 	 * @return     FfbUserAwardFinished
 	 */
-	public static function retrieveByPK($pk, PropelPDO $con = null)
+	public static function retrieveByPK($pk, ?PropelPDO $con = null)
 	{
 
 		if (null !== ($obj = FfbUserAwardFinishedPeer::getInstanceFromPool((string) $pk))) {
@@ -1345,7 +1345,7 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function retrieveByPKs($pks, PropelPDO $con = null)
+	public static function retrieveByPKs($pks, ?PropelPDO $con = null)
 	{
 		if ($con === null) {
 			$con = Propel::getConnection(FfbUserAwardFinishedPeer::DATABASE_NAME, Propel::CONNECTION_READ);

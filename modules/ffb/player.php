@@ -250,12 +250,15 @@ class player extends FFB_Auth_User {
     //returns player details for given player as IMAGE!
     //used by playerinfo.js
     public function getPlayerInfoImg() {
-    	switch ($_REQUEST['type']) {
+    	$type = $_REQUEST['type'] ?? '';
+    	switch ($type) {
 			case "dynamic" :
-				$this->generatePlayerstatsImageDynamicPrices($this->retrievePlayerInfos_v2("ASC", "dynamic"));
+				$playerinfos = $this->retrievePlayerInfos_v2("ASC", "dynamic");
+				$this->generatePlayerstatsImageDynamicPrices($playerinfos);
 				break;
 			default:
-    			$this->generatePlayerstatsImage($this->retrievePlayerInfos_v2("ASC"));
+    			$playerinfos = $this->retrievePlayerInfos_v2("ASC");
+    			$this->generatePlayerstatsImage($playerinfos);
     			break;
 		}
     	return;
@@ -964,16 +967,29 @@ class player extends FFB_Auth_User {
                 	$player_team = $playerstat->getFfbPlayerteam()->getFfbTeam();
 					$player_team_id = $player_team->getTeamId();
 					$matcharr = $this->getMatchdataForPlayerandRound($player_team_id, $matchround_id);
-					$matchrounds[$i]['matchround_opponent_name'] = $matcharr['matchround_opponent_name'];
-          			$matchrounds[$i]['matchround_hometeam_name'] = $matcharr['matchround_hometeam_name'];
-          			$matchrounds[$i]['matchround_guestteam_name'] = $matcharr['matchround_guestteam_name'];
-          			$matchrounds[$i]['matchround_hometeam_score'] = $matcharr['matchround_hometeam_score'];
-        			$matchrounds[$i]['matchround_guestteam_score'] = $matcharr['matchround_guestteam_score'];
-        			$matchrounds[$i]['matchround_hometeam_score_penalty'] = $matcharr['matchround_hometeam_score_penalty'];
-        			$matchrounds[$i]['matchround_guestteam_score_penalty'] = $matcharr['matchround_guestteam_score_penalty'];
-  	    			$matchrounds[$i]['matchround_opponent_id'] = $matcharr['matchround_opponent_id'];
-            		$matchrounds[$i]['match_id'] = $matcharr['match_id'];
-            		$matchrounds[$i]['match_date'] = $matcharr['match_date'];
+					if($matcharr) {
+						$matchrounds[$i]['matchround_opponent_name'] = $matcharr['matchround_opponent_name'];
+	          			$matchrounds[$i]['matchround_hometeam_name'] = $matcharr['matchround_hometeam_name'];
+	          			$matchrounds[$i]['matchround_guestteam_name'] = $matcharr['matchround_guestteam_name'];
+	          			$matchrounds[$i]['matchround_hometeam_score'] = $matcharr['matchround_hometeam_score'];
+	        			$matchrounds[$i]['matchround_guestteam_score'] = $matcharr['matchround_guestteam_score'];
+	        			$matchrounds[$i]['matchround_hometeam_score_penalty'] = $matcharr['matchround_hometeam_score_penalty'];
+	        			$matchrounds[$i]['matchround_guestteam_score_penalty'] = $matcharr['matchround_guestteam_score_penalty'];
+	  	    			$matchrounds[$i]['matchround_opponent_id'] = $matcharr['matchround_opponent_id'];
+	            		$matchrounds[$i]['match_id'] = $matcharr['match_id'];
+	            		$matchrounds[$i]['match_date'] = $matcharr['match_date'];
+					} else {
+						$matchrounds[$i]['matchround_opponent_name'] = 0;
+	                    $matchrounds[$i]['matchround_hometeam_name'] = 0;
+		                $matchrounds[$i]['matchround_guestteam_name'] = 0;
+	    	            $matchrounds[$i]['matchround_hometeam_score'] = 0;
+	        	        $matchrounds[$i]['matchround_guestteam_score'] = 0;
+	        	        $matchrounds[$i]['matchround_hometeam_score_penalty'] = 0;
+	        	        $matchrounds[$i]['matchround_guestteam_score_penalty'] = 0;
+	            	    $matchrounds[$i]['matchround_opponent_id'] = 0;
+		                $matchrounds[$i]['match_id'] = 0;
+		                $matchrounds[$i]['match_date'] = 0;
+					}
                 	//-----
                 //if player did not play in this round
 				} else {
@@ -988,16 +1004,29 @@ class player extends FFB_Auth_User {
 					if($pt_in_round) {
 						$player_team_id = $pt_in_round->getPlayerteamTeamId();
 						$matcharr = $this->getMatchdataForPlayerandRound($player_team_id, $matchround_id);
-						$matchrounds[$i]['matchround_opponent_name'] = $matcharr['matchround_opponent_name'];
-	          			$matchrounds[$i]['matchround_hometeam_name'] = $matcharr['matchround_hometeam_name'];
-	          			$matchrounds[$i]['matchround_guestteam_name'] = $matcharr['matchround_guestteam_name'];
-	          			$matchrounds[$i]['matchround_hometeam_score'] = $matcharr['matchround_hometeam_score'];
-	        			$matchrounds[$i]['matchround_guestteam_score'] = $matcharr['matchround_guestteam_score'];
-	        			$matchrounds[$i]['matchround_hometeam_score_penalty'] = $matcharr['matchround_hometeam_score_penalty'];
-	        			$matchrounds[$i]['matchround_guestteam_score_penalty'] = $matcharr['matchround_guestteam_score_penalty'];
-	  	    			$matchrounds[$i]['matchround_opponent_id'] = $matcharr['matchround_opponent_id'];
-	            		$matchrounds[$i]['match_id'] = $matcharr['match_id'];
-	            		$matchrounds[$i]['match_date'] = $matcharr['match_date'];
+						if($matcharr) {
+							$matchrounds[$i]['matchround_opponent_name'] = $matcharr['matchround_opponent_name'];
+		          			$matchrounds[$i]['matchround_hometeam_name'] = $matcharr['matchround_hometeam_name'];
+		          			$matchrounds[$i]['matchround_guestteam_name'] = $matcharr['matchround_guestteam_name'];
+		          			$matchrounds[$i]['matchround_hometeam_score'] = $matcharr['matchround_hometeam_score'];
+		        			$matchrounds[$i]['matchround_guestteam_score'] = $matcharr['matchround_guestteam_score'];
+		        			$matchrounds[$i]['matchround_hometeam_score_penalty'] = $matcharr['matchround_hometeam_score_penalty'];
+		        			$matchrounds[$i]['matchround_guestteam_score_penalty'] = $matcharr['matchround_guestteam_score_penalty'];
+		  	    			$matchrounds[$i]['matchround_opponent_id'] = $matcharr['matchround_opponent_id'];
+		            		$matchrounds[$i]['match_id'] = $matcharr['match_id'];
+		            		$matchrounds[$i]['match_date'] = $matcharr['match_date'];
+						} else {
+							$matchrounds[$i]['matchround_opponent_name'] = 0;
+		                    $matchrounds[$i]['matchround_hometeam_name'] = 0;
+			                $matchrounds[$i]['matchround_guestteam_name'] = 0;
+		    	            $matchrounds[$i]['matchround_hometeam_score'] = 0;
+		        	        $matchrounds[$i]['matchround_guestteam_score'] = 0;
+		        	        $matchrounds[$i]['matchround_hometeam_score_penalty'] = 0;
+		        	        $matchrounds[$i]['matchround_guestteam_score_penalty'] = 0;
+		            	    $matchrounds[$i]['matchround_opponent_id'] = 0;
+			                $matchrounds[$i]['match_id'] = 0;
+			                $matchrounds[$i]['match_date'] = 0;
+						}
             		} else {
 						$matchrounds[$i]['matchround_opponent_name'] = 0;
 	                    $matchrounds[$i]['matchround_hometeam_name'] = 0;
@@ -1147,7 +1176,7 @@ class player extends FFB_Auth_User {
 
 				$pm_array[$i]['matchround_num_lineups'] = $this->getNumberOfLineupsForMatchround($player_team_id, $matchround->getMatchroundId());
 				$pm_array[$i]['matchround_id'] = $matchround->getMatchroundId();
-				$pm_array[$i]['matchround_title'] = utf8_decode($matchround->getMatchroundTitle());
+				$pm_array[$i]['matchround_title'] = mb_convert_encoding((string)$matchround->getMatchroundTitle(), 'ISO-8859-1', 'UTF-8');
 				$pm_array[$i]['matchround_running'] = 0;
 
 				$pm_array[$i]['matchround_minutes_played'] = $item->getPlayerstatsMinutes();
@@ -1269,7 +1298,7 @@ class player extends FFB_Auth_User {
                 $ps_items = FfbPlayerstatsPeer::doSelect($criteria);
                 $pm_array[$i]['matchround_num_lineups'] = $num_lineups;
                 $pm_array[$i]['matchround_id'] = $matchround_id;
-	            $pm_array[$i]['matchround_title'] = utf8_decode($item->getFfbMatchround()->getMatchroundTitle());
+	            $pm_array[$i]['matchround_title'] = mb_convert_encoding((string)$item->getFfbMatchround()->getMatchroundTitle(), 'ISO-8859-1', 'UTF-8');
 				$pm_array[$i]['matchround_running'] = 0;
                 if($ps_items) {
 					$pm_array[$i]['matchround_minutes_played'] = $ps_items[0]->getPlayerstatsMinutes();
@@ -1340,7 +1369,7 @@ class player extends FFB_Auth_User {
 		$matchround = FfbMatchroundPeer::retrieveByPK($matchround_id);
 
 		$dist = 1000000000;
-		$pt_near = 0;
+		$pt_near = null;
 		foreach($playerteams as $pt) {
 			$pt_time = strtotime($pt->getPlayerteamDateTransfer());
 			$mr_time = strtotime($matchround->getMatchroundStartdate());
@@ -1351,7 +1380,7 @@ class player extends FFB_Auth_User {
 			}
 		}
 
-		if($pt_near == 0) {
+		if($pt_near === null) {
 			foreach($playerteams as $pt) {
 				$pt_time = strtotime($pt->getPlayerteamDateTransfer());
 				$mr_time = strtotime($matchround->getMatchroundStartdate());
@@ -1464,6 +1493,11 @@ class player extends FFB_Auth_User {
 
     private function generatePlayerstatsImage(&$playerinfos) {
     	//return;
+		if (!function_exists('imagecreatetruecolor')) {
+			header('HTTP/1.1 503 Service Unavailable');
+			error_log('[FFB] PHP GD extension is required for player chart images');
+			return;
+		}
 		$count = count($playerinfos[0]['matchrounds']);
     	$scoreDelimeter = 30; // x Punkte sind das quasi Maximum auf das wird auf 100px gerechner 100px == 30 ffbPunkte
     	$imgLength = max(400, $count*20);
@@ -1486,73 +1520,73 @@ class player extends FFB_Auth_User {
 
 
 		if($count)
-  			$colLen = round(($imgLength / $count), 0);
+  			$colLen = (int)round(($imgLength / $count), 0);
 		else
 			$colLen = 1;
 
-		$normalizedLineup = round($playerinfos[0]['matchrounds'][0]['matchround_minutes_played']/1.2/100.0*$posPlayerChartSize/2.0,0);
+		$normalizedLineup = (int)round($playerinfos[0]['matchrounds'][0]['matchround_minutes_played']/1.2/100.0*$posPlayerChartSize/2.0,0);
   		foreach($playerinfos[0]['matchrounds'] as $elem) {
-  			imagedashedline ( $img , $index*$colLen , 0 , $index*$colLen , $imgHeight , $darkGrayBG );
+  			imagedashedline ( $img , (int)($index*$colLen) , 0 , (int)($index*$colLen) , $imgHeight , $darkGrayBG );
   			$fillColor = $dunkelgruenBG;
   			if($elem['matchround_cards']=='y') {
   				//$fillColor = $yellowBG;
-  				imagefilledrectangle ( $img , ($index*$colLen)+1 , 1 , (($index+1)*$colLen)-1 , $imgHeight-2 , $yellowBG );
+  				imagefilledrectangle ( $img , (int)(($index*$colLen)+1) , 1 , (int)((($index+1)*$colLen)-1) , $imgHeight-2 , $yellowBG );
   			} elseif ($elem['matchround_cards']=='r') {
   				//$fillColor = $redBg;
-  				imagefilledrectangle ( $img , ($index*$colLen)+1 , 1 , (($index+1)*$colLen)-1 , $imgHeight-2 , $redBg );
+  				imagefilledrectangle ( $img , (int)(($index*$colLen)+1) , 1 , (int)((($index+1)*$colLen)-1) , $imgHeight-2 , $redBg );
   			} elseif ($elem['matchround_cards']=='yr') {
-  				imagefilledrectangle ( $img , ($index*$colLen)+1 , 1 , (($index+1)*$colLen)-1 , $imgHeight-2 , $redBg );
+  				imagefilledrectangle ( $img , (int)(($index*$colLen)+1) , 1 , (int)((($index+1)*$colLen)-1) , $imgHeight-2 , $redBg );
   			}
   			if($elem['matchround_minutes_played']!='-') {
-  				$normalizedFFBPoints = round(($elem['matchround_score']/($scoreDelimeter/100)), 0);
+  				$normalizedFFBPoints = (int)round(($elem['matchround_score']/($scoreDelimeter/100)), 0);
   				$upDownStart = $posPlayerChartSize;
   				$upDownEnd = $posPlayerChartSize-$normalizedFFBPoints;
   				if($normalizedFFBPoints<0){
   					$upDownStart = 101;
   					$upDownEnd = 102+(-1*$normalizedFFBPoints);
-  					imagefilledrectangle ( $img , ($index*$colLen)+1 , $upDownStart , (($index+1)*$colLen)-1 , $upDownEnd , $someOrangeBG );
+  					imagefilledrectangle ( $img , (int)(($index*$colLen)+1) , $upDownStart , (int)((($index+1)*$colLen)-1) , $upDownEnd , $someOrangeBG );
 				} else {
-  					imagefilledrectangle ( $img , ($index*$colLen)+1 , $upDownStart , (($index+1)*$colLen)-1 , $upDownEnd , $dunkelgruenBG );
+  					imagefilledrectangle ( $img , (int)(($index*$colLen)+1) , $upDownStart , (int)((($index+1)*$colLen)-1) , $upDownEnd , $dunkelgruenBG );
 				}
 				$statsImgWidth = 15;
 				if($statsImgWidth > $colLen)
 					$statsImgWidth = $colLen;
   				if($elem['matchround_goals']) {
   					$statsImgHeight = $statsImgWidth / (55.0/100.0) / 100.0;
-  					$statsImgHeight = round($statsImgHeight * 55);
+  					$statsImgHeight = (int)round($statsImgHeight * 55);
   					$cntGoals = 0;
   					$goal = imagecreatefromgif("images/ffb/symbols/stats_goal.gif");
   					while($cntGoals++<$elem['matchround_goals']) {
-  						imagecopyresized($img, $goal, ($index*$colLen)+2, $upDownStart-2-$cntGoals*12, 0,0,$statsImgWidth,$statsImgHeight,55,55);
+  						imagecopyresized($img, $goal, (int)(($index*$colLen)+2), (int)($upDownStart-2-$cntGoals*12), 0,0,$statsImgWidth,$statsImgHeight,55,55);
   					}
   					imagedestroy($goal);
   				}
   				if($elem['matchround_assists']) {
   					$statsImgHeight = $statsImgWidth / (38.0/100.0) / 100.0;
-  					$statsImgHeight = round($statsImgHeight * 42);
+  					$statsImgHeight = (int)round($statsImgHeight * 42);
   					$cntAssists = 0;
   					$assist = imagecreatefromgif("images/ffb/symbols/stats_assist.gif");
   					while($cntAssists++<$elem['matchround_assists']) {
-  						imagecopyresized($img, $assist, ($index*$colLen)+2, $upDownStart-5+$cntAssists*12, 0,0,$statsImgWidth,$statsImgHeight,38,42);
+  						imagecopyresized($img, $assist, (int)(($index*$colLen)+2), (int)($upDownStart-5+$cntAssists*12), 0,0,$statsImgWidth,$statsImgHeight,38,42);
   					}
   					imagedestroy($assist);
   				}
 
-  				imagestring($img,3,$index*$colLen+$colLen/2-1, $upDownEnd-2, $elem['matchround_score'], $schwarzText);
+  				imagestring($img,3,(int)($index*$colLen+$colLen/2-1), (int)($upDownEnd-2), $elem['matchround_score'], $schwarzText);
 
 			} else {
-				imagefilledrectangle ( $img , ($index*$colLen)+1 , 1 , (($index+1)*$colLen)-1 , $imgHeight-2 , $grayBG );
+				imagefilledrectangle ( $img , (int)(($index*$colLen)+1) , 1 , (int)((($index+1)*$colLen)-1) , $imgHeight-2 , $grayBG );
 			}
 
 
 	 		if($elem['matchround_minutes_played']=='-')
 	 			$normalizedLineup2 = 0;
  			else {
- 				$normalizedLineup2 = round((($elem['matchround_minutes_played']/1.2)/100.0)*$posPlayerChartSize, 0.0);	//120 minutes match duration -> 120/100 = 1.2
- 				imagestring($img,3,$index*$colLen+($colLen/2)-1, $posPlayerChartSize-$normalizedLineup2+2, $elem['matchround_minutes_played'], $darkblueBG);
+ 				$normalizedLineup2 = (int)round((($elem['matchround_minutes_played']/1.2)/100.0)*$posPlayerChartSize, 0);	//120 minutes match duration -> 120/100 = 1.2
+ 				imagestring($img,3,(int)($index*$colLen+($colLen/2)-1), (int)($posPlayerChartSize-$normalizedLineup2+2), $elem['matchround_minutes_played'], $darkblueBG);
 			}
 			if($index) {
- 				imageline ( $img , $index*$colLen-($colLen/2) , $posPlayerChartSize-$normalizedLineup , $index*$colLen+$colLen/2 , $posPlayerChartSize-$normalizedLineup2 , $schwarzText );
+ 				imageline ( $img , (int)($index*$colLen-($colLen/2)) , (int)($posPlayerChartSize-$normalizedLineup) , (int)($index*$colLen+$colLen/2) , (int)($posPlayerChartSize-$normalizedLineup2) , $schwarzText );
 			}
  			$normalizedLineup = $normalizedLineup2;
 		  	$index++;
@@ -1589,19 +1623,25 @@ class player extends FFB_Auth_User {
     	$posPlayerChartSize = 100;
 		$colLen = $imgLength;
 		if($count>1)
-  			$colLen = round(($imgLength / ($count-1)), 0);
+		$colLen = (int)round(($imgLength / ($count-1)), 0);
 		else
 			$colLen = $imgLength;
 		//if(!$colLen)
 		//	$colLen	= $imgLength;
-		$roundSizeText = min(round($colLen/2, 0), 14);
+		$roundSizeText = (int)min(round($colLen/2, 0), 14);
 		//if($roundSizeText<6)
 		//	$roundSizeText=6;
-		$roundLenText = round(($roundSizeText/2)*strlen($playerinfos[0]['prices'][$count-1]['matchround_title'])/11, 0);
+		$lastPriceTitle = (string)($playerinfos[0]['prices'][$count-1]['matchround_title'] ?? '');
+		$roundLenText = (int)round(($roundSizeText/2)*strlen($lastPriceTitle)/11, 0);
 		//if($roundLenText<5 ||  $roundLenText==NaN)
 		//	$roundLenText=5;
 		$extraLen = 40;
-    	$img = imagecreatetruecolor ( $imgLength+$extraLen, $imgHeight+$roundLenText*10);
+		if (!function_exists('imagecreatetruecolor')) {
+			header('HTTP/1.1 503 Service Unavailable');
+			error_log('[FFB] PHP GD extension is required for player chart images');
+			return;
+		}
+    	$img = imagecreatetruecolor ( (int)($imgLength+$extraLen), (int)($imgHeight+$roundLenText*10));
     	$roundLenText-=4;
   		$gruenBG =  imagecolorallocate ( $img ,204 , 255 , 204);
   		$dunkelgruenBG =  imagecolorallocate ( $img ,35 , 110 , 35);
@@ -1615,7 +1655,7 @@ class player extends FFB_Auth_User {
   		$someOrangeBG = imagecolorallocate ( $img ,255 , 128 , 0);
   		$whiteBG = imagecolorallocate ( $img ,255 , 255 , 255);
   		//$lightGreenBG = imagecolorallocate($img, 215,245,215);
-  		$someKindBlueBG = imagecolorallocatealpha ( $img ,175 , 240 , 240, 70.0);
+  		$someKindBlueBG = imagecolorallocatealpha ( $img ,175 , 240 , 240, 70);
   		$filled = imagefill ( $img , 0 , 0 , $gruenBG );
   		$index = 0;
 
@@ -1638,15 +1678,15 @@ class player extends FFB_Auth_User {
 		foreach($playerinfo_prices as $elem) {
 			//print_r($elem);
 			imagesetthickness($img,1);
-			$avNormalizedPower = round($elem['matchround_av_playerpower']/($scoreDelimeter/100),0);
-			imagefilledrectangle($img,$index*$colLen-$colLen+1, $posPlayerChartSize, $index*$colLen-1, $posPlayerChartSize-$avNormalizedPower, $someKindBlueBG);
-  			imagedashedline ( $img , $index*$colLen , 0 , $index*$colLen , $imgZeroLine/*$imgHeight-1+$roundLenText*10 */, $darkGrayBG );
+			$avNormalizedPower = (int)round($elem['matchround_av_playerpower']/($scoreDelimeter/100),0);
+			imagefilledrectangle($img,(int)($index*$colLen-$colLen+1), $posPlayerChartSize, (int)($index*$colLen-1), $posPlayerChartSize-$avNormalizedPower, $someKindBlueBG);
+  			imagedashedline ( $img , (int)($index*$colLen) , 0 , (int)($index*$colLen) , $imgZeroLine/*$imgHeight-1+$roundLenText*10 */, $darkGrayBG );
 			$avPlayerPrice += $elem['matchround_playerprice'];
 		 	$avPlayerPower += $elem['matchround_playerpower'];
 
 			imagesetthickness($img,2);
-			$playerPrice2 = round($elem['matchround_playerprice']/($scoreDelimeter/100),0);
-			$playerPower2 = round($elem['matchround_playerpower']/($scoreDelimeter/100),0);
+			$playerPrice2 = (int)round($elem['matchround_playerprice']/($scoreDelimeter/100),0);
+			$playerPower2 = (int)round($elem['matchround_playerpower']/($scoreDelimeter/100),0);
 
 
 			//linear player price drawing
@@ -1663,8 +1703,8 @@ class player extends FFB_Auth_User {
 			}
 
 
-			imagestring($img, 1, $index*$colLen+2,   $posPlayerChartSize-$playerPrice2+$textMarginBlack, number_format($elem['matchround_playerprice'],1,'.','')  , $schwarzText );
-			imagestring($img, 1, $index*$colLen+2,   $posPlayerChartSize-$playerPower2+$textMarginRed, number_format($elem['matchround_playerpower'],1,'.','') , $rotText );
+			imagestring($img, 1, (int)($index*$colLen+2),   (int)($posPlayerChartSize-$playerPrice2+$textMarginBlack), number_format($elem['matchround_playerprice'],1,'.','')  , $schwarzText );
+			imagestring($img, 1, (int)($index*$colLen+2),   (int)($posPlayerChartSize-$playerPower2+$textMarginRed), number_format($elem['matchround_playerpower'],1,'.','') , $rotText );
 /*
 				imagettftext($img, $roundSizeText, 270, $index*$colLen+2, $imgHeight+1, $schwarzText, $backslashFONT, strrev(strtok(strrev($elem['matchround_title']), " ")));
 
@@ -1698,20 +1738,20 @@ class player extends FFB_Auth_User {
 		$kubspline = new KUBSPLINE($kubsplineXYPlayerPrice, $colLen);
 		$yVals = $kubspline->getY();
 		for($i=1;$i<count($yVals);$i++) {
-			imageline($img, $i-1, $posPlayerChartSize-$yVals[$i-1], $i, $posPlayerChartSize-$yVals[$i], $schwarzText);
+			imageline($img, $i-1, (int)round($posPlayerChartSize-$yVals[$i-1]), $i, (int)round($posPlayerChartSize-$yVals[$i]), $schwarzText);
 		}
 		//kubic spline player power drawing
 		$kubspline = new KUBSPLINE($kubsplineXYPlayerPower, $colLen);
 		$yVals = $kubspline->getY();
 		for($i=1;$i<count($yVals);$i++) {
-			imageline($img, $i-1, $posPlayerChartSize-$yVals[$i-1], $i, $posPlayerChartSize-$yVals[$i], $rotText);
+			imageline($img, $i-1, (int)round($posPlayerChartSize-$yVals[$i-1]), $i, (int)round($posPlayerChartSize-$yVals[$i]), $rotText);
 		}
 
 
 		imagesetthickness($img,1);
 		if($count) {
-			$avPlayerPrice = $posPlayerChartSize-($avPlayerPrice/$count/($scoreDelimeter/100));
-			$avPlayerPower = $posPlayerChartSize-($avPlayerPower/$count/($scoreDelimeter/100));
+			$avPlayerPrice = (int)round($posPlayerChartSize-($avPlayerPrice/$count/($scoreDelimeter/100)));
+			$avPlayerPower = (int)round($posPlayerChartSize-($avPlayerPower/$count/($scoreDelimeter/100)));
 			for($i=0;$i<$imgLength;$i+=10) {
 				imageline ( $img , $i , $avPlayerPrice , $i+2 , $avPlayerPrice , $schwarzText );
 				imageline ( $img , $i , $avPlayerPower , $i+2 , $avPlayerPower , $rotText );
@@ -1721,7 +1761,7 @@ class player extends FFB_Auth_User {
 
 		imageline ( $img , 0 , 0 , $imgLength+40 , 0 , $darkGrayBG );
   		imageline ( $img , 0 , $imgHeight-1 , $imgLength+40 , $imgHeight-1 , $darkGrayBG );
-		imageline ( $img , 0 , $imgZeroLine , $imgLength+$colLen/2 , $imgZeroLine , $darkGrayBG );
+		imageline ( $img , 0 , $imgZeroLine , (int)round($imgLength+$colLen/2) , $imgZeroLine , $darkGrayBG );
 		imagestring($img, 6, $imgLength+10, $posPlayerChartSize-14 , "+", $darkblueBG);
 		imagestring($img, 6, $imgLength+10, $posPlayerChartSize , "-", $darkblueBG);
 

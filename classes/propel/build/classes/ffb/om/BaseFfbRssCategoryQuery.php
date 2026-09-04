@@ -16,8 +16,8 @@
  * @method     FfbRssCategoryQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
  * @method     FfbRssCategoryQuery innerJoin($relation) Adds a INNER JOIN clause to the query
  *
- * @method     FfbRssCategory findOne(PropelPDO $con = null) Return the first FfbRssCategory matching the query
- * @method     FfbRssCategory findOneOrCreate(PropelPDO $con = null) Return the first FfbRssCategory matching the query, or a new FfbRssCategory object populated from the query conditions when no match is found
+ * @method     FfbRssCategory findOne(?PropelPDO $con = null) Return the first FfbRssCategory matching the query
+ * @method     FfbRssCategory findOneOrCreate(?PropelPDO $con = null) Return the first FfbRssCategory matching the query, or a new FfbRssCategory object populated from the query conditions when no match is found
  *
  * @method     FfbRssCategory findOneByFfbRssCategoryId(int $ffb_rss_category_id) Return the first FfbRssCategory filtered by the ffb_rss_category_id column
  * @method     FfbRssCategory findOneByFfbRssCategoryName(string $ffb_rss_category_name) Return the first FfbRssCategory filtered by the ffb_rss_category_name column

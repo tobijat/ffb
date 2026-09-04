@@ -24,8 +24,8 @@
  * @method     FfbInvitationQuery rightJoinWebUser($relationAlias = null) Adds a RIGHT JOIN clause to the query using the WebUser relation
  * @method     FfbInvitationQuery innerJoinWebUser($relationAlias = null) Adds a INNER JOIN clause to the query using the WebUser relation
  *
- * @method     FfbInvitation findOne(PropelPDO $con = null) Return the first FfbInvitation matching the query
- * @method     FfbInvitation findOneOrCreate(PropelPDO $con = null) Return the first FfbInvitation matching the query, or a new FfbInvitation object populated from the query conditions when no match is found
+ * @method     FfbInvitation findOne(?PropelPDO $con = null) Return the first FfbInvitation matching the query
+ * @method     FfbInvitation findOneOrCreate(?PropelPDO $con = null) Return the first FfbInvitation matching the query, or a new FfbInvitation object populated from the query conditions when no match is found
  *
  * @method     FfbInvitation findOneByInvitationId(int $invitation_id) Return the first FfbInvitation filtered by the invitation_id column
  * @method     FfbInvitation findOneByInvitationSenderId(int $invitation_sender_id) Return the first FfbInvitation filtered by the invitation_sender_id column

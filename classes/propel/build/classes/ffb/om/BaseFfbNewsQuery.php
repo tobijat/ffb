@@ -30,8 +30,8 @@
  * @method     FfbNewsQuery rightJoinFfbGame($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbGame relation
  * @method     FfbNewsQuery innerJoinFfbGame($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbGame relation
  *
- * @method     FfbNews findOne(PropelPDO $con = null) Return the first FfbNews matching the query
- * @method     FfbNews findOneOrCreate(PropelPDO $con = null) Return the first FfbNews matching the query, or a new FfbNews object populated from the query conditions when no match is found
+ * @method     FfbNews findOne(?PropelPDO $con = null) Return the first FfbNews matching the query
+ * @method     FfbNews findOneOrCreate(?PropelPDO $con = null) Return the first FfbNews matching the query, or a new FfbNews object populated from the query conditions when no match is found
  *
  * @method     FfbNews findOneByNewsId(int $news_id) Return the first FfbNews filtered by the news_id column
  * @method     FfbNews findOneByNewsTitle(string $news_title) Return the first FfbNews filtered by the news_title column

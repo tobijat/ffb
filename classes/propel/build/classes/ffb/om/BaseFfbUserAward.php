@@ -255,11 +255,11 @@ abstract class BaseFfbUserAward extends BaseObject  implements Persistent
 	{
 		try {
 
-			$this->user_award_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-			$this->user_award_name = ($row[$startcol + 1] !== null) ? (string) $row[$startcol + 1] : null;
-			$this->user_award_image = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
-			$this->user_award_description = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
-			$this->user_award_sortflag = ($row[$startcol + 4] !== null) ? (int) $row[$startcol + 4] : null;
+			$this->user_award_id = (($row[$startcol + 0] ?? null) !== null) ? (int) $row[$startcol + 0] : null;
+			$this->user_award_name = (($row[$startcol + 1] ?? null) !== null) ? (string) $row[$startcol + 1] : null;
+			$this->user_award_image = (($row[$startcol + 2] ?? null) !== null) ? (string) $row[$startcol + 2] : null;
+			$this->user_award_description = (($row[$startcol + 3] ?? null) !== null) ? (string) $row[$startcol + 3] : null;
+			$this->user_award_sortflag = (($row[$startcol + 4] ?? null) !== null) ? (int) $row[$startcol + 4] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -303,7 +303,7 @@ abstract class BaseFfbUserAward extends BaseObject  implements Persistent
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload($deep = false, PropelPDO $con = null)
+	public function reload($deep = false, ?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("Cannot reload a deleted object.");
@@ -344,7 +344,7 @@ abstract class BaseFfbUserAward extends BaseObject  implements Persistent
 	 * @see        BaseObject::setDeleted()
 	 * @see        BaseObject::isDeleted()
 	 */
-	public function delete(PropelPDO $con = null)
+	public function delete(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("This object has already been deleted.");
@@ -386,7 +386,7 @@ abstract class BaseFfbUserAward extends BaseObject  implements Persistent
 	 * @throws     PropelException
 	 * @see        doSave()
 	 */
-	public function save(PropelPDO $con = null)
+	public function save(?PropelPDO $con = null)
 	{
 		if ($this->isDeleted()) {
 			throw new PropelException("You cannot save an object that has been deleted.");
@@ -884,7 +884,7 @@ abstract class BaseFfbUserAward extends BaseObject  implements Persistent
 	 * @return     PropelCollection|array FfbUserAwardDefines[] List of FfbUserAwardDefines objects
 	 * @throws     PropelException
 	 */
-	public function getFfbUserAwardDefiness($criteria = null, PropelPDO $con = null)
+	public function getFfbUserAwardDefiness($criteria = null, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbUserAwardDefiness || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbUserAwardDefiness) {
@@ -912,7 +912,7 @@ abstract class BaseFfbUserAward extends BaseObject  implements Persistent
 	 * @return     int Count of related FfbUserAwardDefines objects.
 	 * @throws     PropelException
 	 */
-	public function countFfbUserAwardDefiness(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+	public function countFfbUserAwardDefiness(?Criteria $criteria = null, $distinct = false, ?PropelPDO $con = null)
 	{
 		if(null === $this->collFfbUserAwardDefiness || null !== $criteria) {
 			if ($this->isNew() && null === $this->collFfbUserAwardDefiness) {

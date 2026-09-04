@@ -330,7 +330,7 @@ class player extends FFB_Auth_AdminFfb {
         if($_FILES['player_file_ptt']['name']) {
             $filename = $_FILES['player_file_ptt']['tmp_name'];
             $file = fopen( $filename , "r" );
-            $content = utf8_encode(fread($file ,filesize($filename)));
+            $content = mb_convert_encoding((string)fread($file ,filesize($filename)), 'UTF-8', 'ISO-8859-1');
 
             $playerlines = explode(';', trim($content));
             if(count($playerlines)) {
