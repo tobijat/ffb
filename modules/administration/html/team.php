@@ -36,7 +36,7 @@
     <div id="formline">
         <div id="formdescr">* Team Name:</div>
         <div id="forminput">
-            <input type="text" class="input" name="team_name" value="<?= $this->post['team_name'];?>">
+            <input type="text" class="input" name="team_name" value="<?= ($this->post['team_name'] ?? '');?>">
         </div>
         <div id="formclear"></div>
     </div>
@@ -46,7 +46,7 @@
             <select name="team_nationality">
                 <option value="">Country...</option>
                 <?php foreach($country_array as $shortname => $name) {?>
-                    <option <?php if($this->post['team_nationality'] == $shortname) echo 'selected';?> value="<?= $shortname?>">
+                    <option <?php if(($this->post['team_nationality'] ?? '') == $shortname) echo 'selected';?> value="<?= $shortname?>">
                         <?= $name?>
                     </option>
                 <?php }?>
@@ -59,7 +59,7 @@
         <div id="forminput">
             <select name="team_price">
                 <?php for($i=1;$i<16;$i++) {?>
-                    <option <?php if($this->post['team_price'] == $i) echo 'selected';?> value="<?= $i?>">
+                    <option <?php if(($this->post['team_price'] ?? '') == $i) echo 'selected';?> value="<?= $i?>">
                         <?= $i?>
                     </option>
                 <?php }?>
@@ -71,8 +71,8 @@
         <div id="formdescr">Status:</div>
         <div id="forminput">
             <select name="team_status">
-                <option <?php if($this->post['team_status'] == 1) echo 'selected ';?> value="1">active</option>
-                <option <?php if($this->post['team_status'] == 0) echo 'selected ';?>value="0">inactive</option>
+                <option <?php if(($this->post['team_status'] ?? '') == 1) echo 'selected ';?> value="1">active</option>
+                <option <?php if(($this->post['team_status'] ?? '') == 0) echo 'selected ';?>value="0">inactive</option>
             </select>
         </div>
         <div id="formclear"></div>
@@ -80,21 +80,21 @@
     <div id="formline">
         <div id="formdescr">TM ID:</div>
         <div id="forminput">
-            <input type="text" class="input" name="teamfid_fid_tm" value="<?= $this->post['teamfid_fid_tm'];?>">
+            <input type="text" class="input" name="teamfid_fid_tm" value="<?= ($this->post['teamfid_fid_tm'] ?? '');?>">
         </div>
         <div id="formclear"></div>
     </div>
     <div id="formline">
         <div id="formdescr">TM Name:</div>
         <div id="forminput">
-            <input type="text" class="input" name="teamfid_name_tm" value="<?= $this->post['teamfid_name_tm'];?>">
+            <input type="text" class="input" name="teamfid_name_tm" value="<?= ($this->post['teamfid_name_tm'] ?? '');?>">
         </div>
         <div id="formclear"></div>
     </div>
     <div id="formline">
         <div id="formdescr">WF Name:</div>
         <div id="forminput">
-            <input type="text" class="input" name="teamfid_name_wf" value="<?= $this->post['teamfid_name_wf'];?>">
+            <input type="text" class="input" name="teamfid_name_wf" value="<?= ($this->post['teamfid_name_wf'] ?? '');?>">
         </div>
         <div id="formclear"></div>
     </div>
@@ -102,14 +102,14 @@
     <div id="formline">
         <div id="formdescr">TM URL:</div>
         <div id="forminput">
-            <input type="text" class="input" name="teamfid_url_tm" value="<?= $this->post['teamfid_url_tm'];?>">
+            <input type="text" class="input" name="teamfid_url_tm" value="<?= ($this->post['teamfid_url_tm'] ?? '');?>">
         </div>
         <div id="formclear"></div>
     </div>
     <div id="formline">
         <div id="formdescr">WF URL:</div>
         <div id="forminput">
-            <input type="text" class="input" name="teamfid_url_wf" value="<?= $this->post['teamfid_url_wf'];?>">
+            <input type="text" class="input" name="teamfid_url_wf" value="<?= ($this->post['teamfid_url_wf'] ?? '');?>">
         </div>
         <div id="formclear"></div>
     </div>
@@ -117,14 +117,14 @@
     <div id="formline">
         <div id="formdescr">FOE URL:</div>
         <div id="forminput">
-            <input type="text" class="input" name="teamfid_url_foe" value="<?= $this->post['teamfid_url_foe'];?>">
+            <input type="text" class="input" name="teamfid_url_foe" value="<?= ($this->post['teamfid_url_foe'] ?? '');?>">
         </div>
         <div id="formclear"></div>
     </div>
     <div id="formline">&ensp;</div>
     <div id="formline">
         <input type="hidden" name="administration_modus" value="<?= $this->administration_modus;?>">
-        <input type="hidden" name="team_id" value="<?= $this->post['team_id'];?>">
+        <input type="hidden" name="team_id" value="<?= ($this->post['team_id'] ?? '');?>">
         <div id="formdescr">&ensp;</div>
         <div id="forminput">
             <?php if($this->administration_modus == 'update') {?>

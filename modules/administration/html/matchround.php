@@ -35,7 +35,7 @@
     <div id="formline">
         <div id="formdescr">* Title:</div>
         <div id="forminput">
-            <input type="text" class="input" name="matchround_title" value="<?= $this->post['matchround_title'];?>">
+            <input type="text" class="input" name="matchround_title" value="<?= ($this->post['matchround_title'] ?? '');?>">
         </div>
         <div id="formclear"></div>
     </div>
@@ -48,7 +48,7 @@
             <select name="matchround_startdate_day">
                 <option value=""></option>
                 <?php for($i=1;$i<32;$i++) {?>
-                    <option <?php if($this->post['matchround_startdate_day'] == $i) echo 'selected';?> value="<?= $i?>">
+                    <option <?php if(($this->post['matchround_startdate_day'] ?? '') == $i) echo 'selected';?> value="<?= $i?>">
                         <?= $i?>
                     </option>
                 <?php }?>
@@ -56,7 +56,7 @@
             <select name="matchround_startdate_month">
                 <option value=""></option>
                 <?php for($i=0;$i<12;$i++) {?>
-                    <option <?php if($this->post['matchround_startdate_month'] == $i+1) echo 'selected';?> value="<?= $i+1?>">
+                    <option <?php if(($this->post['matchround_startdate_month'] ?? '') == $i+1) echo 'selected';?> value="<?= $i+1?>">
                         <?= $months[$i]?>
                     </option>
                 <?php }?>
@@ -65,7 +65,7 @@
                 <option value=""></option>
                 <?php $now = date('Y',time());
                   for($i=$now+3;$i>$now-5;$i--) {?>
-                    <option <?php if($this->post['matchround_startdate_year'] == $i) echo 'selected';?> value="<?= $i?>">
+                    <option <?php if(($this->post['matchround_startdate_year'] ?? '') == $i) echo 'selected';?> value="<?= $i?>">
                         <?= $i?>
                     </option>
                 <?php }?>
@@ -73,7 +73,7 @@
             <br>
             <select name="matchround_startdate_hour">
                 <?php for($i=0;$i<24;$i++) {?>
-                    <option <?php if($this->post['matchround_startdate_hour'] == $i) echo 'selected';?> value="<?= $i.':00:00'?>">
+                    <option <?php if(($this->post['matchround_startdate_hour'] ?? '') == $i) echo 'selected';?> value="<?= $i.':00:00'?>">
                         <?= $i.':00'?>
                     </option>
                 <?php }?>
@@ -87,7 +87,7 @@
             <select name="matchround_enddate_day">
                 <option value=""></option>
                 <?php for($i=1;$i<32;$i++) {?>
-                    <option <?php if($this->post['matchround_enddate_day'] == $i) echo 'selected';?> value="<?= $i?>">
+                    <option <?php if(($this->post['matchround_enddate_day'] ?? '') == $i) echo 'selected';?> value="<?= $i?>">
                         <?= $i?>
                     </option>
                 <?php }?>
@@ -95,7 +95,7 @@
             <select name="matchround_enddate_month">
                 <option value=""></option>
                 <?php for($i=0;$i<12;$i++) {?>
-                    <option <?php if($this->post['matchround_enddate_month'] == $i+1) echo 'selected';?> value="<?= $i+1?>">
+                    <option <?php if(($this->post['matchround_enddate_month'] ?? '') == $i+1) echo 'selected';?> value="<?= $i+1?>">
                         <?= $months[$i]?>
                     </option>
                 <?php }?>
@@ -104,7 +104,7 @@
                 <option value=""></option>
                 <?php $now = date('Y',time());
                   for($i=$now+3;$i>$now-5;$i--) {?>
-                    <option <?php if($this->post['matchround_enddate_year'] == $i) echo 'selected';?> value="<?= $i?>">
+                    <option <?php if(($this->post['matchround_enddate_year'] ?? '') == $i) echo 'selected';?> value="<?= $i?>">
                         <?= $i?>
                     </option>
                 <?php }?>
@@ -112,7 +112,7 @@
             <br>
             <select name="matchround_enddate_hour">
                 <?php for($i=0;$i<24;$i++) {?>
-                    <option <?php if($this->post['matchround_enddate_hour'] == $i) echo 'selected';?> value="<?= $i.':00:00'?>">
+                    <option <?php if(($this->post['matchround_enddate_hour'] ?? '') == $i) echo 'selected';?> value="<?= $i.':00:00'?>">
                         <?= $i.':00'?>
                     </option>
                 <?php }?>
@@ -124,8 +124,8 @@
         <div id="formdescr">Status:</div>
         <div id="forminput">
             <select name="matchround_status">
-                <option <?php if($this->post['matchround_status'] == 1) echo 'selected ';?> value="1">active</option>
-                <option <?php if($this->post['matchround_status'] == 0) echo 'selected ';?>value="0">inactive</option>
+                <option <?php if(($this->post['matchround_status'] ?? '') == 1) echo 'selected ';?> value="1">active</option>
+                <option <?php if(($this->post['matchround_status'] ?? '') == 0) echo 'selected ';?>value="0">inactive</option>
             </select>
         </div>
         <div id="formclear"></div>
@@ -133,7 +133,7 @@
     <div id="formline">&ensp;</div>
     <div id="formline">
         <input type="hidden" name="administration_modus" value="<?= $this->administration_modus;?>">
-        <input type="hidden" name="matchround_id" value="<?= $this->post['matchround_id'];?>">
+        <input type="hidden" name="matchround_id" value="<?= ($this->post['matchround_id'] ?? '');?>">
         <div id="formdescr">&ensp;</div>
         <div id="forminput">
             <?php if($this->administration_modus == 'update') {?>

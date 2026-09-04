@@ -74,8 +74,9 @@ class comments extends FFB_Auth_User {
       $newComment->setCommentsLocation($location);
       $newComment->setCommentsText($comment);
       $newComment->setCommentsDate(date('Y-m-d H:i:s', time()));
-      if($matchroundId)
+      if ($matchroundId > 0) {
         $newComment->setCommentsMatchroundId($matchroundId);
+      }
       $newComment->save();
 
       $this->newCommentId = $newComment->getCommentsId();
@@ -126,7 +127,8 @@ class comments extends FFB_Auth_User {
       if($tmpComments) {
         for($i=0; ($i<count($tmpComments)) && ($i<=$maxComments)  ;$i++) {
           $comments[$i]['user_nick']    = $tmpComments[$i]->getWebUser()->getUserNickname();
-          $comments[$i]['user_avatar']  = $tmpComments[$i]->getWebUser()->getWebUserDetails()->getUserDetailsAvatar();
+          $userDetails = $tmpComments[$i]->getWebUser()->getWebUserDetails();
+          $comments[$i]['user_avatar']  = $userDetails ? $userDetails->getUserDetailsAvatar() : '';
           $commentText = (string)($tmpComments[$i]->getCommentsText() ?? '');
           if($xml==false)
             $comments[$i]['comment_text'] = nl2br(htmlspecialchars(iconv("UTF-8", "ISO-8859-1", $commentText), ENT_QUOTES));

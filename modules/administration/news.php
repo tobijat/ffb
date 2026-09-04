@@ -18,7 +18,7 @@ class news extends FFB_Auth_AdminFfb {
     }
 
     public function __default() {
-        $this->administration_modus = $_POST['administration_modus'];
+        $this->administration_modus = $_POST['administration_modus'] ?? null;
         $this->post = $_POST;
         if (!empty($_POST)) {
             if(isset($_POST['news_administration_change_x']) || isset($_POST['news_administration_change']))

@@ -17,7 +17,7 @@
 
       public function __default() {
       	$this->htmlFile = 'game.php';
-      	$this->administration_modus = $_POST['administration_modus'];
+      	$this->administration_modus = $_POST['administration_modus'] ?? null;
       	$this->post = $_POST;
       	if (!empty($_POST)) {
       		if(isset($_POST['game_administration_change_x']) || isset($_POST['game_administration_change']))

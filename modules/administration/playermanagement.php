@@ -836,6 +836,16 @@ class playermanagement extends FFB_Auth_AdminFfb {
             $update_item = new FfbPlayerfid();
             $update_item->setPlayerfidPlayerteamId($playerteam_id);
             $update_item->setPlayerfidTeamId($team_id);
+            $update_item->setPlayerfidFidFoe('');
+            $update_item->setPlayerfidFidFifa('');
+            $update_item->setPlayerfidFidTm('');
+            $update_item->setPlayerfidFidUefa('');
+            $update_item->setPlayerfidFidWf('');
+            $update_item->setPlayerfidNameFoe('');
+            $update_item->setPlayerfidNameFifa('');
+            $update_item->setPlayerfidNameTm('');
+            $update_item->setPlayerfidNameUefa('');
+            $update_item->setPlayerfidNameWf('');
         }
         if($source == 'tm') {
         	$fid_name = $fname.' '.$lname;

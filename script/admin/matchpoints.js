@@ -255,6 +255,10 @@ function loadPlayers(team, teamID, matchID, currDispalyLoop) {
  				//document.write(response.responseXML);
  				//return;
  				var xmlResponse=response.responseXML;
+ 				if(!xmlResponse) {
+ 					handleAjaxError();
+ 					return;
+ 				}
  				var players = xmlResponse.getElementsByTagName('XML_Serializer_Tag');
 
  				for(var i=0;i<players.length;i++) {
@@ -330,7 +334,7 @@ function loadPlayers(team, teamID, matchID, currDispalyLoop) {
 			onFailure : function(response) {
     			alert("Oops, there's been an error.");
  			},
-			parameters: '?id='+teamID+'&match_id='+matchID
+			parameters: 'id='+teamID+'&match_id='+matchID
 		});
 	}
 }
@@ -597,7 +601,7 @@ function sendPlayerGoals(post, j) {
 		onFailure : function(response) {
     		alert("Oops, there's been an error.");
 		},
-		parameters: "?"+post
+		parameters: post
 	});
 }
 

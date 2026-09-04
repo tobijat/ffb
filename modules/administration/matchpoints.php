@@ -228,6 +228,7 @@ class matchpoints extends FFB_Auth_AdminFfb {
                     $userscoreitem = new FfbUserscore();
                     $userscoreitem->setUserscoreUserId($user_id);
                     $userscoreitem->setUserscoreTotal($user_score);
+                    $userscoreitem->setUserscoreWcPoints(0);
                     $userscoreitem->setUserscoreGameId($game_id);
                     $userscoreitem->save();
                     $answer .= 'user_id: '.$user_id;
@@ -252,6 +253,7 @@ class matchpoints extends FFB_Auth_AdminFfb {
                 if($game_id>0) {
                     $userscoreitem = new FfbUserscore();
                     $userscoreitem->setUserscoreUserId($user_id);
+                    $userscoreitem->setUserscoreTotal(0);
                     $userscoreitem->setUserscoreWcPoints($wcscore);
                     $userscoreitem->setUserscoreGameId($game_id);
                     $userscoreitem->save();
@@ -347,9 +349,13 @@ class matchpoints extends FFB_Auth_AdminFfb {
     }
 
     public function setGoalData() {
-        $playerteam_id = $_POST['playerteam_id'];
-        $match_id = $_POST['playerstats_match_id'];
+        $playerteam_id = $_POST['playerteam_id'] ?? null;
+        $match_id = $_POST['playerstats_match_id'] ?? null;
         $pm = $this->options->options_game_pointsmode;
+        $goals = $_POST['playerstats_goals'] ?? 0;
+        $owngoals = $_POST['playerstats_owngoals'] ?? 0;
+        $ps_hit = $_POST['playerstats_penaltyshootout_hit'] ?? 0;
+        $ps_lost = $_POST['playerstats_penaltyshootout_lost'] ?? 0;
 
         if(!$playerteam_id || !$match_id) {
             $this->administration_error = 'No player/match ID given!';
@@ -359,38 +365,34 @@ class matchpoints extends FFB_Auth_AdminFfb {
 
         if($pm == 'new') {
             $answer = '';
-            if($_POST['playerstats_goals'] != 0) {
-                $num_goals = count(explode(';', trim($_POST['playerstats_goals'])));
+            if($goals != 0) {
                 $this->deleteGoals($match_id, $playerteam_id, 0);
-                $this->insertGoals($_POST['playerstats_goals'], $match_id, $playerteam_id, 0);
+                $this->insertGoals($goals, $match_id, $playerteam_id, 0);
                 $answer .= 'Goal inserted for ptID: '.$playerteam_id.'! ';
             } else {
                 $this->deleteGoals($match_id, $playerteam_id, 0);
                 $answer .= 'No goals to insert for ptID: '.$playerteam_id.'! ';
             }
-            if($_POST['playerstats_owngoals'] != 0) {
-                $num_owngoals = count(explode(';', trim($_POST['playerstats_owngoals'])));
+            if($owngoals != 0) {
                 $this->deleteGoals($match_id, $playerteam_id, 1);
-                $this->insertGoals($_POST['playerstats_owngoals'], $match_id, $playerteam_id, 1);
+                $this->insertGoals($owngoals, $match_id, $playerteam_id, 1);
                 $answer .= 'OwnGoal inserted for ptID: '.$playerteam_id.'! ';
             } else {
                 $this->deleteGoals($match_id, $playerteam_id, 1);
                 $answer .= 'No owngoals to insert for ptID: '.$playerteam_id.'! ';
             }
 
-            if($_POST['playerstats_penaltyshootout_hit'] != 0) {
-                $num_penaltyshootout_hit = $_POST['playerstats_penaltyshootout_hit'];
+            if($ps_hit != 0) {
                 $this->deletePSgoals($match_id, $playerteam_id, 0);
-                $this->insertPSgoals($num_penaltyshootout_hit, $match_id, $playerteam_id, 0);
+                $this->insertPSgoals($ps_hit, $match_id, $playerteam_id, 0);
                 $answer .= 'PS hits inserted for ptID: '.$playerteam_id.'! ';
             } else {
                 $this->deletePSgoals($match_id, $playerteam_id, 0);
                 $answer .= 'No PS hits to insert for ptID: '.$playerteam_id.'! ';
             }
-            if($_POST['playerstats_penaltyshootout_lost'] != 0) {
-                $num_penaltyshootout_lost = $_POST['playerstats_penaltyshootout_lost'];
+            if($ps_lost != 0) {
                 $this->deletePSgoals($match_id, $playerteam_id, 1);
-                $this->insertPSgoals($num_penaltyshootout_lost, $match_id, $playerteam_id, 1);
+                $this->insertPSgoals($ps_lost, $match_id, $playerteam_id, 1);
                 $answer .= 'PS losts inserted for ptID: '.$playerteam_id.'! ';
             } else {
                 $this->deletePSgoals($match_id, $playerteam_id, 1);
@@ -408,10 +410,10 @@ class matchpoints extends FFB_Auth_AdminFfb {
     //stores playerstats for given match_id and given playerteam_id to DB
     //used by matchpoints.js
     public function setPlayerStats() {
-        $fid_mode = $_REQUEST['playerfid_mode'];
-        $fid_name = $_REQUEST['playerfid_name'];
-        $playerteam_id = $_POST['playerteam_id'];
-        $match_id = $_POST['playerstats_match_id'];
+        $fid_mode = $_REQUEST['playerfid_mode'] ?? null;
+        $fid_name = $_REQUEST['playerfid_name'] ?? null;
+        $playerteam_id = $_POST['playerteam_id'] ?? null;
+        $match_id = $_POST['playerstats_match_id'] ?? null;
         $pm = $this->options->options_game_pointsmode;
         if(!$playerteam_id || !$match_id) {
             $this->administration_error = 'No player/match ID given!';
@@ -421,6 +423,11 @@ class matchpoints extends FFB_Auth_AdminFfb {
 
         $playerteamitem = FfbPlayerteamPeer::retrieveByPK($playerteam_id);
         $matchitem = FfbMatchPeer::retrieveByPK($match_id);
+        if(!$playerteamitem || !$matchitem) {
+            $this->administration_error = 'No player/match found!';
+            $this->administration_status = $this->options->options_status_error;
+            return;
+        }
         $team_id = $playerteamitem->getPlayerteamTeamId();
 
         $this->updatePlayerfid($playerteam_id, $team_id, $fid_mode, $fid_name);
@@ -431,11 +438,11 @@ class matchpoints extends FFB_Auth_AdminFfb {
 
         $exist_item = FfbPlayerstatsPeer::doSelect($criteria);
 
-        if($exist_item) {
+        if(count($exist_item) > 0) {
             $item = $exist_item[0];
             $answer = 'Existing Playerstats successfully updated!';
             //delete entry when minutes set to zero
-            if($_POST['playerstats_minutes'] == 0) {
+            if(($_POST['playerstats_minutes'] ?? null) == 0) {
                 FfbPlayerstatsPeer::doDelete($item);
                 $this->administration_answer = $answer;
                 $this->administration_status = $this->options->options_status_success_insert;
@@ -450,7 +457,7 @@ class matchpoints extends FFB_Auth_AdminFfb {
             $answer = 'New Playerstats successfully added!';
         }
         if($pm == 'new') {
-            if($_POST['playerstats_goals'] != 0) {
+            if(($_POST['playerstats_goals'] ?? 0) != 0) {
                 $num_goals = count(explode(';', trim($_POST['playerstats_goals'])));
                 //$this->deleteGoals($match_id, $playerteam_id, 0);
                 //$this->insertGoals($_POST['playerstats_goals'], $match_id, $playerteam_id, 0);
@@ -458,7 +465,7 @@ class matchpoints extends FFB_Auth_AdminFfb {
                 //$this->deleteGoals($match_id, $playerteam_id, 0);
                 $num_goals = 0;
             }
-            if($_POST['playerstats_owngoals'] != 0) {
+            if(($_POST['playerstats_owngoals'] ?? 0) != 0) {
                 $num_owngoals = count(explode(';', trim($_POST['playerstats_owngoals'])));
                 //$this->deleteGoals($match_id, $playerteam_id, 1);
                 //$this->insertGoals($_POST['playerstats_owngoals'], $match_id, $playerteam_id, 1);
@@ -467,12 +474,12 @@ class matchpoints extends FFB_Auth_AdminFfb {
                 $num_owngoals = 0;
             }
         } else {
-            if(is_numeric($_POST['playerstats_goals'])) {
+            if(is_numeric($_POST['playerstats_goals'] ?? null)) {
                 $num_goals = $_POST['playerstats_goals'];
             } else {
                 $num_goals = 0;
             }
-            if(is_numeric($_POST['playerstats_owngoals'])) {
+            if(is_numeric($_POST['playerstats_owngoals'] ?? null)) {
                 $num_owngoals = $_POST['playerstats_owngoals'];
             } else {
                 $num_owngoals = 0;
@@ -481,56 +488,57 @@ class matchpoints extends FFB_Auth_AdminFfb {
 
         //$item->setPlayerstatsGoals($_POST['playerstats_goals']);
         $item->setPlayerstatsGoals($num_goals);
-        $item->setPlayerstatsAssists($_POST['playerstats_assists']);
-        $item->setPlayerstatsMinutes($_POST['playerstats_minutes']);
-        $item->setPlayerstatsMinuteIn($_POST['playerstats_minute_in']);
-        $item->setPlayerstatsMinuteOut($_POST['playerstats_minute_out']);
-        if($_POST['playerstats_cards'] == 'y' || $_POST['playerstats_cards'] == 'yr' || $_POST['playerstats_cards'] == 'r') {
-            $item->setPlayerstatsCards($_POST['playerstats_cards']);
+        $item->setPlayerstatsAssists($_POST['playerstats_assists'] ?? 0);
+        $item->setPlayerstatsMinutes($_POST['playerstats_minutes'] ?? 0);
+        $item->setPlayerstatsMinuteIn($_POST['playerstats_minute_in'] ?? 0);
+        $item->setPlayerstatsMinuteOut($_POST['playerstats_minute_out'] ?? 0);
+        $cards = $_POST['playerstats_cards'] ?? 'n';
+        if($cards == 'y' || $cards == 'yr' || $cards == 'r') {
+            $item->setPlayerstatsCards($cards);
         } else {
             $item->setPlayerstatsCards('n');
         }
         //$item->setPlayerstatsOwngoals($_POST['playerstats_owngoals']);
         $item->setPlayerstatsOwngoals($num_owngoals);
-        $item->setPlayerstatsPenaltieslost($_POST['playerstats_penaltieslost']);
-        $item->setPlayerstatsPenaltiessaved($_POST['playerstats_penaltiessaved']);
+        $item->setPlayerstatsPenaltieslost($_POST['playerstats_penaltieslost'] ?? 0);
+        $item->setPlayerstatsPenaltiessaved($_POST['playerstats_penaltiessaved'] ?? 0);
 
-        $item->setPlayerstatsPenaltyshootoutSave($_POST['playerstats_penaltyshootout_save']);
-        $item->setPlayerstatsPenaltyshootoutLost($_POST['playerstats_penaltyshootout_lost']);
-        $item->setPlayerstatsPenaltyshootoutHit($_POST['playerstats_penaltyshootout_hit']);
+        $item->setPlayerstatsPenaltyshootoutSave($_POST['playerstats_penaltyshootout_save'] ?? 0);
+        $item->setPlayerstatsPenaltyshootoutLost($_POST['playerstats_penaltyshootout_lost'] ?? 0);
+        $item->setPlayerstatsPenaltyshootoutHit($_POST['playerstats_penaltyshootout_hit'] ?? 0);
 
         $score_goals = $this->calcScoreGoals($num_goals, $playerteamitem->getPlayerteamPlayerPosition());
-        $score_assists = $this->calcScoreAssists($_POST['playerstats_assists']);
-        $score_minutes = $this->calcScoreMinutes($_POST['playerstats_minutes']);
-        $score_cards = $this->calcScoreCards($_POST['playerstats_cards']);
+        $score_assists = $this->calcScoreAssists($_POST['playerstats_assists'] ?? 0);
+        $score_minutes = $this->calcScoreMinutes($_POST['playerstats_minutes'] ?? 0);
+        $score_cards = $this->calcScoreCards($cards);
         //$score_owngoals = $this->calcScoreOwngoals($_POST['playerstats_owngoals']);
         $score_owngoals = $this->calcScoreOwngoals($num_owngoals);
-        $score_penaltylost = $this->calcScorePenaltyLost($_POST['playerstats_penaltieslost']);
-        $score_penaltysaved = $this->calcScorePenaltySaved($_POST['playerstats_penaltiessaved']);
+        $score_penaltylost = $this->calcScorePenaltyLost($_POST['playerstats_penaltieslost'] ?? 0);
+        $score_penaltysaved = $this->calcScorePenaltySaved($_POST['playerstats_penaltiessaved'] ?? 0);
 
-        $score_penaltyshootout_save = $this->calcScorePenaltyshootoutSave($_POST['playerstats_penaltyshootout_save']);
-        $score_penaltyshootout_lost = $this->calcScorePenaltyshootoutLost($_POST['playerstats_penaltyshootout_lost']);
-        $score_penaltyshootout_hit = $this->calcScorePenaltyshootoutHit($_POST['playerstats_penaltyshootout_hit']);
+        $score_penaltyshootout_save = $this->calcScorePenaltyshootoutSave($_POST['playerstats_penaltyshootout_save'] ?? 0);
+        $score_penaltyshootout_lost = $this->calcScorePenaltyshootoutLost($_POST['playerstats_penaltyshootout_lost'] ?? 0);
+        $score_penaltyshootout_hit = $this->calcScorePenaltyshootoutHit($_POST['playerstats_penaltyshootout_hit'] ?? 0);
 
         if($matchitem->getMatchHomescore() >= 0 && $matchitem->getMatchGuestscore() >= 0) {
             if($team_id == $matchitem->getMatchHometeamId()) {
                 if($pm == 'new') {
-                    $score_oppgoals = $this->calcScoreOppGoalsNew($this->getGoalsList($matchitem->getMatchGuestteamId(), $matchitem->getMatchHometeamId(), $match_id), $playerteamitem->getPlayerteamPlayerPosition(), $_POST['playerstats_minutes'], $_POST['playerstats_minute_in'], $_POST['playerstats_minute_out'], $matchitem->getMatchMinutes());
+                    $score_oppgoals = $this->calcScoreOppGoalsNew($this->getGoalsList($matchitem->getMatchGuestteamId(), $matchitem->getMatchHometeamId(), $match_id), $playerteamitem->getPlayerteamPlayerPosition(), $_POST['playerstats_minutes'] ?? 0, $_POST['playerstats_minute_in'] ?? 0, $_POST['playerstats_minute_out'] ?? 0, $matchitem->getMatchMinutes());
                 } else {
-                    $score_oppgoals = $this->calcScoreOppGoals($matchitem->getMatchGuestscore(), $playerteamitem->getPlayerteamPlayerPosition(), $_POST['playerstats_minutes']);
+                    $score_oppgoals = $this->calcScoreOppGoals($matchitem->getMatchGuestscore(), $playerteamitem->getPlayerteamPlayerPosition(), $_POST['playerstats_minutes'] ?? 0);
                 }
-                $score_nooppgoals = $this->calcScoreOppGoalsNo($matchitem->getMatchGuestscore(), $playerteamitem->getPlayerteamPlayerPosition(), $_POST['playerstats_minutes']);
-                $score_high_win = $this->calcScoreHighWin($matchitem->getMatchHomescore() - $matchitem->getMatchGuestscore(), $_POST['playerstats_minutes']);
-                $score_high_loss = $this->calcScoreHighLoss($matchitem->getMatchGuestscore() - $matchitem->getMatchHomescore(), $_POST['playerstats_minutes']);
+                $score_nooppgoals = $this->calcScoreOppGoalsNo($matchitem->getMatchGuestscore(), $playerteamitem->getPlayerteamPlayerPosition(), $_POST['playerstats_minutes'] ?? 0);
+                $score_high_win = $this->calcScoreHighWin($matchitem->getMatchHomescore() - $matchitem->getMatchGuestscore(), $_POST['playerstats_minutes'] ?? 0);
+                $score_high_loss = $this->calcScoreHighLoss($matchitem->getMatchGuestscore() - $matchitem->getMatchHomescore(), $_POST['playerstats_minutes'] ?? 0);
             } elseif($team_id == $matchitem->getMatchGuestteamId()) {
                 if($pm == 'new') {
-                    $score_oppgoals = $this->calcScoreOppGoalsNew($this->getGoalsList($matchitem->getMatchHometeamId(), $matchitem->getMatchGuestteamId(), $match_id), $playerteamitem->getPlayerteamPlayerPosition(), $_POST['playerstats_minutes'], $_POST['playerstats_minute_in'], $_POST['playerstats_minute_out'], $matchitem->getMatchMinutes());
+                    $score_oppgoals = $this->calcScoreOppGoalsNew($this->getGoalsList($matchitem->getMatchHometeamId(), $matchitem->getMatchGuestteamId(), $match_id), $playerteamitem->getPlayerteamPlayerPosition(), $_POST['playerstats_minutes'] ?? 0, $_POST['playerstats_minute_in'] ?? 0, $_POST['playerstats_minute_out'] ?? 0, $matchitem->getMatchMinutes());
                 } else {
-                    $score_oppgoals = $this->calcScoreOppGoals($matchitem->getMatchHomescore(), $playerteamitem->getPlayerteamPlayerPosition(), $_POST['playerstats_minutes']);
+                    $score_oppgoals = $this->calcScoreOppGoals($matchitem->getMatchHomescore(), $playerteamitem->getPlayerteamPlayerPosition(), $_POST['playerstats_minutes'] ?? 0);
                 }
-                $score_nooppgoals = $this->calcScoreOppGoalsNo($matchitem->getMatchHomescore(), $playerteamitem->getPlayerteamPlayerPosition(), $_POST['playerstats_minutes']);
-                $score_high_win = $this->calcScoreHighWin($matchitem->getMatchGuestscore() - $matchitem->getMatchHomescore(), $_POST['playerstats_minutes']);
-                $score_high_loss = $this->calcScoreHighLoss($matchitem->getMatchHomescore() - $matchitem->getMatchGuestscore(), $_POST['playerstats_minutes']);
+                $score_nooppgoals = $this->calcScoreOppGoalsNo($matchitem->getMatchHomescore(), $playerteamitem->getPlayerteamPlayerPosition(), $_POST['playerstats_minutes'] ?? 0);
+                $score_high_win = $this->calcScoreHighWin($matchitem->getMatchGuestscore() - $matchitem->getMatchHomescore(), $_POST['playerstats_minutes'] ?? 0);
+                $score_high_loss = $this->calcScoreHighLoss($matchitem->getMatchHomescore() - $matchitem->getMatchGuestscore(), $_POST['playerstats_minutes'] ?? 0);
             }
         } else {
             $score_nooppgoals = 0;
@@ -610,9 +618,10 @@ class matchpoints extends FFB_Auth_AdminFfb {
                     $new_goal->setGoalMatchId($match_id);
                     $new_goal->setGoalPlayerteamId($playerteam_id);
                     $new_goal->setGoalMinute($minute);
-                    if($own) {
-                        $new_goal->setGoalOwngoal(1);
-                    }
+                    // Propel omits unmodified defaults; live DB has no DEFAULT for these columns.
+                    $new_goal->setGoalOwngoal($own ? true : false);
+                    $new_goal->setGoalPenalty(false);
+                    $new_goal->setGoalPenaltyshootout(false);
                     $new_goal->save(); //uncomment when ready
                 }
             }
@@ -628,11 +637,9 @@ class matchpoints extends FFB_Auth_AdminFfb {
                 $new_psgoal->setPsgoalMatchId($match_id);
                 $new_psgoal->setPsgoalPlayerteamId($playerteam_id);
                 $new_psgoal->setPsgoalMinute($minute);
-                if($fail) {
-					$new_psgoal->setPsgoalFail(1);
-				} else {
-					$new_psgoal->setPsgoalHit(1);
-				}
+                // Propel omits unmodified defaults; live DB has no DEFAULT for these columns.
+                $new_psgoal->setPsgoalHit($fail ? false : true);
+                $new_psgoal->setPsgoalFail($fail ? true : false);
                 $new_psgoal->save();
             }
         }
@@ -669,20 +676,20 @@ class matchpoints extends FFB_Auth_AdminFfb {
     //used by matchpoints.js
     //used by fifa_playermanagement.js
     public function setMatchresult() {
-        $match_id = $_POST['playerstats_match_id'];
-        $match_url = $_POST['match_url'];
+        $match_id = $_POST['playerstats_match_id'] ?? null;
+        $match_url = $_POST['match_url'] ?? null;
         $pm = $this->options->options_game_pointsmode;
         if($match_id) {
             $matchitem = FfbMatchPeer::retrieveByPK($match_id);
             if($matchitem) {
-                $matchitem->setMatchHomescore($_POST['match_homescore']);
-                $matchitem->setMatchGuestscore($_POST['match_guestscore']);
-				if($_POST['match_minutes']) {
+                $matchitem->setMatchHomescore($_POST['match_homescore'] ?? -1);
+                $matchitem->setMatchGuestscore($_POST['match_guestscore'] ?? -1);
+				if(!empty($_POST['match_minutes'])) {
                 	$matchitem->setMatchMinutes($_POST['match_minutes']);
                 }
 
-                $matchitem->setMatchHomescorePenalty($_POST['match_homescore_penalty']);
-                $matchitem->setMatchGuestscorePenalty($_POST['match_guestscore_penalty']);
+                $matchitem->setMatchHomescorePenalty($_POST['match_homescore_penalty'] ?? -1);
+                $matchitem->setMatchGuestscorePenalty($_POST['match_guestscore_penalty'] ?? -1);
 
 				if($match_url) {
                 	$matchitem->setMatchUrl($match_url);
@@ -776,10 +783,10 @@ class matchpoints extends FFB_Auth_AdminFfb {
     public function getPlayerStatsForTeam() {
 
         //$team = FfbTeamPeer::retrieveByPK($_POST['id']);
-        $team = $_POST['id'];
-        $match_id = $_POST['match_id'];
+        $team = $_REQUEST['id'] ?? null;
+        $match_id = $_REQUEST['match_id'] ?? null;
         $pm = $this->options->options_game_pointsmode;
-        $all_players = $_REQUEST['all_players'];
+        $all_players = $_REQUEST['all_players'] ?? null;
         //echo 'tid: '.$team.' mid: '.$match_id;
 
         if($team) {
@@ -807,20 +814,12 @@ class matchpoints extends FFB_Auth_AdminFfb {
                     $pfid_name_tm = '';
                     $pfid_name_uefa = '';
                     $pfid_name_wf = '';
-                    if(count($playerfid)) {
-                        if(!$playerfid[0]) {
-                          echo 'ha: '.count($playerfid);
-                        }
+                    if(count($playerfid) > 0 && $playerfid[0]) {
                         $pfid_name_fifa = $playerfid[0]->getPlayerfidNameFifa();
                         $pfid_name_foe = $playerfid[0]->getPlayerfidNameFoe();
                         $pfid_name_tm = $playerfid[0]->getPlayerfidNameTm();
                         $pfid_name_uefa = $playerfid[0]->getPlayerfidNameUefa();
                         $pfid_name_wf = $playerfid[0]->getPlayerfidNameWf();
-                        //$pfid_fid_fifa = $playerfid[0]->getPlayerfidFidFifa();
-                        //$pfid_fid_foe = $playerfid[0]->getPlayerfidFidFoe();
-                        //$pfid_fid_tm = $playerfid[0]->getPlayerfidFidTm();
-                        //$pfid_fid_uefa = $playerfid[0]->getPlayerfidFidUefa();
-                        //$pfid_fid_wf = $playerfid[0]->getPlayerfidFidWf();
                     }
                     if($pfid_name_fifa) {
                         $players[$i]['player_name_fid_fifa'] = $pfid_name_fifa;
@@ -849,15 +848,15 @@ class matchpoints extends FFB_Auth_AdminFfb {
                     }
 
                     $players[$i]['player_id'] = $playeritem->getFfbPlayer()->getPlayerId();
-                    $players[$i]['player_fname'] = $playeritem->getFfbPlayer()->getPlayerFname();
-                    $players[$i]['player_lname'] = $playeritem->getFfbPlayer()->getPlayerLname();
-                    $players[$i]['player_nationality'] = $playeritem->getFfbPlayer()->getPlayerNationality();
-                    $players[$i]['player_status'] = $playeritem->getFfbPlayer()->getPlayerStatus();
-                    $players[$i]['player_status_description'] = $playeritem->getFfbPlayer()->getPlayerStatusDescription();
+                    $players[$i]['player_fname'] = $playeritem->getFfbPlayer()->getPlayerFname() ?: '';
+                    $players[$i]['player_lname'] = $playeritem->getFfbPlayer()->getPlayerLname() ?: '';
+                    $players[$i]['player_nationality'] = $playeritem->getFfbPlayer()->getPlayerNationality() ?: '';
+                    $players[$i]['player_status'] = $playeritem->getFfbPlayer()->getPlayerStatus() !== null ? $playeritem->getFfbPlayer()->getPlayerStatus() : 0;
+                    $players[$i]['player_status_description'] = $playeritem->getFfbPlayer()->getPlayerStatusDescription() ?: '';
                     $players[$i]['playerteam_id'] = $playeritem->getPlayerteamId();
-                    $players[$i]['playerteam_player_price'] = $playeritem->getPlayerteamPlayerPrice();
-                    $players[$i]['playerteam_player_position'] = $playeritem->getPlayerteamPlayerPosition();
-                    $players[$i]['playerteam_player_picture'] = $playeritem->getPlayerteamPlayerPicture();
+                    $players[$i]['playerteam_player_price'] = $playeritem->getPlayerteamPlayerPrice() !== null ? $playeritem->getPlayerteamPlayerPrice() : 0;
+                    $players[$i]['playerteam_player_position'] = $playeritem->getPlayerteamPlayerPosition() ?: '';
+                    $players[$i]['playerteam_player_picture'] = $playeritem->getPlayerteamPlayerPicture() ?: 0;
                     if($playeritem->getPlayerteamStatus()) {
                         $players[$i]['playerteam_status'] = $playeritem->getPlayerteamStatus();
                     } else {
@@ -870,7 +869,7 @@ class matchpoints extends FFB_Auth_AdminFfb {
 
                     $playerstats = $playeritem->getFfbPlayerstatss($criteria);
 
-                    if($playerstats[0]) {
+                    if(count($playerstats) > 0 && $playerstats[0]) {
                         // get the string for the goals
                         if($pm == 'new') {
                             $num_goals = $playerstats[0]->getPlayerstatsGoals();
@@ -924,17 +923,17 @@ class matchpoints extends FFB_Auth_AdminFfb {
                             $players[$i]['playerstats_owngoals'] = $playerstats[0]->getPlayerstatsOwngoals();
                         }
 
-                        $players[$i]['playerstats_assists'] = $playerstats[0]->getPlayerstatsAssists();
-                        $players[$i]['playerstats_minutes'] = $playerstats[0]->getPlayerstatsMinutes();
-                        $players[$i]['playerstats_minute_in'] = $playerstats[0]->getPlayerstatsMinuteIn();
-                        $players[$i]['playerstats_minute_out'] = $playerstats[0]->getPlayerstatsMinuteOut();
-                        $players[$i]['playerstats_cards'] = $playerstats[0]->getPlayerstatsCards();
+                        $players[$i]['playerstats_assists'] = $playerstats[0]->getPlayerstatsAssists() !== null ? $playerstats[0]->getPlayerstatsAssists() : 0;
+                        $players[$i]['playerstats_minutes'] = $playerstats[0]->getPlayerstatsMinutes() !== null ? $playerstats[0]->getPlayerstatsMinutes() : 0;
+                        $players[$i]['playerstats_minute_in'] = $playerstats[0]->getPlayerstatsMinuteIn() !== null ? $playerstats[0]->getPlayerstatsMinuteIn() : 0;
+                        $players[$i]['playerstats_minute_out'] = $playerstats[0]->getPlayerstatsMinuteOut() !== null ? $playerstats[0]->getPlayerstatsMinuteOut() : 0;
+                        $players[$i]['playerstats_cards'] = $playerstats[0]->getPlayerstatsCards() ?: 'n';
                         //$players[$i]['playerstats_owngoals'] = $playerstats[0]->getPlayerstatsOwngoals();
-                        $players[$i]['playerstats_penaltieslost'] = $playerstats[0]->getPlayerstatsPenaltieslost();
-                        $players[$i]['playerstats_penaltyshootout_save'] = $playerstats[0]->getPlayerstatsPenaltyshootoutSave();
-                        $players[$i]['playerstats_penaltyshootout_lost'] = $playerstats[0]->getPlayerstatsPenaltyshootoutLost();
-                        $players[$i]['playerstats_penaltyshootout_hit'] = $playerstats[0]->getPlayerstatsPenaltyshootoutHit();
-                        $players[$i]['playerstats_penaltiessaved'] = $playerstats[0]->getPlayerstatsPenaltiessaved();
+                        $players[$i]['playerstats_penaltieslost'] = $playerstats[0]->getPlayerstatsPenaltieslost() !== null ? $playerstats[0]->getPlayerstatsPenaltieslost() : 0;
+                        $players[$i]['playerstats_penaltyshootout_save'] = $playerstats[0]->getPlayerstatsPenaltyshootoutSave() !== null ? $playerstats[0]->getPlayerstatsPenaltyshootoutSave() : 0;
+                        $players[$i]['playerstats_penaltyshootout_lost'] = $playerstats[0]->getPlayerstatsPenaltyshootoutLost() !== null ? $playerstats[0]->getPlayerstatsPenaltyshootoutLost() : 0;
+                        $players[$i]['playerstats_penaltyshootout_hit'] = $playerstats[0]->getPlayerstatsPenaltyshootoutHit() !== null ? $playerstats[0]->getPlayerstatsPenaltyshootoutHit() : 0;
+                        $players[$i]['playerstats_penaltiessaved'] = $playerstats[0]->getPlayerstatsPenaltiessaved() !== null ? $playerstats[0]->getPlayerstatsPenaltiessaved() : 0;
                         $players[$i]['playerstats_score_goals'] = $playerstats[0]->getPlayerstatsScoreGoals();
                         $players[$i]['playerstats_score_assists'] = $playerstats[0]->getPlayerstatsScoreAssists();
                         $players[$i]['playerstats_score_minutes'] = $playerstats[0]->getPlayerstatsScoreMinutes();
@@ -1197,6 +1196,16 @@ class matchpoints extends FFB_Auth_AdminFfb {
             $update_item = new FfbPlayerfid();
             $update_item->setPlayerfidPlayerteamId($playerteam_id);
             $update_item->setPlayerfidTeamId($team_id);
+            $update_item->setPlayerfidFidFoe('');
+            $update_item->setPlayerfidFidFifa('');
+            $update_item->setPlayerfidFidTm('');
+            $update_item->setPlayerfidFidUefa('');
+            $update_item->setPlayerfidFidWf('');
+            $update_item->setPlayerfidNameFoe('');
+            $update_item->setPlayerfidNameFifa('');
+            $update_item->setPlayerfidNameTm('');
+            $update_item->setPlayerfidNameUefa('');
+            $update_item->setPlayerfidNameWf('');
         }
         if($fid_mode == "fifa") {
             $update_item->setPlayerfidNameFifa($fid_name);

@@ -46,6 +46,10 @@ class lineup extends FFB_Auth_User {
         $criteria->add(FfbMatchroundPeer::MATCHROUND_GAME_ID, $this->session->game_id_player);
         $criteria->setLimit(1);
         $matchrounds = $this->getMatchroundByCriteria($criteria);
+        if (!$matchrounds) {
+            $this->matchrounds = array();
+            return;
+        }
         $matchround_id = $matchrounds[0]['matchround_id'];
 
         $criteria = new Criteria();

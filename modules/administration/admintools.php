@@ -462,6 +462,16 @@ class admintools extends FFB_Auth_AdminFfb {
                 $update_item = new FfbPlayerfid();
                 $update_item->setPlayerfidPlayerteamId($item->getPlayerteamId());
                 $update_item->setPlayerfidTeamId($item->getPlayerteamTeamId());
+                $update_item->setPlayerfidFidFoe('');
+                $update_item->setPlayerfidFidFifa('');
+                $update_item->setPlayerfidFidTm('');
+                $update_item->setPlayerfidFidUefa('');
+                $update_item->setPlayerfidFidWf('');
+                $update_item->setPlayerfidNameFoe('');
+                $update_item->setPlayerfidNameFifa('');
+                $update_item->setPlayerfidNameTm('');
+                $update_item->setPlayerfidNameUefa('');
+                $update_item->setPlayerfidNameWf('');
             }
             $update_item->setPlayerfidNameUefa($player_name_fid_fifa);
             $update_item->save();

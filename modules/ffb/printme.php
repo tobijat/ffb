@@ -104,7 +104,7 @@ class printme extends FFB_Auth_User {
                     $criteria3->setLimit(1);
                     $playerstats = $player_item->getFfbPlayerstatss($criteria3);
 
-                    if($playerstats[0]) {
+                    if(count($playerstats) > 0 && $playerstats[0]) {
                     /*
                         $players[$j]['playerstats_goals'] = $playerstats[0]->getPlayerstatsGoals();
                         $players[$j]['playerstats_assists'] = $playerstats[0]->getPlayerstatsAssists();
@@ -125,8 +125,7 @@ class printme extends FFB_Auth_User {
                     */
                         $players[$j]['playerstats_score'] = $playerstats[0]->getPlayerstatsScore();
                     } else {
-                        //echo 'nix';
-                        //exit();
+                        $players[$j]['playerstats_score'] = 0;
                     /*
                         $players[$j]['playerstats_goals'] = 0;
                         $players[$j]['playerstats_assists'] = 0;

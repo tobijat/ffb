@@ -10,7 +10,7 @@
  *
  */
 
-class match extends FFB_Auth_AdminFfb {
+class admin_match extends FFB_Auth_AdminFfb {
 
     public function __construct() {
         parent::__construct();
@@ -19,7 +19,7 @@ class match extends FFB_Auth_AdminFfb {
     }
 
     public function __default() {
-        $this->administration_modus = $_POST['administration_modus'];
+        $this->administration_modus = $_POST['administration_modus'] ?? null;
         $this->post = $_POST;
         if (!empty($_POST)) {
             if(isset($_POST['match_administration_change_x']) || isset($_POST['match_administration_change']))
@@ -104,7 +104,9 @@ class match extends FFB_Auth_AdminFfb {
         $new_item->setMatchGuestscore($_POST['match_guestscore']);
         $new_item->setMatchHomescorePenalty($_POST['match_homescore_penalty']);
         $new_item->setMatchGuestscorePenalty($_POST['match_guestscore_penalty']);
-        $new_item->setMatchStatus($_POST['match_status']);
+        $new_item->setMatchStatus($_POST['match_status'] ?? '');
+        $new_item->setMatchMinutes(isset($_POST['match_minutes']) ? (int)$_POST['match_minutes'] : 0);
+        $new_item->setMatchUrl($_POST['match_url'] ?? '');
         $new_item->save();
         $this->administration_answer = 'New Match successfully added!';
         $this->administration_status = STATUS_CODE_SUCCESS_INSERT;
@@ -190,8 +192,8 @@ class match extends FFB_Auth_AdminFfb {
         }
 
         //check for existing match (only on insert not on update)
-        if($_POST['match_round'] && $_POST['match_hometeam_id'] && $_POST['match_guestteam_id'] && $_POST['match_date_day'] &&
-           $_POST['match_date_month'] && $_POST['match_date_year'] && !$_POST['match_administration_update']) {
+        if(($_POST['match_round'] ?? null) && ($_POST['match_hometeam_id'] ?? null) && ($_POST['match_guestteam_id'] ?? null) && ($_POST['match_date_day'] ?? null) &&
+           ($_POST['match_date_month'] ?? null) && ($_POST['match_date_year'] ?? null) && empty($_POST['match_administration_update'])) {
             $criteria = new Criteria();
             $criteria->add(FfbMatchPeer::MATCH_DATE, $_POST['match_date_year'].'-'.$_POST['match_date_month'].'-'.$_POST['match_date_day']);
             $criteria->add(FfbMatchPeer::MATCH_ROUND, $_POST['match_round']);
@@ -262,4 +264,6 @@ class match extends FFB_Auth_AdminFfb {
         $this->matches = $match;
     }
 }
+
+class_alias('admin_match', 'match');
 ?>

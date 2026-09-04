@@ -178,7 +178,7 @@ class bestteam extends FFB_Auth_User {
 				$pp_crit->add(FfbPlayerpricePeer::PLAYERPRICE_MATCHROUND_ID, $matchround_id);
 				$pp_crit->setLimit(1);
 				$pp_items = $playerstats->getFfbPlayerteam()->getFfbPlayerprices($pp_crit);
-				if($pm == 'old' || !$pp_items) {
+				if($pm == 'old' || count($pp_items) < 1) {
 					$top_of_round[$i]['playerteam_player_price'] = $playerstats->getFfbPlayerteam()->getPlayerteamPlayerPrice();
 				} else {
 					$top_of_round[$i]['playerteam_player_price'] = $pp_items[0]->getPlayerpricePrice();
@@ -197,7 +197,7 @@ class bestteam extends FFB_Auth_User {
 			$top_of_round['sum_score'] = $sum_score;
 			$top_of_round['sum_price'] = $sum_price;
 		} else {
-			$top_of_round = 0;
+			$top_of_round = array('sum_score' => 0, 'sum_price' => 0);
 		}
 		return $top_of_round;
 	}
@@ -309,7 +309,7 @@ class bestteam extends FFB_Auth_User {
 					$stats = $player->getFfbPlayerstatss($c1);
 					$price = $player->getFfbPlayerprices($c2);
 
-					if($stats && $price) {
+					if(count($stats) > 0 && count($price) > 0) {
 						$pdata[$i]['player'] = $player;
 						$pdata[$i]['score'] = $stats[0]->getPlayerstatsScore();
 						$pdata[$i]['price'] = $price[0]->getPlayerpricePrice();

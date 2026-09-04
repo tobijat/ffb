@@ -26,7 +26,7 @@ class team extends FFB_Auth_User {
 
     //returns a list of teams for given matchround
     public function getTeamsForRound() {
-        $matchround_id = $_POST['matchround_id'];
+        $matchround_id = $_POST['matchround_id'] ?? null;
         $criteria = new Criteria();
         $criteria->add(FfbMatchPeer::MATCH_ROUND, $matchround_id);
         $criteria->add(FfbMatchPeer::MATCH_STATUS, '');
@@ -54,10 +54,10 @@ class team extends FFB_Auth_User {
         $this->getTeamsByCriteria($criteria);
     }
 
-    //returns teamdetails for given team
+        //returns teamdetails for given team
     public function getItem() {
         $teams = array();
-        if($_POST['id']) {
+        if(!empty($_POST['id'])) {
             $item = FfbTeamPeer::retrieveByPK($_POST['id']);
             if($item) {
                 $teams[0]['team_id'] = $item->getTeamId();

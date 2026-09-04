@@ -135,7 +135,8 @@ class playertoteam extends FFB_Auth_AdminFfb {
 
     //returns list of players for selected team
     public function getTeamPlayers() {
-        $team = FfbTeamPeer::retrieveByPK($_POST['id']);
+        $teamId = $_REQUEST['id'] ?? null;
+        $team = $teamId ? FfbTeamPeer::retrieveByPK($teamId) : null;
         if($team) {
             $criteria = new Criteria();
             $criteria->addAscendingOrderByColumn(FfbPlayerteamPeer::PLAYERTEAM_PLAYER_POSITION);
@@ -152,23 +153,26 @@ class playertoteam extends FFB_Auth_AdminFfb {
             if($playerRefs) {
                 foreach($playerRefs as $ref) {
                     $player = $ref->getFfbPlayer();
+                    if (!$player) {
+                        continue;
+                    }
 
                     //from table ffb_player
                     $players[$i]['player_id'] = $player->getPlayerId();
-                    $players[$i]['player_fname'] = $player->getPlayerFname();
-                    $players[$i]['player_lname'] = $player->getPlayerLname();
-                    $players[$i]['player_nationality'] = $player->getPlayerNationality();
-                    $players[$i]['player_status'] = $player->getPlayerStatus();
-                    $players[$i]['player_status_description'] = $player->getPlayerStatusDescription();
+                    $players[$i]['player_fname'] = $player->getPlayerFname() ?: '';
+                    $players[$i]['player_lname'] = $player->getPlayerLname() ?: '';
+                    $players[$i]['player_nationality'] = $player->getPlayerNationality() ?: '';
+                    $players[$i]['player_status'] = $player->getPlayerStatus() !== null ? $player->getPlayerStatus() : 0;
+                    $players[$i]['player_status_description'] = $player->getPlayerStatusDescription() ?: '';
                     //from table ffb_playerteam
                     $players[$i]['playerteam_id'] = $ref->getPlayerteamId();
-                    $players[$i]['playerteam_player_price'] = $ref->getPlayerteamPlayerPrice();
+                    $players[$i]['playerteam_player_price'] = $ref->getPlayerteamPlayerPrice() !== null ? $ref->getPlayerteamPlayerPrice() : 0;
                     if($ref->getPlayerteamStatus()) {
                         $players[$i]['playerteam_status'] = $ref->getPlayerteamStatus();
                     } else {
                         $players[$i]['playerteam_status'] = 0;
                     }
-                    $players[$i]['playerteam_player_position'] = $ref->getPlayerteamPlayerPosition();
+                    $players[$i]['playerteam_player_position'] = $ref->getPlayerteamPlayerPosition() ?: '';
                     if(!$ref->getPlayerteamPlayerPicture() || $ref->getPlayerteamPlayerPicture() == '') {
                         $players[$i]['playerteam_player_picture'] = 0;
                     } else {
@@ -182,6 +186,8 @@ class playertoteam extends FFB_Auth_AdminFfb {
             $this->numResults = $i;
             $this->players = $players;
         } else {
+            $this->numResults = 0;
+            $this->players = array();
             $this->administration_error = 'No entry for this ID was found!';
             $this->administration_status = STATUS_CODE_ERROR;
         }

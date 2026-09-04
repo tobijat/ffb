@@ -36,13 +36,16 @@ class userscore extends FFB_Auth_User {
         $game_id = $this->session->game_id_player;
         $game_rankmode = $this->options->options_game_rankmode;
         $win_array = $this->returnGetMatchroundWins();
+        if (!is_array($win_array)) {
+            $win_array = array();
+        }
         $criteria = new Criteria();
-        $criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $_POST['matchround_id']);
+        $criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $_POST['matchround_id'] ?? 0);
         $userteams = FfbUserteamPeer::doSelect($criteria);
 
         $users = array();
+        $i = 0;
         if($userteams) {
-            $i=0;
             foreach($userteams as $userteam) {
             	$user_details = WebUserDetailsPeer::retrieveByPK($userteam->getWebUser()->getUserId());
                 $users[$i]['user_id'] = $userteam->getWebUser()->getUserId();
@@ -51,7 +54,7 @@ class userscore extends FFB_Auth_User {
                     { $users[$i]['user_nationality'] = $userteam->getWebUser()->getUserNationality(); }
                 else
                     { $users[$i]['user_nationality'] = 0; }
-                $fav_team = $user_details->getFfbTeamRelatedByUserDetailsFfbFavouriteTeam();
+                $fav_team = $user_details ? $user_details->getFfbTeamRelatedByUserDetailsFfbFavouriteTeam() : null;
 				if($fav_team) {
 					$users[$i]['user_favourite_team_nationality'] = $fav_team->getTeamNationality();
 				} else {
@@ -67,22 +70,23 @@ class userscore extends FFB_Auth_User {
                 $criteria->add(FfbMatchroundPeer::MATCHROUND_GAME_ID, $game_id);
                 $criteria->add(FfbMatchroundPeer::MATCHROUND_STARTDATE, $date, Criteria::LESS_THAN);
                 $criteria->add(FfbUserteamPeer::USERTEAM_USER_ID, $userteam->getWebUser()->getUserId());
-                $userteams = FfbUserteamPeer::doSelectJoinFfbMatchround($criteria);
-                $users[$i]['participations'] = count($userteams);
+                $userteamsJoined = FfbUserteamPeer::doSelectJoinFfbMatchround($criteria);
+                $users[$i]['participations'] = count($userteamsJoined);
 
                 $criteria = new Criteria();
                 $criteria->add(FfbUserscorePeer::USERSCORE_USER_ID, $userteam->getWebUser()->getUserId());
                 $criteria->add(FfbUserscorePeer::USERSCORE_GAME_ID, $game_id);
                 $userscoreitems = FfbUserscorePeer::doSelect($criteria);
 
-                if(count($userteams) && $userscoreitems) {
+                if(count($userteamsJoined) && $userscoreitems) {
                     $users[$i]['user_score_av'] = round(($userscoreitems[0]->getUserscoreTotal())/($users[$i]['participations']),0);
                 } else {
                     $users[$i]['user_score_av'] = 0;
                 }
 
-                if($win_array[$userteam->getWebUser()->getUserNickname()]) {
-                    $users[$i]['matchround_wins'] = $win_array[$userteam->getWebUser()->getUserNickname()];
+                $nick = $userteam->getWebUser()->getUserNickname();
+                if(!empty($win_array[$nick])) {
+                    $users[$i]['matchround_wins'] = $win_array[$nick];
                 } else {
                     $users[$i]['matchround_wins'] = 0;
                 }
@@ -126,19 +130,19 @@ class userscore extends FFB_Auth_User {
 			}
 			// *****
 
-	        if($_POST['sort_dir'] == "asc") {
+	        if(($_POST['sort_dir'] ?? '') == "asc") {
 				$sort_dir = SORT_ASC;
 			} else {
 				$sort_dir = SORT_DESC;
 			}
 
-	        if($_POST['sort_flag'] == "n") {
+	        if(($_POST['sort_flag'] ?? '') == "n") {
 				array_multisort($names, $sort_dir, SORT_STRING, $users);
-			} elseif($_POST['sort_flag'] == "p") {
+			} elseif(($_POST['sort_flag'] ?? '') == "p") {
 				array_multisort($parts, $sort_dir, $points, $sort_dir, $names, SORT_ASC, SORT_STRING, $users);
-			} elseif($_POST['sort_flag'] == "w") {
+			} elseif(($_POST['sort_flag'] ?? '') == "w") {
 				array_multisort($wins, $sort_dir, $points, $sort_dir, $names, SORT_ASC, SORT_STRING, $users);
-			} elseif($_POST['sort_flag'] == "r") {
+			} elseif(($_POST['sort_flag'] ?? '') == "r") {
 				array_multisort($ranks, $sort_dir, $names, SORT_ASC, SORT_STRING, $users);
 			} else {
 	            array_multisort($points, $sort_dir, $names, SORT_ASC, SORT_STRING, $users);
@@ -161,6 +165,7 @@ class userscore extends FFB_Auth_User {
 			$this->numResults = -1;
 			//$this->users = $users;
 			$this->rankMode = $game_rankmode;
+			$win_array = array();
 			//return;
 			//no players in this list
 		}
@@ -170,8 +175,8 @@ class userscore extends FFB_Auth_User {
         $scores = FfbUserscorePeer::doSelect($criteria);
 
         $users = array();
+        $i = 0;
         if($scores) {
-            $i=0;
             foreach($scores as $scoreitem) {
             	$user_details = WebUserDetailsPeer::retrieveByPK($scoreitem->getWebUser()->getUserId());
 				$users[$i]['user_id'] = $scoreitem->getWebUser()->getUserId();
@@ -181,7 +186,7 @@ class userscore extends FFB_Auth_User {
                 else
                     { $users[$i]['user_nationality'] = 0; }
 
-                $fav_team = $user_details->getFfbTeamRelatedByUserDetailsFfbFavouriteTeam();
+                $fav_team = $user_details ? $user_details->getFfbTeamRelatedByUserDetailsFfbFavouriteTeam() : null;
 				if($fav_team) {
 					$users[$i]['user_favourite_team_nationality'] = $fav_team->getTeamNationality();
 				} else {
@@ -258,19 +263,19 @@ class userscore extends FFB_Auth_User {
 			}
 			// *****
 
-	        if($_POST['sort_dir'] == "asc") {
+	        if(($_POST['sort_dir'] ?? '') == "asc") {
 				$sort_dir = SORT_ASC;
 			} else {
 				$sort_dir = SORT_DESC;
 			}
 
-	        if($_POST['sort_flag'] == "n") {
+	        if(($_POST['sort_flag'] ?? '') == "n") {
 				array_multisort($names, $sort_dir, SORT_STRING, $users);
-			} elseif($_POST['sort_flag'] == "p") {
+			} elseif(($_POST['sort_flag'] ?? '') == "p") {
 				array_multisort($parts, $sort_dir, $wc_points, $sort_dir, $points, $sort_dir, $names, SORT_ASC, SORT_STRING, $users);
-			} elseif($_POST['sort_flag'] == "w") {
+			} elseif(($_POST['sort_flag'] ?? '') == "w") {
 				array_multisort($wins, $sort_dir, $wc_points, $sort_dir, $points, $sort_dir, $names, SORT_ASC, SORT_STRING, $users);
-			} elseif($_POST['sort_flag'] == "r") {
+			} elseif(($_POST['sort_flag'] ?? '') == "r") {
 				array_multisort($ranks, $sort_dir, $names, SORT_ASC, SORT_STRING, $users);
 			} else {
 				if($game_rankmode == 'points') {

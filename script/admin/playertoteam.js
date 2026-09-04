@@ -37,7 +37,7 @@ function init() {
 }
 
 function teamPlayers(playerteam_team_id) {
-	var url = server + '/administration/playertoteam/getTeamPlayers.xml';
+	var url = server + 'administration/playertoteam/getTeamPlayers.xml';
 	dropLineW3('PlayerToTeams', MEDIUM_LOAD);
 	playerlist_.clear();
 	var pltt_id =  playerteam_team_id;
@@ -45,6 +45,10 @@ function teamPlayers(playerteam_team_id) {
  		onSuccess : function(response) {
  		//alert(response.responseText);
  		var xmlResponse=response.responseXML;
+ 		if(!xmlResponse) {
+ 			handleAjaxError();
+ 			return;
+ 		}
  		var players = xmlResponse.getElementsByTagName('XML_Serializer_Tag');
 		var selectTeamPlayer= '<div id="playerhead"><div id="playerhead_name">Player Name</div>' +
 							  '<div id="playerhead_nationality">Nationality</div>' +
@@ -77,7 +81,8 @@ function teamPlayers(playerteam_team_id) {
 			playerlist_[i]['player_price'] = players[i].getElementsByTagName('playerteam_player_price')[0].firstChild.nodeValue;
 			//playerteam id
 			playerlist_[i]['playerteam_id'] = players[i].getElementsByTagName('playerteam_id')[0].firstChild.nodeValue;
-			if(players[i].getElementsByTagName('playerteam_player_picture')[0].firstChild.nodeValue == 0)
+			if(players[i].getElementsByTagName('playerteam_player_picture')[0].firstChild==null ||
+			   players[i].getElementsByTagName('playerteam_player_picture')[0].firstChild.nodeValue == 0)
 			    playerlist_[i]['playerteam_player_picture'] = '';
 			else
 			    playerlist_[i]['playerteam_player_picture'] = players[i].getElementsByTagName('playerteam_player_picture')[0].firstChild.nodeValue;
@@ -95,10 +100,10 @@ function teamPlayers(playerteam_team_id) {
 		},
 
 		 onFailure : function(response) {
-    	alert("Oops, there's been an error.");
+    	handleAjaxError();
  		},
 
-		parameters: Form.serialize($("teamselect"))
+		parameters: 'id=' + encodeURIComponent(pltt_id)
 	});
 
 
@@ -427,7 +432,7 @@ function sendPlayerInfos(index) {
     	alert("Oops, there's been an error.");
  		},
 
-		parameters: '?action='+editPlayerlist_[index]['action'] +'&playerteam_id='+editPlayerlist_[index]['playerteam_id']+'&playerteam_player_id='+editPlayerlist_[index]['playerteam_player_id']+'&playerteam_team_id='+editPlayerlist_[index]['playerteam_team_id']+'&playerteam_player_picture='+editPlayerlist_[index]['playerteam_player_picture']+'&playerteam_status='+editPlayerlist_[index]['playerteam_status']+'&playerteam_player_price='+editPlayerlist_[index]['playerteam_player_price']+'&playerteam_player_position='+editPlayerlist_[index]['playerteam_player_position']
+		parameters: 'action='+editPlayerlist_[index]['action'] +'&playerteam_id='+editPlayerlist_[index]['playerteam_id']+'&playerteam_player_id='+editPlayerlist_[index]['playerteam_player_id']+'&playerteam_team_id='+editPlayerlist_[index]['playerteam_team_id']+'&playerteam_player_picture='+editPlayerlist_[index]['playerteam_player_picture']+'&playerteam_status='+editPlayerlist_[index]['playerteam_status']+'&playerteam_player_price='+editPlayerlist_[index]['playerteam_player_price']+'&playerteam_player_position='+editPlayerlist_[index]['playerteam_player_position']
 	});
 }
 
