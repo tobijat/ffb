@@ -19,7 +19,7 @@ class team extends FFB_Auth_AdminFfb {
     }
 
     public function __default() {
-        $this->administration_modus = $_POST['administration_modus'];
+        $this->administration_modus = $_POST['administration_modus'] ?? null;
         $this->post = $_POST;
         if (!empty($_POST)) {
             if(isset($_POST['team_administration_change_x']) || isset($_POST['team_administration_change']))
@@ -51,8 +51,8 @@ class team extends FFB_Auth_AdminFfb {
         $criteria->addAscendingOrderByColumn(FfbTeamPeer::TEAM_NAME);
         $list = FfbTeamPeer::doSelect($criteria);
         $teams = array();
+        $i = 0;
         if($list) {
-            $i=0;
             foreach($list as $item) {
             	$teamfids = $item->getFfbTeamfids();
             	//echo count($teamfids)."\n";
@@ -61,44 +61,25 @@ class team extends FFB_Auth_AdminFfb {
                 $teams[$i]['team_nationality'] = $item->getTeamNationality();
                 $teams[$i]['team_status'] = $item->getTeamStatus();
                 $teams[$i]['team_price'] = $item->getTeamAvgPrice();
+                $teams[$i]['teamfid_fid_foe'] = 0;
+                $teams[$i]['teamfid_fid_tm'] = 0;
+                $teams[$i]['teamfid_fid_wf'] = 0;
+                $teams[$i]['teamfid_name_foe'] = 0;
+                $teams[$i]['teamfid_name_tm'] = 0;
+                $teams[$i]['teamfid_name_wf'] = 0;
+                $teams[$i]['teamfid_url_foe'] = 0;
+                $teams[$i]['teamfid_url_tm'] = 0;
+                $teams[$i]['teamfid_url_wf'] = 0;
                 if(count($teamfids)) {
-					$teams[$i]['teamfid_fid_foe'] = $teamfids[0]->getTeamfidFidFoe();
-					$teams[$i]['teamfid_fid_tm'] = $teamfids[0]->getTeamfidFidTm();
-					$teams[$i]['teamfid_fid_wf'] = $teamfids[0]->getTeamfidFidWf();
-					$teams[$i]['teamfid_name_foe'] = $teamfids[0]->getTeamfidNameFoe();
-					$teams[$i]['teamfid_name_tm'] = $teamfids[0]->getTeamfidNameTm();
-					$teams[$i]['teamfid_name_wf'] = $teamfids[0]->getTeamfidNameWf();
-					$teams[$i]['teamfid_url_foe'] = $teamfids[0]->getTeamfidUrlFoe();
-					$teams[$i]['teamfid_url_tm'] = $teamfids[0]->getTeamfidUrlTm();
-					$teams[$i]['teamfid_url_wf'] = $teamfids[0]->getTeamfidUrlWf();
-				}
-
-				if(!$teams[$i]['teamfid_fid_foe']) {
-					$teams[$i]['teamfid_fid_foe'] = 0;
-				}
-				if(!$teams[$i]['teamfid_fid_tm']) {
-					$teams[$i]['teamfid_fid_tm'] = 0;
-				}
-				if(!$teams[$i]['teamfid_fid_wf']) {
-					$teams[$i]['teamfid_fid_wf'] = 0;
-				}
-				if(!$teams[$i]['teamfid_name_foe']) {
-					$teams[$i]['teamfid_name_foe'] = 0;
-				}
-				if(!$teams[$i]['teamfid_name_tm']) {
-					$teams[$i]['teamfid_name_tm'] = 0;
-				}
-				if(!$teams[$i]['teamfid_name_wf']) {
-					$teams[$i]['teamfid_name_wf'] = 0;
-				}
-				if(!$teams[$i]['teamfid_url_foe']) {
-					$teams[$i]['teamfid_url_foe'] = 0;
-				}
-				if(!$teams[$i]['teamfid_url_tm']) {
-					$teams[$i]['teamfid_url_tm'] = 0;
-				}
-				if(!$teams[$i]['teamfid_url_wf']) {
-					$teams[$i]['teamfid_url_wf'] = 0;
+					$teams[$i]['teamfid_fid_foe'] = $teamfids[0]->getTeamfidFidFoe() ?: 0;
+					$teams[$i]['teamfid_fid_tm'] = $teamfids[0]->getTeamfidFidTm() ?: 0;
+					$teams[$i]['teamfid_fid_wf'] = $teamfids[0]->getTeamfidFidWf() ?: 0;
+					$teams[$i]['teamfid_name_foe'] = $teamfids[0]->getTeamfidNameFoe() ?: 0;
+					$teams[$i]['teamfid_name_tm'] = $teamfids[0]->getTeamfidNameTm() ?: 0;
+					$teams[$i]['teamfid_name_wf'] = $teamfids[0]->getTeamfidNameWf() ?: 0;
+					$teams[$i]['teamfid_url_foe'] = $teamfids[0]->getTeamfidUrlFoe() ?: 0;
+					$teams[$i]['teamfid_url_tm'] = $teamfids[0]->getTeamfidUrlTm() ?: 0;
+					$teams[$i]['teamfid_url_wf'] = $teamfids[0]->getTeamfidUrlWf() ?: 0;
 				}
                 $i++;
             }
@@ -120,7 +101,7 @@ class team extends FFB_Auth_AdminFfb {
         foreach($matches as $match) {
 			$hometeam = $match->getFfbTeamRelatedByMatchHometeamId();
 			$teamfids = $hometeam->getFfbTeamfids();
-			if(!$group_array[$hometeam->getTeamId()]) {
+			if(empty($group_array[$hometeam->getTeamId()])) {
 				$group_array[$hometeam->getTeamId()] = 1;
 				$teams[$i]['team_id'] = $hometeam->getTeamId();
                 $teams[$i]['team_name'] = $hometeam->getTeamName();
@@ -134,50 +115,32 @@ class team extends FFB_Auth_AdminFfb {
                 $players = FfbPlayerteamPeer::doSelect($criteria);
                 $num_players = count($players);
                 $teams[$i]['team_num_players'] = $num_players;
-                if($teamfids) {
-					$teams[$i]['teamfid_fid_foe'] = $teamfids[0]->getTeamfidFidFoe();
-					$teams[$i]['teamfid_fid_tm'] = $teamfids[0]->getTeamfidFidTm();
-					$teams[$i]['teamfid_fid_wf'] = $teamfids[0]->getTeamfidFidWf();
-					$teams[$i]['teamfid_name_foe'] = $teamfids[0]->getTeamfidNameFoe();
-					$teams[$i]['teamfid_name_tm'] = $teamfids[0]->getTeamfidNameTm();
-					$teams[$i]['teamfid_name_wf'] = $teamfids[0]->getTeamfidNameWf();
-					$teams[$i]['teamfid_url_foe'] = $teamfids[0]->getTeamfidUrlFoe();
-					$teams[$i]['teamfid_url_tm'] = $teamfids[0]->getTeamfidUrlTm();
-					$teams[$i]['teamfid_url_wf'] = $teamfids[0]->getTeamfidUrlWf();
+                $teams[$i]['teamfid_fid_foe'] = 0;
+                $teams[$i]['teamfid_fid_tm'] = 0;
+                $teams[$i]['teamfid_fid_wf'] = 0;
+                $teams[$i]['teamfid_name_foe'] = 0;
+                $teams[$i]['teamfid_name_tm'] = 0;
+                $teams[$i]['teamfid_name_wf'] = 0;
+                $teams[$i]['teamfid_url_foe'] = 0;
+                $teams[$i]['teamfid_url_tm'] = 0;
+                $teams[$i]['teamfid_url_wf'] = 0;
+                if(count($teamfids) > 0) {
+					$teams[$i]['teamfid_fid_foe'] = $teamfids[0]->getTeamfidFidFoe() ?: 0;
+					$teams[$i]['teamfid_fid_tm'] = $teamfids[0]->getTeamfidFidTm() ?: 0;
+					$teams[$i]['teamfid_fid_wf'] = $teamfids[0]->getTeamfidFidWf() ?: 0;
+					$teams[$i]['teamfid_name_foe'] = $teamfids[0]->getTeamfidNameFoe() ?: 0;
+					$teams[$i]['teamfid_name_tm'] = $teamfids[0]->getTeamfidNameTm() ?: 0;
+					$teams[$i]['teamfid_name_wf'] = $teamfids[0]->getTeamfidNameWf() ?: 0;
+					$teams[$i]['teamfid_url_foe'] = $teamfids[0]->getTeamfidUrlFoe() ?: 0;
+					$teams[$i]['teamfid_url_tm'] = $teamfids[0]->getTeamfidUrlTm() ?: 0;
+					$teams[$i]['teamfid_url_wf'] = $teamfids[0]->getTeamfidUrlWf() ?: 0;
 				}
 
-				if(!$teams[$i]['teamfid_fid_foe']) {
-					$teams[$i]['teamfid_fid_foe'] = 0;
-				}
-				if(!$teams[$i]['teamfid_fid_tm']) {
-					$teams[$i]['teamfid_fid_tm'] = 0;
-				}
-				if(!$teams[$i]['teamfid_fid_wf']) {
-					$teams[$i]['teamfid_fid_wf'] = 0;
-				}
-				if(!$teams[$i]['teamfid_name_foe']) {
-					$teams[$i]['teamfid_name_foe'] = 0;
-				}
-				if(!$teams[$i]['teamfid_name_tm']) {
-					$teams[$i]['teamfid_name_tm'] = 0;
-				}
-				if(!$teams[$i]['teamfid_name_wf']) {
-					$teams[$i]['teamfid_name_wf'] = 0;
-				}
-				if(!$teams[$i]['teamfid_url_foe']) {
-					$teams[$i]['teamfid_url_foe'] = 0;
-				}
-				if(!$teams[$i]['teamfid_url_tm']) {
-					$teams[$i]['teamfid_url_tm'] = 0;
-				}
-				if(!$teams[$i]['teamfid_url_wf']) {
-					$teams[$i]['teamfid_url_wf'] = 0;
-				}
                 $i++;
 			}
 			$guestteam = $match->getFfbTeamRelatedByMatchGuestteamId();
 			$teamfids = $guestteam->getFfbTeamfids();
-			if(!$group_array[$guestteam->getTeamId()]) {
+			if(empty($group_array[$guestteam->getTeamId()])) {
 				$group_array[$guestteam->getTeamId()] = 1;
 				$teams[$i]['team_id'] = $guestteam->getTeamId();
                 $teams[$i]['team_name'] = $guestteam->getTeamName();
@@ -191,43 +154,25 @@ class team extends FFB_Auth_AdminFfb {
                 $players = FfbPlayerteamPeer::doSelect($criteria);
                 $num_players = count($players);
                 $teams[$i]['team_num_players'] = $num_players;
-				if($teamfids) {
-					$teams[$i]['teamfid_fid_foe'] = $teamfids[0]->getTeamfidFidFoe();
-					$teams[$i]['teamfid_fid_tm'] = $teamfids[0]->getTeamfidFidTm();
-					$teams[$i]['teamfid_fid_wf'] = $teamfids[0]->getTeamfidFidWf();
-					$teams[$i]['teamfid_name_foe'] = $teamfids[0]->getTeamfidNameFoe();
-					$teams[$i]['teamfid_name_tm'] = $teamfids[0]->getTeamfidNameTm();
-					$teams[$i]['teamfid_name_wf'] = $teamfids[0]->getTeamfidNameWf();
-					$teams[$i]['teamfid_url_foe'] = $teamfids[0]->getTeamfidUrlFoe();
-					$teams[$i]['teamfid_url_tm'] = $teamfids[0]->getTeamfidUrlTm();
-					$teams[$i]['teamfid_url_wf'] = $teamfids[0]->getTeamfidUrlWf();
-				}
-				if(!$teams[$i]['teamfid_fid_foe']) {
-					$teams[$i]['teamfid_fid_foe'] = 0;
-				}
-				if(!$teams[$i]['teamfid_fid_tm']) {
-					$teams[$i]['teamfid_fid_tm'] = 0;
-				}
-				if(!$teams[$i]['teamfid_fid_wf']) {
-					$teams[$i]['teamfid_fid_wf'] = 0;
-				}
-				if(!$teams[$i]['teamfid_name_foe']) {
-					$teams[$i]['teamfid_name_foe'] = 0;
-				}
-				if(!$teams[$i]['teamfid_name_tm']) {
-					$teams[$i]['teamfid_name_tm'] = 0;
-				}
-				if(!$teams[$i]['teamfid_name_wf']) {
-					$teams[$i]['teamfid_name_wf'] = 0;
-				}
-				if(!$teams[$i]['teamfid_url_foe']) {
-					$teams[$i]['teamfid_url_foe'] = 0;
-				}
-				if(!$teams[$i]['teamfid_url_tm']) {
-					$teams[$i]['teamfid_url_tm'] = 0;
-				}
-				if(!$teams[$i]['teamfid_url_wf']) {
-					$teams[$i]['teamfid_url_wf'] = 0;
+                $teams[$i]['teamfid_fid_foe'] = 0;
+                $teams[$i]['teamfid_fid_tm'] = 0;
+                $teams[$i]['teamfid_fid_wf'] = 0;
+                $teams[$i]['teamfid_name_foe'] = 0;
+                $teams[$i]['teamfid_name_tm'] = 0;
+                $teams[$i]['teamfid_name_wf'] = 0;
+                $teams[$i]['teamfid_url_foe'] = 0;
+                $teams[$i]['teamfid_url_tm'] = 0;
+                $teams[$i]['teamfid_url_wf'] = 0;
+				if(count($teamfids) > 0) {
+					$teams[$i]['teamfid_fid_foe'] = $teamfids[0]->getTeamfidFidFoe() ?: 0;
+					$teams[$i]['teamfid_fid_tm'] = $teamfids[0]->getTeamfidFidTm() ?: 0;
+					$teams[$i]['teamfid_fid_wf'] = $teamfids[0]->getTeamfidFidWf() ?: 0;
+					$teams[$i]['teamfid_name_foe'] = $teamfids[0]->getTeamfidNameFoe() ?: 0;
+					$teams[$i]['teamfid_name_tm'] = $teamfids[0]->getTeamfidNameTm() ?: 0;
+					$teams[$i]['teamfid_name_wf'] = $teamfids[0]->getTeamfidNameWf() ?: 0;
+					$teams[$i]['teamfid_url_foe'] = $teamfids[0]->getTeamfidUrlFoe() ?: 0;
+					$teams[$i]['teamfid_url_tm'] = $teamfids[0]->getTeamfidUrlTm() ?: 0;
+					$teams[$i]['teamfid_url_wf'] = $teamfids[0]->getTeamfidUrlWf() ?: 0;
 				}
                 $i++;
 			}
@@ -249,7 +194,7 @@ class team extends FFB_Auth_AdminFfb {
                 $team['team_status'] = $item->getTeamStatus();
                 $team['team_price'] = $item->getTeamAvgPrice();
                 $teamfids = $item->getFfbTeamfids();
-                if($teamfids) {
+                if(count($teamfids) > 0) {
 					$tfid = $teamfids[0];
 					$team['teamfid_fid_tm'] = $tfid->getTeamfidFidTm();
 					$team['teamfid_name_tm'] = $tfid->getTeamfidNameTm();
@@ -267,23 +212,30 @@ class team extends FFB_Auth_AdminFfb {
     //neues Team hinzufügen
     private function addItem() {
         $new_item = new FfbTeam();
+        $new_item->setTeamForeignId($_POST['team_foreign_id'] ?? '');
         $new_item->setTeamName($_POST['team_name']);
         $new_item->setTeamNationality($_POST['team_nationality']);
         $new_item->setTeamStatus($_POST['team_status']);
-        $new_item->setTeamAvgPrice($_POST['team_price']);
+        $new_item->setTeamAvgPrice($_POST['team_price'] ?? 0);
+        $new_item->setTeamNumPlayers(0);
         $new_item->save();
         $new_tfid = new FfbTeamfid();
         $new_tfid->setTeamfidTeamId($new_item->getTeamId());
-        $new_tfid->setTeamfidFidTm($_POST['teamfid_fid_tm']);
-        $new_tfid->setTeamfidNameTm($_POST['teamfid_name_tm']);
-        $new_tfid->setTeamfidNameWf($_POST['teamfid_name_wf']);
-        if($_POST['teamfid_fid_tm'] && $_POST['teamfid_name_tm']) {
+        $new_tfid->setTeamfidFidFoe('');
+        $new_tfid->setTeamfidFidTm($_POST['teamfid_fid_tm'] ?? '');
+        $new_tfid->setTeamfidFidWf('');
+        $new_tfid->setTeamfidNameFoe('');
+        $new_tfid->setTeamfidNameTm($_POST['teamfid_name_tm'] ?? '');
+        $new_tfid->setTeamfidNameWf($_POST['teamfid_name_wf'] ?? '');
+        $new_tfid->setTeamfidUrlTm('');
+        $new_tfid->setTeamfidUrlWf('');
+        if(!empty($_POST['teamfid_fid_tm']) && !empty($_POST['teamfid_name_tm'])) {
 			$new_tfid->setTeamfidUrlTm('http://www.transfermarkt.at/de/'.$_POST['teamfid_name_tm'].'/startseite/nationalmannschaft_'.$_POST['teamfid_fid_tm'].'.html');
 		}
-	    if($_POST['teamfid_name_wf']) {
+	    if(!empty($_POST['teamfid_name_wf'])) {
 	       	$new_tfid->setTeamfidUrlWf('http://www.weltfussball.at/teams/'.$_POST['teamfid_name_wf'].'-team/');
 	    }
-        $new_tfid->setTeamfidUrlFoe($_POST['teamfid_url_foe']);
+        $new_tfid->setTeamfidUrlFoe($_POST['teamfid_url_foe'] ?? '');
         $new_tfid->save();
         $this->administration_answer = 'New Team successfully added!';
         $this->administration_status = STATUS_CODE_SUCCESS_INSERT;
@@ -301,22 +253,31 @@ class team extends FFB_Auth_AdminFfb {
             $exist_item->save();
 
             $tfids = $exist_item->getFfbTeamfids();
-            if($tfids) {
+            if(count($tfids) > 0) {
 				$new_tfid = $tfids[0];
 			} else {
 				$new_tfid = new FfbTeamfid();
 				$new_tfid->setTeamfidTeamId($id);
+				$new_tfid->setTeamfidFidFoe('');
+				$new_tfid->setTeamfidFidTm('');
+				$new_tfid->setTeamfidFidWf('');
+				$new_tfid->setTeamfidNameFoe('');
+				$new_tfid->setTeamfidNameTm('');
+				$new_tfid->setTeamfidNameWf('');
+				$new_tfid->setTeamfidUrlFoe('');
+				$new_tfid->setTeamfidUrlTm('');
+				$new_tfid->setTeamfidUrlWf('');
 			}
-	        $new_tfid->setTeamfidFidTm($_POST['teamfid_fid_tm']);
-	        $new_tfid->setTeamfidNameTm($_POST['teamfid_name_tm']);
-	        $new_tfid->setTeamfidNameWf($_POST['teamfid_name_wf']);
-	        if($_POST['teamfid_fid_tm'] && $_POST['teamfid_name_tm']) {
+	        $new_tfid->setTeamfidFidTm($_POST['teamfid_fid_tm'] ?? '');
+	        $new_tfid->setTeamfidNameTm($_POST['teamfid_name_tm'] ?? '');
+	        $new_tfid->setTeamfidNameWf($_POST['teamfid_name_wf'] ?? '');
+	        if(!empty($_POST['teamfid_fid_tm']) && !empty($_POST['teamfid_name_tm'])) {
 				$new_tfid->setTeamfidUrlTm('http://www.transfermarkt.at/de/'.$_POST['teamfid_name_tm'].'/startseite/nationalmannschaft_'.$_POST['teamfid_fid_tm'].'.html');
 			}
-	        if($_POST['teamfid_name_wf']) {
+	        if(!empty($_POST['teamfid_name_wf'])) {
 	        	$new_tfid->setTeamfidUrlWf('http://www.weltfussball.at/teams/'.$_POST['teamfid_name_wf'].'-team/');
 	        }
-	        $new_tfid->setTeamfidUrlFoe($_POST['teamfid_url_foe']);
+	        $new_tfid->setTeamfidUrlFoe($_POST['teamfid_url_foe'] ?? '');
 	        $new_tfid->save();
 
             $this->administration_answer = 'Existing Team successfully updated!';

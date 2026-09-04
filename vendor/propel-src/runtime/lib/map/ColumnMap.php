@@ -509,7 +509,9 @@ class ColumnMap
             $name = substr($name, $pos + 1);
         }
 
-        return $name;
+        // Generated TableMaps store columns as UPPERCASE (PLAYERTEAM_PLAYER_ID),
+        // while RelationMap local keys use schema/db names (playerteam_player_id).
+        return strtoupper($name);
     }
 
     /**

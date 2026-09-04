@@ -99,12 +99,19 @@ class teammanagement extends FFB_Auth_User {
     }
 
     public function saveLineup() {
-        $matchround_id = $_POST['matchround_id'];
-        $lineup_string = trim($_POST['lineup']);
-        $sum_price = $_POST['sum_price'];
+        $matchround_id = $_POST['matchround_id'] ?? null;
+        $lineup_string = trim((string)($_POST['lineup'] ?? ''));
+        $sum_price = $_POST['sum_price'] ?? 0;
         $lineup_ids = explode(',', $lineup_string);
         $user_id = $this->session->user_id;
         $game_id = $this->session->game_id_player;
+
+        if(!$matchround_id || count($lineup_ids) < 11) {
+            $this->ffb_error = 'Ung&uuml;ltige Aufstellung!';
+            $this->ffb_answer = 0;
+            $this->ffb_status = STATUS_CODE_ERROR;
+            return;
+        }
 
         if(!$this->checkMatchround($matchround_id)) {
             $this->ffb_error = 'Die Deadline f&uuml;r diese Spielrunde ist bereits vor&uuml;ber! Deine Aufstellung wurde nicht gespeichert!';
@@ -146,6 +153,7 @@ class teammanagement extends FFB_Auth_User {
 
         $entry->setUserteamDate($date);
         $entry->setUserteamScore(0);
+        $entry->setUserteamWcPoints(0);
         $entry->setUserteamPrice($player_price_sum);
 
         $entry->save();
@@ -253,6 +261,7 @@ class teammanagement extends FFB_Auth_User {
             }
             //fill in the userteam-entries
             $entry->setUserteamScore($userteam_score);
+            $entry->setUserteamWcPoints(0);
             $entry->setUserteamPrice($player_price_sum);
             $entry->setUserteamPlayerId1($players[0]);
             $entry->setUserteamPlayerId2($players[1]);

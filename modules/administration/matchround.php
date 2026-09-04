@@ -19,7 +19,7 @@ class matchround extends FFB_Auth_AdminFfb {
     }
 
     public function __default() {
-        $this->administration_modus = $_POST['administration_modus'];
+        $this->administration_modus = $_POST['administration_modus'] ?? null;
         $this->post = $_POST;
         if (!empty($_POST)) {
             if(isset($_POST['matchround_administration_change_x']) || isset($_POST['matchround_administration_change']))
@@ -279,133 +279,56 @@ class matchround extends FFB_Auth_AdminFfb {
 
     //return the most wanted players orderd to a team
     public function getMostWanted() {
-    	$now = microtime();//time();
-    	$id = intval($_REQUEST['matchround_id']);
-/*
-    	$id = 24;
+    	$now = microtime(true);
+    	$id = intval($_REQUEST['matchround_id'] ?? 0);
 
-        $team = FfbTeamPeer::retrieveByPK(32);
-
-    	$criteria = new Criteria();
-    	$criteria->addAnd(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
-    	$criteria->addOr(FfbUserteamPeer::USERTEAM_PLAYER_ID1, $team->get);
-
-    	$num = FfbPlayerteamPeer::doCountJoinAll($criteria);
-
-    	echo $num;
-    	exit();
-*/
     	$teamsAtStart = array();
     	$i = 0;
-    	//really pretty fast and single MYSQL statement
-    	/* $query = ' SELECT ffb_team.team_name, COUNT(ffb_playerteam.playerteam_id) AS plnum '.
-                 ' FROM ffb_team, ffb_playerteam, ffb_userteam '.
-                 ' WHERE (ffb_team.team_id=ffb_playerteam.playerteam_team_id) ' .
-                 ' AND ' .
-				 ' ( ' .
-				 ' (ffb_playerteam.playerteam_id=ffb_userteam.userteam_player_id1) OR ' .
-				 ' (ffb_playerteam.playerteam_id=ffb_userteam.userteam_player_id2) OR ' .
-				 ' (ffb_playerteam.playerteam_id=ffb_userteam.userteam_player_id3) OR ' .
-				 ' (ffb_playerteam.playerteam_id=ffb_userteam.userteam_player_id4) OR ' .
-				 ' (ffb_playerteam.playerteam_id=ffb_userteam.userteam_player_id5) OR ' .
-				 ' (ffb_playerteam.playerteam_id=ffb_userteam.userteam_player_id6) OR ' .
-				 ' (ffb_playerteam.playerteam_id=ffb_userteam.userteam_player_id7) OR ' .
-				 ' (ffb_playerteam.playerteam_id=ffb_userteam.userteam_player_id8) OR ' .
-				 ' (ffb_playerteam.playerteam_id=ffb_userteam.userteam_player_id9) OR ' .
-				 ' (ffb_playerteam.playerteam_id=ffb_userteam.userteam_player_id10) OR ' .
-				 ' (ffb_playerteam.playerteam_id=ffb_userteam.userteam_player_id11) ' .
-				 ' ) ' .
-				 " AND (ffb_userteam.userteam_matchround_id=?) " .
-				 ' GROUP BY ffb_team.team_name ' .
-				 ' ORDER BY plnum DESC; ';
-    	*/
 
-    	$criteria = new Criteria();
-    	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
-    	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
-    	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID1, FfbPlayerteamPeer::PLAYERTEAM_ID);
-    	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort($teamsAtStart, $teams);
+    	// Single query — avoid joining ffb_playerteam twice without aliases (MySQL error 1066).
+    	$sql = 'SELECT ffb_team.team_id, ffb_team.team_name, COUNT(ffb_playerteam.playerteam_id) AS plnum '
+    		. 'FROM ffb_team '
+    		. 'INNER JOIN ffb_playerteam ON ffb_team.team_id = ffb_playerteam.playerteam_team_id '
+    		. 'INNER JOIN ffb_userteam ON ('
+    		. 'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id1 OR '
+    		. 'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id2 OR '
+    		. 'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id3 OR '
+    		. 'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id4 OR '
+    		. 'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id5 OR '
+    		. 'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id6 OR '
+    		. 'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id7 OR '
+    		. 'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id8 OR '
+    		. 'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id9 OR '
+    		. 'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id10 OR '
+    		. 'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id11'
+    		. ') '
+    		. 'WHERE ffb_userteam.userteam_matchround_id = ? '
+    		. 'GROUP BY ffb_team.team_id, ffb_team.team_name '
+    		. 'ORDER BY plnum DESC';
 
-    	$criteria = new Criteria();
-    	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
-    	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
-    	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID2, FfbPlayerteamPeer::PLAYERTEAM_ID);
-    	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort($teamsAtStart, $teams);
-
-    	$criteria = new Criteria();
-    	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
-    	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
-    	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID3, FfbPlayerteamPeer::PLAYERTEAM_ID);
-    	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort($teamsAtStart, $teams);
-
-    	$criteria = new Criteria();
-    	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
-    	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
-    	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID4, FfbPlayerteamPeer::PLAYERTEAM_ID);
-    	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort($teamsAtStart, $teams);
-
-    	$criteria = new Criteria();
-    	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
-    	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
-    	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID5, FfbPlayerteamPeer::PLAYERTEAM_ID);
-    	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort($teamsAtStart, $teams);
-
-    	$criteria = new Criteria();
-    	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
-    	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
-    	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID6, FfbPlayerteamPeer::PLAYERTEAM_ID);
-    	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort($teamsAtStart, $teams);
-
-    	$criteria = new Criteria();
-    	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
-    	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
-    	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID7, FfbPlayerteamPeer::PLAYERTEAM_ID);
-    	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort($teamsAtStart, $teams);
-
-    	$criteria = new Criteria();
-    	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
-    	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
-    	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID8, FfbPlayerteamPeer::PLAYERTEAM_ID);
-    	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort($teamsAtStart, $teams);
-
-    	$criteria = new Criteria();
-    	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
-    	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
-    	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID9, FfbPlayerteamPeer::PLAYERTEAM_ID);
-    	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort($teamsAtStart, $teams);
-
-    	$criteria = new Criteria();
-    	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
-    	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
-    	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID10, FfbPlayerteamPeer::PLAYERTEAM_ID);
-    	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort($teamsAtStart, $teams);
-
-    	$criteria = new Criteria();
-    	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $id);
-    	$criteria->addJoin(FfbTeamPeer::TEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID);
-    	$criteria->addJoin(FfbUserteamPeer::USERTEAM_PLAYER_ID11, FfbPlayerteamPeer::PLAYERTEAM_ID);
-    	$teams = FfbTeamPeer::doSelect($criteria);
-    	$i = $i + $this->playerSort($teamsAtStart, $teams);
+    	$con = Propel::getConnection(FfbTeamPeer::DATABASE_NAME);
+    	$stmt = $con->prepare($sql);
+    	$stmt->execute(array($id));
+    	while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    		$teamsAtStart[] = array(
+    			'teamname' => $row['team_name'],
+    			'players' => (int) $row['plnum'],
+    		);
+    		$i++;
+    	}
 
 		$this->numTeams = count($teamsAtStart);
+		$num = array();
 		foreach($teamsAtStart as $key=>$row) {
 			$num[$key] = $row['players'];
 		}
 
-		array_multisort($num, SORT_DESC, SORT_NUMERIC, $teamsAtStart);
+		if ($num) {
+			array_multisort($num, SORT_DESC, SORT_NUMERIC, $teamsAtStart);
+		}
 		$this->teams=$teamsAtStart;
 		$this->sort = $i;
-		$this->time = (microtime() - $now)*1000;
+		$this->time = (microtime(true) - $now)*1000;
 	}
 
 	private function playerSort(&$playerList, $toSort) {

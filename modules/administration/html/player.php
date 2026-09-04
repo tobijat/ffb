@@ -39,14 +39,14 @@
     <div id="formline">
         <div id="formdescr">* First Name:</div>
         <div id="forminput">
-            <input type="text" class="input" name="player_fname" value="<?= $this->post['player_fname'];?>">
+            <input type="text" class="input" name="player_fname" value="<?= ($this->post['player_fname'] ?? '');?>">
         </div>
         <div id="formclear"></div>
     </div>
     <div id="formline">
         <div id="formdescr">* Last Name:</div>
         <div id="forminput">
-            <input type="text" class="input" name="player_lname" value="<?= $this->post['player_lname'];?>">
+            <input type="text" class="input" name="player_lname" value="<?= ($this->post['player_lname'] ?? '');?>">
         </div>
         <div id="formclear"></div>
     </div>
@@ -56,7 +56,7 @@
             <select name="player_nationality">
                 <option value="">Country...</option>
                     <?php foreach($country_array as $shortname => $name) {?>
-                        <option <?php if($this->post['player_nationality'] == $shortname) echo 'selected';?> value="<?= $shortname?>">
+                        <option <?php if(($this->post['player_nationality'] ?? '') == $shortname) echo 'selected';?> value="<?= $shortname?>">
                             <?= $name?>
                         </option>
                     <?php }?>
@@ -68,8 +68,8 @@
         <div id="formdescr">Status:</div>
         <div id="forminput">
             <select name="player_status">
-                <option <?php if($this->post['player_status'] == 1) echo 'selected ';?> value="1">active</option>
-                <option <?php if($this->post['player_status'] == 0) echo 'selected ';?>value="0">inactive</option>
+                <option <?php if(($this->post['player_status'] ?? '') == 1) echo 'selected ';?> value="1">active</option>
+                <option <?php if(($this->post['player_status'] ?? '') == 0) echo 'selected ';?>value="0">inactive</option>
             </select>
         </div>
         <div id="formclear"></div>
@@ -77,7 +77,7 @@
     <div id="formline">
         <div id="formdescr">Status description:</div>
         <div id="forminput">
-            <input type="text" class="input" name="player_status_description" value="<?= $this->post['player_status_description'];?>">
+            <input type="text" class="input" name="player_status_description" value="<?= ($this->post['player_status_description'] ?? '');?>">
         </div>
         <div id="formclear"></div>
     </div>
@@ -86,7 +86,7 @@
         <div id="formline">
 	  		<div id="formdescr">* Team:</div>
 	  		<div id="forminput">
-	  		    <input type="hidden" name="player_team_post" value="<?= $this->post['player_team'];?>">
+	  		    <input type="hidden" name="player_team_post" value="<?= ($this->post['player_team'] ?? '');?>">
 	  		    <select name="player_team" id="insertplayer_team">
                     <option value="">select team</option>
                 </select>
@@ -99,7 +99,7 @@
 	  		    <select name="playerteam_price">
                     <option value="">select price</option>
                     <?php for($i=1;$i<13;$i++) {?>
-                        <option <?php if($this->post['playerteam_price'] == $i) echo 'selected';?> value="<?= $i?>">
+                        <option <?php if(($this->post['playerteam_price'] ?? '') == $i) echo 'selected';?> value="<?= $i?>">
                             <?= $i?>
                         </option>
                     <?php }?>
@@ -112,16 +112,16 @@
 	  		<div id="forminput">
 	  		    <select name="playerteam_position">
                     <option value="">select position</option>
-                    <option <?php if($this->post['playerteam_position'] == 'g') echo 'selected';?> value="g">
+                    <option <?php if(($this->post['playerteam_position'] ?? '') == 'g') echo 'selected';?> value="g">
                         Goalie
                     </option>
-                    <option <?php if($this->post['playerteam_position'] == 'd') echo 'selected';?> value="d">
+                    <option <?php if(($this->post['playerteam_position'] ?? '') == 'd') echo 'selected';?> value="d">
                         Defence
                     </option>
-                    <option <?php if($this->post['playerteam_position'] == 'm') echo 'selected';?> value="m">
+                    <option <?php if(($this->post['playerteam_position'] ?? '') == 'm') echo 'selected';?> value="m">
                         Midfield
                     </option>
-                    <option <?php if($this->post['playerteam_position'] == 's') echo 'selected';?> value="s">
+                    <option <?php if(($this->post['playerteam_position'] ?? '') == 's') echo 'selected';?> value="s">
                         Striker
                     </option>
                 </select>
@@ -131,7 +131,7 @@
 	  	<div id="formline">
 	  		<div id="formdescr">Picture:</div>
 	  		<div id="forminput">
-	  		    <input type="checkbox" name="playerteam_picture" value="playerteam_picture_yes" <?php if($this->post['playerteam_picture']) echo 'checked';?>>
+	  		    <input type="checkbox" name="playerteam_picture" value="playerteam_picture_yes" <?php if(($this->post['playerteam_picture'] ?? '')) echo 'checked';?>>
 	  	    </div>
 	  	</div>
 	  	<div id="formclear"></div>
@@ -139,8 +139,8 @@
             <div id="formdescr">PT-Status:</div>
             <div id="forminput">
                 <select name="playerteam_status">
-                    <option <?php if($this->post['playerteam_status'] == 1) echo 'selected ';?> value="1">active</option>
-                    <option <?php if($this->post['playerteam_status'] == 0) echo 'selected ';?>value="0">inactive</option>
+                    <option <?php if(($this->post['playerteam_status'] ?? '') == 1) echo 'selected ';?> value="1">active</option>
+                    <option <?php if(($this->post['playerteam_status'] ?? '') == 0) echo 'selected ';?>value="0">inactive</option>
                 </select>
             </div>
         </div>
@@ -151,7 +151,7 @@
 
     <div id="formline">
         <input type="hidden" name="administration_modus" value="<?= $this->administration_modus;?>">
-        <input type="hidden" name="player_id" value="<?= $this->post['player_id'];?>">
+        <input type="hidden" name="player_id" value="<?= ($this->post['player_id'] ?? '');?>">
         <div id="formdescr">
             <?php if($this->administration_modus == 'update') {?>
                 <input type="submit" class="submit" value="Update" name="player_administration_update">

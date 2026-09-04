@@ -19,7 +19,7 @@ class player extends FFB_Auth_AdminFfb {
     }
 
     public function __default() {
-        $this->administration_modus = $_POST['administration_modus'];
+        $this->administration_modus = $_POST['administration_modus'] ?? null;
         $this->post = $_POST;
         if (!empty($_POST)) {
             if(isset($_POST['player_administration_change_x']) || isset($_POST['player_administration_change']))
@@ -90,22 +90,22 @@ class player extends FFB_Auth_AdminFfb {
         $criteria = new Criteria();
         $criteria->setIgnoreCase(true);
 
-        if($_POST['player_search']) {
+        if(!empty($_POST['player_search'])) {
             $criteria->add(FfbPlayerPeer::PLAYER_LNAME, '%'.$_POST['player_search'].'%', Criteria::LIKE);
         }
-        if($_POST['player_nationality']) {
+        if(!empty($_POST['player_nationality'])) {
             $criteria->add(FfbPlayerPeer::PLAYER_NATIONALITY, strtoupper($_POST['player_nationality']));
         }
-        if($_POST['player_id']) {
+        if(!empty($_POST['player_id'])) {
             $criteria->add(FfbPlayerPeer::PLAYER_ID, $_POST['player_id'], Criteria::GREATER_THAN);
         }
-        if($_POST['player_team']) {
+        if(!empty($_POST['player_team'])) {
             $criteria->add(FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID, $_POST['player_team']);
         }
-        if($_POST['player_limit']) {
+        if(!empty($_POST['player_limit'])) {
             $criteria->setLimit($_POST['player_limit']);
         }
-        if($_POST['player_sort']) {
+        if(!empty($_POST['player_sort'])) {
             if($_POST['player_sort'] == 'name') {
                 $criteria->addAscendingOrderByColumn(FfbPlayerPeer::PLAYER_LNAME);
                 $criteria->addAscendingOrderByColumn(FfbPlayerPeer::PLAYER_FNAME);
@@ -177,11 +177,12 @@ class player extends FFB_Auth_AdminFfb {
     //neuen Player hinzufügen
     private function addItem() {
         $new_item = new FfbPlayer();
+        $new_item->setPlayerForeignId($_POST['player_foreign_id'] ?? '');
         $new_item->setPlayerLname($_POST['player_lname']);
         $new_item->setPlayerFname($_POST['player_fname']);
         $new_item->setPlayerNationality($_POST['player_nationality']);
         $new_item->setPlayerStatus($_POST['player_status']);
-        $new_item->setPlayerStatusDescription($_POST['player_status_description']);
+        $new_item->setPlayerStatusDescription($_POST['player_status_description'] ?? '');
         $new_item->save();
         $player_id = $new_item->getPlayerId();
         $new_pt_item = new FfbPlayerteam();
@@ -414,6 +415,7 @@ class player extends FFB_Auth_AdminFfb {
             } else {
                 $new_players++;
                 $new_item = new FfbPlayer();
+                $new_item->setPlayerForeignId('');
                 $new_item->setPlayerLname($elements[0]);
                 if($elements[1])
                     { $new_item->setPlayerFname($elements[1]); }

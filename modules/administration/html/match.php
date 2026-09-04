@@ -40,7 +40,7 @@
     <div id="formline">
         <div id="formdescr">* Matchround:</div>
         <div id="forminput">
-            <input type="hidden" name="match_round_post" value="<?= $this->post['match_round'];?>">
+            <input type="hidden" name="match_round_post" value="<?= ($this->post['match_round'] ?? '');?>">
             <select name="match_round">
                 <option value="">Select Matchround..</option>
             </select>
@@ -53,7 +53,7 @@
             <select name="match_date_day">
                 <option value=""></option>
                 <?php for($i=1;$i<32;$i++) {?>
-                    <option <?php if($this->post['match_date_day'] == $i) echo 'selected';?> value="<?= $i?>">
+                    <option <?php if(($this->post['match_date_day'] ?? '') == $i) echo 'selected';?> value="<?= $i?>">
                         <?= $i?>
                     </option>
                 <?php }?>
@@ -63,7 +63,7 @@
                 <?php $months = array('January','February','March','April','May','June','July','August','September','October',
                                   'November','December');
                   for($i=0;$i<12;$i++) {?>
-                    <option <?php if($this->post['match_date_month'] == $i+1) echo 'selected';?> value="<?= $i+1?>">
+                    <option <?php if(($this->post['match_date_month'] ?? '') == $i+1) echo 'selected';?> value="<?= $i+1?>">
                         <?= $months[$i]?>
                     </option>
                 <?php }?>
@@ -72,7 +72,7 @@
                 <option value=""></option>
                 <?php $now = date('Y',time());
                   for($i=$now+3;$i>$now-5;$i--) {?>
-                    <option <?php if($this->post['match_date_year'] == $i) echo 'selected';?> value="<?= $i?>">
+                    <option <?php if(($this->post['match_date_year'] ?? '') == $i) echo 'selected';?> value="<?= $i?>">
                         <?= $i?>
                     </option>
                 <?php }?>
@@ -82,13 +82,13 @@
     </div>
     <div id="formline">
         <div id="formdescr">* Hometeam : <br>
-            <input type="hidden" name="match_hometeam_id_post" value="<?= $this->post['match_hometeam_id'];?>">
+            <input type="hidden" name="match_hometeam_id_post" value="<?= ($this->post['match_hometeam_id'] ?? '');?>">
             <select name="match_hometeam_id">
                 <option value="">Select Hometeam..</option>
             </select> :
         </div>
         <div id="forminput"> Guestteam *<br>
-            <input type="hidden" name="match_guestteam_id_post" value="<?= $this->post['match_guestteam_id'];?>">
+            <input type="hidden" name="match_guestteam_id_post" value="<?= ($this->post['match_guestteam_id'] ?? '');?>">
             <select name="match_guestteam_id">
                 <option value="">Select Guestteam..</option>
             </select>
@@ -101,7 +101,7 @@
                 <option value="-1">N/A</option>
                 <!--
                 <?php for($i=0;$i<20;$i++) {?>
-                    <option <?php if(strval($this->post['match_homescore']) == strval($i)) echo 'selected';?> value="<?= $i?>">
+                    <option <?php if(strval(($this->post['match_homescore'] ?? '')) == strval($i)) echo 'selected';?> value="<?= $i?>">
                         <?= $i?>
                     </option>
                 <?php }?>
@@ -113,7 +113,7 @@
                 <option value="-1">N/A</option>
                 <!--
                 <?php for($i=0;$i<20;$i++) {?>
-                    <option <?php if(strval($this->post['match_guestscore']) == strval($i)) echo 'selected';?> value="<?= $i?>">
+                    <option <?php if(strval(($this->post['match_guestscore'] ?? '')) == strval($i)) echo 'selected';?> value="<?= $i?>">
                         <?= $i?>
                     </option>
                 <?php }?>
@@ -128,7 +128,7 @@
                 <option value="-1">N/A</option>
                 <!--
                 <?php for($i=0;$i<20;$i++) {?>
-                    <option <?php if(strval($this->post['match_homescore_penalty']) == strval($i)) echo 'selected';?> value="<?= $i?>">
+                    <option <?php if(strval(($this->post['match_homescore_penalty'] ?? '')) == strval($i)) echo 'selected';?> value="<?= $i?>">
                         <?= $i?>
                     </option>
                 <?php }?>
@@ -140,7 +140,7 @@
                 <option value="-1">N/A</option>
                 <!--
                 <?php for($i=0;$i<20;$i++) {?>
-                    <option <?php if(strval($this->post['match_guestscore_penalty']) == strval($i)) echo 'selected';?> value="<?= $i?>">
+                    <option <?php if(strval(($this->post['match_guestscore_penalty'] ?? '')) == strval($i)) echo 'selected';?> value="<?= $i?>">
                         <?= $i?>
                     </option>
                 <?php }?>
@@ -152,14 +152,14 @@
     <div id="formline">
         <div id="formdescr">Status:</div>
         <div id="forminput">
-            <input type="text" class="input" name="match_status" value="<?= $this->post['match_status'];?>">
+            <input type="text" class="input" name="match_status" value="<?= ($this->post['match_status'] ?? '');?>">
         </div>
         <div id="formclear"></div>
     </div>
     <div id="formline">&ensp;</div>
     <div id="formline">
         <input type="hidden" name="administration_modus" value="<?= $this->administration_modus;?>">
-        <input type="hidden" name="match_id" value="<?= $this->post['match_id'];?>">
+        <input type="hidden" name="match_id" value="<?= ($this->post['match_id'] ?? '');?>">
         <div id="formdescr">&ensp;</div>
         <div id="forminput">
             <?php if($this->administration_modus == 'update') {?>

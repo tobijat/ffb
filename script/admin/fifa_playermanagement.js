@@ -269,7 +269,7 @@ function loadMatchData(match_id) {
         	alert("Oops, there's been an error.");
      		},
 
-    		parameters: '?id='+hometeam_id+'&match_id='+match_id+'&all_players=1'
+    		parameters: 'id='+hometeam_id+'&match_id='+match_id+'&all_players=1'
     	});
 
     	var url = server + 'administration/matchpoints/getPlayerStatsForTeam.xml';
@@ -342,7 +342,7 @@ function loadMatchData(match_id) {
         	alert("Oops, there's been an error.");
      		},
 
-    		parameters: '?id='+guestteam_id+'&match_id='+match_id+'&all_players=1'
+    		parameters: 'id='+guestteam_id+'&match_id='+match_id+'&all_players=1'
     	});
 
         // *****

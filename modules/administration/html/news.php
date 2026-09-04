@@ -38,7 +38,7 @@
     <div id="formline">
         <div id="formdescr">* Game:</div>
         <div id="forminput">
-            <input type="hidden" name="game_id_post" value="<?= $this->post['news_game_id'];?>">
+            <input type="hidden" name="game_id_post" value="<?= ($this->post['news_game_id'] ?? '');?>">
             <select name="news_game_id">
                 <option value="0">Global</option>
             </select>
@@ -48,35 +48,35 @@
     <div id="formline">
         <div id="formdescr">* Title:</div>
         <div id="forminput">
-            <input type="text" name="news_title" value="<?= $this->post['news_title'];?>">
+            <input type="text" name="news_title" value="<?= ($this->post['news_title'] ?? '');?>">
         </div>
         <div id="formclear"></div>
     </div>
     <div id="formline">
         <div id="formdescr">* Text:</div>
         <div id="forminput">
-            <textarea cols="25" rows="6" name="news_text"><?= $this->post['news_text'];?></textarea>
+            <textarea cols="25" rows="6" name="news_text"><?= ($this->post['news_text'] ?? '');?></textarea>
         </div>
         <div id="formclear"></div>
     </div>
     <div id="formline">
         <div id="formdescr">Symbol:</div>
         <div id="forminput">
-            <input type="text" name="news_symbol" value="<?= $this->post['news_symbol'];?>">
+            <input type="text" name="news_symbol" value="<?= ($this->post['news_symbol'] ?? '');?>">
         </div>
         <div id="formclear"></div>
     </div>
     <div id="formline">
         <div id="formdescr">Priority:</div>
         <div id="forminput">
-            <input type="text" name="news_priority" value="<?= $this->post['news_priority'];?>">
+            <input type="text" name="news_priority" value="<?= ($this->post['news_priority'] ?? '');?>">
         </div>
         <div id="formclear"></div>
     </div>
     <div id="formline">&ensp;</div>
     <div id="formline">
         <input type="hidden" name="administration_modus" value="<?= $this->administration_modus;?>">
-        <input type="hidden" name="news_id" value="<?= $this->post['news_id'];?>">
+        <input type="hidden" name="news_id" value="<?= ($this->post['news_id'] ?? '');?>">
         <div id="formdescr">&ensp;</div>
         <div id="forminput">
             <?php if($this->administration_modus == 'update') {?>

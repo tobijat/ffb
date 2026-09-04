@@ -29,12 +29,12 @@ class user extends FFB_Auth_User {
     public function getUsersWithTeams() {
     	$criteria = new Criteria();
     	$criteria->addJoin(WebUserPeer::USER_ID, FfbUserteamPeer::USERTEAM_USER_ID, Criteria::INNER_JOIN);
-    	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $_POST['matchround_id']);
+    	$criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $_POST['matchround_id'] ?? 0);
     	$criteria->addAscendingOrderByColumn(WebUserPeer::USER_NICKNAME);
     	$list = WebUserPeer::doSelect($criteria);
 		$users = array();
+		$i = 0;
 		if($list) {
-            $i=0;
             foreach($list as $item) {
                 $users[$i]['user_id'] = $item->getUserId();
                 $users[$i]['user_nickname'] = $item->getUserNickname();
@@ -47,7 +47,7 @@ class user extends FFB_Auth_User {
     }
 
     public function getUserDetails() {
-		$user_id = $_POST['user_id'];
+		$user_id = $_POST['user_id'] ?? null;
 		//$user_id = 1;
 
     	$this->user = $this->returnUserDetailsById($user_id);

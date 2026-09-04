@@ -557,6 +557,7 @@ class foe_pointsmanagement extends FFB_Auth_AdminFfb {
         $new_player = new FfbPlayer();
         $new_player->setPlayerFname($fname);
         $new_player->setPlayerLname($lname);
+        $new_player->setPlayerForeignId('');
         $new_player->setPlayerNationality($nationality);
         $new_player->setPlayerStatus(1);
         $new_player->setPlayerStatusDescription('');

@@ -76,6 +76,7 @@ class poll extends FFB_Auth_User
 		$poll_result_item->setPollResultUserId($user_id);
 		$poll_result_item->setPollResultPollId($poll_id);
 		$poll_result_item->setPollResultPollAnswerId($poll_answer_id);
+		$poll_result_item->setPollResultText('');
 
 		$poll_result_item->save();
 		$this->status = 200;

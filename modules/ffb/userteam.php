@@ -33,16 +33,17 @@ class userteam extends FFB_Auth_User {
     //if no user is given the userteam for the current (logged in) user is shown
     //used by lineup.js; myteam.js
     public function getUserteamForRound() {
-        if($_REQUEST['userteam_user_id'])
-            { $user_id = $_POST['userteam_user_id']; }
-        else
-            { $user_id = $this->session->user_id; }
+        if (!empty($_REQUEST['userteam_user_id'])) {
+            $user_id = $_REQUEST['userteam_user_id'];
+        } else {
+            $user_id = $this->session->user_id;
+        }
 
         $this->user_id = $user_id;
 
-        if($_POST['matchround_id'])
-            { $matchround_id = $_POST['matchround_id']; }
-        else {
+        if (!empty($_POST['matchround_id'])) {
+            $matchround_id = $_POST['matchround_id'];
+        } else {
             $matchround_id = 0;
         }
         $criteria = new Criteria();
@@ -54,17 +55,17 @@ class userteam extends FFB_Auth_User {
 
     //returns userteams by given criteria
     private function getUserteamByCriteria($criteria) {
-        if($_POST['matchround_id'])
-            { $matchround_id = $_POST['matchround_id']; }
-        else {
+        if (!empty($_POST['matchround_id'])) {
+            $matchround_id = $_POST['matchround_id'];
+        } else {
             $matchround_id = 0;
         }
         $pricemode = $this->options->options_game_pricemode;
         $list = FfbUserteamPeer::doSelect($criteria);
         $userteams = array();
+        $i = 0;
 
         if($list) {
-            $i=0;
             foreach($list as $item) {
                 $userteams[$i]['userteam_id'] = $item->getUserteamId();
                 $userteams[$i]['userteam_matchround_id'] = $match_id = $item->getUserteamMatchroundId();
@@ -150,7 +151,8 @@ class userteam extends FFB_Auth_User {
                     $criteria3->setLimit(1);
                     $playerstats = $player_item->getFfbPlayerstatss($criteria3);
 
-                    if($playerstats[0]) {
+                    // Propel collections are objects: empty() is always false on them
+                    if (count($playerstats) > 0 && $playerstats[0]) {
                         $players[$j]['playerstats_score'] = $playerstats[0]->getPlayerstatsScore();
                     } else {
                         $players[$j]['playerstats_score'] = 0;

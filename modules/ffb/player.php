@@ -1498,7 +1498,7 @@ class player extends FFB_Auth_User {
 			error_log('[FFB] PHP GD extension is required for player chart images');
 			return;
 		}
-		$count = count($playerinfos[0]['matchrounds']);
+		$count = count($playerinfos[0]['matchrounds'] ?? []);
     	$scoreDelimeter = 30; // x Punkte sind das quasi Maximum auf das wird auf 100px gerechner 100px == 30 ffbPunkte
     	$imgLength = max(400, $count*20);
     	$imgHeight = 151;
@@ -1524,7 +1524,10 @@ class player extends FFB_Auth_User {
 		else
 			$colLen = 1;
 
-		$normalizedLineup = (int)round($playerinfos[0]['matchrounds'][0]['matchround_minutes_played']/1.2/100.0*$posPlayerChartSize/2.0,0);
+		$normalizedLineup = 0;
+		if ($count > 0) {
+			$normalizedLineup = (int)round(((float)($playerinfos[0]['matchrounds'][0]['matchround_minutes_played'] ?? 0))/1.2/100.0*$posPlayerChartSize/2.0,0);
+		}
   		foreach($playerinfos[0]['matchrounds'] as $elem) {
   			imagedashedline ( $img , (int)($index*$colLen) , 0 , (int)($index*$colLen) , $imgHeight , $darkGrayBG );
   			$fillColor = $dunkelgruenBG;
@@ -1538,7 +1541,7 @@ class player extends FFB_Auth_User {
   				imagefilledrectangle ( $img , (int)(($index*$colLen)+1) , 1 , (int)((($index+1)*$colLen)-1) , $imgHeight-2 , $redBg );
   			}
   			if($elem['matchround_minutes_played']!='-') {
-  				$normalizedFFBPoints = (int)round(($elem['matchround_score']/($scoreDelimeter/100)), 0);
+  				$normalizedFFBPoints = (int)round(((float)($elem['matchround_score'] ?? 0))/(((float)$scoreDelimeter)/100), 0);
   				$upDownStart = $posPlayerChartSize;
   				$upDownEnd = $posPlayerChartSize-$normalizedFFBPoints;
   				if($normalizedFFBPoints<0){
@@ -1582,7 +1585,7 @@ class player extends FFB_Auth_User {
 	 		if($elem['matchround_minutes_played']=='-')
 	 			$normalizedLineup2 = 0;
  			else {
- 				$normalizedLineup2 = (int)round((($elem['matchround_minutes_played']/1.2)/100.0)*$posPlayerChartSize, 0);	//120 minutes match duration -> 120/100 = 1.2
+ 				$normalizedLineup2 = (int)round((((float)($elem['matchround_minutes_played'] ?? 0))/1.2)/100.0*$posPlayerChartSize, 0);	//120 minutes match duration -> 120/100 = 1.2
  				imagestring($img,3,(int)($index*$colLen+($colLen/2)-1), (int)($posPlayerChartSize-$normalizedLineup2+2), $elem['matchround_minutes_played'], $darkblueBG);
 			}
 			if($index) {
@@ -1631,7 +1634,7 @@ class player extends FFB_Auth_User {
 		$roundSizeText = (int)min(round($colLen/2, 0), 14);
 		//if($roundSizeText<6)
 		//	$roundSizeText=6;
-		$lastPriceTitle = (string)($playerinfos[0]['prices'][$count-1]['matchround_title'] ?? '');
+		$lastPriceTitle = ($count > 0) ? (string)($playerinfo_prices[$count-1]['matchround_title'] ?? '') : '';
 		$roundLenText = (int)round(($roundSizeText/2)*strlen($lastPriceTitle)/11, 0);
 		//if($roundLenText<5 ||  $roundLenText==NaN)
 		//	$roundLenText=5;
@@ -1662,7 +1665,10 @@ class player extends FFB_Auth_User {
 		$avPlayerPower = 1;
 		$avPlayerPrice = 0;
 		//$playerPrice = round($playerinfos[0]['prices'][0]['matchround_playerprice']/($scoreDelimeter/100),0);
-		$playerPrice = round($playerinfo_prices[0]['matchround_playerprice']/($scoreDelimeter/100),0);
+		$playerPrice = 0;
+		if ($count > 0 && isset($playerinfo_prices[0]['matchround_playerprice'])) {
+			$playerPrice = round(((float)$playerinfo_prices[0]['matchround_playerprice'])/(((float)$scoreDelimeter)/100),0);
+		}
 		$playerPower = 0;
 		$playerPrice2 = $playerPrice;
 		$playerPower2 = $playerPower;

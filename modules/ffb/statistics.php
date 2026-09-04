@@ -21,8 +21,9 @@ class statistics extends FFB_Auth_User {
     }
 
     public function getUserStats() {
-        $user_id = $_REQUEST['user_id'];
-        $matchround_id = $_REQUEST['matchround_id'];
+        $user_id = $_REQUEST['user_id'] ?? null;
+        $matchround_id = $_REQUEST['matchround_id'] ?? null;
+        $userteam_stats = null;
         $criteria = new Criteria();
         $criteria->add(FfbUserteamPeer::USERTEAM_MATCHROUND_ID, $matchround_id);
         $criteria->add(FfbUserteamPeer::USERTEAM_USER_ID, $user_id);
@@ -81,6 +82,9 @@ class statistics extends FFB_Auth_User {
             $criteria->setLimit(1);
             $playerstats = FfbPlayerstatsPeer::doSelect($criteria);
             $playerteam = FfbPlayerteamPeer::retrieveByPK($playerteam_id);
+            if (!$playerteam) {
+                continue;
+            }
             if($playerstats) {
                 $goals += $playerstats[0]->getPlayerstatsGoals();
                 $owngoals += $playerstats[0]->getPlayerstatsOwngoals();
@@ -155,6 +159,7 @@ class statistics extends FFB_Auth_User {
         $criteria = new Criteria();
         $criteria->add(FfbPlayerpricePeer::PLAYERPRICE_MATCHROUND_ID, $matchround_id);
         $playerprice = FfbPlayerpricePeer::doSelect($criteria);
+        $playerstats = null;
         if($pm == 'old' || !$playerprice) {
             $criteria = new Criteria();
             $criteria->add(FfbPlayerstatsPeer::PLAYERSTATS_MATCHROUND_ID, $matchround_id);
@@ -200,6 +205,7 @@ class statistics extends FFB_Auth_User {
         $criteria = new Criteria();
         $criteria->add(FfbPlayerpricePeer::PLAYERPRICE_MATCHROUND_ID, $matchround_id);
         $playerprice = FfbPlayerpricePeer::doSelect($criteria);
+        $playerstats = null;
         if($pm == 'old' || !$playerprice) {
             $criteria = new Criteria();
             $criteria->add(FfbPlayerstatsPeer::PLAYERSTATS_MATCHROUND_ID, $matchround_id);

@@ -19,6 +19,37 @@ class playerRanking extends FFB_Auth_User {
     public function __default() {
     }
 
+    /**
+     * Distinct game IDs for playerteams via matchround (avoids joining
+     * ffb_matchround twice when selecting from ffb_game).
+     */
+    private function getGameIdsForPlayerteams(array $pt_ids) {
+        if (!$pt_ids) {
+            return array();
+        }
+        $criteria = new Criteria();
+        $criteria->clearSelectColumns();
+        $criteria->addSelectColumn(FfbMatchroundPeer::MATCHROUND_GAME_ID);
+        $criteria->addJoin(FfbPlayerstatsPeer::PLAYERSTATS_MATCHROUND_ID, FfbMatchroundPeer::MATCHROUND_ID);
+        $criteria->add(FfbPlayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID, $pt_ids, Criteria::IN);
+        $criteria->setDistinct();
+        $stmt = FfbMatchroundPeer::doSelectStmt($criteria);
+        $g_ids = array();
+        while ($row = $stmt->fetch(PDO::FETCH_NUM)) {
+            if ($row[0] !== null && $row[0] !== '') {
+                $g_ids[] = (int) $row[0];
+            }
+        }
+        return $g_ids;
+    }
+
+    /** SUM() via stmt; Propel doSelect + getPlayerstatsId() is fragile on empty sets. */
+    private function sumPlayerstatsScore(Criteria $criteria) {
+        $stmt = FfbPlayerstatsPeer::doSelectStmt($criteria);
+        $row = $stmt->fetch(PDO::FETCH_NUM);
+        return ($row && $row[0] !== null) ? (float) $row[0] : 0.0;
+    }
+
     public function test() {
         require_once('team.php');
         $team = new team();
@@ -262,24 +293,17 @@ class playerRanking extends FFB_Auth_User {
 		//*** ***
 
 		//get all games in which the player participated and store ids into array
-		$criteria = new Criteria();
-		$criteria->addJoin(FfbGamePeer::GAME_ID, FfbMatchroundPeer::MATCHROUND_GAME_ID);
-		$criteria->addJoin(FfbPlayerstatsPeer::PLAYERSTATS_MATCHROUND_ID, FfbMatchroundPeer::MATCHROUND_ID);
-		$criteria->addGroupByColumn(FfbGamePeer::GAME_ID);
-		$criteria->add(FfbPlayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID, $pt_ids, Criteria::IN);
-		$games = FfbGamePeer::doSelect($criteria);
-		$g_ids = array();
-		foreach($games as $game) {
-			$g_ids[] = $game->getGameId();
+		$g_ids = $this->getGameIdsForPlayerteams($pt_ids);
+		if (!$g_ids) {
+			return 0;
 		}
 		//*** ***
 
 		//count stats for all players for position and stats of individual players for position
 		$criteria = new Criteria();
-		$criteria->addJoin(FfbMatchroundPeer::MATCHROUND_GAME_ID, FfbGamePeer::GAME_ID);
 		$criteria->addJoin(FfbPlayerstatsPeer::PLAYERSTATS_MATCHROUND_ID, FfbMatchroundPeer::MATCHROUND_ID);
-		$criteria->addJoin(FfbPLayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_ID);
-		$criteria->add(FfbGamePeer::GAME_ID, $g_ids, Criteria::IN);
+		$criteria->addJoin(FfbPlayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_ID);
+		$criteria->add(FfbMatchroundPeer::MATCHROUND_GAME_ID, $g_ids, Criteria::IN);
 		$criteria->add(FfbPlayerteamPeer::PLAYERTEAM_PLAYER_POSITION, $pos);
 		$num_players = FfbPlayerstatsPeer::doCount($criteria);
 		$criteria->addGroupByColumn(FfbPlayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID);
@@ -298,14 +322,13 @@ class playerRanking extends FFB_Auth_User {
 
 		//get sum of points for position
 		$criteria = new Criteria();
-		$criteria->addJoin(FfbPlayerteamPeer::PLAYERTEAM_ID, FfbPlayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID);
-		$criteria->addJoin(FfbGamePeer::GAME_ID, FfbMatchroundPeer::MATCHROUND_GAME_ID);
-		$criteria->addJoin(FfbPlayerstatsPeer::PLAYERSTATS_MATCHROUND_ID, FfbMatchroundPeer::MATCHROUND_ID);
-		$criteria->add(FfbGamePeer::GAME_ID, $g_ids, Criteria::IN);
-		$criteria->add(FfbPlayerteamPeer::PLAYERTEAM_PLAYER_POSITION, $pos);
+		$criteria->clearSelectColumns();
 		$criteria->addSelectColumn('SUM('.FfbPlayerstatsPeer::PLAYERSTATS_SCORE.')');
-		$playerscore = FfbPlayerstatsPeer::doSelect($criteria);
-		$sumPoints_all = $playerscore[0]->getPlayerstatsId();
+		$criteria->addJoin(FfbPlayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_ID);
+		$criteria->addJoin(FfbPlayerstatsPeer::PLAYERSTATS_MATCHROUND_ID, FfbMatchroundPeer::MATCHROUND_ID);
+		$criteria->add(FfbMatchroundPeer::MATCHROUND_GAME_ID, $g_ids, Criteria::IN);
+		$criteria->add(FfbPlayerteamPeer::PLAYERTEAM_PLAYER_POSITION, $pos);
+		$sumPoints_all = $this->sumPlayerstatsScore($criteria);
 		if($num_players > 0) {
 			$avg_points_per_player_per_match = $sumPoints_all/$num_players;
 		} else {
@@ -319,12 +342,11 @@ class playerRanking extends FFB_Auth_User {
 
 		//get sum of points for player
 		$criteria = new Criteria();
-		$criteria->addJoin(FfbGamePeer::GAME_ID, FfbMatchroundPeer::MATCHROUND_GAME_ID);
 		$criteria->addJoin(FfbMatchPeer::MATCH_ROUND, FfbMatchroundPeer::MATCHROUND_ID);
 		$c1 = $criteria->getNewCriterion(FfbMatchPeer::MATCH_HOMETEAM_ID, $team_id);
 		$c1->addOr($criteria->getNewCriterion(FfbMatchPeer::MATCH_GUESTTEAM_ID, $team_id));
 		$criteria->add($c1);
-		$criteria->add(FfbGamePeer::GAME_ID, $g_ids, Criteria::IN);
+		$criteria->add(FfbMatchroundPeer::MATCHROUND_GAME_ID, $g_ids, Criteria::IN);
 		$criteria->add(FfbMatchroundPeer::MATCHROUND_ENDDATE, date('Y-m-d H:i:s', time()), Criteria::LESS_THAN);
 		$criteria->addDescendingOrderByColumn(FfbMatchroundPeer::MATCHROUND_ENDDATE);
 		$criteria->setLimit($limit);
@@ -339,10 +361,10 @@ class playerRanking extends FFB_Auth_User {
 		}
 
 		$criteria = new Criteria();
-		$criteria->add(FfbPlayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID, $pt_ids, Criteria::IN);
+		$criteria->clearSelectColumns();
 		$criteria->addSelectColumn('SUM('.FfbPlayerstatsPeer::PLAYERSTATS_SCORE.')');
-		$playerscore = FfbPlayerstatsPeer::doSelect($criteria);
-		$sumPoints_player = $playerscore[0]->getPlayerstatsId();
+		$criteria->add(FfbPlayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID, $pt_ids, Criteria::IN);
+		$sumPoints_player = $this->sumPlayerstatsScore($criteria);
 		$sumStats_player = FfbPlayerstatsPeer::doCount($criteria);
 		if($sumStats_player > 0) {
 			$avg_player_points_per_match = $sumPoints_player/$sumStats_player;
@@ -357,10 +379,12 @@ class playerRanking extends FFB_Auth_User {
 		$criteria->addJoin(FfbMatchroundPeer::MATCHROUND_ID, FfbPlayerstatsPeer::PLAYERSTATS_MATCHROUND_ID);
 		$mult = 2;
 		for($i=$limit;$i>0;$i--) {
-			$criteria2 = $criteria;
+			if (!$mr_ids) {
+				break;
+			}
+			$criteria2 = clone $criteria;
 			$criteria2->add(FfbMatchroundPeer::MATCHROUND_ID, $mr_ids, Criteria::IN);
-			$playerscore = FfbPlayerstatsPeer::doSelect($criteria2);
-			$sumPoints_player_limit = $playerscore[0]->getPlayerstatsId();
+			$sumPoints_player_limit = $this->sumPlayerstatsScore($criteria2);
 			$avg = $sumPoints_player_limit/$i;
 			//echo 'last '.$i.' rounds: avg '.$avg.' points<br>';
 			array_pop($mr_ids);
@@ -413,24 +437,20 @@ class playerRanking extends FFB_Auth_User {
 		//*** ***
 
 		//get all games in which the player participated and store ids into array
-		$criteria = new Criteria();
-		$criteria->addJoin(FfbGamePeer::GAME_ID, FfbMatchroundPeer::MATCHROUND_GAME_ID);
-		$criteria->addJoin(FfbPlayerstatsPeer::PLAYERSTATS_MATCHROUND_ID, FfbMatchroundPeer::MATCHROUND_ID);
-		$criteria->addGroupByColumn(FfbGamePeer::GAME_ID);
-		$criteria->add(FfbPlayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID, $pt_ids, Criteria::IN);
-		$games = FfbGamePeer::doSelect($criteria);
-		$g_ids = array();
-		foreach($games as $game) {
-			$g_ids[] = $game->getGameId();
+		$g_ids = $this->getGameIdsForPlayerteams($pt_ids);
+		if (!$g_ids) {
+			$values['player_trend'] = 0;
+			$values['player_grade'] = 0;
+			$values['answer'] = $answer.'no games<br>';
+			return $values;
 		}
 		//*** ***
 
 		//count stats for all players for position and stats of individual players for position
 		$criteria = new Criteria();
-		$criteria->addJoin(FfbMatchroundPeer::MATCHROUND_GAME_ID, FfbGamePeer::GAME_ID);
 		$criteria->addJoin(FfbPlayerstatsPeer::PLAYERSTATS_MATCHROUND_ID, FfbMatchroundPeer::MATCHROUND_ID);
-		$criteria->addJoin(FfbPLayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_ID);
-		$criteria->add(FfbGamePeer::GAME_ID, $g_ids, Criteria::IN);
+		$criteria->addJoin(FfbPlayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_ID);
+		$criteria->add(FfbMatchroundPeer::MATCHROUND_GAME_ID, $g_ids, Criteria::IN);
 		$criteria->add(FfbPlayerteamPeer::PLAYERTEAM_PLAYER_POSITION, $pos);
 		$num_players = FfbPlayerstatsPeer::doCount($criteria);
 		$criteria->addGroupByColumn(FfbPlayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID);
@@ -444,14 +464,13 @@ class playerRanking extends FFB_Auth_User {
 
 		//get sum of points for position
 		$criteria = new Criteria();
-		$criteria->addJoin(FfbPlayerteamPeer::PLAYERTEAM_ID, FfbPlayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID);
-		$criteria->addJoin(FfbGamePeer::GAME_ID, FfbMatchroundPeer::MATCHROUND_GAME_ID);
-		$criteria->addJoin(FfbPlayerstatsPeer::PLAYERSTATS_MATCHROUND_ID, FfbMatchroundPeer::MATCHROUND_ID);
-		$criteria->add(FfbGamePeer::GAME_ID, $g_ids, Criteria::IN);
-		$criteria->add(FfbPlayerteamPeer::PLAYERTEAM_PLAYER_POSITION, $pos);
+		$criteria->clearSelectColumns();
 		$criteria->addSelectColumn('SUM('.FfbPlayerstatsPeer::PLAYERSTATS_SCORE.')');
-		$playerscore = FfbPlayerstatsPeer::doSelect($criteria);
-		$sumPoints_all = $playerscore[0]->getPlayerstatsId();
+		$criteria->addJoin(FfbPlayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID, FfbPlayerteamPeer::PLAYERTEAM_ID);
+		$criteria->addJoin(FfbPlayerstatsPeer::PLAYERSTATS_MATCHROUND_ID, FfbMatchroundPeer::MATCHROUND_ID);
+		$criteria->add(FfbMatchroundPeer::MATCHROUND_GAME_ID, $g_ids, Criteria::IN);
+		$criteria->add(FfbPlayerteamPeer::PLAYERTEAM_PLAYER_POSITION, $pos);
+		$sumPoints_all = $this->sumPlayerstatsScore($criteria);
 		if($num_players > 0) {
 			$avg_points_per_player_per_match = $sumPoints_all/$num_players;
 		} else {
@@ -462,12 +481,11 @@ class playerRanking extends FFB_Auth_User {
 
 		//get mr_ids of the last >>LIMIT<< matches in which the user's team played
 		$criteria = new Criteria();
-		$criteria->addJoin(FfbGamePeer::GAME_ID, FfbMatchroundPeer::MATCHROUND_GAME_ID);
 		$criteria->addJoin(FfbMatchPeer::MATCH_ROUND, FfbMatchroundPeer::MATCHROUND_ID);
 		$c1 = $criteria->getNewCriterion(FfbMatchPeer::MATCH_HOMETEAM_ID, $team_id);
 		$c1->addOr($criteria->getNewCriterion(FfbMatchPeer::MATCH_GUESTTEAM_ID, $team_id));
 		$criteria->add($c1);
-		$criteria->add(FfbGamePeer::GAME_ID, $g_ids, Criteria::IN);
+		$criteria->add(FfbMatchroundPeer::MATCHROUND_GAME_ID, $g_ids, Criteria::IN);
 		//$criteria->add(FfbMatchroundPeer::MATCHROUND_ENDDATE, date('Y-m-d H:i:s', time()), Criteria::LESS_THAN);
 		//$criteria->add(FfbMatchPeer::MATCH_DATE, date('Y-m-d H:i:s', time()), Criteria::LESS_THAN);
 		$criteria->add(FfbMatchPeer::MATCH_HOMESCORE, -1, Criteria::GREATER_THAN);
@@ -490,10 +508,10 @@ class playerRanking extends FFB_Auth_User {
 
 		//get sum of points for player
 		$criteria = new Criteria();
-		$criteria->add(FfbPlayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID, $pt_ids, Criteria::IN);
+		$criteria->clearSelectColumns();
 		$criteria->addSelectColumn('SUM('.FfbPlayerstatsPeer::PLAYERSTATS_SCORE.')');
-		$playerscore = FfbPlayerstatsPeer::doSelect($criteria);
-		$sumPoints_player = $playerscore[0]->getPlayerstatsId();
+		$criteria->add(FfbPlayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID, $pt_ids, Criteria::IN);
+		$sumPoints_player = $this->sumPlayerstatsScore($criteria);
 		$sumStats_player = FfbPlayerstatsPeer::doCount($criteria);
 		$answer .= 'sumPoints: '.$sumPoints_player.' sumStats: '.$sumStats_player.'<br>';
 		if($sumStats_player > 0) {
@@ -511,7 +529,7 @@ class playerRanking extends FFB_Auth_User {
 		$tmpcrit->addJoin(FfbMatchroundPeer::MATCHROUND_ID, FfbPlayerstatsPeer::PLAYERSTATS_MATCHROUND_ID);
 		$tmpcrit->add(FfbMatchroundPeer::MATCHROUND_ID, $mr_ids, Criteria::IN);
 		$tmpcrit->add(FfbPlayerstatsPeer::PLAYERSTATS_PLAYERTEAM_ID, $pt_ids, Criteria::IN);
-		$matches_played = FfbPlayerstatsPeer::doCount($tmpcrit);
+		$matches_played = $mr_ids ? FfbPlayerstatsPeer::doCount($tmpcrit) : 0;
 		$answer .= 'matches played: '.$matches_played.'<br>';
 		if($limit) {
 			$perc_played = $matches_played/$limit;
@@ -532,12 +550,9 @@ class playerRanking extends FFB_Auth_User {
 				$answer .= $id.' ';
 			}
 			$answer .= '<br>';
-			$criteria2 = $criteria;
+			$criteria2 = clone $criteria;
 			$criteria2->add(FfbMatchroundPeer::MATCHROUND_ID, $mr_ids, Criteria::IN);
-			$playerscore = array();
-			unset($playerscore);
-			$playerscore = FfbPlayerstatsPeer::doSelect($criteria2);
-			$sumPoints_player_limit = $playerscore[0]->getPlayerstatsId();
+			$sumPoints_player_limit = $this->sumPlayerstatsScore($criteria2);
 			$avg = $sumPoints_player_limit/$i;
 			$answer .= 'last '.$i.' rounds: avg '.$avg.' points<br>';
 			array_pop($mr_ids);
@@ -624,7 +639,10 @@ class playerRanking extends FFB_Auth_User {
         $row = $result->fetch(PDO::FETCH_NUM);
         $player_points_avg = $row[0];
         //$player_points_avg = $player_points_avg * $matches_played_avg;
-        $value = ($player_points_avg/$max_points_avg)*100;
+        if (!$max_points_avg) {
+            return 0;
+        }
+        $value = ((float)$player_points_avg/(float)$max_points_avg)*100;
         return $value;
     }
 
@@ -639,7 +657,10 @@ class playerRanking extends FFB_Auth_User {
         $row = $result->fetch(PDO::FETCH_NUM);
         $player_minutes_avg = $row[0];
         $player_minutes_avg = $player_minutes_avg * $matches_played_avg;
-        $value = ($player_minutes_avg/$max_minutes_avg)*100;
+        if (!$max_minutes_avg) {
+            return 0;
+        }
+        $value = ((float)$player_minutes_avg/(float)$max_minutes_avg)*100;
         return $value;
     }
 
@@ -666,6 +687,9 @@ class playerRanking extends FFB_Auth_User {
         $lineups_per_match = $num_lineups/$num_matches;
         if($lineups_per_match>$num_userteams) {
             $lineups_per_match = $num_userteams;
+        }
+        if (!$num_userteams) {
+            return 0;
         }
         $value = ($lineups_per_match/$num_userteams)*100;
         return $value;
