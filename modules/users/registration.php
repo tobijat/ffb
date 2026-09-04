@@ -152,7 +152,7 @@ class registration extends FFB_Auth_No
 
 		$new_user = new WebUser();
 		$new_user->setUserNickname($_POST['user_nickname']);
-		$new_user->setUserPassword(md5($_POST['user_password']));
+		$new_user->setUserPassword(FFB_Password::hash($_POST['user_password']));
 		$new_user->setUserEmail($_POST['user_email']);
 		$new_user->setUserFname($_POST['user_fname']);
 		$new_user->setUserLname($_POST['user_lname']);
@@ -300,7 +300,7 @@ class registration extends FFB_Auth_No
 					$mail = new FFB_Mail($this->config, array($user[0]->getUserId()), $subject, $message, 'force', 'system/forgotten password');
 					$mail->send();
 
-                    $user[0]->setUserPassword(md5($newPassword));
+                    $user[0]->setUserPassword(FFB_Password::hash($newPassword));
                     $user[0]->save();
                     $this->user_answer = 'Ein neues Passwort wurde an deine Email-Adresse gesendet!';
                     $this->user_status = STATUS_CODE_SUCCESS;

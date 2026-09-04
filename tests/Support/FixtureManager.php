@@ -23,10 +23,23 @@ final class FixtureManager
 
     public function __construct(?PDO $pdo = null)
     {
-        $dsn = getenv('FFB_DB_DSN') ?: 'mysql:host=127.0.0.1;dbname=d00817fb;charset=utf8mb4';
-        $user = getenv('FFB_DB_USER') ?: 'd00817fb';
-        $pass = getenv('FFB_DB_PASSWORD') ?: 'peterlipp';
-        $this->pdo = $pdo ?: new PDO($dsn, $user, $pass, [
+        $host = getenv('FFB_DB_HOST') ?: '127.0.0.1';
+        $name = getenv('FFB_DB_NAME') ?: '';
+        $user = getenv('FFB_DB_USER') ?: '';
+        $pass = getenv('FFB_DB_PASSWORD');
+        $charset = getenv('FFB_DB_CHARSET') ?: 'utf8mb4';
+
+        $dsn = getenv('FFB_DB_DSN') ?: '';
+        if ($dsn === '' && $name !== '') {
+            $dsn = 'mysql:host=' . $host . ';dbname=' . $name . ';charset=' . $charset;
+        }
+        if ($dsn === '' || $user === '' || $pass === false) {
+            throw new \RuntimeException(
+                'Database env missing. Copy .env.example to .env and set FFB_DB_* values.'
+            );
+        }
+
+        $this->pdo = $pdo ?: new PDO($dsn, $user, (string) $pass, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         ]);
         $this->statePath = dirname(__DIR__) . DIRECTORY_SEPARATOR . self::STATE_FILE;
@@ -220,6 +233,7 @@ final class FixtureManager
 
     private function ensureTestUser(): int
     {
+        // Intentionally MD5 so contract tests still exercise legacy login + rehash-on-login.
         $passwordHash = md5($this->passwordPlain);
         $now = date('Y-m-d H:i:s');
 

@@ -10,11 +10,9 @@
         </testsuite>
     </testsuites>
     <php>
-        <env name="FFB_TEST_BASE_URL" value="http://127.0.0.1:8765/"/>
-        <env name="FFB_TEST_USER" value="ffb_contract_tester"/>
-        <env name="FFB_TEST_PASSWORD" value="testpass123"/>
-        <env name="FFB_DB_DSN" value="mysql:host=127.0.0.1;dbname=d00817fb;charset=utf8mb4"/>
-        <env name="FFB_DB_USER" value="d00817fb"/>
-        <env name="FFB_DB_PASSWORD" value="peterlipp"/>
+        <!-- Prefer values from repo-root .env; these are non-secret test defaults only. -->
+        <env name="FFB_TEST_BASE_URL" value="http://127.0.0.1:8765/" force="false"/>
+        <env name="FFB_TEST_USER" value="ffb_contract_tester" force="false"/>
+        <env name="FFB_TEST_PASSWORD" value="testpass123" force="false"/>
     </php>
 </phpunit>

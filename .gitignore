@@ -37,7 +37,7 @@ Thumbs.db
 .vscode/
 *.sublime-*
 
-# Env / secrets catch-all — commit .env.example only
+# Env / secrets — commit .env.example only
 .env
 .env.*
 !.env.example
