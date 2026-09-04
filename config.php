@@ -5,8 +5,7 @@
  * @copyright 05/2008
  * @version 0.3
  *
- * Copy .env.example to .env and fill in local credentials.
- * This committed config.php loads secrets from the environment only.
+ * Secrets come from .env (see .env.example). Do not put credentials in this file.
  */
 
 // PHP 8: log errors; do not print them into HTML/XML responses
@@ -24,41 +23,66 @@ FFB_Env::load(dirname(__FILE__) . '/.env');
 
 //Root-Pfad
 define('BASE_PATH','http://'.$_SERVER['SERVER_NAME'].'/');
+//Root-Pfad für FFB
 define('FFB_BASE_PATH','http://'.$_SERVER['SERVER_NAME'].'/');
+//Root-Pfad für PICTORY
 define('PIC_BASE_PATH','http://'.$_SERVER['SERVER_NAME'].'/');
 
+//Folder der Klassen
 define('FFB_CLASS_PATH','classes/');
 
+//Folder der FFB Bilder
 define('FFB_IMAGE_PATH','images/ffb/');
+//Folder der PICTORY Bilder
 define('PIC_IMAGE_PATH','images/pictory/');
+//Folder der ADMIN Bilder
 define('ADM_IMAGE_PATH','images/admin/');
 
+//Folder der allgemeinen Includes/Css
 define('INCLUDE_PATH','include/');
+//Folder der FFB Includes/Css
 define('FFB_INCLUDE_PATH','include/ffb/');
+//Folder der PICTORY Includes/Css
 define('PIC_INCLUDE_PATH','include/pictory/');
+//Folder der ADMIN Includes/Css
 define('ADM_INCLUDE_PATH','include/admin/');
 
+//Folder für allgemeine JS
 define('SCRIPT_PATH','script/');
+//Folder für die FFB JS
 define('FFB_SCRIPT_PATH','script/ffb/');
+//Folder für die PICTORY JS
 define('PIC_SCRIPT_PATH','script/pictory/');
+//Folder für die ADMIN JS
 define('ADM_SCRIPT_PATH','script/admin/');
 
+//Folder für allgemeine VIEWER-Files
 define('VIEWER_PATH','viewer/');
+//Folder für die FFB VIEWER
 define('FFB_VIEWER_PATH','viewer/ffb/');
+//Folder für die PICTORY VIEWER
 define('PIC_VIEWER_PATH','viewer/pictory/');
+//Folder für die PICTORY VIEWER
 define('ADM_VIEWER_PATH','viewer/administration/');
 
+//Folder für die MODULE
 define('FFB_MODULE_PATH','modules/');
 
+//Subdomains
 define('FFB_SUBDOMAIN','ffb');
 define('PIC_SUBDOMAIN','pictory');
 
+//Default-Modul: Start-Modul, wird auch aufgerufen, wenn ungültige URL eingegeben wird
 define('FFB_DEFAULT_MODULE','welcome');
 
+//Pfad zum Propel-Config-File
 define('PROPEL_CONFIG_FILE', 'classes/propel/build/conf/ffb-conf.php');
 
+
+//Comments
 define('DEFAULT_COMMENT_NUMBER', 30);
 
+// Secrets / environment-backed settings
 $dbHost = FFB_Env::require('FFB_DB_HOST');
 $dbName = FFB_Env::require('FFB_DB_NAME');
 $dbUser = FFB_Env::require('FFB_DB_USER');
@@ -77,8 +101,10 @@ define('FFB_DB_DSN', 'mysql:host=' . $dbHost . ';dbname=' . $dbName . ';charset=
 define('FFB_DB_USER', $dbUser);
 define('FFB_DB_PASSWORD', $dbPassword);
 
+//zusätzliche INCLUDE-Paths
 set_include_path("classes/propel/build/classes" . PATH_SEPARATOR . get_include_path());
 
+// Local vendor paths (Propel runtime, PEAR core, PEAR DB, PEAR Log)
 $vendorBase = dirname(__FILE__) . '/vendor';
 set_include_path($vendorBase . PATH_SEPARATOR . get_include_path());
 set_include_path($vendorBase . '/pear-core/src' . PATH_SEPARATOR . get_include_path());

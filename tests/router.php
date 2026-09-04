@@ -11,6 +11,30 @@ $root = dirname(__DIR__);
 $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 $uriPath = rawurldecode($uriPath);
 
+// Laravel platform (Phase 2 strangler shell)
+if (preg_match('#^/platform(?:/public)?(/.*)?$#', $uriPath, $m)) {
+    $platformPublic = $root . DIRECTORY_SEPARATOR . 'platform' . DIRECTORY_SEPARATOR . 'public';
+    $subPath = $m[1] ?? '/';
+    if ($subPath === '') {
+        $subPath = '/';
+    }
+
+    $staticFile = $platformPublic . str_replace('/', DIRECTORY_SEPARATOR, $subPath);
+    if ($subPath !== '/' && is_file($staticFile)) {
+        return false;
+    }
+
+    $queryString = !empty($_SERVER['QUERY_STRING']) ? ('?' . $_SERVER['QUERY_STRING']) : '';
+    $_SERVER['SCRIPT_FILENAME'] = $platformPublic . DIRECTORY_SEPARATOR . 'index.php';
+    $_SERVER['SCRIPT_NAME'] = '/platform/public/index.php';
+    $_SERVER['PHP_SELF'] = '/platform/public/index.php';
+    $_SERVER['REQUEST_URI'] = $subPath . $queryString;
+
+    chdir($platformPublic);
+    require $platformPublic . DIRECTORY_SEPARATOR . 'index.php';
+    return true;
+}
+
 // Serve existing static files directly.
 $staticPath = $root . $uriPath;
 if ($uriPath !== '/' && is_file($staticPath)) {
