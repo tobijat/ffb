@@ -340,14 +340,10 @@ class admintools extends FFB_Auth_AdminFfb {
 			if(!$ex_user_perm) {
 				$user_mailservice_reminder = md5(uniqid(time()));
 				$user_mailservice_info = md5(uniqid(time()));
-				$user_facebook_ffb = md5(uniqid(time()));
-				$user_facebook_pictory = md5(uniqid(time()));
 				$new_user_permissions = new WebUserPermissions();
 				$new_user_permissions->setUserId($user_id);
 				$new_user_permissions->setUserPermissionsFfbMailserviceReminder($user_mailservice_reminder);
 				$new_user_permissions->setUserPermissionsFfbMailserviceInfo($user_mailservice_info);
-				$new_user_permissions->setUserPermissionsFfbFacebook($user_facebook_ffb);
-				$new_user_permissions->setUserPermissionsPictoryFacebook($user_facebook_pictory);
 				$new_user_permissions->save();
 				$num_perm++;
 			}

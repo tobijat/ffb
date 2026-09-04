@@ -84,7 +84,7 @@
 <br />
 <div id="form">
 	<div id="formline">
-		<div id="formdescr">User Awards berechnen incl. Facebook Feeds:</div>
+		<div id="formdescr">User Awards berechnen:</div>
 			<div class="forminput"><input type="button" class="button" value="berechnen" onclick="javascript:calcAllAwards();" /></div>
 			<div id="awardoutput"></div>
 		<div id="formclear"></div>

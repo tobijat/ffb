@@ -143,8 +143,6 @@ class registration extends FFB_Auth_No
 		$user_status = 'na';
 		$user_mailservice_reminder = md5(uniqid(time()));
 		$user_mailservice_info = md5(uniqid(time()));
-		$user_facebook_ffb = md5(uniqid(time()));
-		$user_facebook_pictory = md5(uniqid(time()));
 		$activation_code = md5(uniqid(time()));
 
 		$new_user = new WebUser();
@@ -171,8 +169,6 @@ class registration extends FFB_Auth_No
 		$new_user_permissions->setUserId($new_user_id);
 		$new_user_permissions->setUserPermissionsFfbMailserviceReminder($user_mailservice_reminder);
 		$new_user_permissions->setUserPermissionsFfbMailserviceInfo($user_mailservice_info);
-		$new_user_permissions->setUserPermissionsFfbFacebook($user_facebook_ffb);
-		$new_user_permissions->setUserPermissionsPictoryFacebook($user_facebook_pictory);
 		$new_user_details->save();
 		$new_user_permissions->save();
 

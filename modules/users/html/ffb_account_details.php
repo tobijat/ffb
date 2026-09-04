@@ -187,18 +187,6 @@ var RecaptchaOptions = {
 				        </div>
 				        <div id="reg_formclear"></div>
 				    </div>
-					<?php if($this->post['user_permissions_ffb_facebook'] > -1) {?>
-					    <div id="reg_formline">
-					        <div id="reg_formdescr">Facebook-Zugriff erlauben:</div>
-					        <div id="reg_forminput">
-					            <select class="ffb_select" name="user_permissions_ffb_facebook" onFocus="javascript:dispRegHelp(this.name);" onMouseOver="javascript:dispRegHelp(this.name);">
-					                <option <?php if($this->post['user_permissions_ffb_facebook'] == 1) echo 'selected';?> class="ffb_select_1" value="1">Ja</option>
-									<option <?php if($this->post['user_permissions_ffb_facebook'] == 0) echo 'selected';?> class="ffb_select_0" value="0">Nein</option>
-					            </select>
-					        </div>
-					        <div id="reg_formclear"></div>
-					    </div>
-				    <?php }?>
 
 				    <div id="reg_formline">
 				        <div id="reg_formdescr">&ensp;</div>

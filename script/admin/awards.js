@@ -1,5 +1,4 @@
 
-
 function selectAwardGroup() {
     var url = server + 'administration/awards/getAwards.xml';
 	new Ajax.Request(url, {
@@ -25,7 +24,6 @@ function selectAwardGroup() {
 			 						'<div class="awardInputSmall">Loops</div>'																+
 			 						'<div class="awardInputSmall">AutoAW</div><div class="awardInput">Optionen</div></div>'					+
 			 						'<div class="awardEntry">'																				+
-			 						'<div class="awardInput">Facebook Beschreibung</div>'													+
 			 						'<div class="awardInput">Beschreibung</div><div class="awardInput">Bildpfad</div>'						+
 			 						'</div>'																								+
 			 						'<form name="newaward" id="newaward" onsubmit="javascript:createAward();"><div class="awardEntry">'		+
@@ -38,7 +36,6 @@ function selectAwardGroup() {
 			 						'<input class="awardInputSmall" type="text" name="award_count" 		id="award_count" 	/>'				+
 			 						'<input class="awardInputSmall" type="checkbox" name="award_auto" id="award_auto" value="1" /></div>'	+
 			 						'<div class="awardEntry">'																				+
-			 						'<input class="awardInput" 		type="text" name="award_fb_description"		id="award_fb_description" value="{*actor*}"/>'+
 			 						'<input class="awardInput" 		type="text" name="award_description"		id="award_description" 	/>'	+
 			 						'<input class="awardInput" 		type="text" name="award_image"		id="award_image" 	/>'				+
 			 						'</div>'																								+
@@ -63,7 +60,6 @@ function selectAwardGroup() {
 						toDisplay	+=	' checked ';
 					toDisplay		+=	' /></div>'	+
 										'<div class="awardEntry">'+
-										'<input	class="awardInput"	type="text" name="award_fb_description" value="' + existingAwards[0].getElementsByTagName('fbdescr')[i].firstChild.nodeValue + '"/>' +
 										'<input	class="awardInput"	type="text" name="award_description" value="' + existingAwards[0].getElementsByTagName('descr')[i].firstChild.nodeValue + '"/>' +
 										'<input	class="awardInput"	type="text" name="award_image" value="' + existingAwards[0].getElementsByTagName('image')[i].firstChild.nodeValue + '"/>' +
 										'<img style="float:left;"	width="18"	src="' + server + images_ + existingAwards[0].getElementsByTagName('image')[i].firstChild.nodeValue + '" />'	+
@@ -97,16 +93,8 @@ function showAwardWinners(id) {
  			var xmlResponse		=	response.responseXML;
  			var awardWinners	=	xmlResponse.getElementsByTagName('awardWinners');
  			var numWinners		=	xmlResponse.getElementsByTagName('numWinners');
- 			var awardInfos		=	xmlResponse.getElementsByTagName('awardInfos');
  			numWinners			=	numWinners[0].firstChild.nodeValue;
- 			var toDisplay		=	'<div class="awardEntry"><div class="awardInput">Name</div><div class="awardInput">Datum</div><div class="awardInput">Facebook</div><div class="awardInput">Optionen</div></div>';
-	 		var images		=	new Array(2);
- 			if(awardInfos[0].getElementsByTagName('group_image')[0].firstChild.nodeValue!='-')	{
- 				images[0]	=	server + images_+awardInfos[0].getElementsByTagName('group_image')[0].firstChild.nodeValue;
- 			}
- 			if(awardInfos[0].getElementsByTagName('award_image')[0].firstChild.nodeValue!='-')	{
- 				images[1]	=	server + images_+awardInfos[0].getElementsByTagName('award_image')[0].firstChild.nodeValue;
- 			}
+ 			var toDisplay		=	'<div class="awardEntry"><div class="awardInput">Name</div><div class="awardInput">Datum</div><div class="awardInput">Optionen</div></div>';
 
 		 	for(var i=0;i<numWinners;i++) {
 
@@ -114,31 +102,6 @@ function showAwardWinners(id) {
 		 		toDisplay		+=	'<div class="awardEntry">';
  				toDisplay 		+=	'<div class="awardInput">' + awardWinners[0].getElementsByTagName('nick')[i].firstChild.nodeValue + '</div>'		+"\n"+
  									'<div class="awardInput">' + awardWinners[0].getElementsByTagName('date')[i].firstChild.nodeValue + '</div>'		+"\n";
-				if(awardWinners[0].getElementsByTagName('fbuid')[i].firstChild.nodeValue!='-') {
- 					toDisplay	+=	'<div class="awardInput">' + 
-					 				'<a href="#" onclick="javascript:fireFacebookNotification(' +
-									awardWinners[0].getElementsByTagName('fbuid')[i].firstChild.nodeValue + ',\''+
-									awardInfos[0].getElementsByTagName('award_fb_descr')[0].firstChild.nodeValue +
-									'\', \''	+
-									awardInfos[0].getElementsByTagName('title')[0].firstChild.nodeValue +
-									'\', \'' +
-									images +
-									'\',\'' + awardInfos[0].getElementsByTagName('award_descr')[0].firstChild.nodeValue  + '\',' + 
-									awardWinners[0].getElementsByTagName('fid')[i].firstChild.nodeValue+ 
-									');"><img width="16" src="' + server + images_ + 'symbols/Facebook-32.png" /></a>'+
-									'<!--input class="awardInputOpt1" type="button" onclick="javascript:fireFacebookNotification(' +
-									awardWinners[0].getElementsByTagName('fbuid')[i].firstChild.nodeValue + ',\''+
-									awardInfos[0].getElementsByTagName('award_fb_descr')[0].firstChild.nodeValue +
-									'\', \''	+
-									awardInfos[0].getElementsByTagName('title')[0].firstChild.nodeValue +
-									'\', \'' +
-									images +
-									'\',\'' + awardInfos[0].getElementsByTagName('award_descr')[0].firstChild.nodeValue  + '\',' + 
-									awardWinners[0].getElementsByTagName('fid')[i].firstChild.nodeValue+ 
-									');" value="fb"/-->' + '</div>'		+"\n";
-			 	}
- 				else
- 					toDisplay	+=	'<div class="awardInput"> </div>'																					+"\n";
 				toDisplay		+=	'<div class="awardInput"><div class="awardInputSmall"><input class="awardInputOpt1" type="button" value="delete" onclick="javascript:deleteFinishedAward(' + 
 									awardWinners[0].getElementsByTagName('fid')[i].firstChild.nodeValue + ');"/></div></div>'			+"\n";
 				toDisplay		+=	'</div>';
@@ -150,24 +113,6 @@ function showAwardWinners(id) {
     	alert("Oops, there's been an error.");
  		},
  		parameters: "?award_defines_id="	+	id
-	});		
-}
-
-function fireFacebookNotification(fbid, comment, name, images, awardDescr, ffbid) {
-	var url = server + 'administration/awards/fireFacebookComment.xml';	
-	alert('?fbcomment=' + comment + '&fbuid=' + fbid + '&name=' + name + '&images=' + images + '&description=' + awardDescr + '&ffbAwardFinishedId=' + ffbid);
-	new Ajax.Request(url, {
- 		onSuccess : function(response) {
- 			alert(response.responseText);
- 			var xmlResponse		=	response.responseXML;
-
- 				 	
-		},
-
-		onFailure : function(response) {
-    	alert("Oops, there's been an error.");
- 		},
- 		parameters: '?fbcomment=' + comment + '&fbuid=' + fbid + '&name=' + name + '&images=' + images + '&description=' + awardDescr + '&ffbAwardFinishedId=' + ffbid
 	});		
 }
 
@@ -301,89 +246,5 @@ function createAward() {
     	alert("Oops, there's been an error.");
  		},
  		parameters: Form.serialize($('newaward'))
-	});	
-}
-
-
-function sendNewAwardsToFb() {
-	//alert('send ... send ... send ...');
-	
-		var url = server + 'administration/awards/getOutstandingAwardsToFb.xml';
-		new Ajax.Request(url, {
- 		onSuccess : function(response) {
- 			//alert(response.responseText);
- 			var xmlResponse		=	response.responseXML;
- 			
- 			var countIndex		=	xmlResponse.getElementsByTagName('notSendIndex')[0].firstChild.nodeValue;
-			//var updates			= 	xmlResponse.getElementsByTagName('userUpdates');
- 			var toDisplay		=	"Nicht gesendete Facbook Awards: <b>" + countIndex + "</b><br/>";
- 			toDisplay += 	'<div class="awardEntry">';
-			toDisplay +=	'<div class="awardInputSmall">UserID</div>';
- 			toDisplay +=	'<div class="awardInputSmall">Nickn.</div>';
- 			toDisplay +=	'<div class="awardInput">AwardName</div>';
- 			toDisplay +=	'<div class="awardInputSmall">A-Rang</div>';
- 			toDisplay +=	'<div class="awardInputSmall">FinishedID</div>';
- 			toDisplay +=	'<div class="awardInputSmall">FB-send-status</div>';
- 			toDisplay +=	'</div><br/><br/>';
- 			if(countIndex>0) {
- 				var notSendUsers	=	xmlResponse.getElementsByTagName('notSendAwards');
- 				var entry	=	notSendUsers[0].getElementsByTagName('XML_Serializer_Tag');
- 				for(var i=0;i<countIndex;i++) {
- 					
-				 	//alert(entry[0].getElementsByTagName('user_award_finished_id')[0].firstChild.nodeValue);
-				 	toDisplay += 	'<form id="FBSendAward' + i + '"  class="awardEntry">';
- 					toDisplay +=	'<div class="awardInputSmall">' + entry[i].getElementsByTagName('user_id')[0].firstChild.nodeValue + '</div>';
- 					toDisplay +=	'<div class="awardInputSmall">' + entry[i].getElementsByTagName('user_nickname')[0].firstChild.nodeValue + '</div>';
- 					toDisplay +=	'<div class="awardInput">' + entry[i].getElementsByTagName('award_name')[0].firstChild.nodeValue + '</div>';
- 					toDisplay +=	'<div class="awardInputSmall">' + entry[i].getElementsByTagName('award_rank')[0].firstChild.nodeValue + '</div>';
- 					toDisplay +=	'<div class="awardInputSmall"><input type="button" class="awardInputOpt" id="user_award_finished_id' + i + '" value="' + 
-					 				entry[i].getElementsByTagName('user_award_finished_id')[0].firstChild.nodeValue + '" onclick="javascript:fireFacebookNotification2(' + entry[i].getElementsByTagName('user_award_finished_id')[0].firstChild.nodeValue + ')"  /></div>';
- 					toDisplay +=	'<div class="awardInputSmall" id="sendStatus' + entry[i].getElementsByTagName('user_award_finished_id')[0].firstChild.nodeValue + '" >X</div>';
- 					
- 					toDisplay += 	'</form>';
- 				}
- 				toDisplay += '<br/><hr/><br/><input type="button" value="alle senden" onclick="javascript:sendAllOutstandingFBAwards(' + countIndex + ');return;"><input type="button" id="sendInfoCounter" value="' + countIndex + '" />';
- 			}
- 				
- 			dropLineW3("awardoutput", toDisplay);
-	 	
-		},
-
-		onFailure : function(response) {
-    	alert("Oops, there's been an error.");
- 		}
-	});	
-}
-
-function sendAllOutstandingFBAwards(counter) {
-	for(var i=0;i<counter;i++) {
-		var id	= $('user_award_finished_id'+i).value;
-		fireFacebookNotification2(id);
-	}
-}
-
-
-function fireFacebookNotification2(user_award_finished_id) {
-		var url = server + 'administration/awards/retrieveAwardInfosAndSendToFB.xml';
-		new Ajax.Request(url, {
- 		onSuccess : function(response) {
- 			//alert(response.responseText);
- 			var xmlResponse		=	response.responseXML;
-			var fbStreamId		=	xmlResponse.getElementsByTagName('fbStreamId')[0].firstChild.nodeValue;
- 			var toDisplay		=	'<div>';
-		 	if(fbStreamId != 'error') {
-		 		$('sendInfoCounter').value	=	$('sendInfoCounter').value - 1;
-	 		}
-			  
-		 	toDisplay 			+= fbStreamId + '</div>';
- 				
- 			dropLineW3("sendStatus" + user_award_finished_id, toDisplay);
-	 	
-		},
-
-		onFailure : function(response) {
-    	alert("Oops, there's been an error.");
- 		},
- 		parameters: '?user_award_finished_id=' + user_award_finished_id
 	});	
 }

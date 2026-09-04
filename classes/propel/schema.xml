@@ -36,9 +36,6 @@
         <column name="user_id" type="integer" required="true" primaryKey="true"/>
         <column name="user_permissions_ffb_mailservice_reminder" type="varchar" required="true" size="255"/>
         <column name="user_permissions_ffb_mailservice_info" type="varchar" required="true" size="255"/>
-        <column name="user_permissions_ffb_facebook" type="varchar" required="true" size="255"/>
-        <column name="user_permissions_pictory_facebook" type="varchar" required="true" size="255"/>
-        <column name="user_permissions_facebook_connected" type="boolean" required="true" default="FALSE"/>
         <column name="user_permissions_ffb_visible_profile" type="boolean" required="true" default="FALSE"/>
         <column name="user_permissions_pictory_visible_profile" type="boolean" required="true" default="FALSE"/>
         <foreign-key foreignTable="web_user" onDelete="cascade">
@@ -569,7 +566,6 @@
         <column name="user_gender" type="varchar" required="false" size="255" default=""/>
         <column name="user_status" type="varchar" required="true" size="255" default="active"/>
         <column name="user_admin" type="boolean" required="true" default="FALSE"/>
-        <column name="user_facebook_id" type="varchar" required="true" size="255"/>
         <column name="user_nationality" type="varchar" required="false" size="255"/>
         <column name="user_date_birth" type="timestamp" required="false"/>
         <column name="user_ip" type="varchar" required="true" size="255"/>
@@ -601,7 +597,6 @@
         <column name="user_award_defines_aim_automatic" type="boolean" required="true" default="TRUE"/>
         <column name="user_award_defines_aim_function_name" type="varchar" required="true" size="255"/>
         <column name="user_award_defines_image" type="varchar" required="true" size="255"/>
-        <column name="user_award_defines_facebook_description" type="varchar" required="true" size="255"/>
         <column name="user_award_defines_description" type="longvarchar" required="true"/>
         <foreign-key foreignTable="ffb_user_award" onDelete="cascade">
 	    <reference local="user_award_defines_award_id" foreign="user_award_id"/>
@@ -613,7 +608,6 @@
         <column name="user_award_finished_user_id" type="integer" required="true"/>
         <column name="user_award_finished_award_defines_id" type="integer" required="true"/>
         <column name="user_award_finished_date" type="timestamp" required="false"/>
-        <column name="user_award_finished_facebook_stream_id" type="varchar" required="true" size="255"/>
         <foreign-key foreignTable="web_user" onDelete="cascade">
     	    <reference local="user_award_finished_user_id" foreign="user_id"/>
         </foreign-key>

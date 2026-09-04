@@ -9,18 +9,12 @@
  * @method     WebUserPermissionsQuery orderByUserId($order = Criteria::ASC) Order by the user_id column
  * @method     WebUserPermissionsQuery orderByUserPermissionsFfbMailserviceReminder($order = Criteria::ASC) Order by the user_permissions_ffb_mailservice_reminder column
  * @method     WebUserPermissionsQuery orderByUserPermissionsFfbMailserviceInfo($order = Criteria::ASC) Order by the user_permissions_ffb_mailservice_info column
- * @method     WebUserPermissionsQuery orderByUserPermissionsFfbFacebook($order = Criteria::ASC) Order by the user_permissions_ffb_facebook column
- * @method     WebUserPermissionsQuery orderByUserPermissionsPictoryFacebook($order = Criteria::ASC) Order by the user_permissions_pictory_facebook column
- * @method     WebUserPermissionsQuery orderByUserPermissionsFacebookConnected($order = Criteria::ASC) Order by the user_permissions_facebook_connected column
  * @method     WebUserPermissionsQuery orderByUserPermissionsFfbVisibleProfile($order = Criteria::ASC) Order by the user_permissions_ffb_visible_profile column
  * @method     WebUserPermissionsQuery orderByUserPermissionsPictoryVisibleProfile($order = Criteria::ASC) Order by the user_permissions_pictory_visible_profile column
  *
  * @method     WebUserPermissionsQuery groupByUserId() Group by the user_id column
  * @method     WebUserPermissionsQuery groupByUserPermissionsFfbMailserviceReminder() Group by the user_permissions_ffb_mailservice_reminder column
  * @method     WebUserPermissionsQuery groupByUserPermissionsFfbMailserviceInfo() Group by the user_permissions_ffb_mailservice_info column
- * @method     WebUserPermissionsQuery groupByUserPermissionsFfbFacebook() Group by the user_permissions_ffb_facebook column
- * @method     WebUserPermissionsQuery groupByUserPermissionsPictoryFacebook() Group by the user_permissions_pictory_facebook column
- * @method     WebUserPermissionsQuery groupByUserPermissionsFacebookConnected() Group by the user_permissions_facebook_connected column
  * @method     WebUserPermissionsQuery groupByUserPermissionsFfbVisibleProfile() Group by the user_permissions_ffb_visible_profile column
  * @method     WebUserPermissionsQuery groupByUserPermissionsPictoryVisibleProfile() Group by the user_permissions_pictory_visible_profile column
  *
@@ -38,18 +32,12 @@
  * @method     WebUserPermissions findOneByUserId(int $user_id) Return the first WebUserPermissions filtered by the user_id column
  * @method     WebUserPermissions findOneByUserPermissionsFfbMailserviceReminder(string $user_permissions_ffb_mailservice_reminder) Return the first WebUserPermissions filtered by the user_permissions_ffb_mailservice_reminder column
  * @method     WebUserPermissions findOneByUserPermissionsFfbMailserviceInfo(string $user_permissions_ffb_mailservice_info) Return the first WebUserPermissions filtered by the user_permissions_ffb_mailservice_info column
- * @method     WebUserPermissions findOneByUserPermissionsFfbFacebook(string $user_permissions_ffb_facebook) Return the first WebUserPermissions filtered by the user_permissions_ffb_facebook column
- * @method     WebUserPermissions findOneByUserPermissionsPictoryFacebook(string $user_permissions_pictory_facebook) Return the first WebUserPermissions filtered by the user_permissions_pictory_facebook column
- * @method     WebUserPermissions findOneByUserPermissionsFacebookConnected(boolean $user_permissions_facebook_connected) Return the first WebUserPermissions filtered by the user_permissions_facebook_connected column
  * @method     WebUserPermissions findOneByUserPermissionsFfbVisibleProfile(boolean $user_permissions_ffb_visible_profile) Return the first WebUserPermissions filtered by the user_permissions_ffb_visible_profile column
  * @method     WebUserPermissions findOneByUserPermissionsPictoryVisibleProfile(boolean $user_permissions_pictory_visible_profile) Return the first WebUserPermissions filtered by the user_permissions_pictory_visible_profile column
  *
  * @method     array findByUserId(int $user_id) Return WebUserPermissions objects filtered by the user_id column
  * @method     array findByUserPermissionsFfbMailserviceReminder(string $user_permissions_ffb_mailservice_reminder) Return WebUserPermissions objects filtered by the user_permissions_ffb_mailservice_reminder column
  * @method     array findByUserPermissionsFfbMailserviceInfo(string $user_permissions_ffb_mailservice_info) Return WebUserPermissions objects filtered by the user_permissions_ffb_mailservice_info column
- * @method     array findByUserPermissionsFfbFacebook(string $user_permissions_ffb_facebook) Return WebUserPermissions objects filtered by the user_permissions_ffb_facebook column
- * @method     array findByUserPermissionsPictoryFacebook(string $user_permissions_pictory_facebook) Return WebUserPermissions objects filtered by the user_permissions_pictory_facebook column
- * @method     array findByUserPermissionsFacebookConnected(boolean $user_permissions_facebook_connected) Return WebUserPermissions objects filtered by the user_permissions_facebook_connected column
  * @method     array findByUserPermissionsFfbVisibleProfile(boolean $user_permissions_ffb_visible_profile) Return WebUserPermissions objects filtered by the user_permissions_ffb_visible_profile column
  * @method     array findByUserPermissionsPictoryVisibleProfile(boolean $user_permissions_pictory_visible_profile) Return WebUserPermissions objects filtered by the user_permissions_pictory_visible_profile column
  *
@@ -220,67 +208,6 @@ abstract class BaseWebUserPermissionsQuery extends ModelCriteria
 			}
 		}
 		return $this->addUsingAlias(WebUserPermissionsPeer::USER_PERMISSIONS_FFB_MAILSERVICE_INFO, $userPermissionsFfbMailserviceInfo, $comparison);
-	}
-
-	/**
-	 * Filter the query on the user_permissions_ffb_facebook column
-	 * 
-	 * @param     string $userPermissionsFfbFacebook The value to use as filter.
-	 *            Accepts wildcards (* and % trigger a LIKE)
-	 * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
-	 *
-	 * @return    WebUserPermissionsQuery The current query, for fluid interface
-	 */
-	public function filterByUserPermissionsFfbFacebook($userPermissionsFfbFacebook = null, $comparison = null)
-	{
-		if (null === $comparison) {
-			if (is_array($userPermissionsFfbFacebook)) {
-				$comparison = Criteria::IN;
-			} elseif (preg_match('/[\%\*]/', $userPermissionsFfbFacebook)) {
-				$userPermissionsFfbFacebook = str_replace('*', '%', $userPermissionsFfbFacebook);
-				$comparison = Criteria::LIKE;
-			}
-		}
-		return $this->addUsingAlias(WebUserPermissionsPeer::USER_PERMISSIONS_FFB_FACEBOOK, $userPermissionsFfbFacebook, $comparison);
-	}
-
-	/**
-	 * Filter the query on the user_permissions_pictory_facebook column
-	 * 
-	 * @param     string $userPermissionsPictoryFacebook The value to use as filter.
-	 *            Accepts wildcards (* and % trigger a LIKE)
-	 * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
-	 *
-	 * @return    WebUserPermissionsQuery The current query, for fluid interface
-	 */
-	public function filterByUserPermissionsPictoryFacebook($userPermissionsPictoryFacebook = null, $comparison = null)
-	{
-		if (null === $comparison) {
-			if (is_array($userPermissionsPictoryFacebook)) {
-				$comparison = Criteria::IN;
-			} elseif (preg_match('/[\%\*]/', $userPermissionsPictoryFacebook)) {
-				$userPermissionsPictoryFacebook = str_replace('*', '%', $userPermissionsPictoryFacebook);
-				$comparison = Criteria::LIKE;
-			}
-		}
-		return $this->addUsingAlias(WebUserPermissionsPeer::USER_PERMISSIONS_PICTORY_FACEBOOK, $userPermissionsPictoryFacebook, $comparison);
-	}
-
-	/**
-	 * Filter the query on the user_permissions_facebook_connected column
-	 * 
-	 * @param     boolean|string $userPermissionsFacebookConnected The value to use as filter.
-	 *            Accepts strings ('false', 'off', '-', 'no', 'n', and '0' are false, the rest is true)
-	 * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
-	 *
-	 * @return    WebUserPermissionsQuery The current query, for fluid interface
-	 */
-	public function filterByUserPermissionsFacebookConnected($userPermissionsFacebookConnected = null, $comparison = null)
-	{
-		if (is_string($userPermissionsFacebookConnected)) {
-			$user_permissions_facebook_connected = in_array(strtolower($userPermissionsFacebookConnected), array('false', 'off', '-', 'no', 'n', '0')) ? false : true;
-		}
-		return $this->addUsingAlias(WebUserPermissionsPeer::USER_PERMISSIONS_FACEBOOK_CONNECTED, $userPermissionsFacebookConnected, $comparison);
 	}
 
 	/**

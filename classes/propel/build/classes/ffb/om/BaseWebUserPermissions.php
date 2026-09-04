@@ -43,25 +43,6 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 	protected $user_permissions_ffb_mailservice_info;
 
 	/**
-	 * The value for the user_permissions_ffb_facebook field.
-	 * @var        string
-	 */
-	protected $user_permissions_ffb_facebook;
-
-	/**
-	 * The value for the user_permissions_pictory_facebook field.
-	 * @var        string
-	 */
-	protected $user_permissions_pictory_facebook;
-
-	/**
-	 * The value for the user_permissions_facebook_connected field.
-	 * Note: this column has a database default value of: false
-	 * @var        boolean
-	 */
-	protected $user_permissions_facebook_connected;
-
-	/**
 	 * The value for the user_permissions_ffb_visible_profile field.
 	 * Note: this column has a database default value of: false
 	 * @var        boolean
@@ -102,7 +83,6 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 	 */
 	public function applyDefaultValues()
 	{
-		$this->user_permissions_facebook_connected = false;
 		$this->user_permissions_ffb_visible_profile = false;
 		$this->user_permissions_pictory_visible_profile = false;
 	}
@@ -145,36 +125,6 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 	public function getUserPermissionsFfbMailserviceInfo()
 	{
 		return $this->user_permissions_ffb_mailservice_info;
-	}
-
-	/**
-	 * Get the [user_permissions_ffb_facebook] column value.
-	 * 
-	 * @return     string
-	 */
-	public function getUserPermissionsFfbFacebook()
-	{
-		return $this->user_permissions_ffb_facebook;
-	}
-
-	/**
-	 * Get the [user_permissions_pictory_facebook] column value.
-	 * 
-	 * @return     string
-	 */
-	public function getUserPermissionsPictoryFacebook()
-	{
-		return $this->user_permissions_pictory_facebook;
-	}
-
-	/**
-	 * Get the [user_permissions_facebook_connected] column value.
-	 * 
-	 * @return     boolean
-	 */
-	public function getUserPermissionsFacebookConnected()
-	{
-		return $this->user_permissions_facebook_connected;
 	}
 
 	/**
@@ -262,66 +212,6 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 	} // setUserPermissionsFfbMailserviceInfo()
 
 	/**
-	 * Set the value of [user_permissions_ffb_facebook] column.
-	 * 
-	 * @param      string $v new value
-	 * @return     WebUserPermissions The current object (for fluent API support)
-	 */
-	public function setUserPermissionsFfbFacebook($v)
-	{
-		if ($v !== null) {
-			$v = (string) $v;
-		}
-
-		if ($this->user_permissions_ffb_facebook !== $v) {
-			$this->user_permissions_ffb_facebook = $v;
-			$this->modifiedColumns[] = WebUserPermissionsPeer::USER_PERMISSIONS_FFB_FACEBOOK;
-		}
-
-		return $this;
-	} // setUserPermissionsFfbFacebook()
-
-	/**
-	 * Set the value of [user_permissions_pictory_facebook] column.
-	 * 
-	 * @param      string $v new value
-	 * @return     WebUserPermissions The current object (for fluent API support)
-	 */
-	public function setUserPermissionsPictoryFacebook($v)
-	{
-		if ($v !== null) {
-			$v = (string) $v;
-		}
-
-		if ($this->user_permissions_pictory_facebook !== $v) {
-			$this->user_permissions_pictory_facebook = $v;
-			$this->modifiedColumns[] = WebUserPermissionsPeer::USER_PERMISSIONS_PICTORY_FACEBOOK;
-		}
-
-		return $this;
-	} // setUserPermissionsPictoryFacebook()
-
-	/**
-	 * Set the value of [user_permissions_facebook_connected] column.
-	 * 
-	 * @param      boolean $v new value
-	 * @return     WebUserPermissions The current object (for fluent API support)
-	 */
-	public function setUserPermissionsFacebookConnected($v)
-	{
-		if ($v !== null) {
-			$v = (boolean) $v;
-		}
-
-		if ($this->user_permissions_facebook_connected !== $v || $this->isNew()) {
-			$this->user_permissions_facebook_connected = $v;
-			$this->modifiedColumns[] = WebUserPermissionsPeer::USER_PERMISSIONS_FACEBOOK_CONNECTED;
-		}
-
-		return $this;
-	} // setUserPermissionsFacebookConnected()
-
-	/**
 	 * Set the value of [user_permissions_ffb_visible_profile] column.
 	 * 
 	 * @param      boolean $v new value
@@ -371,10 +261,6 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 	 */
 	public function hasOnlyDefaultValues()
 	{
-			if ($this->user_permissions_facebook_connected !== false) {
-				return false;
-			}
-
 			if ($this->user_permissions_ffb_visible_profile !== false) {
 				return false;
 			}
@@ -408,11 +294,8 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 			$this->user_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
 			$this->user_permissions_ffb_mailservice_reminder = ($row[$startcol + 1] !== null) ? (string) $row[$startcol + 1] : null;
 			$this->user_permissions_ffb_mailservice_info = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
-			$this->user_permissions_ffb_facebook = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
-			$this->user_permissions_pictory_facebook = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
-			$this->user_permissions_facebook_connected = ($row[$startcol + 5] !== null) ? (boolean) $row[$startcol + 5] : null;
-			$this->user_permissions_ffb_visible_profile = ($row[$startcol + 6] !== null) ? (boolean) $row[$startcol + 6] : null;
-			$this->user_permissions_pictory_visible_profile = ($row[$startcol + 7] !== null) ? (boolean) $row[$startcol + 7] : null;
+			$this->user_permissions_ffb_visible_profile = ($row[$startcol + 3] !== null) ? (boolean) $row[$startcol + 3] : null;
+			$this->user_permissions_pictory_visible_profile = ($row[$startcol + 4] !== null) ? (boolean) $row[$startcol + 4] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -421,7 +304,7 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 				$this->ensureConsistency();
 			}
 
-			return $startcol + 8; // 8 = WebUserPermissionsPeer::NUM_COLUMNS - WebUserPermissionsPeer::NUM_LAZY_LOAD_COLUMNS).
+			return $startcol + 5; // 5 = WebUserPermissionsPeer::NUM_COLUMNS - WebUserPermissionsPeer::NUM_LAZY_LOAD_COLUMNS).
 
 		} catch (Exception $e) {
 			throw new PropelException("Error populating WebUserPermissions object", $e);
@@ -750,18 +633,9 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 				return $this->getUserPermissionsFfbMailserviceInfo();
 				break;
 			case 3:
-				return $this->getUserPermissionsFfbFacebook();
-				break;
-			case 4:
-				return $this->getUserPermissionsPictoryFacebook();
-				break;
-			case 5:
-				return $this->getUserPermissionsFacebookConnected();
-				break;
-			case 6:
 				return $this->getUserPermissionsFfbVisibleProfile();
 				break;
-			case 7:
+			case 4:
 				return $this->getUserPermissionsPictoryVisibleProfile();
 				break;
 			default:
@@ -791,11 +665,8 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 			$keys[0] => $this->getUserId(),
 			$keys[1] => $this->getUserPermissionsFfbMailserviceReminder(),
 			$keys[2] => $this->getUserPermissionsFfbMailserviceInfo(),
-			$keys[3] => $this->getUserPermissionsFfbFacebook(),
-			$keys[4] => $this->getUserPermissionsPictoryFacebook(),
-			$keys[5] => $this->getUserPermissionsFacebookConnected(),
-			$keys[6] => $this->getUserPermissionsFfbVisibleProfile(),
-			$keys[7] => $this->getUserPermissionsPictoryVisibleProfile(),
+			$keys[3] => $this->getUserPermissionsFfbVisibleProfile(),
+			$keys[4] => $this->getUserPermissionsPictoryVisibleProfile(),
 		);
 		if ($includeForeignObjects) {
 			if (null !== $this->aWebUser) {
@@ -842,18 +713,9 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 				$this->setUserPermissionsFfbMailserviceInfo($value);
 				break;
 			case 3:
-				$this->setUserPermissionsFfbFacebook($value);
-				break;
-			case 4:
-				$this->setUserPermissionsPictoryFacebook($value);
-				break;
-			case 5:
-				$this->setUserPermissionsFacebookConnected($value);
-				break;
-			case 6:
 				$this->setUserPermissionsFfbVisibleProfile($value);
 				break;
-			case 7:
+			case 4:
 				$this->setUserPermissionsPictoryVisibleProfile($value);
 				break;
 		} // switch()
@@ -883,11 +745,8 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 		if (array_key_exists($keys[0], $arr)) $this->setUserId($arr[$keys[0]]);
 		if (array_key_exists($keys[1], $arr)) $this->setUserPermissionsFfbMailserviceReminder($arr[$keys[1]]);
 		if (array_key_exists($keys[2], $arr)) $this->setUserPermissionsFfbMailserviceInfo($arr[$keys[2]]);
-		if (array_key_exists($keys[3], $arr)) $this->setUserPermissionsFfbFacebook($arr[$keys[3]]);
-		if (array_key_exists($keys[4], $arr)) $this->setUserPermissionsPictoryFacebook($arr[$keys[4]]);
-		if (array_key_exists($keys[5], $arr)) $this->setUserPermissionsFacebookConnected($arr[$keys[5]]);
-		if (array_key_exists($keys[6], $arr)) $this->setUserPermissionsFfbVisibleProfile($arr[$keys[6]]);
-		if (array_key_exists($keys[7], $arr)) $this->setUserPermissionsPictoryVisibleProfile($arr[$keys[7]]);
+		if (array_key_exists($keys[3], $arr)) $this->setUserPermissionsFfbVisibleProfile($arr[$keys[3]]);
+		if (array_key_exists($keys[4], $arr)) $this->setUserPermissionsPictoryVisibleProfile($arr[$keys[4]]);
 	}
 
 	/**
@@ -902,9 +761,6 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 		if ($this->isColumnModified(WebUserPermissionsPeer::USER_ID)) $criteria->add(WebUserPermissionsPeer::USER_ID, $this->user_id);
 		if ($this->isColumnModified(WebUserPermissionsPeer::USER_PERMISSIONS_FFB_MAILSERVICE_REMINDER)) $criteria->add(WebUserPermissionsPeer::USER_PERMISSIONS_FFB_MAILSERVICE_REMINDER, $this->user_permissions_ffb_mailservice_reminder);
 		if ($this->isColumnModified(WebUserPermissionsPeer::USER_PERMISSIONS_FFB_MAILSERVICE_INFO)) $criteria->add(WebUserPermissionsPeer::USER_PERMISSIONS_FFB_MAILSERVICE_INFO, $this->user_permissions_ffb_mailservice_info);
-		if ($this->isColumnModified(WebUserPermissionsPeer::USER_PERMISSIONS_FFB_FACEBOOK)) $criteria->add(WebUserPermissionsPeer::USER_PERMISSIONS_FFB_FACEBOOK, $this->user_permissions_ffb_facebook);
-		if ($this->isColumnModified(WebUserPermissionsPeer::USER_PERMISSIONS_PICTORY_FACEBOOK)) $criteria->add(WebUserPermissionsPeer::USER_PERMISSIONS_PICTORY_FACEBOOK, $this->user_permissions_pictory_facebook);
-		if ($this->isColumnModified(WebUserPermissionsPeer::USER_PERMISSIONS_FACEBOOK_CONNECTED)) $criteria->add(WebUserPermissionsPeer::USER_PERMISSIONS_FACEBOOK_CONNECTED, $this->user_permissions_facebook_connected);
 		if ($this->isColumnModified(WebUserPermissionsPeer::USER_PERMISSIONS_FFB_VISIBLE_PROFILE)) $criteria->add(WebUserPermissionsPeer::USER_PERMISSIONS_FFB_VISIBLE_PROFILE, $this->user_permissions_ffb_visible_profile);
 		if ($this->isColumnModified(WebUserPermissionsPeer::USER_PERMISSIONS_PICTORY_VISIBLE_PROFILE)) $criteria->add(WebUserPermissionsPeer::USER_PERMISSIONS_PICTORY_VISIBLE_PROFILE, $this->user_permissions_pictory_visible_profile);
 
@@ -971,9 +827,6 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 		$copyObj->setUserId($this->user_id);
 		$copyObj->setUserPermissionsFfbMailserviceReminder($this->user_permissions_ffb_mailservice_reminder);
 		$copyObj->setUserPermissionsFfbMailserviceInfo($this->user_permissions_ffb_mailservice_info);
-		$copyObj->setUserPermissionsFfbFacebook($this->user_permissions_ffb_facebook);
-		$copyObj->setUserPermissionsPictoryFacebook($this->user_permissions_pictory_facebook);
-		$copyObj->setUserPermissionsFacebookConnected($this->user_permissions_facebook_connected);
 		$copyObj->setUserPermissionsFfbVisibleProfile($this->user_permissions_ffb_visible_profile);
 		$copyObj->setUserPermissionsPictoryVisibleProfile($this->user_permissions_pictory_visible_profile);
 
@@ -1069,9 +922,6 @@ abstract class BaseWebUserPermissions extends BaseObject  implements Persistent
 		$this->user_id = null;
 		$this->user_permissions_ffb_mailservice_reminder = null;
 		$this->user_permissions_ffb_mailservice_info = null;
-		$this->user_permissions_ffb_facebook = null;
-		$this->user_permissions_pictory_facebook = null;
-		$this->user_permissions_facebook_connected = null;
 		$this->user_permissions_ffb_visible_profile = null;
 		$this->user_permissions_pictory_visible_profile = null;
 		$this->alreadyInSave = false;

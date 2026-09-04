@@ -49,12 +49,6 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 	protected $user_award_finished_date;
 
 	/**
-	 * The value for the user_award_finished_facebook_stream_id field.
-	 * @var        string
-	 */
-	protected $user_award_finished_facebook_stream_id;
-
-	/**
 	 * @var        WebUser
 	 */
 	protected $aWebUser;
@@ -144,16 +138,6 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 		} else {
 			return $dt->format($format);
 		}
-	}
-
-	/**
-	 * Get the [user_award_finished_facebook_stream_id] column value.
-	 * 
-	 * @return     string
-	 */
-	public function getUserAwardFinishedFacebookStreamId()
-	{
-		return $this->user_award_finished_facebook_stream_id;
 	}
 
 	/**
@@ -274,26 +258,6 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 	} // setUserAwardFinishedDate()
 
 	/**
-	 * Set the value of [user_award_finished_facebook_stream_id] column.
-	 * 
-	 * @param      string $v new value
-	 * @return     FfbUserAwardFinished The current object (for fluent API support)
-	 */
-	public function setUserAwardFinishedFacebookStreamId($v)
-	{
-		if ($v !== null) {
-			$v = (string) $v;
-		}
-
-		if ($this->user_award_finished_facebook_stream_id !== $v) {
-			$this->user_award_finished_facebook_stream_id = $v;
-			$this->modifiedColumns[] = FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_FACEBOOK_STREAM_ID;
-		}
-
-		return $this;
-	} // setUserAwardFinishedFacebookStreamId()
-
-	/**
 	 * Indicates whether the columns in this object are only set to default values.
 	 *
 	 * This method can be used in conjunction with isModified() to indicate whether an object is both
@@ -329,7 +293,6 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 			$this->user_award_finished_user_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
 			$this->user_award_finished_award_defines_id = ($row[$startcol + 2] !== null) ? (int) $row[$startcol + 2] : null;
 			$this->user_award_finished_date = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
-			$this->user_award_finished_facebook_stream_id = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -338,7 +301,7 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 				$this->ensureConsistency();
 			}
 
-			return $startcol + 5; // 5 = FfbUserAwardFinishedPeer::NUM_COLUMNS - FfbUserAwardFinishedPeer::NUM_LAZY_LOAD_COLUMNS).
+			return $startcol + 4; // 4 = FfbUserAwardFinishedPeer::NUM_COLUMNS - FfbUserAwardFinishedPeer::NUM_LAZY_LOAD_COLUMNS).
 
 		} catch (Exception $e) {
 			throw new PropelException("Error populating FfbUserAwardFinished object", $e);
@@ -694,9 +657,6 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 			case 3:
 				return $this->getUserAwardFinishedDate();
 				break;
-			case 4:
-				return $this->getUserAwardFinishedFacebookStreamId();
-				break;
 			default:
 				return null;
 				break;
@@ -725,7 +685,6 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 			$keys[1] => $this->getUserAwardFinishedUserId(),
 			$keys[2] => $this->getUserAwardFinishedAwardDefinesId(),
 			$keys[3] => $this->getUserAwardFinishedDate(),
-			$keys[4] => $this->getUserAwardFinishedFacebookStreamId(),
 		);
 		if ($includeForeignObjects) {
 			if (null !== $this->aWebUser) {
@@ -777,9 +736,6 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 			case 3:
 				$this->setUserAwardFinishedDate($value);
 				break;
-			case 4:
-				$this->setUserAwardFinishedFacebookStreamId($value);
-				break;
 		} // switch()
 	}
 
@@ -808,7 +764,6 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 		if (array_key_exists($keys[1], $arr)) $this->setUserAwardFinishedUserId($arr[$keys[1]]);
 		if (array_key_exists($keys[2], $arr)) $this->setUserAwardFinishedAwardDefinesId($arr[$keys[2]]);
 		if (array_key_exists($keys[3], $arr)) $this->setUserAwardFinishedDate($arr[$keys[3]]);
-		if (array_key_exists($keys[4], $arr)) $this->setUserAwardFinishedFacebookStreamId($arr[$keys[4]]);
 	}
 
 	/**
@@ -824,7 +779,6 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 		if ($this->isColumnModified(FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_USER_ID)) $criteria->add(FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_USER_ID, $this->user_award_finished_user_id);
 		if ($this->isColumnModified(FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_AWARD_DEFINES_ID)) $criteria->add(FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_AWARD_DEFINES_ID, $this->user_award_finished_award_defines_id);
 		if ($this->isColumnModified(FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_DATE)) $criteria->add(FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_DATE, $this->user_award_finished_date);
-		if ($this->isColumnModified(FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_FACEBOOK_STREAM_ID)) $criteria->add(FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_FACEBOOK_STREAM_ID, $this->user_award_finished_facebook_stream_id);
 
 		return $criteria;
 	}
@@ -889,7 +843,6 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 		$copyObj->setUserAwardFinishedUserId($this->user_award_finished_user_id);
 		$copyObj->setUserAwardFinishedAwardDefinesId($this->user_award_finished_award_defines_id);
 		$copyObj->setUserAwardFinishedDate($this->user_award_finished_date);
-		$copyObj->setUserAwardFinishedFacebookStreamId($this->user_award_finished_facebook_stream_id);
 
 		$copyObj->setNew(true);
 		$copyObj->setUserAwardFinishedId(NULL); // this is a auto-increment column, so set to default value
@@ -1040,7 +993,6 @@ abstract class BaseFfbUserAwardFinished extends BaseObject  implements Persisten
 		$this->user_award_finished_user_id = null;
 		$this->user_award_finished_award_defines_id = null;
 		$this->user_award_finished_date = null;
-		$this->user_award_finished_facebook_stream_id = null;
 		$this->alreadyInSave = false;
 		$this->alreadyInValidation = false;
 		$this->clearAllReferences();

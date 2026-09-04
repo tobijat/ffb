@@ -26,7 +26,7 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	const TM_CLASS = 'FfbUserAwardFinishedTableMap';
 	
 	/** The total number of columns. */
-	const NUM_COLUMNS = 5;
+	const NUM_COLUMNS = 4;
 
 	/** The number of lazy-loaded columns. */
 	const NUM_LAZY_LOAD_COLUMNS = 0;
@@ -42,9 +42,6 @@ abstract class BaseFfbUserAwardFinishedPeer {
 
 	/** the column name for the USER_AWARD_FINISHED_DATE field */
 	const USER_AWARD_FINISHED_DATE = 'ffb_user_award_finished.USER_AWARD_FINISHED_DATE';
-
-	/** the column name for the USER_AWARD_FINISHED_FACEBOOK_STREAM_ID field */
-	const USER_AWARD_FINISHED_FACEBOOK_STREAM_ID = 'ffb_user_award_finished.USER_AWARD_FINISHED_FACEBOOK_STREAM_ID';
 
 	/**
 	 * An identiy map to hold any loaded instances of FfbUserAwardFinished objects.
@@ -62,12 +59,12 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	 * e.g. self::$fieldNames[self::TYPE_PHPNAME][0] = 'Id'
 	 */
 	private static $fieldNames = array (
-		BasePeer::TYPE_PHPNAME => array ('UserAwardFinishedId', 'UserAwardFinishedUserId', 'UserAwardFinishedAwardDefinesId', 'UserAwardFinishedDate', 'UserAwardFinishedFacebookStreamId', ),
-		BasePeer::TYPE_STUDLYPHPNAME => array ('userAwardFinishedId', 'userAwardFinishedUserId', 'userAwardFinishedAwardDefinesId', 'userAwardFinishedDate', 'userAwardFinishedFacebookStreamId', ),
-		BasePeer::TYPE_COLNAME => array (self::USER_AWARD_FINISHED_ID, self::USER_AWARD_FINISHED_USER_ID, self::USER_AWARD_FINISHED_AWARD_DEFINES_ID, self::USER_AWARD_FINISHED_DATE, self::USER_AWARD_FINISHED_FACEBOOK_STREAM_ID, ),
-		BasePeer::TYPE_RAW_COLNAME => array ('USER_AWARD_FINISHED_ID', 'USER_AWARD_FINISHED_USER_ID', 'USER_AWARD_FINISHED_AWARD_DEFINES_ID', 'USER_AWARD_FINISHED_DATE', 'USER_AWARD_FINISHED_FACEBOOK_STREAM_ID', ),
-		BasePeer::TYPE_FIELDNAME => array ('user_award_finished_id', 'user_award_finished_user_id', 'user_award_finished_award_defines_id', 'user_award_finished_date', 'user_award_finished_facebook_stream_id', ),
-		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, )
+		BasePeer::TYPE_PHPNAME => array ('UserAwardFinishedId', 'UserAwardFinishedUserId', 'UserAwardFinishedAwardDefinesId', 'UserAwardFinishedDate', ),
+		BasePeer::TYPE_STUDLYPHPNAME => array ('userAwardFinishedId', 'userAwardFinishedUserId', 'userAwardFinishedAwardDefinesId', 'userAwardFinishedDate', ),
+		BasePeer::TYPE_COLNAME => array (self::USER_AWARD_FINISHED_ID, self::USER_AWARD_FINISHED_USER_ID, self::USER_AWARD_FINISHED_AWARD_DEFINES_ID, self::USER_AWARD_FINISHED_DATE, ),
+		BasePeer::TYPE_RAW_COLNAME => array ('USER_AWARD_FINISHED_ID', 'USER_AWARD_FINISHED_USER_ID', 'USER_AWARD_FINISHED_AWARD_DEFINES_ID', 'USER_AWARD_FINISHED_DATE', ),
+		BasePeer::TYPE_FIELDNAME => array ('user_award_finished_id', 'user_award_finished_user_id', 'user_award_finished_award_defines_id', 'user_award_finished_date', ),
+		BasePeer::TYPE_NUM => array (0, 1, 2, 3, )
 	);
 
 	/**
@@ -77,12 +74,12 @@ abstract class BaseFfbUserAwardFinishedPeer {
 	 * e.g. self::$fieldNames[BasePeer::TYPE_PHPNAME]['Id'] = 0
 	 */
 	private static $fieldKeys = array (
-		BasePeer::TYPE_PHPNAME => array ('UserAwardFinishedId' => 0, 'UserAwardFinishedUserId' => 1, 'UserAwardFinishedAwardDefinesId' => 2, 'UserAwardFinishedDate' => 3, 'UserAwardFinishedFacebookStreamId' => 4, ),
-		BasePeer::TYPE_STUDLYPHPNAME => array ('userAwardFinishedId' => 0, 'userAwardFinishedUserId' => 1, 'userAwardFinishedAwardDefinesId' => 2, 'userAwardFinishedDate' => 3, 'userAwardFinishedFacebookStreamId' => 4, ),
-		BasePeer::TYPE_COLNAME => array (self::USER_AWARD_FINISHED_ID => 0, self::USER_AWARD_FINISHED_USER_ID => 1, self::USER_AWARD_FINISHED_AWARD_DEFINES_ID => 2, self::USER_AWARD_FINISHED_DATE => 3, self::USER_AWARD_FINISHED_FACEBOOK_STREAM_ID => 4, ),
-		BasePeer::TYPE_RAW_COLNAME => array ('USER_AWARD_FINISHED_ID' => 0, 'USER_AWARD_FINISHED_USER_ID' => 1, 'USER_AWARD_FINISHED_AWARD_DEFINES_ID' => 2, 'USER_AWARD_FINISHED_DATE' => 3, 'USER_AWARD_FINISHED_FACEBOOK_STREAM_ID' => 4, ),
-		BasePeer::TYPE_FIELDNAME => array ('user_award_finished_id' => 0, 'user_award_finished_user_id' => 1, 'user_award_finished_award_defines_id' => 2, 'user_award_finished_date' => 3, 'user_award_finished_facebook_stream_id' => 4, ),
-		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, )
+		BasePeer::TYPE_PHPNAME => array ('UserAwardFinishedId' => 0, 'UserAwardFinishedUserId' => 1, 'UserAwardFinishedAwardDefinesId' => 2, 'UserAwardFinishedDate' => 3, ),
+		BasePeer::TYPE_STUDLYPHPNAME => array ('userAwardFinishedId' => 0, 'userAwardFinishedUserId' => 1, 'userAwardFinishedAwardDefinesId' => 2, 'userAwardFinishedDate' => 3, ),
+		BasePeer::TYPE_COLNAME => array (self::USER_AWARD_FINISHED_ID => 0, self::USER_AWARD_FINISHED_USER_ID => 1, self::USER_AWARD_FINISHED_AWARD_DEFINES_ID => 2, self::USER_AWARD_FINISHED_DATE => 3, ),
+		BasePeer::TYPE_RAW_COLNAME => array ('USER_AWARD_FINISHED_ID' => 0, 'USER_AWARD_FINISHED_USER_ID' => 1, 'USER_AWARD_FINISHED_AWARD_DEFINES_ID' => 2, 'USER_AWARD_FINISHED_DATE' => 3, ),
+		BasePeer::TYPE_FIELDNAME => array ('user_award_finished_id' => 0, 'user_award_finished_user_id' => 1, 'user_award_finished_award_defines_id' => 2, 'user_award_finished_date' => 3, ),
+		BasePeer::TYPE_NUM => array (0, 1, 2, 3, )
 	);
 
 	/**
@@ -158,13 +155,11 @@ abstract class BaseFfbUserAwardFinishedPeer {
 			$criteria->addSelectColumn(FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_USER_ID);
 			$criteria->addSelectColumn(FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_AWARD_DEFINES_ID);
 			$criteria->addSelectColumn(FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_DATE);
-			$criteria->addSelectColumn(FfbUserAwardFinishedPeer::USER_AWARD_FINISHED_FACEBOOK_STREAM_ID);
 		} else {
 			$criteria->addSelectColumn($alias . '.USER_AWARD_FINISHED_ID');
 			$criteria->addSelectColumn($alias . '.USER_AWARD_FINISHED_USER_ID');
 			$criteria->addSelectColumn($alias . '.USER_AWARD_FINISHED_AWARD_DEFINES_ID');
 			$criteria->addSelectColumn($alias . '.USER_AWARD_FINISHED_DATE');
-			$criteria->addSelectColumn($alias . '.USER_AWARD_FINISHED_FACEBOOK_STREAM_ID');
 		}
 	}
 

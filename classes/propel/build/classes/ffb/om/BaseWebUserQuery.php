@@ -15,7 +15,6 @@
  * @method     WebUserQuery orderByUserGender($order = Criteria::ASC) Order by the user_gender column
  * @method     WebUserQuery orderByUserStatus($order = Criteria::ASC) Order by the user_status column
  * @method     WebUserQuery orderByUserAdmin($order = Criteria::ASC) Order by the user_admin column
- * @method     WebUserQuery orderByUserFacebookId($order = Criteria::ASC) Order by the user_facebook_id column
  * @method     WebUserQuery orderByUserNationality($order = Criteria::ASC) Order by the user_nationality column
  * @method     WebUserQuery orderByUserDateBirth($order = Criteria::ASC) Order by the user_date_birth column
  * @method     WebUserQuery orderByUserIp($order = Criteria::ASC) Order by the user_ip column
@@ -35,7 +34,6 @@
  * @method     WebUserQuery groupByUserGender() Group by the user_gender column
  * @method     WebUserQuery groupByUserStatus() Group by the user_status column
  * @method     WebUserQuery groupByUserAdmin() Group by the user_admin column
- * @method     WebUserQuery groupByUserFacebookId() Group by the user_facebook_id column
  * @method     WebUserQuery groupByUserNationality() Group by the user_nationality column
  * @method     WebUserQuery groupByUserDateBirth() Group by the user_date_birth column
  * @method     WebUserQuery groupByUserIp() Group by the user_ip column
@@ -106,7 +104,6 @@
  * @method     WebUser findOneByUserGender(string $user_gender) Return the first WebUser filtered by the user_gender column
  * @method     WebUser findOneByUserStatus(string $user_status) Return the first WebUser filtered by the user_status column
  * @method     WebUser findOneByUserAdmin(boolean $user_admin) Return the first WebUser filtered by the user_admin column
- * @method     WebUser findOneByUserFacebookId(string $user_facebook_id) Return the first WebUser filtered by the user_facebook_id column
  * @method     WebUser findOneByUserNationality(string $user_nationality) Return the first WebUser filtered by the user_nationality column
  * @method     WebUser findOneByUserDateBirth(string $user_date_birth) Return the first WebUser filtered by the user_date_birth column
  * @method     WebUser findOneByUserIp(string $user_ip) Return the first WebUser filtered by the user_ip column
@@ -126,7 +123,6 @@
  * @method     array findByUserGender(string $user_gender) Return WebUser objects filtered by the user_gender column
  * @method     array findByUserStatus(string $user_status) Return WebUser objects filtered by the user_status column
  * @method     array findByUserAdmin(boolean $user_admin) Return WebUser objects filtered by the user_admin column
- * @method     array findByUserFacebookId(string $user_facebook_id) Return WebUser objects filtered by the user_facebook_id column
  * @method     array findByUserNationality(string $user_nationality) Return WebUser objects filtered by the user_nationality column
  * @method     array findByUserDateBirth(string $user_date_birth) Return WebUser objects filtered by the user_date_birth column
  * @method     array findByUserIp(string $user_ip) Return WebUser objects filtered by the user_ip column
@@ -431,28 +427,6 @@ abstract class BaseWebUserQuery extends ModelCriteria
 			$user_admin = in_array(strtolower($userAdmin), array('false', 'off', '-', 'no', 'n', '0')) ? false : true;
 		}
 		return $this->addUsingAlias(WebUserPeer::USER_ADMIN, $userAdmin, $comparison);
-	}
-
-	/**
-	 * Filter the query on the user_facebook_id column
-	 * 
-	 * @param     string $userFacebookId The value to use as filter.
-	 *            Accepts wildcards (* and % trigger a LIKE)
-	 * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
-	 *
-	 * @return    WebUserQuery The current query, for fluid interface
-	 */
-	public function filterByUserFacebookId($userFacebookId = null, $comparison = null)
-	{
-		if (null === $comparison) {
-			if (is_array($userFacebookId)) {
-				$comparison = Criteria::IN;
-			} elseif (preg_match('/[\%\*]/', $userFacebookId)) {
-				$userFacebookId = str_replace('*', '%', $userFacebookId);
-				$comparison = Criteria::LIKE;
-			}
-		}
-		return $this->addUsingAlias(WebUserPeer::USER_FACEBOOK_ID, $userFacebookId, $comparison);
 	}
 
 	/**

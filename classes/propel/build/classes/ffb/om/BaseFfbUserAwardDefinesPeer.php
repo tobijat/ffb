@@ -26,7 +26,7 @@ abstract class BaseFfbUserAwardDefinesPeer {
 	const TM_CLASS = 'FfbUserAwardDefinesTableMap';
 	
 	/** The total number of columns. */
-	const NUM_COLUMNS = 13;
+	const NUM_COLUMNS = 12;
 
 	/** The number of lazy-loaded columns. */
 	const NUM_LAZY_LOAD_COLUMNS = 0;
@@ -64,9 +64,6 @@ abstract class BaseFfbUserAwardDefinesPeer {
 	/** the column name for the USER_AWARD_DEFINES_IMAGE field */
 	const USER_AWARD_DEFINES_IMAGE = 'ffb_user_award_defines.USER_AWARD_DEFINES_IMAGE';
 
-	/** the column name for the USER_AWARD_DEFINES_FACEBOOK_DESCRIPTION field */
-	const USER_AWARD_DEFINES_FACEBOOK_DESCRIPTION = 'ffb_user_award_defines.USER_AWARD_DEFINES_FACEBOOK_DESCRIPTION';
-
 	/** the column name for the USER_AWARD_DEFINES_DESCRIPTION field */
 	const USER_AWARD_DEFINES_DESCRIPTION = 'ffb_user_award_defines.USER_AWARD_DEFINES_DESCRIPTION';
 
@@ -86,12 +83,12 @@ abstract class BaseFfbUserAwardDefinesPeer {
 	 * e.g. self::$fieldNames[self::TYPE_PHPNAME][0] = 'Id'
 	 */
 	private static $fieldNames = array (
-		BasePeer::TYPE_PHPNAME => array ('UserAwardDefinesId', 'UserAwardDefinesAwardId', 'UserAwardDefinesRank', 'UserAwardDefinesRankName', 'UserAwardDefinesAim', 'UserAwardDefinesAimDbtable', 'UserAwardDefinesAimOperator', 'UserAwardDefinesAimCount', 'UserAwardDefinesAimAutomatic', 'UserAwardDefinesAimFunctionName', 'UserAwardDefinesImage', 'UserAwardDefinesFacebookDescription', 'UserAwardDefinesDescription', ),
-		BasePeer::TYPE_STUDLYPHPNAME => array ('userAwardDefinesId', 'userAwardDefinesAwardId', 'userAwardDefinesRank', 'userAwardDefinesRankName', 'userAwardDefinesAim', 'userAwardDefinesAimDbtable', 'userAwardDefinesAimOperator', 'userAwardDefinesAimCount', 'userAwardDefinesAimAutomatic', 'userAwardDefinesAimFunctionName', 'userAwardDefinesImage', 'userAwardDefinesFacebookDescription', 'userAwardDefinesDescription', ),
-		BasePeer::TYPE_COLNAME => array (self::USER_AWARD_DEFINES_ID, self::USER_AWARD_DEFINES_AWARD_ID, self::USER_AWARD_DEFINES_RANK, self::USER_AWARD_DEFINES_RANK_NAME, self::USER_AWARD_DEFINES_AIM, self::USER_AWARD_DEFINES_AIM_DBTABLE, self::USER_AWARD_DEFINES_AIM_OPERATOR, self::USER_AWARD_DEFINES_AIM_COUNT, self::USER_AWARD_DEFINES_AIM_AUTOMATIC, self::USER_AWARD_DEFINES_AIM_FUNCTION_NAME, self::USER_AWARD_DEFINES_IMAGE, self::USER_AWARD_DEFINES_FACEBOOK_DESCRIPTION, self::USER_AWARD_DEFINES_DESCRIPTION, ),
-		BasePeer::TYPE_RAW_COLNAME => array ('USER_AWARD_DEFINES_ID', 'USER_AWARD_DEFINES_AWARD_ID', 'USER_AWARD_DEFINES_RANK', 'USER_AWARD_DEFINES_RANK_NAME', 'USER_AWARD_DEFINES_AIM', 'USER_AWARD_DEFINES_AIM_DBTABLE', 'USER_AWARD_DEFINES_AIM_OPERATOR', 'USER_AWARD_DEFINES_AIM_COUNT', 'USER_AWARD_DEFINES_AIM_AUTOMATIC', 'USER_AWARD_DEFINES_AIM_FUNCTION_NAME', 'USER_AWARD_DEFINES_IMAGE', 'USER_AWARD_DEFINES_FACEBOOK_DESCRIPTION', 'USER_AWARD_DEFINES_DESCRIPTION', ),
-		BasePeer::TYPE_FIELDNAME => array ('user_award_defines_id', 'user_award_defines_award_id', 'user_award_defines_rank', 'user_award_defines_rank_name', 'user_award_defines_aim', 'user_award_defines_aim_dbtable', 'user_award_defines_aim_operator', 'user_award_defines_aim_count', 'user_award_defines_aim_automatic', 'user_award_defines_aim_function_name', 'user_award_defines_image', 'user_award_defines_facebook_description', 'user_award_defines_description', ),
-		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, )
+		BasePeer::TYPE_PHPNAME => array ('UserAwardDefinesId', 'UserAwardDefinesAwardId', 'UserAwardDefinesRank', 'UserAwardDefinesRankName', 'UserAwardDefinesAim', 'UserAwardDefinesAimDbtable', 'UserAwardDefinesAimOperator', 'UserAwardDefinesAimCount', 'UserAwardDefinesAimAutomatic', 'UserAwardDefinesAimFunctionName', 'UserAwardDefinesImage', 'UserAwardDefinesDescription', ),
+		BasePeer::TYPE_STUDLYPHPNAME => array ('userAwardDefinesId', 'userAwardDefinesAwardId', 'userAwardDefinesRank', 'userAwardDefinesRankName', 'userAwardDefinesAim', 'userAwardDefinesAimDbtable', 'userAwardDefinesAimOperator', 'userAwardDefinesAimCount', 'userAwardDefinesAimAutomatic', 'userAwardDefinesAimFunctionName', 'userAwardDefinesImage', 'userAwardDefinesDescription', ),
+		BasePeer::TYPE_COLNAME => array (self::USER_AWARD_DEFINES_ID, self::USER_AWARD_DEFINES_AWARD_ID, self::USER_AWARD_DEFINES_RANK, self::USER_AWARD_DEFINES_RANK_NAME, self::USER_AWARD_DEFINES_AIM, self::USER_AWARD_DEFINES_AIM_DBTABLE, self::USER_AWARD_DEFINES_AIM_OPERATOR, self::USER_AWARD_DEFINES_AIM_COUNT, self::USER_AWARD_DEFINES_AIM_AUTOMATIC, self::USER_AWARD_DEFINES_AIM_FUNCTION_NAME, self::USER_AWARD_DEFINES_IMAGE, self::USER_AWARD_DEFINES_DESCRIPTION, ),
+		BasePeer::TYPE_RAW_COLNAME => array ('USER_AWARD_DEFINES_ID', 'USER_AWARD_DEFINES_AWARD_ID', 'USER_AWARD_DEFINES_RANK', 'USER_AWARD_DEFINES_RANK_NAME', 'USER_AWARD_DEFINES_AIM', 'USER_AWARD_DEFINES_AIM_DBTABLE', 'USER_AWARD_DEFINES_AIM_OPERATOR', 'USER_AWARD_DEFINES_AIM_COUNT', 'USER_AWARD_DEFINES_AIM_AUTOMATIC', 'USER_AWARD_DEFINES_AIM_FUNCTION_NAME', 'USER_AWARD_DEFINES_IMAGE', 'USER_AWARD_DEFINES_DESCRIPTION', ),
+		BasePeer::TYPE_FIELDNAME => array ('user_award_defines_id', 'user_award_defines_award_id', 'user_award_defines_rank', 'user_award_defines_rank_name', 'user_award_defines_aim', 'user_award_defines_aim_dbtable', 'user_award_defines_aim_operator', 'user_award_defines_aim_count', 'user_award_defines_aim_automatic', 'user_award_defines_aim_function_name', 'user_award_defines_image', 'user_award_defines_description', ),
+		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, )
 	);
 
 	/**
@@ -101,12 +98,12 @@ abstract class BaseFfbUserAwardDefinesPeer {
 	 * e.g. self::$fieldNames[BasePeer::TYPE_PHPNAME]['Id'] = 0
 	 */
 	private static $fieldKeys = array (
-		BasePeer::TYPE_PHPNAME => array ('UserAwardDefinesId' => 0, 'UserAwardDefinesAwardId' => 1, 'UserAwardDefinesRank' => 2, 'UserAwardDefinesRankName' => 3, 'UserAwardDefinesAim' => 4, 'UserAwardDefinesAimDbtable' => 5, 'UserAwardDefinesAimOperator' => 6, 'UserAwardDefinesAimCount' => 7, 'UserAwardDefinesAimAutomatic' => 8, 'UserAwardDefinesAimFunctionName' => 9, 'UserAwardDefinesImage' => 10, 'UserAwardDefinesFacebookDescription' => 11, 'UserAwardDefinesDescription' => 12, ),
-		BasePeer::TYPE_STUDLYPHPNAME => array ('userAwardDefinesId' => 0, 'userAwardDefinesAwardId' => 1, 'userAwardDefinesRank' => 2, 'userAwardDefinesRankName' => 3, 'userAwardDefinesAim' => 4, 'userAwardDefinesAimDbtable' => 5, 'userAwardDefinesAimOperator' => 6, 'userAwardDefinesAimCount' => 7, 'userAwardDefinesAimAutomatic' => 8, 'userAwardDefinesAimFunctionName' => 9, 'userAwardDefinesImage' => 10, 'userAwardDefinesFacebookDescription' => 11, 'userAwardDefinesDescription' => 12, ),
-		BasePeer::TYPE_COLNAME => array (self::USER_AWARD_DEFINES_ID => 0, self::USER_AWARD_DEFINES_AWARD_ID => 1, self::USER_AWARD_DEFINES_RANK => 2, self::USER_AWARD_DEFINES_RANK_NAME => 3, self::USER_AWARD_DEFINES_AIM => 4, self::USER_AWARD_DEFINES_AIM_DBTABLE => 5, self::USER_AWARD_DEFINES_AIM_OPERATOR => 6, self::USER_AWARD_DEFINES_AIM_COUNT => 7, self::USER_AWARD_DEFINES_AIM_AUTOMATIC => 8, self::USER_AWARD_DEFINES_AIM_FUNCTION_NAME => 9, self::USER_AWARD_DEFINES_IMAGE => 10, self::USER_AWARD_DEFINES_FACEBOOK_DESCRIPTION => 11, self::USER_AWARD_DEFINES_DESCRIPTION => 12, ),
-		BasePeer::TYPE_RAW_COLNAME => array ('USER_AWARD_DEFINES_ID' => 0, 'USER_AWARD_DEFINES_AWARD_ID' => 1, 'USER_AWARD_DEFINES_RANK' => 2, 'USER_AWARD_DEFINES_RANK_NAME' => 3, 'USER_AWARD_DEFINES_AIM' => 4, 'USER_AWARD_DEFINES_AIM_DBTABLE' => 5, 'USER_AWARD_DEFINES_AIM_OPERATOR' => 6, 'USER_AWARD_DEFINES_AIM_COUNT' => 7, 'USER_AWARD_DEFINES_AIM_AUTOMATIC' => 8, 'USER_AWARD_DEFINES_AIM_FUNCTION_NAME' => 9, 'USER_AWARD_DEFINES_IMAGE' => 10, 'USER_AWARD_DEFINES_FACEBOOK_DESCRIPTION' => 11, 'USER_AWARD_DEFINES_DESCRIPTION' => 12, ),
-		BasePeer::TYPE_FIELDNAME => array ('user_award_defines_id' => 0, 'user_award_defines_award_id' => 1, 'user_award_defines_rank' => 2, 'user_award_defines_rank_name' => 3, 'user_award_defines_aim' => 4, 'user_award_defines_aim_dbtable' => 5, 'user_award_defines_aim_operator' => 6, 'user_award_defines_aim_count' => 7, 'user_award_defines_aim_automatic' => 8, 'user_award_defines_aim_function_name' => 9, 'user_award_defines_image' => 10, 'user_award_defines_facebook_description' => 11, 'user_award_defines_description' => 12, ),
-		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, )
+		BasePeer::TYPE_PHPNAME => array ('UserAwardDefinesId' => 0, 'UserAwardDefinesAwardId' => 1, 'UserAwardDefinesRank' => 2, 'UserAwardDefinesRankName' => 3, 'UserAwardDefinesAim' => 4, 'UserAwardDefinesAimDbtable' => 5, 'UserAwardDefinesAimOperator' => 6, 'UserAwardDefinesAimCount' => 7, 'UserAwardDefinesAimAutomatic' => 8, 'UserAwardDefinesAimFunctionName' => 9, 'UserAwardDefinesImage' => 10, 'UserAwardDefinesDescription' => 11, ),
+		BasePeer::TYPE_STUDLYPHPNAME => array ('userAwardDefinesId' => 0, 'userAwardDefinesAwardId' => 1, 'userAwardDefinesRank' => 2, 'userAwardDefinesRankName' => 3, 'userAwardDefinesAim' => 4, 'userAwardDefinesAimDbtable' => 5, 'userAwardDefinesAimOperator' => 6, 'userAwardDefinesAimCount' => 7, 'userAwardDefinesAimAutomatic' => 8, 'userAwardDefinesAimFunctionName' => 9, 'userAwardDefinesImage' => 10, 'userAwardDefinesDescription' => 11, ),
+		BasePeer::TYPE_COLNAME => array (self::USER_AWARD_DEFINES_ID => 0, self::USER_AWARD_DEFINES_AWARD_ID => 1, self::USER_AWARD_DEFINES_RANK => 2, self::USER_AWARD_DEFINES_RANK_NAME => 3, self::USER_AWARD_DEFINES_AIM => 4, self::USER_AWARD_DEFINES_AIM_DBTABLE => 5, self::USER_AWARD_DEFINES_AIM_OPERATOR => 6, self::USER_AWARD_DEFINES_AIM_COUNT => 7, self::USER_AWARD_DEFINES_AIM_AUTOMATIC => 8, self::USER_AWARD_DEFINES_AIM_FUNCTION_NAME => 9, self::USER_AWARD_DEFINES_IMAGE => 10, self::USER_AWARD_DEFINES_DESCRIPTION => 11, ),
+		BasePeer::TYPE_RAW_COLNAME => array ('USER_AWARD_DEFINES_ID' => 0, 'USER_AWARD_DEFINES_AWARD_ID' => 1, 'USER_AWARD_DEFINES_RANK' => 2, 'USER_AWARD_DEFINES_RANK_NAME' => 3, 'USER_AWARD_DEFINES_AIM' => 4, 'USER_AWARD_DEFINES_AIM_DBTABLE' => 5, 'USER_AWARD_DEFINES_AIM_OPERATOR' => 6, 'USER_AWARD_DEFINES_AIM_COUNT' => 7, 'USER_AWARD_DEFINES_AIM_AUTOMATIC' => 8, 'USER_AWARD_DEFINES_AIM_FUNCTION_NAME' => 9, 'USER_AWARD_DEFINES_IMAGE' => 10, 'USER_AWARD_DEFINES_DESCRIPTION' => 11, ),
+		BasePeer::TYPE_FIELDNAME => array ('user_award_defines_id' => 0, 'user_award_defines_award_id' => 1, 'user_award_defines_rank' => 2, 'user_award_defines_rank_name' => 3, 'user_award_defines_aim' => 4, 'user_award_defines_aim_dbtable' => 5, 'user_award_defines_aim_operator' => 6, 'user_award_defines_aim_count' => 7, 'user_award_defines_aim_automatic' => 8, 'user_award_defines_aim_function_name' => 9, 'user_award_defines_image' => 10, 'user_award_defines_description' => 11, ),
+		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, )
 	);
 
 	/**
@@ -189,7 +186,6 @@ abstract class BaseFfbUserAwardDefinesPeer {
 			$criteria->addSelectColumn(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_AIM_AUTOMATIC);
 			$criteria->addSelectColumn(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_AIM_FUNCTION_NAME);
 			$criteria->addSelectColumn(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_IMAGE);
-			$criteria->addSelectColumn(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_FACEBOOK_DESCRIPTION);
 			$criteria->addSelectColumn(FfbUserAwardDefinesPeer::USER_AWARD_DEFINES_DESCRIPTION);
 		} else {
 			$criteria->addSelectColumn($alias . '.USER_AWARD_DEFINES_ID');
@@ -203,7 +199,6 @@ abstract class BaseFfbUserAwardDefinesPeer {
 			$criteria->addSelectColumn($alias . '.USER_AWARD_DEFINES_AIM_AUTOMATIC');
 			$criteria->addSelectColumn($alias . '.USER_AWARD_DEFINES_AIM_FUNCTION_NAME');
 			$criteria->addSelectColumn($alias . '.USER_AWARD_DEFINES_IMAGE');
-			$criteria->addSelectColumn($alias . '.USER_AWARD_DEFINES_FACEBOOK_DESCRIPTION');
 			$criteria->addSelectColumn($alias . '.USER_AWARD_DEFINES_DESCRIPTION');
 		}
 	}

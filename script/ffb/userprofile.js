@@ -9,10 +9,6 @@ function dispUserinfoHead() {
     string += '</div>';
     string += '<div id="infobox_title_text">';
     string += _userprofile_data['user_nickname'];
-    if(parseInt(_userprofile_data['user_ownprofile']) == 1 && parseInt(_userprofile_data['user_perm_facebook']) == 0) {
-    	string += '<br><img src="'+server+symbolImages_+'Facebook-32.png" width="15px">';
-		string += '<span style="font-size:8pt; font-weight:none;"><em><a target="_blank" href="http://apps.facebook.com/soccersports/">mit Facebook verbinden</a></em></span>';
-    }
     string += '</div>';
     string += '<div id="infobox_close">';
     string += '<a title="Schlie&szlig;en" href="javascript:void(0);" onClick="javascript:closeInfoPopup();"><img alt="Schlie&szlig;en" border="0" src="' + server + symbolImages_ + 'delete.png"></a>';
@@ -81,7 +77,6 @@ function retrieveUserinfo(user_id){
 		_userprofile_data['user_details_phone'] = userinfo[0].getElementsByTagName('user_details_phone')[0].firstChild.nodeValue;
 		_userprofile_data['user_details_website'] = userinfo[0].getElementsByTagName('user_details_website')[0].firstChild.nodeValue;
 		_userprofile_data['user_perm_profile'] = userinfo[0].getElementsByTagName('user_perm_profile')[0].firstChild.nodeValue;
-		_userprofile_data['user_perm_facebook'] = userinfo[0].getElementsByTagName('user_perm_facebook')[0].firstChild.nodeValue;
 
 		var participations = xmlResponse.getElementsByTagName('participations')[0].getElementsByTagName('XML_Serializer_Tag');
 		//alert(participations.length);

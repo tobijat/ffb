@@ -50,11 +50,6 @@
 					<input type="button" class="awardInputOpt" value="alle Auszeichnungen berechnen" onclick="javascript:calcAllAwards();" />
 					<input type="button" class="awardInputOpt" value="alle Auszeichnungen anzeigen (not implemented)" onclick="javascript:showAllAwards();" /><br />
 				</div>
-				<hr />
-				
-				<div class="awardEntry">
-					<input type="button" class="awardInputOpt" value="neue Auszeichnungen an Facebook senden" onclick="javascript:sendNewAwardsToFb();" /><br />
-				</div>
 				
 				<hr />
 				
