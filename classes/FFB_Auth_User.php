@@ -26,13 +26,16 @@ abstract class FFB_Auth_User extends FFB_Auth {
     function authenticate() {
     	if($this->session->user_id > 0) {
     		$user = WebUserPeer::retrieveByPK($this->session->user_id);
+    		if (!$user) {
+    			$this->session->user_id = 0;
+    			return false;
+    		}
     		//login timeout
     		$user_laction_time  = strtotime($user->getUserDateLaction());
 			$timeout = $this->config->area_user_login_timeout;
     		if($timeout > 0 && ($user_laction_time+$timeout)<=time()) {
 	        	$this->session->user_id = 0;
 	        	$this->session->destroy();
-	          	//session_destroy();
 	          	return false;
 	        }
 

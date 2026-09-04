@@ -1,17 +1,17 @@
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<meta name="author" content="Gritschacher, Musser">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.ADM_INCLUDE_PATH?>administration.css" type="text/css">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.ADM_INCLUDE_PATH?>standard.css" type="text/css">
-    <script type="text/javascript" src="<?echo FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH?>script/admin/player.js"></script>
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.ADM_INCLUDE_PATH?>administration.css" type="text/css">
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.ADM_INCLUDE_PATH?>standard.css" type="text/css">
+    <script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH?>script/admin/player.js"></script>
 </head>
 <body onload="javascript:init()">
 <div id="Container">
 
     <div id="Navbar">
         <div id="Navigation">
-            <?include(ADM_VIEWER_PATH.'navigation.php')?>
+            <?php include(ADM_VIEWER_PATH.'navigation.php')?>
         </div>
 
         <div style="clear:both;"></div>
@@ -19,34 +19,34 @@
     <div id="Main">
 <div id="administration">
 <div id="admintitle">Players</div>
-<?if(is_array($this->errors)) {?>
+<?php if(is_array($this->errors)) {?>
         <div id="formerror">
             <b>There are errors:</b><br>
-            <?foreach($this->errors as $error) {
+            <?php foreach($this->errors as $error) {
                 echo '* '.$error.'<br>';
             }?>
         </div>
-<?}?>
-<?if($this->administration_answer) {?>
+<?php }?>
+<?php if($this->administration_answer) {?>
     <div id="formanswer">
-        <?echo $this->administration_answer;?>
+        <?= $this->administration_answer;?>
     </div>
-<?}?>
+<?php }?>
 
-<?include(INCLUDE_PATH.'country_list.php');?>
+<?php include(INCLUDE_PATH.'country_list.php');?>
 <div id="form">
 <form name="administration_form" id="administration_form" action="./player" method="post">
     <div id="formline">
         <div id="formdescr">* First Name:</div>
         <div id="forminput">
-            <input type="text" class="input" name="player_fname" value="<?echo $this->post['player_fname'];?>">
+            <input type="text" class="input" name="player_fname" value="<?= $this->post['player_fname'];?>">
         </div>
         <div id="formclear"></div>
     </div>
     <div id="formline">
         <div id="formdescr">* Last Name:</div>
         <div id="forminput">
-            <input type="text" class="input" name="player_lname" value="<?echo $this->post['player_lname'];?>">
+            <input type="text" class="input" name="player_lname" value="<?= $this->post['player_lname'];?>">
         </div>
         <div id="formclear"></div>
     </div>
@@ -55,11 +55,11 @@
         <div id="forminput">
             <select name="player_nationality">
                 <option value="">Country...</option>
-                    <?foreach($country_array as $shortname => $name) {?>
-                        <option <?if($this->post['player_nationality'] == $shortname) echo 'selected';?> value="<?echo $shortname?>">
-                            <?echo $name?>
+                    <?php foreach($country_array as $shortname => $name) {?>
+                        <option <?php if($this->post['player_nationality'] == $shortname) echo 'selected';?> value="<?= $shortname?>">
+                            <?= $name?>
                         </option>
-                    <?}?>
+                    <?php }?>
             </select>
         </div>
         <div id="formclear"></div>
@@ -68,8 +68,8 @@
         <div id="formdescr">Status:</div>
         <div id="forminput">
             <select name="player_status">
-                <option <?if($this->post['player_status'] == 1) echo 'selected ';?> value="1">active</option>
-                <option <?if($this->post['player_status'] == 0) echo 'selected ';?>value="0">inactive</option>
+                <option <?php if($this->post['player_status'] == 1) echo 'selected ';?> value="1">active</option>
+                <option <?php if($this->post['player_status'] == 0) echo 'selected ';?>value="0">inactive</option>
             </select>
         </div>
         <div id="formclear"></div>
@@ -77,16 +77,16 @@
     <div id="formline">
         <div id="formdescr">Status description:</div>
         <div id="forminput">
-            <input type="text" class="input" name="player_status_description" value="<?echo $this->post['player_status_description'];?>">
+            <input type="text" class="input" name="player_status_description" value="<?= $this->post['player_status_description'];?>">
         </div>
         <div id="formclear"></div>
     </div>
 
-    <?if($this->administration_modus != 'update') {?>
+    <?php if($this->administration_modus != 'update') {?>
         <div id="formline">
 	  		<div id="formdescr">* Team:</div>
 	  		<div id="forminput">
-	  		    <input type="hidden" name="player_team_post" value="<?echo $this->post['player_team'];?>">
+	  		    <input type="hidden" name="player_team_post" value="<?= $this->post['player_team'];?>">
 	  		    <select name="player_team" id="insertplayer_team">
                     <option value="">select team</option>
                 </select>
@@ -98,11 +98,11 @@
 	  		<div id="forminput">
 	  		    <select name="playerteam_price">
                     <option value="">select price</option>
-                    <?for($i=1;$i<13;$i++) {?>
-                        <option <?if($this->post['playerteam_price'] == $i) echo 'selected';?> value="<?echo $i?>">
-                            <?echo $i?>
+                    <?php for($i=1;$i<13;$i++) {?>
+                        <option <?php if($this->post['playerteam_price'] == $i) echo 'selected';?> value="<?= $i?>">
+                            <?= $i?>
                         </option>
-                    <?}?>
+                    <?php }?>
                 </select>
 	  	    </div>
 	  	</div>
@@ -112,16 +112,16 @@
 	  		<div id="forminput">
 	  		    <select name="playerteam_position">
                     <option value="">select position</option>
-                    <option <?if($this->post['playerteam_position'] == 'g') echo 'selected';?> value="g">
+                    <option <?php if($this->post['playerteam_position'] == 'g') echo 'selected';?> value="g">
                         Goalie
                     </option>
-                    <option <?if($this->post['playerteam_position'] == 'd') echo 'selected';?> value="d">
+                    <option <?php if($this->post['playerteam_position'] == 'd') echo 'selected';?> value="d">
                         Defence
                     </option>
-                    <option <?if($this->post['playerteam_position'] == 'm') echo 'selected';?> value="m">
+                    <option <?php if($this->post['playerteam_position'] == 'm') echo 'selected';?> value="m">
                         Midfield
                     </option>
-                    <option <?if($this->post['playerteam_position'] == 's') echo 'selected';?> value="s">
+                    <option <?php if($this->post['playerteam_position'] == 's') echo 'selected';?> value="s">
                         Striker
                     </option>
                 </select>
@@ -131,7 +131,7 @@
 	  	<div id="formline">
 	  		<div id="formdescr">Picture:</div>
 	  		<div id="forminput">
-	  		    <input type="checkbox" name="playerteam_picture" value="playerteam_picture_yes" <?if($this->post['playerteam_picture']) echo 'checked';?>>
+	  		    <input type="checkbox" name="playerteam_picture" value="playerteam_picture_yes" <?php if($this->post['playerteam_picture']) echo 'checked';?>>
 	  	    </div>
 	  	</div>
 	  	<div id="formclear"></div>
@@ -139,25 +139,25 @@
             <div id="formdescr">PT-Status:</div>
             <div id="forminput">
                 <select name="playerteam_status">
-                    <option <?if($this->post['playerteam_status'] == 1) echo 'selected ';?> value="1">active</option>
-                    <option <?if($this->post['playerteam_status'] == 0) echo 'selected ';?>value="0">inactive</option>
+                    <option <?php if($this->post['playerteam_status'] == 1) echo 'selected ';?> value="1">active</option>
+                    <option <?php if($this->post['playerteam_status'] == 0) echo 'selected ';?>value="0">inactive</option>
                 </select>
             </div>
         </div>
         <div id="formclear"></div>
-    <?}?>
+    <?php }?>
 
     <div id="formline">&ensp;</div>
 
     <div id="formline">
-        <input type="hidden" name="administration_modus" value="<?echo $this->administration_modus;?>">
-        <input type="hidden" name="player_id" value="<?echo $this->post['player_id'];?>">
+        <input type="hidden" name="administration_modus" value="<?= $this->administration_modus;?>">
+        <input type="hidden" name="player_id" value="<?= $this->post['player_id'];?>">
         <div id="formdescr">
-            <?if($this->administration_modus == 'update') {?>
+            <?php if($this->administration_modus == 'update') {?>
                 <input type="submit" class="submit" value="Update" name="player_administration_update">
-            <?} else {?>
+            <?php } else {?>
                 <input type="submit" class="submit" value="Add" name="player_administration_insert">
-            <?}?>
+            <?php }?>
         </div>
         <div id="formclear"></div>
     </div>
@@ -211,11 +211,11 @@
 	  		<div id="forminput">
 	  		    <select name="player_nationality" id="searchplayer_nationality">
 	  		        <option value="" >all nationalities</option>
-                    <?foreach($country_array as $shortname => $name) {?>
-                        <option value="<?echo $shortname?>">
-                            <?echo $name?>
+                    <?php foreach($country_array as $shortname => $name) {?>
+                        <option value="<?= $shortname?>">
+                            <?= $name?>
                         </option>
-                    <?}?>
+                    <?php }?>
       		    </select>
 	  	    </div>
 	  	</div>
@@ -276,6 +276,6 @@
 </div>
 </div>
 <div id="Footer">
-    <?include(ADM_VIEWER_PATH.'footer.php')?>
+    <?php include(ADM_VIEWER_PATH.'footer.php')?>
 </div>
 </div>

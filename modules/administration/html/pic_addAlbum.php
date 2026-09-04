@@ -8,8 +8,8 @@
 ?>
 	<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
 	<meta name="author" content="Tobias Gritschacher">
-	<link rel="stylesheet" href="<?echo FFB_BASE_PATH.ADM_INCLUDE_PATH?>administration.css" type="text/css">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.ADM_INCLUDE_PATH?>standard.css" type="text/css">
+	<link rel="stylesheet" href="<?= FFB_BASE_PATH.ADM_INCLUDE_PATH?>administration.css" type="text/css">
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.ADM_INCLUDE_PATH?>standard.css" type="text/css">
 </head>
 
 <body>
@@ -17,7 +17,7 @@
 
     <div id="Navbar">
         <div id="Navigation">
-            <?include(ADM_VIEWER_PATH.'navigation.php')?>
+            <?php include(ADM_VIEWER_PATH.'navigation.php')?>
         </div>
 
         <div style="clear:both;"></div>
@@ -33,11 +33,11 @@
 
             <applet name="jumpLoaderApplet"
 	           code="jmaster.jumploader.app.JumpLoaderApplet.class"
-	           archive="<?echo PIC_BASE_PATH?><?echo PIC_SCRIPT_PATH?>jupload/jumploader_z.jar" id="jumpLoaderApplet"
+	           archive="<?= PIC_BASE_PATH?><?= PIC_SCRIPT_PATH?>jupload/jumploader_z.jar" id="jumpLoaderApplet"
 	           width="800"
 	           height="450"
 	           mayscript>
-		       <param name="uc_uploadUrl" value="<?echo PIC_BASE_PATH?>administration/pic_uploadHandler/upload.html?fid=<?echo $this->pictory_fid?>"/>
+		       <param name="uc_uploadUrl" value="<?= PIC_BASE_PATH?>administration/pic_uploadHandler/upload.html?fid=<?= $this->pictory_fid?>"/>
 		       <param name="uc_imageEditorEnabled" value="true"/>
 			   <param name="uc_fileParameterName" value="file"/>
 		       <param name="uc_addImagesOnly" value="true"/>
@@ -60,7 +60,7 @@
                 var uploader = document.jumpLoaderApplet.getUploader();
                 function uploaderStatusChanged( uploader ) {
                     if (uploader.getStatus() == 0) {
-                        location.href = "<?echo PIC_BASE_PATH?>administration/pic_uploadHandler/displayTempImages.html?fid=<?echo $this->pictory_fid?>";
+                        location.href = "<?= PIC_BASE_PATH?>administration/pic_uploadHandler/displayTempImages.html?fid=<?= $this->pictory_fid?>";
                     }
                 }
             </script>
@@ -69,7 +69,7 @@
         </div>
     </div>
 <div id="Footer">
-    <?include(ADM_VIEWER_PATH.'footer.php')?>
+    <?php include(ADM_VIEWER_PATH.'footer.php')?>
 </div>
 </div>
 

@@ -27,10 +27,9 @@ class FFB_Options {
 	    $criteria->add(FfbOptionsPeer::OPTIONS_GAME_ID, $this->game_id);
 	    $criteria->setLimit(1);
 	    $items = FfbOptionsPeer::doSelect($criteria);
-	    if($items)
-	       $options = $items[0];
-
-	    $this->setOptionsArray($options);
+	    if($items) {
+	       $this->setOptionsArray($items[0]);
+	    }
     }
 
     private function setOptionsArray($options) {
@@ -90,7 +89,7 @@ class FFB_Options {
     }
 
     public function __get($var) {
-        return $this->options[$var];
+        return isset($this->options[$var]) ? $this->options[$var] : null;
     }
 
 }

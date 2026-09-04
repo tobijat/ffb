@@ -1,16 +1,16 @@
 <?php
 
 function get_db_conn() {
-  $conn = mysql_connect($GLOBALS['db_ip'], $GLOBALS['db_user'], $GLOBALS['db_pass']);
-  mysql_select_db($GLOBALS['db_name'], $conn);
+  $conn = mysqli_connect($GLOBALS['db_ip'], $GLOBALS['db_user'], $GLOBALS['db_pass']);
+  mysqli_select_db($conn, $GLOBALS['db_name']);
   return $conn;
 }
 
 function get_prints($user) {
   $conn = get_db_conn();
-  $res = mysql_query('SELECT `from`, `to`, `time` FROM footprints WHERE `to`=' . $user . ' ORDER BY `time` DESC', $conn);
+  $res = mysqli_query($conn, 'SELECT `from`, `to`, `time` FROM footprints WHERE `to`=' . $user . ' ORDER BY `time` DESC');
   $prints = array();
-  while ($row = mysql_fetch_assoc($res)) {
+  while ($row = mysqli_fetch_assoc($res)) {
     $prints[] = $row;
   }
   return $prints;
@@ -34,7 +34,7 @@ function do_step($from, $to) {
   global $facebook;
 
   $conn = get_db_conn();
-  mysql_query('INSERT INTO footprints SET `from`='.$from.', `time`='.time().', `to`='.$to, $conn);
+  mysqli_query($conn, 'INSERT INTO footprints SET `from`='.$from.', `time`='.time().', `to`='.$to);
   $prints = get_prints($to);
   try {
     
@@ -47,8 +47,7 @@ function do_step($from, $to) {
     $facebook->api_client->profile_setFBML($fbml, $to);
 
     // Send notification
-    // Notice the use of reference '&'
-    $result = & $facebook->api_client->notifications_send($to, ' stepped on you.  ' .
+    $result = $facebook->api_client->notifications_send($to, ' stepped on you.  ' .
       '<a href="http://apps.facebook.com/footprints/">See all your Footprints</a>.');
 
     // Publish feed story

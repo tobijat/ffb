@@ -27,7 +27,7 @@ if (isset($_POST['to'])) {
 
 ?>
 <div style="padding: 10px;">
-  <h2>Hi <fb:name firstnameonly="true" uid="<?=$user?>" useyou="false"/>!</h2><br/>
+  <h2>Hi <fb:name firstnameonly="true" uid="<?= $user?>" useyou="false"/>!</h2><br/>
   <a href="<?= $facebook->get_add_url() ?>">Put Footprints in your profile</a>, if you haven't already!
     <form method="post" >
 <?php

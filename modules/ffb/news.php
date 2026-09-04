@@ -49,7 +49,7 @@
           $items = FfbNewsPeer::doSelect($criteria);
           $news = array();
           $i=0;
-          if(items) {
+          if ($items) {
               foreach($items as $item) {
                   $news[$i]["news_id"] = $item->getNewsId();
                   $news[$i]["news_title"] = $item->getNewsTitle();

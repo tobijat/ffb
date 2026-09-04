@@ -127,7 +127,7 @@
           $items = FfbGamePeer::doSelect($criteria);
           $games = array();
           $i=0;
-          if(items) {
+          if ($items) {
               foreach($items as $item) {
                   $games[$i]["game_id"] = $item->getGameId();
                   $games[$i]["game_title"] = $item->getGameTitle();

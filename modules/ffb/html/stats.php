@@ -15,11 +15,11 @@
 
     <script type="text/javascript" src="<?php echo FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
 	<script type="text/javascript" src="<?php echo FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>countdown.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>stats.js"></script>
-	<!--script type="text/javascript" src="<?echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>playerinfo.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>info_popup.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>matchdata.js"></script-->
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>countdown.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>stats.js"></script>
+	<!--script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>playerinfo.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>info_popup.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>matchdata.js"></script-->
 
 
 </head>
@@ -32,7 +32,7 @@
 			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 			<div id="NavbarRound">
 				<div id="Navigation">
-			        <?include(FFB_VIEWER_PATH.'navigation.php')?>
+			        <?php include(FFB_VIEWER_PATH.'navigation.php')?>
 			    </div>
 			    <div class="rounddiv_countdown">
 					<div class="roundcorner_light">
@@ -55,7 +55,7 @@
     <div id="Mainleft">
 		<div>
 			<div style="float:left; display:inline; margin-left:3%;">
-				<div id="statsSlot"><?echo $this->adStatsSlot;?></div>
+				<div id="statsSlot"><?= $this->adStatsSlot;?></div>
 			</div>
 			<h1>&Uuml;bersicht <span style="font-size:33%; font-style:italic;">alpha</span></h1>
 
@@ -116,7 +116,7 @@
 					<h3>Teamkader:</h3>
 					<div class="stats_section" >
 						<div calss="stats_select" id="teamStatsSelect">
-							<img src="<? echo FFB_BASE_PATH.FFB_IMAGE_PATH?>loading/ajax-loader-bar-big.gif" alt="loading">
+							<img src="<?php  echo FFB_BASE_PATH.FFB_IMAGE_PATH?>loading/ajax-loader-bar-big.gif" alt="loading">
 						</div>
 					</div>
 					
@@ -133,7 +133,7 @@
 				<div class="stats_entry" id="leagueStats">
 					<h3>Ligen:</h3>
 					<div class="stats_select" id="leagueStatsSelect">
-						<img src="<? echo FFB_BASE_PATH.FFB_IMAGE_PATH?>loading/ajax-loader-bar-big.gif" alt="loading">
+						<img src="<?php  echo FFB_BASE_PATH.FFB_IMAGE_PATH?>loading/ajax-loader-bar-big.gif" alt="loading">
 					</div>
 					
 					<!--div calss="stats_select" id="leagueStatsSelectSearch">
@@ -149,7 +149,7 @@
 					<h3>Spieler:</h3>
 					<div class="stats_section" >
 						<div calss="stats_select" id="playerStatsSelectCountry">
-							<img src="<? echo FFB_BASE_PATH.FFB_IMAGE_PATH?>loading/ajax-loader-bar-big.gif" alt="loading">
+							<img src="<?php  echo FFB_BASE_PATH.FFB_IMAGE_PATH?>loading/ajax-loader-bar-big.gif" alt="loading">
 						</div>
 						
 						<div calss="stats_select" id="playerStatsSelectSearch">
@@ -178,7 +178,7 @@
 		<div class="roundcorner_dark">
 			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 			<div id="Footer">
-			    <?include(FFB_VIEWER_PATH.'footer.php')?>
+			    <?php include(FFB_VIEWER_PATH.'footer.php')?>
 			</div>
 			<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
 		</div>

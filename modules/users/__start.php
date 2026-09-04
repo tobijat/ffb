@@ -102,7 +102,7 @@ class __start extends FFB_Auth_No {
 					LIMIT 7;";
 		$result	=	send_query($query);
 		$tmp 	=	array();
-		while($row = mysql_fetch_array($result)) {
+		while($row = mysqli_fetch_array($result)) {
 			$tmp[]	=	$row;	
 		}
 		$this->forumPosts	=	$tmp;				

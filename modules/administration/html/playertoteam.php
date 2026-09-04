@@ -7,12 +7,12 @@
 include(INCLUDE_PATH.'country_list.php');
 ?>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	<link rel="stylesheet" href="<?echo FFB_BASE_PATH.ADM_INCLUDE_PATH?>standard.css" type="text/css">
-	<link rel="stylesheet" href="<?echo FFB_BASE_PATH.ADM_INCLUDE_PATH?>administration.css" type="text/css">
-	<link rel="stylesheet" href="<?echo FFB_BASE_PATH.ADM_INCLUDE_PATH?>playertoteam.css" type="text/css">
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH?>script/admin/playertoteam.js"></script>
+	<link rel="stylesheet" href="<?= FFB_BASE_PATH.ADM_INCLUDE_PATH?>standard.css" type="text/css">
+	<link rel="stylesheet" href="<?= FFB_BASE_PATH.ADM_INCLUDE_PATH?>administration.css" type="text/css">
+	<link rel="stylesheet" href="<?= FFB_BASE_PATH.ADM_INCLUDE_PATH?>playertoteam.css" type="text/css">
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH?>script/admin/playertoteam.js"></script>
 	<meta name="author" content="Musser">
 	<meta name="author" content="Gritschacher">
 </head>
@@ -21,7 +21,7 @@ include(INCLUDE_PATH.'country_list.php');
 
     <div id="Navbar">
         <div id="Navigation">
-            <?include(ADM_VIEWER_PATH.'navigation.php')?>
+            <?php include(ADM_VIEWER_PATH.'navigation.php')?>
         </div>
 
         <div style="clear:both;"></div>
@@ -62,11 +62,11 @@ include(INCLUDE_PATH.'country_list.php');
 	  		               <div id="forminput">
 	  		                   <select name="player_nationality">
 	  		                       <option value="" >all nationality's</option>
-                                    <?foreach($country_array as $shortname => $name) {?>
-                                        <option value="<?echo $shortname?>">
-                                            <?echo $name?>
+                                    <?php foreach($country_array as $shortname => $name) {?>
+                                        <option value="<?= $shortname?>">
+                                            <?= $name?>
                                         </option>
-                                    <?}?>
+                                    <?php }?>
       		                   </select>
 	  	                   </div>
 	  	                   <div id="formclear"></div>
@@ -96,7 +96,7 @@ include(INCLUDE_PATH.'country_list.php');
     </div>
 
     <div id="Footer">
-        <?include(ADM_VIEWER_PATH.'footer.php')?>
+        <?php include(ADM_VIEWER_PATH.'footer.php')?>
     </div>
 
 </div>

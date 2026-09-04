@@ -1393,6 +1393,22 @@ class ModelCriteria extends Criteria
     }
 
     /**
+     * Compatibility alias for generated Query::findPk() from Propel 1.5 models
+     * running against Propel 1.6+/1.7 runtime (where this became protected doSelect()).
+     *
+     * @param  PropelPDO|null $con
+     * @return PDOStatement
+     */
+    public function getSelectStatement($con = null)
+    {
+        if ($con === null) {
+            $con = Propel::getConnection($this->getDbName(), Propel::CONNECTION_READ);
+        }
+
+        return $this->doSelect($con);
+    }
+
+    /**
      * Apply a condition on a column and issues the SELECT query
      *
      * @see       filterBy()

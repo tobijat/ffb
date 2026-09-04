@@ -163,6 +163,17 @@ class comments extends FFB_Auth_User {
 
     }
 
+    /**
+     * Load comments into another module's data (replaces legacy static calls).
+     */
+    public static function loadInto(FFB_Module $target, $location, $matchroundId, $maxComments, $xml) {
+        $loader = new self();
+        $loader->getCommentsParam($location, $matchroundId, $maxComments, $xml);
+        foreach ($loader->getData() as $key => $value) {
+            $target->$key = $value;
+        }
+    }
+
 
 }
 ?>

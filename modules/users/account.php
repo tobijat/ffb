@@ -28,7 +28,7 @@ class account extends FFB_Auth_User
     public function __default()
     {
         $this->post = $_POST;
-        if(count($_POST)) {
+        if (!empty($_POST)) {
 			if($this->validateRegistration()) {
 	            $this->updateRegistration();
 	        } else {
@@ -41,7 +41,7 @@ class account extends FFB_Auth_User
 
     public function accountDetails() {
     	$this->post = $_POST;
-        if(count($_POST)) {
+        if (!empty($_POST)) {
 			if($this->validateProfile()) {
 	            $this->updateProfile();
 	            $this->loadExistingData();
@@ -129,7 +129,7 @@ class account extends FFB_Auth_User
 	private function validateRegistration() {
 		require_once('Validate.php');
 		//check for empty fields
-		if(!count($_POST) || !$_POST["recaptcha_response_field"]) {
+		if (empty($_POST) || !$_POST["recaptcha_response_field"]) {
 			$errors[] = 'Du musst alle Felder ausf&uuml;llen, die mit einem * markiert sind!';
 			$this->errors = $errors;
 			return false;
@@ -426,21 +426,21 @@ class account extends FFB_Auth_User
         $db_server = $this->config->board_database_server;
 		$db_name = $this->config->board_database_name;
 		$db_pw = $this->config->board_database_pw;
-		$connection = @mysql_connect($db_server, $db_name, $db_pw);
-		$db = @mysql_select_db($db_name, $connection);
+		$connection = @mysqli_connect($db_server, $db_name, $db_pw);
+		$db = @mysqli_select_db($connection, $db_name);
 
 		$check_request = "SELECT * FROM ffb_forum_users WHERE username_clean='$usernameUTF8'";
-        $result = mysql_query($check_request, $connection);
-        $user_exists = mysql_num_rows($result);
+        $result = mysqli_query($connection, $check_request);
+        $user_exists = mysqli_num_rows($result);
         if($user_exists) {
 			$insert_request = "UPDATE ffb_forum_users Set user_password='$user_password' WHERE username_clean='$usernameUTF8'";
-	        $ret = @mysql_query($insert_request, $connection);
+	        $ret = @mysqli_query($connection, $insert_request);
 	        if(!$ret || !$db || !$connection) {
 				$errors[] = 'Dein Passwort wurde g&auml;ndert, das Update f&uuml;r das Forum konnte aber nicht durchgef&uuml;hrt werden. Bitte wende dich den Administrator.';
 				$this->errors = $errors;
 			}
 		}
-        mysql_close($connection);
+        mysqli_close($connection);
 	}
 
 	private function doBoardEmailUpdate() {
@@ -451,21 +451,21 @@ class account extends FFB_Auth_User
         $db_server = $this->config->board_database_server;
 		$db_name = $this->config->board_database_name;
 		$db_pw = $this->config->board_database_pw;
-		$connection = @mysql_connect($db_server, $db_name, $db_pw);
-		$db = @mysql_select_db($db_name, $connection);
+		$connection = @mysqli_connect($db_server, $db_name, $db_pw);
+		$db = @mysqli_select_db($connection, $db_name);
 
 		$check_request = "SELECT * FROM ffb_forum_users WHERE username_clean='$usernameUTF8'";
-        $result = mysql_query($check_request, $connection);
-        $user_exists = mysql_num_rows($result);
+        $result = mysqli_query($connection, $check_request);
+        $user_exists = mysqli_num_rows($result);
         if($user_exists) {
 			$insert_request = "UPDATE ffb_forum_users Set user_email='$user_email',user_email_hash='$user_email_hash' WHERE username_clean='$usernameUTF8'";
-	        $ret = @mysql_query($insert_request, $connection);
+	        $ret = @mysqli_query($connection, $insert_request);
 	        if(!$ret || !$db || !$connection) {
 				$errors[] = 'Deine E-Mail wurde g&auml;ndert, das Update f&uuml;r das Forum konnte aber nicht durchgef&uuml;hrt werden. Bitte wende dich den Administrator.';
 				$this->errors = $errors;
 			}
 		}
-        mysql_close($connection);
+        mysqli_close($connection);
 	}
 
 	public function sendMailchangeActivationMail($activation_code, $user_id) {

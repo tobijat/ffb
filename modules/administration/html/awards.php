@@ -1,18 +1,18 @@
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 	<meta name="author" content="Gritschacher, Musser" />
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.ADM_INCLUDE_PATH?>administration.css" type="text/css" />
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.ADM_INCLUDE_PATH?>standard.css" type="text/css" />
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.ADM_INCLUDE_PATH?>awards.css" type="text/css" />
-    <script type="text/javascript" src="<?echo FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH?>script/admin/awards.js"></script>
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.ADM_INCLUDE_PATH?>administration.css" type="text/css" />
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.ADM_INCLUDE_PATH?>standard.css" type="text/css" />
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.ADM_INCLUDE_PATH?>awards.css" type="text/css" />
+    <script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH?>script/admin/awards.js"></script>
 </head>
 <body>
 <div id="Container">
 
     <div id="Navbar">
         <div id="Navigation">
-            <?include(ADM_VIEWER_PATH.'navigation.php')?>
+            <?php include(ADM_VIEWER_PATH.'navigation.php')?>
         </div>
 
         <div style="clear:both;"></div>
@@ -30,7 +30,7 @@
 				<b>Bestehende Auszeichnungen verwalten:</b><br />
 				<select class="stdSelect" id="awardselect" size="1" onchange="javascript:selectAwardGroup();">
 					<option class="stdSelect0" selected="true"  >Auswahl:</option>
-					<?
+					<?php 
 						if($this->awardGroups) {
 							$style = 1;
 							foreach($this->awardGroups AS $elem) {
@@ -59,20 +59,20 @@
 				<hr />
 				
 				<div class="formerror" id="formerror">
-<?if(is_array($this->errors)) {?>
+<?php if(is_array($this->errors)) {?>
         	
             	<b>There are errors:</b><br />
-            	<?foreach($this->errors as $error) {
+            	<?php foreach($this->errors as $error) {
 	                echo '* '.$error.'<br>';
     	        }?>
         	
-<?}?>
+<?php }?>
 
 				</div>
 				<div class="formanswer" id="formanswer">
-<?if($this->administration_answer) {?>
-        		<?echo $this->administration_answer;?>
-<?}?>
+<?php if($this->administration_answer) {?>
+        		<?= $this->administration_answer;?>
+<?php }?>
 				</div>
         	</div>
 
@@ -83,10 +83,10 @@
 
 </div>
 <div id="Footer">
-    <?include(ADM_VIEWER_PATH.'footer.php')?>
+    <?php include(ADM_VIEWER_PATH.'footer.php')?>
 </div>
 <pre>
-<?
+<?php 
 if($this->allusers) {
 	foreach($this->allusers as $user) {
 		if(strlen($user->getUserNickname()) != strlen(trim( $user->getUserNickname() ) )  ) {

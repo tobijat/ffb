@@ -49,7 +49,7 @@ class FFB_Session {
     }
 
     public function __get($var) {
-        return $_SESSION[$var];
+        return isset($_SESSION[$var]) ? $_SESSION[$var] : null;
     }
 
     public function __set($var, $val) {

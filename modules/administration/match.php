@@ -21,7 +21,7 @@ class match extends FFB_Auth_AdminFfb {
     public function __default() {
         $this->administration_modus = $_POST['administration_modus'];
         $this->post = $_POST;
-        if(count($_POST)) {
+        if (!empty($_POST)) {
             if(isset($_POST['match_administration_change_x']) || isset($_POST['match_administration_change']))
                 { $this->changeItem($_POST['match_id']); }
             elseif(isset($_POST['match_administration_delete_x']) || isset($_POST['match_administration_delete']))
@@ -163,7 +163,7 @@ class match extends FFB_Auth_AdminFfb {
         $errors = array();
 
         //check for empty fields
-        if(!count($_POST) || !$_POST['match_round'] || !$_POST['match_date_day'] || !$_POST['match_date_month']
+        if (empty($_POST) || !$_POST['match_round'] || !$_POST['match_date_day'] || !$_POST['match_date_month']
            || !$_POST['match_date_year'] || !$_POST['match_hometeam_id'] || !$_POST['match_guestteam_id'])
         {
             $errors[] = 'You have to fill out all fields marked with a *!';

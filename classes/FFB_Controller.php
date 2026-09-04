@@ -5,7 +5,7 @@
  * Aufgaben:
  * -parsen der URL in Modul/Klasse/Event und Typ des Presenters
  * -aufrufen des Moduls, der Klasse (im Modul), der Methode (in der Klasse)
- * -das ausgeführet Modul wird dann weitergegeben an den Presenter, der dann alle weiteren Aufgaben übenimmt (zB: HTML anzeigen)
+ * -das ausgefhret Modul wird dann weitergegeben an den Presenter, der dann alle weiteren Aufgaben benimmt (zB: HTML anzeigen)
  *
  * @author Gritschacher Tobias
  * @copyright 12/2009
@@ -103,7 +103,7 @@ class FFB_Controller {
         $classFile = 'modules/'.$this->module.'/'.$this->class.'.php';
         if(file_exists($classFile)) {
             require_once($classFile);
-            //jedes Modul kann ein zusätzliches, optionales Config-File haben - dieses wird hier eingelesen
+            //jedes Modul kann ein zustzliches, optionales Config-File haben - dieses wird hier eingelesen
             $configFile = 'modules/'.$this->module.'/config.php';
             if(file_exists($configFile))
                 require_once($configFile);
@@ -111,11 +111,11 @@ class FFB_Controller {
                 try {
                     $instance = new $this->class();
                     if (!FFB_Module::isValid($instance)) {
-                        die("Requested module is not a valid FFB module!");
+                        $this->fail("Requested module is not a valid FFB module!");
                     }
                     $instance->moduleName = $this->module;
                     $instance->subdomainName = $this->subdomain;
-                    //Authentication überprüfen
+                    //Authentication berprfen
                     if($instance->authenticate()) {
                         try {
                             $instance->presenter = 'FFB_Presenter_'.$this->presenter;
@@ -124,11 +124,11 @@ class FFB_Controller {
                             if(file_exists('classes/'.$instance->presenter.'.php')) {
                                 $presenter = FFB_Presenter::factory($instance->presenter, $instance);
                             } else {
-                                die("Could not find PresenterClass!");
+                                $this->fail("Could not find PresenterClass!");
                             }
                             $presenter->display();
-                        } catch (Exception $error) {
-                            die($error->getMessage());
+                        } catch (Throwable $error) {
+                            $this->fail($error->getMessage(), $error);
                         }
                     } else {
                         //wenn ein Modul aufgerufen wird, das Authentication verlangt, aber der User ist nicht
@@ -136,21 +136,50 @@ class FFB_Controller {
                         $destination = 'http://'.$_SERVER['SERVER_NAME'].'/?destination='.$_SERVER['REQUEST_URI'];
                         header("Location: $destination");
                         exit();
-                        //$this->setDefault();
-                        //$this->execute();
-                        //return;
                     }
 
-                } catch (Exception $error) {
-                    die($error->getMessage());
+                } catch (Throwable $error) {
+                    $this->fail($error->getMessage(), $error);
                 }
             } else {
-                die("An valid module for your request was not found");
+                $this->fail("An valid module for your request was not found");
             }
 
         } else {
-            die("Could not find: $classFile");
+            $this->fail("Could not find: $classFile");
         }
+    }
+
+    /**
+     * Fail with structured XML for AJAX presenters; plain text otherwise.
+     * Fatals that previously returned HTTP 200 HTML broke Prototype onSuccess silently.
+     */
+    private function fail($message, ?Throwable $error = null) {
+        if ($error !== null) {
+            error_log('[FFB] ' . $error->getMessage() . ' in ' . $error->getFile() . ':' . $error->getLine());
+        } else {
+            error_log('[FFB] ' . $message);
+        }
+
+        if ($this->presenter === 'xml') {
+            if (!headers_sent()) {
+                http_response_code(500);
+                header('Content-Type: text/xml; charset=UTF-8');
+            }
+            $safe = htmlspecialchars((string)$message, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+            echo '<?xml version="1.0" encoding="UTF-8" ?>' . "\n";
+            echo '<response>';
+            echo '<administration_status>500</administration_status>';
+            echo '<ffb_status>500</ffb_status>';
+            echo '<user_status>500</user_status>';
+            echo '<administration_answer>' . $safe . '</administration_answer>';
+            echo '<ffb_answer>' . $safe . '</ffb_answer>';
+            echo '<user_answer>' . $safe . '</user_answer>';
+            echo '</response>';
+            exit();
+        }
+
+        die($message);
     }
 
     //setzt module, class, event und presenter auf default-Werte

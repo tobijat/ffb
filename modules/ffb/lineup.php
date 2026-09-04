@@ -42,7 +42,7 @@ class lineup extends FFB_Auth_User {
         	$this->adCommentText  = $ads;
 		}
         require_once('comments.php');
-        comments::getCommentsParam('lineup', null, DEFAULT_COMMENT_NUMBER, false);
+        comments::loadInto($this, 'lineup', null, DEFAULT_COMMENT_NUMBER, false);
 	}
 
     public function getMatchroundAndTeams() {

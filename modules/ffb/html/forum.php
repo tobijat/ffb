@@ -7,10 +7,10 @@
 ?>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 	<meta name="author" content="Gritschacher, Musser" />
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.FFB_INCLUDE_PATH?>standard.css" type="text/css" />
-    <script type="text/javascript" src="<?echo FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
-    	<script type="text/javascript" src="<?echo FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
-    <script type="text/javascript" src="<?echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>countdown.js"></script>
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>standard.css" type="text/css" />
+    <script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
+    	<script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
+    <script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>countdown.js"></script>
     <script type="text/javascript">
 function resizeIframe(iframeID) {
 //if(self==parent) return false; /* Checks that page is in iframe. */
@@ -63,7 +63,7 @@ iframeWindow.document.body.scrollWidth + 5 + 'px';
 				<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 				<div id="NavbarRound">
 					<div id="Navigation">
-				        <?include(FFB_VIEWER_PATH.'navigation.php')?>
+				        <?php include(FFB_VIEWER_PATH.'navigation.php')?>
 				    </div>
 				    <div class="rounddiv_countdown">
 						<div class="roundcorner_light">
@@ -84,7 +84,7 @@ iframeWindow.document.body.scrollWidth + 5 + 'px';
 		</div>
 
 		<div id="ffb_managerbereich_div" style="width:100%;height:100%;min-height:768px;">
-				<iframe width="100%"  id="ffb_managerbereich" src="http://ffb.gemura.com/forum/ucp.php?mode=login&username=<? echo $this->session->user_nickname; ?>&password=<? echo $this->session->user_password; ?>&login=login&SID=<? echo session_id(); ?>&redirect=http://ffb.gemura.com/forum/index.php&SID=<? echo session_id(); ?>>" height="100%" name="ffb_managerbereich"  marginwidth="0" marginheight="0" frameborder="0">
+				<iframe width="100%"  id="ffb_managerbereich" src="http://ffb.gemura.com/forum/ucp.php?mode=login&username=<?php  echo $this->session->user_nickname; ?>&password=<?php  echo $this->session->user_password; ?>&login=login&SID=<?php  echo session_id(); ?>&redirect=http://ffb.gemura.com/forum/index.php&SID=<?php  echo session_id(); ?>>" height="100%" name="ffb_managerbereich"  marginwidth="0" marginheight="0" frameborder="0">
 				<p>Ihr Browser kann leider keine eingebetteten Frames anzeigen:
   				Sie k&ouml;nnen die eingebettete Seite &uuml;ber den folgenden Verweis
 		  		aufrufen: <a href="http://ffb.gemura.com/forum/index.php" target="_blank">FFB Managerecke</a></p>
@@ -96,7 +96,7 @@ iframeWindow.document.body.scrollWidth + 5 + 'px';
 			<div class="roundcorner_dark">
 				<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 				<div id="Footer">
-				    <?include(FFB_VIEWER_PATH.'footer.php')?>
+				    <?php include(FFB_VIEWER_PATH.'footer.php')?>
 				</div>
 				<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
 			</div>

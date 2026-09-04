@@ -115,23 +115,22 @@ class team extends FFB_Auth_User {
     public function getTeamPlayers() {
     	require_once('playerRanking.php');
     	$playerRank = new playerRanking();
-    	$team_id = $_REQUEST['id'];
-        //$team = FfbTeamPeer::retrieveByPK($_REQUEST['id']);
-        $matchround_id = $_POST['matchround_id'];
+    	$team_id = isset($_REQUEST['id']) ? $_REQUEST['id'] : null;
+        $matchround_id = isset($_POST['matchround_id']) ? $_POST['matchround_id'] : null;
         $pricemode = $this->options->options_game_pricemode;
-        //if(!$team)
-        //    return;
+        if (!$team_id) {
+            $this->numResults = 0;
+            $this->players = array();
+            return;
+        }
         $criteria = new Criteria();
-        $criteria->addJoin(FfbPlayerPeer::PLAYER_ID, FfbPlayerteamPeer::PLAYERTEAM_PLAYER_ID);
         $criteria->add(FfbPlayerteamPeer::PLAYERTEAM_STATUS, 1);
         $criteria->add(FfbPlayerteamPeer::PLAYERTEAM_TEAM_ID, $team_id);
         $criteria->addAscendingOrderByColumn(FfbPlayerteamPeer::PLAYERTEAM_PLAYER_POSITION);
         $criteria->addDescendingOrderByColumn(FfbPlayerteamPeer::PLAYERTEAM_PLAYER_PRICE);
         $criteria->addAscendingOrderByColumn(FfbPlayerPeer::PLAYER_LNAME);
         $criteria->addAscendingOrderByColumn(FfbPlayerPeer::PLAYER_FNAME);
-        //$playerteam_items = $team->getFfbPlayerteamsJoinFfbPlayer($criteria);
-        //$playerteam_items = $team->getFfbPlayerteams($criteria);
-        $playerteam_items = FfbPlayerteamPeer::doSelect($criteria);
+        $playerteam_items = FfbPlayerteamPeer::doSelectJoinFfbPlayer($criteria);
 
         $players = array();
         $i=0;

@@ -29,10 +29,10 @@
 
       public function loginAjax()
       {
-          if (count($_POST)) {
-              $errors = array();
-              $username = $_POST['user_nickname'];
-              $password = md5($_POST['user_password']);
+          $errors = array();
+          if (!empty($_POST)) {
+              $username = isset($_POST['user_nickname']) ? $_POST['user_nickname'] : '';
+              $password = md5(isset($_POST['user_password']) ? $_POST['user_password'] : '');
 
               $criteria = new Criteria();
               $criteria->add(WebUserPeer::USER_NICKNAME, $username);
@@ -60,15 +60,15 @@
 
 						  //forum alert
 			              /*
-						  $connection = mysql_connect(FFB_BOARD_DB_SERVER, FFB_BOARD_DB_USER, FFB_BOARD_DB_PASSWORD)
+						  $connection = mysqli_connect(FFB_BOARD_DB_SERVER, FFB_BOARD_DB_USER, FFB_BOARD_DB_PASSWORD)
                                		    or die ("Cannot establish connection to server.");
                           $search_request = "SELECT wwh_lastpage, user_id FROM ffb_forum_wwh WHERE username='$user_name'";
 
-                      	  $db = mysql_select_db(FFB_BOARD_DB_NAME, $connection)
+                      	  $db = mysqli_select_db($connection, FFB_BOARD_DB_NAME)
                                 or die ("Cannot find database.");
-                          $search_result = mysql_query($search_request, $connection)
+                          $search_result = mysqli_query($connection, $search_request)
                           or die ("Cannot fetch DATA FROM FORUM-DB. Database problem.");
-                          $row = mysql_fetch_array($search_result);
+                          $row = mysqli_fetch_array($search_result);
                           if($row["wwh_lastpage"]) {
                               $this->session->user_forum_lastvisit = $row["wwh_lastpage"];
                           } else {
@@ -77,15 +77,15 @@
                           $user_forum_id = $row["user_id"];
                           $this->session->user_forum_id = $user_forum_id;
                           $search_request = "SELECT post_time FROM ffb_forum_posts WHERE poster_id!='$user_forum_id' ORDER BY post_time DESC LIMIT 1";
-                          $search_result = mysql_query($search_request, $connection)
+                          $search_result = mysqli_query($connection, $search_request)
                           or die ("Cannot fetch DATA FROM FORUM-DB. Database problem.");
-                          $row = mysql_fetch_array($search_result);
+                          $row = mysqli_fetch_array($search_result);
                           if($row["post_time"]) {
                               $this->session->user_forum_lastpost = $row["post_time"];
                           } else {
                               $this->session->user_forum_lastpost = 0;
                           }
-                          mysql_close($connection);
+                          mysqli_close($connection);
                           */
                           // **
 

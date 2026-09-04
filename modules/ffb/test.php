@@ -28,7 +28,7 @@ class test extends FFB_Auth_No {
       $this->adCommentText  = $ads;
        
       require_once('comments.php');
-      comments::getCommentsParam('myteam', null, DEFAULT_COMMENT_NUMBER, false);
+      comments::loadInto($this, 'myteam', null, DEFAULT_COMMENT_NUMBER, false);
       //require_once('adallocator.php');
         
       //print_r($this->adCommentText);

@@ -14,7 +14,7 @@
           $xml->setOption(XML_SERIALIZER_OPTION_CDATA_SECTIONS, true);
           $xml->serialize($this->module->getData());
 
-          header("Content-Type: text/xml");
+          header("Content-Type: text/xml; charset=UTF-8");
           echo '<?xml version="1.0" encoding="UTF-8" ?>'."\n";
           echo $xml->getSerializedData();
       }

@@ -105,7 +105,7 @@ function toggleDisplay(id, type) {
   for (var i = 0; i < types.length; i++) {
     var t = types[i];
     var pre = document.getElementById(t + id);
-    if (pre) {
+    if ($pre) {
       if (t != type || getStyle(pre, 'display') == 'block') {
         setStyle(pre, 'display', 'none');
       } else {

@@ -162,7 +162,7 @@ class mailservice extends FFB_Auth_AdminFfb
   				$games[$i]['game_archive'] = $item->getGameArchive();
   				$games[$i]['game_status'] = $item->getGameStatus();
   				$games[$i]['game_countdown'] = $item->getGameCountdown();
-  				$games[$i]['game_description'] = utf8_encode($item->getGameDescription());
+  				$games[$i]['game_description'] = $item->getGameDescription();
   				$i++;
   			}
   		}

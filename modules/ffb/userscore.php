@@ -35,7 +35,7 @@ class userscore extends FFB_Auth_User {
         $this->adGuaranaBrause = $this->advert->getAd('GuaranaBrauseRangliste');
 
 		require_once('comments.php');
-    	comments::getCommentsParam('userscore', null, DEFAULT_COMMENT_NUMBER, false);
+    	comments::loadInto($this, 'userscore', null, DEFAULT_COMMENT_NUMBER, false);
 
         /*
         $user = WebUserPeer::retrieveByPK($this->session->user_id);

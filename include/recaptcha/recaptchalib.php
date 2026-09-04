@@ -212,8 +212,9 @@ function _recaptcha_aes_pad($val) {
 /* Mailhide related code */
 
 function _recaptcha_aes_encrypt($val,$ky) {
-	if (! function_exists ("mcrypt_encrypt")) {
-		die ("To use reCAPTCHA Mailhide, you need to have the mcrypt php module installed.");
+	if (! function_exists ("mcrypt_encrypt") || ! defined('MCRYPT_MODE_CBC')) {
+		// mcrypt removed in PHP 7.2+; Mailhide encryption unavailable
+		return '';
 	}
 	$mode=MCRYPT_MODE_CBC;   
 	$enc=MCRYPT_RIJNDAEL_128;

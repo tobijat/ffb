@@ -1,10 +1,10 @@
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<meta name="author" content="Gritschacher, Musser">
-	<link rel="stylesheet" href="<?echo FFB_BASE_PATH.FFB_INCLUDE_PATH?>standard.css" type="text/css">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.FFB_INCLUDE_PATH?>account.css" type="text/css">
-    <script type="text/javascript" src="<?echo FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
-	<script type="text/javascript" src="<?echo FFB_BASE_PATH.SCRIPT_PATH?>user/account.js"></script>
+	<link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>standard.css" type="text/css">
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>account.css" type="text/css">
+    <script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
+	<script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>user/account.js"></script>
 </head>
 <body>
 <script>
@@ -19,7 +19,7 @@ var RecaptchaOptions = {
 			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 			<div id="NavbarRound">
 				<div id="Navigation">
-			        <?include(FFB_VIEWER_PATH.'navigation.php')?>
+			        <?php include(FFB_VIEWER_PATH.'navigation.php')?>
 			    </div>
 			    <div style="clear:both;"></div>
 			</div>
@@ -33,33 +33,33 @@ var RecaptchaOptions = {
 			<div id="Main">
 <!--** **//-->
 
-<?include(INCLUDE_PATH.'country_list.php');?>
+<?php include(INCLUDE_PATH.'country_list.php');?>
 
 <div class="rounddiv_regleftmain">
 	<div class="roundcorner_light">
 		<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 		<div id="reg_left_main">
 			<div id="reg_title">Profildaten bearbeiten</div>
-			<?if(is_array($this->errors)) {?>
+			<?php if(is_array($this->errors)) {?>
 			    <div id="reg_formerror">
 			        <b>Es sind Fehler aufgetreten:</b><br>
-			        <?foreach($this->errors as $error) {
+			        <?php foreach($this->errors as $error) {
 			            echo '* '.$error.'<br>';
 			        }?>
 		        </div>
-			<?}?>
-			<?if($this->user_answer) {?>
+			<?php }?>
+			<?php if($this->user_answer) {?>
 			    <div id="reg_formanswer">
-			        <?echo $this->user_answer;?>
+			        <?= $this->user_answer;?>
 			    </div>
-			<?}?>
+			<?php }?>
 
 			<div id="reg_form">
 				<form name="registration" action="./account" method="post">
 					<div id="reg_formline">
 				        <div id="reg_formdescr"><em>Benutzername:</em></div>
 				        <div id="reg_forminput">
-				            <input readonly type="text" class="input" name="user_nickname" size="50" value="<?echo $this->post['user_nickname'];?>" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
+				            <input readonly type="text" class="input" name="user_nickname" size="50" value="<?= $this->post['user_nickname'];?>" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
 				        </div>
 				        <div id="reg_formclear"></div>
 				    </div>
@@ -67,7 +67,7 @@ var RecaptchaOptions = {
 				    <div id="reg_formline">
 				        <div id="reg_formdescr">Vorname:</div>
 				        <div id="reg_forminput">
-				            <input type="text" class="input" name="user_fname" size="50" value="<?echo $this->post['user_fname'];?>" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
+				            <input type="text" class="input" name="user_fname" size="50" value="<?= $this->post['user_fname'];?>" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
 				        </div>
 				        <div id="reg_formclear"></div>
 				    </div>
@@ -75,7 +75,7 @@ var RecaptchaOptions = {
 				    <div id="reg_formline">
 				        <div id="reg_formdescr">Nachname:</div>
 				        <div id="reg_forminput">
-				            <input type="text" class="input" name="user_lname" size="50" value="<?echo $this->post['user_lname'];?>" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
+				            <input type="text" class="input" name="user_lname" size="50" value="<?= $this->post['user_lname'];?>" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
 				        </div>
 				        <div id="reg_formclear"></div>
 				    </div>
@@ -85,32 +85,32 @@ var RecaptchaOptions = {
 				        <div id="reg_forminput">
 				            <select class="ffb_select" name="user_birth_day" onMouseOver="javascript:dispRegHelp('user_birthday');" onFocus="javascript:dispRegHelp('user_birthday');">
 				                <option class="ffb_select_0" value=""></option>
-				                <?for($i=1;$i<32;$i++) {?>
-				                    <option class="ffb_select_<?echo ($i-1)%2;?>" <?if($this->post['user_birth_day'] == $i) echo 'selected';?> value="<?echo $i?>">
-				                        <?echo $i?>
+				                <?php for($i=1;$i<32;$i++) {?>
+				                    <option class="ffb_select_<?= ($i-1)%2;?>" <?php if($this->post['user_birth_day'] == $i) echo 'selected';?> value="<?= $i?>">
+				                        <?= $i?>
 				                    </option>
-				                <?}?>
+				                <?php }?>
 				            </select>
 				            <select class="ffb_select" name="user_birth_month" onMouseOver="javascript:dispRegHelp('user_birthday');" onFocus="javascript:dispRegHelp('user_birthday');">
 				                <option class="ffb_select_0" value=""></option>
-				                <?$months = array('Januar','Februar','M&auml;rz','April','Mai','Juni','Juli','August','September','Oktober',
+				                <?php $months = array('Januar','Februar','M&auml;rz','April','Mai','Juni','Juli','August','September','Oktober',
 				                                  'November','Dezember');
 				                  for($i=0;$i<12;$i++) {?>
-				                    <option class="ffb_select_<?echo $i%2;?>" <?if($this->post['user_birth_month'] == $i+1) echo 'selected';?> value="<?echo $i+1?>">
-				                        <?echo $months[$i]?>
+				                    <option class="ffb_select_<?= $i%2;?>" <?php if($this->post['user_birth_month'] == $i+1) echo 'selected';?> value="<?= $i+1?>">
+				                        <?= $months[$i]?>
 				                    </option>
-				                <?}?>
+				                <?php }?>
 				            </select>
 				            <select class="ffb_select" name="user_birth_year" onMouseOver="javascript:dispRegHelp('user_birthday');" onFocus="javascript:dispRegHelp('user_birthday');">
 				                <option class="ffb_select_0" value=""></option>
-				                <?$now = date('Y',time());
+				                <?php $now = date('Y',time());
 				                  $j=0;
 				                  for($i=$now-11;$i>$now-101;$i--) {?>
-				                    <option class="ffb_select_<?echo $j%2;?>" <?if($this->post['user_birth_year'] == $i) echo 'selected';?> value="<?echo $i?>">
-				                        <?echo $i;
+				                    <option class="ffb_select_<?= $j%2;?>" <?php if($this->post['user_birth_year'] == $i) echo 'selected';?> value="<?= $i?>">
+				                        <?= $i;
 										$j++;?>
 				                    </option>
-				                <?}?>
+				                <?php }?>
 				            </select>
 				        </div>
 				        <div id="reg_formclear"></div>
@@ -120,13 +120,13 @@ var RecaptchaOptions = {
 				        <div id="reg_forminput">
 				            <select class="ffb_select" name="user_nationality" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
 				                <option class="ffb_select_0" value="">Land...</option>
-				                <?$i=0;
+				                <?php $i=0;
 								foreach($country_array as $shortname => $name) {?>
-				                    <option class="ffb_select_<?echo $i%2;?>" <?if($this->post['user_nationality'] == $shortname) echo 'selected';?> value="<?echo $shortname?>">
-				                        <?echo $name;
+				                    <option class="ffb_select_<?= $i%2;?>" <?php if($this->post['user_nationality'] == $shortname) echo 'selected';?> value="<?= $shortname?>">
+				                        <?= $name;
 										$i++;?>
 				                    </option>
-				                <?}?>
+				                <?php }?>
 				            </select>
 				        </div>
 				        <div id="reg_formclear"></div>
@@ -151,7 +151,7 @@ var RecaptchaOptions = {
 				    <div id="reg_formline">
 				        <div id="reg_formdescr"><em>aktuelle E-Mail:</em></div>
 				        <div id="reg_forminput">
-				            <input readonly type="text" class="input" name="user_email" size="50" value="<?echo $this->post['user_email'];?>" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
+				            <input readonly type="text" class="input" name="user_email" size="50" value="<?= $this->post['user_email'];?>" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
 				        </div>
 				        <div id="reg_formclear"></div>
 				    </div>
@@ -159,7 +159,7 @@ var RecaptchaOptions = {
 				    <div id="reg_formline">
 				        <div id="reg_formdescr">E-Mail &auml;ndern:</div>
 				        <div id="reg_forminput">
-				            <input type="text" class="input" name="user_email_chg" size="50" value="<?echo $this->post['user_email_chg'];?>" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
+				            <input type="text" class="input" name="user_email_chg" size="50" value="<?= $this->post['user_email_chg'];?>" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
 				        </div>
 				        <div id="reg_formclear"></div>
 				    </div>
@@ -167,14 +167,14 @@ var RecaptchaOptions = {
 				    <div id="reg_formline">
 				        <div id="reg_formdescr">E-Mail &Auml;nderung wiederholen:</div>
 				        <div id="reg_forminput">
-				            <input type="text" class="input" name="user_email_val_chg" size="50" value="<?echo $this->post['user_email_val_chg'];?>" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
+				            <input type="text" class="input" name="user_email_val_chg" size="50" value="<?= $this->post['user_email_val_chg'];?>" onMouseOver="javascript:dispRegHelp(this.name);" onFocus="javascript:dispRegHelp(this.name);">
 				        </div>
 				        <div id="reg_formclear"></div>
 				    </div>
 
 				    <div id="reg_formline">
 				        <div id="reg_formdescr">* Ich habe die
-							<a href="<?echo FFB_BASE_PATH;?>resource/Registrierung.pdf" target="_blank">Bedingungen</a> akzeptiert:</div>
+							<a href="<?= FFB_BASE_PATH;?>resource/Registrierung.pdf" target="_blank">Bedingungen</a> akzeptiert:</div>
 				        <div id="reg_forminput" onFocus="javascript:dispRegHelp('user_tos');" onMouseOver="javascript:dispRegHelp('user_tos');">
 				            <input type="checkbox" name="user_tos" value="user_tos_yes">
 				        </div>
@@ -183,7 +183,7 @@ var RecaptchaOptions = {
 				    <div id="reg_formline">
 				        <div id="reg_formdescr">* Best&auml;tigungs-Code:</div>
 				        <div id="reg_forminput" onFocus="javascript:dispRegHelp('user_code');" onMouseOver="javascript:dispRegHelp('user_code');">
-				            <?echo $this->recaptcha_html;?>
+				            <?= $this->recaptcha_html;?>
 				        </div>
 				        <div id="reg_formclear"></div>
 				    </div>
@@ -224,7 +224,7 @@ var RecaptchaOptions = {
 	<div class="roundcorner_dark">
 		<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 		<div id="Footer">
-		    <?include(FFB_VIEWER_PATH.'footer.php')?>
+		    <?php include(FFB_VIEWER_PATH.'footer.php')?>
 		</div>
 		<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
 	</div>

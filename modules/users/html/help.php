@@ -7,8 +7,8 @@
 ?>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<meta name="author" content="Gritschacher Tobias, Musser Gerald">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.FFB_INCLUDE_PATH?>standard.css" type="text/css">
-    <link rel="stylesheet" href="<?echo FFB_BASE_PATH.FFB_INCLUDE_PATH?>help.css" type="text/css">
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>standard.css" type="text/css">
+    <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>help.css" type="text/css">
 </head>
 
 <body>
@@ -18,7 +18,7 @@
 			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 			<div id="NavbarRound">
 				<div id="Navigation">
-			        <?include(FFB_VIEWER_PATH.'navigation.php')?>
+			        <?php include(FFB_VIEWER_PATH.'navigation.php')?>
 			    </div>
 			    <div style="clear:both;"></div>
 			</div>
@@ -90,22 +90,22 @@
 					        <div id="helpchapter">
 					            <a name="ranks"><div id="helpchaptertitle">-- <a title="Seitenanfang" class="nolink" href="#top">&uarr;</a> Rangliste --</div></a>
 					            <div id="helpchaptertext">
-					            	<?if($this->session->game_id_player<1) {?>
+					            	<?php if($this->session->game_id_player<1) {?>
 						                <em>Hinweis: Die hier angegebenen Werte sind die Standard-Einstellung. Diese k&ouml;nnen jedoch je nach Liga anders sein. Um die
 						                Werte f&uuml;r deine Liga zu sehen, musst du nach dem Einloggen auf der Startseite eine Liga ausw&auml;hlen und dann diese Seite aufrufen.</em>
 						                <br><br>
-					            	<?}?>
+					            	<?php }?>
 						            Die <b>Plazierung</b> in der Rangliste errechnet sich aus den <b>erreichten WeltCup-Punkten</b>. WeltCup-Punkte
 						            bekommst du immer, wenn dein Team in einer <b>Spielrunde</b> unter den <b>besten Mannschaften</b> ist.<br>
-						            <?$wcpoints = explode(',', $this->options->options_game_wcpoints);?>
-						            Die <b><?echo count($wcpoints)-1;?> besten Mannschaften</b> in jeder Runde bekommen folgende Anzahl an <b>WeltCup-Punkten</b>:
+						            <?php $wcpoints = explode(',', $this->options->options_game_wcpoints);?>
+						            Die <b><?= count($wcpoints)-1;?> besten Mannschaften</b> in jeder Runde bekommen folgende Anzahl an <b>WeltCup-Punkten</b>:
 						            <ul>
-						            	<?for($i=1;$i<count($wcpoints);$i++) {?>
-											<li><?echo $i;?>. Platz: <b><?echo $wcpoints[$i-1];?></b> Punkte</li>
-										<?}?>
+						            	<?php for($i=1;$i<count($wcpoints);$i++) {?>
+											<li><?= $i;?>. Platz: <b><?= $wcpoints[$i-1];?></b> Punkte</li>
+										<?php }?>
 						            </ul>
-						            <b>Alle restlichen</b> Spieler bekommen <b><?echo $wcpoints[count($wcpoints)-1];?></b> Punkt(e).<br>
-						            Dein Ziel ist es also w&auml;hrend einer Liga <b>so oft wie m&ouml;glich</b> unter die <b>besten <?echo count($wcpoints)-1;?> Mannschaften</b>
+						            <b>Alle restlichen</b> Spieler bekommen <b><?= $wcpoints[count($wcpoints)-1];?></b> Punkt(e).<br>
+						            Dein Ziel ist es also w&auml;hrend einer Liga <b>so oft wie m&ouml;glich</b> unter die <b>besten <?= count($wcpoints)-1;?> Mannschaften</b>
 									zu kommen, um am Ende der Saison die meisten Weltcup-Punkte gesammelt zu haben. Die <b>aktuelle Rangliste</b> kannst du immer
 									unter <b>"Rangliste"</b> anschauen.
 					        	</div>
@@ -114,24 +114,24 @@
 					        <div id="helpchapter">
 					            <a name="lineup"><div id="helpchaptertitle">-- <a title="Seitenanfang" class="nolink" href="#top">&uarr;</a> Aufstellung --</div></a>
 						            <div id="helpchaptertext">
-						            <?if($this->session->game_id_player<1) {?>
+						            <?php if($this->session->game_id_player<1) {?>
 							            <em>Hinweis: Die hier angegebenen Werte sind die Standard-Einstellung. Diese k&ouml;nnen jedoch je nach Liga anders sein. Um die
 							            Werte f&uuml;r deine Liga zu sehen, musst du nach dem Einloggen auf der Startseite eine Liga ausw&auml;hlen und dann diese Seite aufrufen.</em>
 							            <br><br>
-						            <?}?>
+						            <?php }?>
 						            <b>Deine Aufstellung</b> kannst du unter <b>"Aufstellung"</b> eingeben. Du hast Zeit <b>bis zur Deadline</b> der jeweiligen Spielrunde,
 									die direkt unter dem Spielrundentitel angezeigt wird. Bis zur <b>Deadline</b> kannst du deine <b>Aufstellung</b> nat&uuml;rlich auch
 									<b>jederzeit &auml;ndern</b>. Unter <b>"Mannschaft"</b> kannst du die <b>Mannschaften</b> und die <b>erreichten Punkte</b> aller <b>anderen Mitspieler</b>
 									f&uuml;r alle <b>vergangenen Spielrunden</b> anschauen.<br>
 						            Bei der <b>Aufstellung</b> deiner Mannschaft gibt es <b>einige Einschr&auml;nkungen</b>:
 						            <ul>
-						            	<li><b><?echo $this->options->options_lineup_max_players?></b> Spieler gesamt</li>
-						            	<li><b><?echo $this->options->options_lineup_min_g?></b> Tormann</li>
-						            	<li><b><?echo $this->options->options_lineup_min_d?>-<?echo $this->options->options_lineup_max_d?></b> Verteidiger</li>
-						            	<li><b><?echo $this->options->options_lineup_min_m?>-<?echo $this->options->options_lineup_max_m?></b> Mittelfeldspieler</li>
-						            	<li><b><?echo $this->options->options_lineup_min_s?>-<?echo $this->options->options_lineup_max_s?></b> Angreifer</li>
-						            	<li><b><?echo $this->options->options_lineup_max_credits?></b> Credits um Spieler zu kaufen</li>
-						            	<li><b>max. <?echo $this->options->options_lineup_max_players_team?></b> Spieler des selben Teams</li>
+						            	<li><b><?= $this->options->options_lineup_max_players?></b> Spieler gesamt</li>
+						            	<li><b><?= $this->options->options_lineup_min_g?></b> Tormann</li>
+						            	<li><b><?= $this->options->options_lineup_min_d?>-<?= $this->options->options_lineup_max_d?></b> Verteidiger</li>
+						            	<li><b><?= $this->options->options_lineup_min_m?>-<?= $this->options->options_lineup_max_m?></b> Mittelfeldspieler</li>
+						            	<li><b><?= $this->options->options_lineup_min_s?>-<?= $this->options->options_lineup_max_s?></b> Angreifer</li>
+						            	<li><b><?= $this->options->options_lineup_max_credits?></b> Credits um Spieler zu kaufen</li>
+						            	<li><b>max. <?= $this->options->options_lineup_max_players_team?></b> Spieler des selben Teams</li>
 						            </ul>
 						            Auf der <b>Aufstellungsseite</b> findest du <b>rechts</b> eine <b>Liste der Mannschaften</b> die an dieser Spielrunde teilnehmen. Du kannst dort
 						            eine Mannschaft ausw&auml;hlen und siehst eine <b>Liste der einzelnen Spieler</b> der Mannschaft. Wenn du den <b>Namen eines Spielers
@@ -155,11 +155,11 @@
 					        <div id="helpchapter">
 					            <a name="points"><div id="helpchaptertitle">-- <a title="Seitenanfang" class="nolink" href="#top">&uarr;</a> Spieler-Punkte --</div></a>
 					            <div id="helpchaptertext">
-					            	<?if($this->session->game_id_player<1) {?>
+					            	<?php if($this->session->game_id_player<1) {?>
 							            <em>Hinweis: Die hier angegebenen Werte sind die Standard-Einstellung. Diese k&ouml;nnen jedoch je nach Liga anders sein. Um die
 							            Werte f&uuml;r deine Liga zu sehen, musst du nach dem Einloggen auf der Startseite eine Liga ausw&auml;hlen und dann diese Seite aufrufen.</em>
 							            <br><br>
-						            <?}?>
+						            <?php }?>
 						            Deine <b>Spieler</b> bekommen <b>Plus- und Minus-Punkte</b> f&uuml;r folgende Kriterien (ausgenommen Elferschie&szlig;en):<br>
 						            <br>
 						            <center>
@@ -171,162 +171,162 @@
 						                    <th><b>Mittelfeld</b></th>
 						                    <th><b>Angriff</b></th>
 						                </tr>
-						                <?if($this->options->options_game_pointsmode == 'new') {?>
+						                <?php if($this->options->options_game_pointsmode == 'new') {?>
 						                <tr>
-						                    <td><b>mind. 1 und weniger als <?echo $this->options->options_score_minutes_treshold?><br>Minuten gespielt</b></td>
-						                    <td>+<?echo $this->options->options_score_minutes_lt30?></td>
-						                    <td>+<?echo $this->options->options_score_minutes_lt30?></td>
-						                    <td>+<?echo $this->options->options_score_minutes_lt30?></td>
-						                    <td>+<?echo $this->options->options_score_minutes_lt30?></td>
+						                    <td><b>mind. 1 und weniger als <?= $this->options->options_score_minutes_treshold?><br>Minuten gespielt</b></td>
+						                    <td>+<?= $this->options->options_score_minutes_lt30?></td>
+						                    <td>+<?= $this->options->options_score_minutes_lt30?></td>
+						                    <td>+<?= $this->options->options_score_minutes_lt30?></td>
+						                    <td>+<?= $this->options->options_score_minutes_lt30?></td>
 						                </tr>
-						                <?}?>
-						                <?if($this->options->options_game_pointsmode == 'new') {?>
+						                <?php }?>
+						                <?php if($this->options->options_game_pointsmode == 'new') {?>
 						                <tr>
-						                    <td><b>zwischen <?echo $this->options->options_score_minutes_treshold?> und <?echo $this->options->options_score_minutes?><br>Minuten gespielt</b></td>
-						                    <td>+<?echo $this->options->options_score_minutes_lt?></td>
-						                    <td>+<?echo $this->options->options_score_minutes_lt?></td>
-						                    <td>+<?echo $this->options->options_score_minutes_lt?></td>
-						                    <td>+<?echo $this->options->options_score_minutes_lt?></td>
+						                    <td><b>zwischen <?= $this->options->options_score_minutes_treshold?> und <?= $this->options->options_score_minutes?><br>Minuten gespielt</b></td>
+						                    <td>+<?= $this->options->options_score_minutes_lt?></td>
+						                    <td>+<?= $this->options->options_score_minutes_lt?></td>
+						                    <td>+<?= $this->options->options_score_minutes_lt?></td>
+						                    <td>+<?= $this->options->options_score_minutes_lt?></td>
 						                </tr>
-						                <?} else {?>
+						                <?php } else {?>
 						                <tr>
-						                    <td><b>weniger als <?echo $this->options->options_score_minutes?><br>Minuten gespielt</b></td>
-						                    <td>+<?echo $this->options->options_score_minutes_lt?></td>
-						                    <td>+<?echo $this->options->options_score_minutes_lt?></td>
-						                    <td>+<?echo $this->options->options_score_minutes_lt?></td>
-						                    <td>+<?echo $this->options->options_score_minutes_lt?></td>
+						                    <td><b>weniger als <?= $this->options->options_score_minutes?><br>Minuten gespielt</b></td>
+						                    <td>+<?= $this->options->options_score_minutes_lt?></td>
+						                    <td>+<?= $this->options->options_score_minutes_lt?></td>
+						                    <td>+<?= $this->options->options_score_minutes_lt?></td>
+						                    <td>+<?= $this->options->options_score_minutes_lt?></td>
 						                </tr>
-						                <?}?>
+						                <?php }?>
 						                <tr>
-						                    <td><b>mindestens <?echo $this->options->options_score_minutes?><br>Minuten gespielt</b></td>
-						                    <td>+<?echo $this->options->options_score_minutes_gt?></td>
-						                    <td>+<?echo $this->options->options_score_minutes_gt?></td>
-						                    <td>+<?echo $this->options->options_score_minutes_gt?></td>
-						                    <td>+<?echo $this->options->options_score_minutes_gt?></td>
+						                    <td><b>mindestens <?= $this->options->options_score_minutes?><br>Minuten gespielt</b></td>
+						                    <td>+<?= $this->options->options_score_minutes_gt?></td>
+						                    <td>+<?= $this->options->options_score_minutes_gt?></td>
+						                    <td>+<?= $this->options->options_score_minutes_gt?></td>
+						                    <td>+<?= $this->options->options_score_minutes_gt?></td>
 						                </tr>
 						                <tr>
 						                    <td><b>geschossenes Tor</b></td>
-						                    <td>+<?echo $this->options->options_score_goals_g?></td>
-						                    <td>+<?echo $this->options->options_score_goals_d?></td>
-						                    <td>+<?echo $this->options->options_score_goals_m?></td>
-						                    <td>+<?echo $this->options->options_score_goals_s?></td>
+						                    <td>+<?= $this->options->options_score_goals_g?></td>
+						                    <td>+<?= $this->options->options_score_goals_d?></td>
+						                    <td>+<?= $this->options->options_score_goals_m?></td>
+						                    <td>+<?= $this->options->options_score_goals_s?></td>
 						                </tr>
-						                <?if($this->options->options_score_assists > 0) {?>
+						                <?php if($this->options->options_score_assists > 0) {?>
 						                <tr>
 						                    <td><b>Assist</b></td>
-						                    <td>+<?echo $this->options->options_score_assists?></td>
-						                    <td>+<?echo $this->options->options_score_assists?></td>
-						                    <td>+<?echo $this->options->options_score_assists?></td>
-						                    <td>+<?echo $this->options->options_score_assists?></td>
+						                    <td>+<?= $this->options->options_score_assists?></td>
+						                    <td>+<?= $this->options->options_score_assists?></td>
+						                    <td>+<?= $this->options->options_score_assists?></td>
+						                    <td>+<?= $this->options->options_score_assists?></td>
 						                </tr>
-						                <?}?>
-						                <?if($this->options->options_game_pointsmode == 'new') {?>
+						                <?php }?>
+						                <?php if($this->options->options_game_pointsmode == 'new') {?>
 						                <tr>
-						                    <td><b>kein Gegentor und mind.<br><?echo $this->options->options_score_minutes_treshold?> Minuten gespielt</b></td>
-						                    <td>+<?echo $this->options->options_score_no_oppgoals_g?></td>
-						                    <td>+<?echo $this->options->options_score_no_oppgoals_d?></td>
-						                    <td>+<?echo $this->options->options_score_no_oppgoals_m?></td>
+						                    <td><b>kein Gegentor und mind.<br><?= $this->options->options_score_minutes_treshold?> Minuten gespielt</b></td>
+						                    <td>+<?= $this->options->options_score_no_oppgoals_g?></td>
+						                    <td>+<?= $this->options->options_score_no_oppgoals_d?></td>
+						                    <td>+<?= $this->options->options_score_no_oppgoals_m?></td>
 						                    <td>--</td>
 						                </tr>
-						                <?} else {?>
+						                <?php } else {?>
 						                <tr>
 						                    <td><b>kein Gegentor</b></td>
-						                    <td>+<?echo $this->options->options_score_no_oppgoals_g?></td>
-						                    <td>+<?echo $this->options->options_score_no_oppgoals_d?></td>
-						                    <td>+<?echo $this->options->options_score_no_oppgoals_m?></td>
+						                    <td>+<?= $this->options->options_score_no_oppgoals_g?></td>
+						                    <td>+<?= $this->options->options_score_no_oppgoals_d?></td>
+						                    <td>+<?= $this->options->options_score_no_oppgoals_m?></td>
 						                    <td>--</td>
 						                </tr>
-						                <?}?>
-						                <?if($this->options->options_score_penalty_saved > 0) {?>
+						                <?php }?>
+						                <?php if($this->options->options_score_penalty_saved > 0) {?>
 						                <tr>
 						                    <td><b>gehaltener Elfer<br>w&auml;hrend der Spielzeit</b></td>
-						                    <td>+<?echo $this->options->options_score_penalty_saved?></td>
+						                    <td>+<?= $this->options->options_score_penalty_saved?></td>
 						                    <td>--</td>
 						                    <td>--</td>
 						                    <td>--</td>
 						                </tr>
-						                <?}?>
-						                <?if($this->options->options_score_penalty_lost != 0) {?>
+						                <?php }?>
+						                <?php if($this->options->options_score_penalty_lost != 0) {?>
 						                <tr>
 						                    <td><b>verschossener Elfer<br>w&auml;hrend der Spielzeit</b></td>
-						                    <td><?echo $this->options->options_score_penalty_lost?></td>
-						                    <td><?echo $this->options->options_score_penalty_lost?></td>
-						                    <td><?echo $this->options->options_score_penalty_lost?></td>
-						                    <td><?echo $this->options->options_score_penalty_lost?></td>
+						                    <td><?= $this->options->options_score_penalty_lost?></td>
+						                    <td><?= $this->options->options_score_penalty_lost?></td>
+						                    <td><?= $this->options->options_score_penalty_lost?></td>
+						                    <td><?= $this->options->options_score_penalty_lost?></td>
 						                </tr>
-						                <?}?>
+						                <?php }?>
 						                <tr>
 						                    <td><b>gelbe Karte</b></td>
-						                    <td><?echo $this->options->options_score_card_y?></td>
-						                    <td><?echo $this->options->options_score_card_y?></td>
-						                    <td><?echo $this->options->options_score_card_y?></td>
-						                    <td><?echo $this->options->options_score_card_y?></td>
+						                    <td><?= $this->options->options_score_card_y?></td>
+						                    <td><?= $this->options->options_score_card_y?></td>
+						                    <td><?= $this->options->options_score_card_y?></td>
+						                    <td><?= $this->options->options_score_card_y?></td>
 						                </tr>
 						                <tr>
 						                    <td><b>gelb-rote Karte</b></td>
-						                    <td><?echo $this->options->options_score_card_yr?></td>
-						                    <td><?echo $this->options->options_score_card_yr?></td>
-						                    <td><?echo $this->options->options_score_card_yr?></td>
-						                    <td><?echo $this->options->options_score_card_yr?></td>
+						                    <td><?= $this->options->options_score_card_yr?></td>
+						                    <td><?= $this->options->options_score_card_yr?></td>
+						                    <td><?= $this->options->options_score_card_yr?></td>
+						                    <td><?= $this->options->options_score_card_yr?></td>
 						                </tr>
 						                <tr>
 						                    <td><b>rote Karte</b></td>
-						                    <td><?echo $this->options->options_score_card_r?></td>
-						                    <td><?echo $this->options->options_score_card_r?></td>
-						                    <td><?echo $this->options->options_score_card_r?></td>
-						                    <td><?echo $this->options->options_score_card_r?></td>
+						                    <td><?= $this->options->options_score_card_r?></td>
+						                    <td><?= $this->options->options_score_card_r?></td>
+						                    <td><?= $this->options->options_score_card_r?></td>
+						                    <td><?= $this->options->options_score_card_r?></td>
 						                </tr>
-						                <?if($this->options->options_game_pointsmode == 'new') {?>
+						                <?php if($this->options->options_game_pointsmode == 'new') {?>
 						                <tr>
 						                    <td><b>je 2 Gegentore w&auml;hrend<br>der Spielzeit des Spielers</b></td>
-						                    <td><?echo $this->options->options_score_oppgoals_g?></td>
-						                    <td><?echo $this->options->options_score_oppgoals_d?></td>
+						                    <td><?= $this->options->options_score_oppgoals_g?></td>
+						                    <td><?= $this->options->options_score_oppgoals_d?></td>
 						                    <td>--</td>
 						                    <td>--</td>
 						                </tr>
-						                <?} else {?>
+						                <?php } else {?>
 						                <tr>
 						                    <td><b>je 2 Gegentore</b></td>
-						                    <td><?echo $this->options->options_score_oppgoals_g?></td>
-						                    <td><?echo $this->options->options_score_oppgoals_d?></td>
+						                    <td><?= $this->options->options_score_oppgoals_g?></td>
+						                    <td><?= $this->options->options_score_oppgoals_d?></td>
 						                    <td>--</td>
 						                    <td>--</td>
 						                </tr>
-						                <?}?>
+						                <?php }?>
 						                <tr>
 						                    <td><b>Eigentor</b></td>
-						                    <td><?echo $this->options->options_score_owngoals?></td>
-						                    <td><?echo $this->options->options_score_owngoals?></td>
-						                    <td><?echo $this->options->options_score_owngoals?></td>
-						                    <td><?echo $this->options->options_score_owngoals?></td>
+						                    <td><?= $this->options->options_score_owngoals?></td>
+						                    <td><?= $this->options->options_score_owngoals?></td>
+						                    <td><?= $this->options->options_score_owngoals?></td>
+						                    <td><?= $this->options->options_score_owngoals?></td>
 						                </tr>
-						                <?if($this->options->options_score_penaltyshootout_save != 0) {?>
+						                <?php if($this->options->options_score_penaltyshootout_save != 0) {?>
 						                <tr>
 						                    <td><b>gehaltener Elfer<br>im Elferschie&szlig;en</b></td>
-						                    <td>+<?echo $this->options->options_score_penaltyshootout_save?></td>
+						                    <td>+<?= $this->options->options_score_penaltyshootout_save?></td>
 						                    <td>--</td>
 						                    <td>--</td>
 						                    <td>--</td>
 						                </tr>
-						                <?}?>
-						                <?if($this->options->options_score_penaltyshootout_hit != 0) {?>
+						                <?php }?>
+						                <?php if($this->options->options_score_penaltyshootout_hit != 0) {?>
 						                <tr>
 						                    <td><b>erfolgreicher Elfer<br>im Elferschie&szlig;en</b></td>
-						                    <td>+<?echo $this->options->options_score_penaltyshootout_hit?></td>
-						                    <td>+<?echo $this->options->options_score_penaltyshootout_hit?></td>
-						                    <td>+<?echo $this->options->options_score_penaltyshootout_hit?></td>
-						                    <td>+<?echo $this->options->options_score_penaltyshootout_hit?></td>
+						                    <td>+<?= $this->options->options_score_penaltyshootout_hit?></td>
+						                    <td>+<?= $this->options->options_score_penaltyshootout_hit?></td>
+						                    <td>+<?= $this->options->options_score_penaltyshootout_hit?></td>
+						                    <td>+<?= $this->options->options_score_penaltyshootout_hit?></td>
 						                </tr>
-						                <?}?>
-						                <?if($this->options->options_score_penaltyshootout_lost != 0) {?>
+						                <?php }?>
+						                <?php if($this->options->options_score_penaltyshootout_lost != 0) {?>
 						                <tr>
 						                    <td><b>verschossener Elfer<br>im Elferschie&szlig;en</b></td>
-						                    <td><?echo $this->options->options_score_penaltyshootout_lost?></td>
-						                    <td><?echo $this->options->options_score_penaltyshootout_lost?></td>
-						                    <td><?echo $this->options->options_score_penaltyshootout_lost?></td>
-						                    <td><?echo $this->options->options_score_penaltyshootout_lost?></td>
+						                    <td><?= $this->options->options_score_penaltyshootout_lost?></td>
+						                    <td><?= $this->options->options_score_penaltyshootout_lost?></td>
+						                    <td><?= $this->options->options_score_penaltyshootout_lost?></td>
+						                    <td><?= $this->options->options_score_penaltyshootout_lost?></td>
 						                </tr>
-						                <?}?>
+						                <?php }?>
 						            </table>
 						            </center>
 						        </div>
@@ -385,7 +385,7 @@
 		<div class="roundcorner_dark">
 			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
 			<div id="Footer">
-			    <?include(FFB_VIEWER_PATH.'footer.php')?>
+			    <?php include(FFB_VIEWER_PATH.'footer.php')?>
 			</div>
 			<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
 		</div>

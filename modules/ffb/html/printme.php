@@ -13,7 +13,7 @@
 <body onload="javascript:window.print(); javascript:window.close();">
 http://ffb.tobijat.at<br />
 <ol>
-<?
+<?php 
 //print_r($this->userteams);
 	foreach($this->userteams[0]['players'] as $elem) {
 		echo 	"<li>" .
