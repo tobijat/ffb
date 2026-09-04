@@ -129,8 +129,8 @@ class player extends FFB_Auth_AdminFfb {
         //$list = FfbPlayerPeer::doSelect($criteria);
         $list = FfbPlayerteamPeer::doSelectJoinFfbPlayer($criteria);
         $players = array();
+        $i = 0;
         if($list) {
-            $i=0;
             foreach($list as $item) {
                 $players[$i]['player_id'] = $item->getFfbPlayer()->getPlayerId();
                 $players[$i]['player_fname'] = $item->getFfbPlayer()->getPlayerFname();

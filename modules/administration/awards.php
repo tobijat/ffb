@@ -42,7 +42,7 @@ class awards extends FFB_Auth_AdminFfb {
     }
 
     public function getAwards() {
-        $awardTitle 			= 	FfbUserAwardPeer::retrieveByPK($_REQUEST['user_award_id']);
+        $awardTitle 			= 	FfbUserAwardPeer::retrieveByPK($_REQUEST['user_award_id'] ?? null);
         if(!$awardTitle)
         	return;
 		$tmp[0]['name']			=	$awardTitle->getUserAwardName();

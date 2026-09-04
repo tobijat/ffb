@@ -68,8 +68,8 @@ final class MyTeamAndScoreContractTest extends XmlContractTestCase
     public function testGetBestTeam(): void
     {
         $response = $this->client->postXml('ffb/bestteam/getBestTeam.xml', [
-            'matchround_id' => $this->env('FFB_TEST_MATCHROUND_ID'),
-            'type' => 'score',
+            'matchround_id' => $this->env('FFB_TEST_PAST_MATCHROUND_ID'),
+            'type' => 'top',
         ]);
         $xml = XmlApiClient::assertXmlResponse($response);
         $this->assertNotNull($xml->documentElement);
