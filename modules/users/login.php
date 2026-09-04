@@ -34,14 +34,15 @@
           $errors = array();
           if (!empty($_POST)) {
               $username = isset($_POST['user_nickname']) ? $_POST['user_nickname'] : '';
-              $password = md5(isset($_POST['user_password']) ? $_POST['user_password'] : '');
+              $plainPassword = isset($_POST['user_password']) ? (string) $_POST['user_password'] : '';
 
               $criteria = new Criteria();
               $criteria->add(WebUserPeer::USER_NICKNAME, $username);
               $curr_user = WebUserPeer::doSelect($criteria);
-              if($curr_user) {
+              if(count($curr_user) > 0) {
                   if($curr_user[0]->getUserStatus() == 'active') {
-                      if($curr_user[0]->getUserPassword() == $password) {
+                      $storedHash = $curr_user[0]->getUserPassword();
+                      if(FFB_Password::verify($plainPassword, $storedHash)) {
                     	  if(isset($_POST['destination']) && $_POST['destination'] != '') {
                               $destination = 'http://'.$_SERVER['SERVER_NAME'].$_POST['destination'];
                           } else {
@@ -49,7 +50,6 @@
 						  }
                           $this->session->user_id = $curr_user[0]->getUserId();
                           $this->session->user_nickname = $user_name = $curr_user[0]->getUserNickname();
-                          $this->session->user_password = $curr_user[0]->getUserPassword();
                           $this->session->user_email = $curr_user[0]->getUserEmail();
                       	  $this->session->user_name = $curr_user[0]->getUserFname().' '.$curr_user[0]->getUserLname();
 
@@ -65,7 +65,7 @@
                           $criteria->add(WebAdminPeer::ADMIN_USER_ID, $curr_user[0]->getUserId());
                           $criteria->add(WebAdminPeer::ADMIN_SECTION, $this->config->area_prefix);
                           $curr_admin = WebAdminPeer::doSelect($criteria);
-                          if($curr_admin) {
+                          if(count($curr_admin) > 0) {
                               $this->session->admin_flag = 1;
                               $area_prefix = substr($this->config->area_prefix, 0); //this is because a xml-node cannot be stored into session
 							  $this->session->admin_section = $area_prefix;
@@ -74,6 +74,10 @@
 						  	  $this->session->admin_flag = 0;
 						  }
 
+                          // Upgrade legacy MD5 (and outdated password_hash algos) on successful login.
+                          if (FFB_Password::needsRehash($storedHash)) {
+                              $curr_user[0]->setUserPassword(FFB_Password::hash($plainPassword));
+                          }
                           $curr_user[0]->setUserDateLlogin(date('Y-m-d H:i:s', time()));
                           $curr_user[0]->setUserDateLaction(date('Y-m-d H:i:s', time()));
                           $curr_user[0]->setUserLip($_SERVER['REMOTE_ADDR']);

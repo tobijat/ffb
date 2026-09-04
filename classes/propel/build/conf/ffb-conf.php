@@ -1,11 +1,14 @@
 <?php
-// Propel runtime config template.
-// The live ffb-conf.php reads credentials from environment / .env — copy that pattern
-// if you regenerate via Propel convert-conf.
+// Propel runtime config — credentials come from environment / .env (loaded in config.php).
+// Safe to commit: no secrets in this file.
+//
+// Note: many call sites still use Propel::getConnection(FFB_DATABASE_NAME).
+// Keep the datasource id equal to FFB_DB_NAME.
+
 $dbHost = getenv('FFB_DB_HOST') ?: '127.0.0.1';
-$dbName = getenv('FFB_DB_NAME') ?: 'YOUR_DB_NAME';
-$dbUser = getenv('FFB_DB_USER') ?: 'YOUR_DB_USER';
-$dbPassword = getenv('FFB_DB_PASSWORD') !== false ? getenv('FFB_DB_PASSWORD') : 'YOUR_DB_PASSWORD';
+$dbName = getenv('FFB_DB_NAME') ?: 'd00817fb';
+$dbUser = getenv('FFB_DB_USER') ?: '';
+$dbPassword = getenv('FFB_DB_PASSWORD') !== false ? getenv('FFB_DB_PASSWORD') : '';
 $dbCharset = getenv('FFB_DB_CHARSET') ?: 'utf8mb4';
 
 $conf = array(
