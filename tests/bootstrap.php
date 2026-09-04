@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+require dirname(__DIR__) . '/classes/FFB_Env.php';
+FFB_Env::load(dirname(__DIR__) . '/.env');
+
 require dirname(__DIR__) . '/tests/vendor/autoload.php';
 
 use FFB\Tests\Support\FixtureManager;

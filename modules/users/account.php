@@ -355,8 +355,8 @@ class account extends FFB_Auth_User
 			$chg_user->setUserNationality($_POST['user_nationality']);
 			$chg_user->setUserDateBirth($user_date_birth);
 
-			if($_POST['user_password_chg'] && $_POST['user_password_val_chg']) {
-				$chg_user->setUserPassword(md5($_POST['user_password_chg']));
+			if(!empty($_POST['user_password_chg']) && !empty($_POST['user_password_val_chg'])) {
+				$chg_user->setUserPassword(FFB_Password::hash($_POST['user_password_chg']));
 			}
 			if($_POST['user_email_chg'] && $_POST['user_email_val_chg']) {
 				$chg_user->setUserEmail($_POST['user_email_chg']);
