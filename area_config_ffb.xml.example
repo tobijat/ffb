@@ -6,10 +6,6 @@
 	<mail_greez>Your Team</mail_greez>
 	<mail_url>http://example.com</mail_url>
 	<mail_subject_prefix>Example - </mail_subject_prefix>
-	<board_registration>1</board_registration>
-	<board_database_name>YOUR_BOARD_DB_NAME</board_database_name>
-	<board_database_pw>YOUR_BOARD_DB_PASSWORD</board_database_pw>
-	<board_database_server>127.0.0.1</board_database_server>
 	<area_prefix>ffb</area_prefix>
     <!-- 0 == no ads are loaded; 1 == show ads; -->
 	<area_load_ads>0</area_load_ads>

@@ -30,11 +30,6 @@
                     <div style="float:left;"><img src="<?= FFB_BASE_PATH.FFB_IMAGE_PATH.'navigation/'.$nav['symbol']?>" width="20px" title="<?= $nav['name']?>" border="0"></div>
                     <div style="float:left;font-size:8pt;padding-top:3px; padding-left:2px;"><?= $nav['name']?></div>
                 </a>
-            <?php } else if($nav['link'] == '__FORUM__') {?>
-                <a href="javascript:history.back();" style="text-decoration:none;">
-                    <img src="<?= FFB_BASE_PATH.FFB_IMAGE_PATH.'navigation/'.$nav['symbol']?>" width="60px" title="<?= $nav['name']?>" border="0"><br>
-                    <span style="font-size:8pt;"><?= $nav['name']?></span>
-                </a>
             <?php } else {?>
                 <a href="<?= FFB_BASE_PATH.$nav['link']?>" style="text-decoration:none;">
                     <div style="float:left;"><img src="<?= FFB_BASE_PATH.FFB_IMAGE_PATH.'navigation/'.$nav['symbol']?>" width="20px" title="<?= $nav['name']?>" border="0"></div>
@@ -49,16 +44,6 @@
                     <img src="<?= FFB_BASE_PATH.FFB_IMAGE_PATH.'navigation/'.$nav['symbol']?>" width="60px" title="<?= $nav['name']?>" border="0"><br>
                     <span style="font-size:8pt;"><?= $nav['name']?></span>
                 </a>
-            <?php } else if($nav['link'] == '__FORUM__') {?>
-                <form action="http://ffb.gemura.com/forum/ucp.php?mode=login" method="POST" target="_blank">
-                    <input type="hidden" name="username" id="username" value="<?= $this->session->user_nickname;?>">
-                    <input type="hidden" name="password" id="password" value="<?= $this->session->user_password;?>">
-                    <input name="redirect" value="http://ffb.gemura.com/forum/index.php" type="hidden">
-                    <input type="hidden" name="login" value="login" />
-                    <input type="hidden" name="sid" value="<?php  echo session_id(); ?>" />
-                    <input type="image" src="<?= FFB_BASE_PATH.FFB_IMAGE_PATH.'navigation/'.$nav['symbol']?>" title="<?= $nav['name']?>" value="Log in"><br>
-                    <span style="font-size:8pt;"><?= $nav['name']?></span>
-                </form>
             <?php } else {?>
                 <a href="<?= FFB_BASE_PATH.$nav['link']?>" style="text-decoration:none;">
                     <img src="<?= FFB_BASE_PATH.FFB_IMAGE_PATH.'navigation/'.$nav['symbol']?>" width="60px" title="<?= $nav['name']?>" border="0"><br>

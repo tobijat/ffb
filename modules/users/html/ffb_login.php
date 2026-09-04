@@ -307,32 +307,6 @@ function newsticker()
 
 			            <br />
 			            <br />
-						<!--Forum Aktivitaeten-->
-						<div class="forum_activities" style="float:left;font-size:70%; margin-left:4%; width:45%; max-width:45%;">
-<?php 
-	if($this->forumPosts[0]) {
-		echo '<b>Letzte Forums-Aktivit&auml;ten:</b><br />';
-		foreach($this->forumPosts as $elem) {
-			echo '<a href="http://ffb.gemura.com/forum/'.$elem['topic_url'].$elem['topic_id'].'.html" target="_new">' .htmlentities($elem['topic_title'], ENT_QUOTES).'</a><br/>';
-		}
-	}
-?>
-						</div>
-						<!--Forum Aktivitaeten END-->
-
-						<!-- CLUSTER MAPS -->
-						<!-- disabled for WM 2014 -->
-						<!--
-						<script type="text/javascript" src="http://clustrmaps.com/admin/3d/js/clustrmaps.js"></script>
-						<div id ="clustrback" style="margin-right: 4%; width:160px; height:132px;  background:#ccffcc url(http://clustrmaps.com/admin/3d/images/scpt_style1_gradient_white.png)  center no-repeat; text-align:center; float:right; width:45%; max-width:45%;">
-			  				<a href="http://www3.clustrmaps.com/counter/maps.php?url=http://ffb.gemura.com" style="width:160px; display:block; margin:0 auto;" id="clustrMapsLink" target="_blank">
-			    				<img src="http://www3.clustrmaps.com/counter/index2.php?url=http://ffb.gemura.com" style="border:0px; margin:0;margin:0;" alt="Locations of visitors to this page" title="Locations of visitors to this page" id="clustrMapsImg" class="reflect rheight30 ropacity30"/>
-			  				</a>
-						</div>
-						//-->
-						<!--CLUSTERMAPS END-->
-
-
 
 		            </div>
 
@@ -423,11 +397,6 @@ function newsticker()
 					<!-- disabled for WM 2014 - not working anymore -->
 					<!--<a href="http://feeds2.feedburner.com/ffbat" target="_new" title="Soccer Sportsfan RSS"><img style="border:0;" src="<?php  echo $FFB_BASE_PATH.FFB_IMAGE_PATH."symbols/rss_256x256.png";?>" width="32px" alt="Soccer Sportsfan RSS"/></a>-->
 				</div>
-
-				<!-- Info Image //-->
-		        <div id="form">
-		        	<img src="http://ffb.gemura.com/forum/images/forumlogos/" width="100%" title="FFB Lienups"/>
-		        </div>
 
 		    </div>
 		    <b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>

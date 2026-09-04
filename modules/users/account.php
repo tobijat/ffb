@@ -7,17 +7,11 @@
  * @copyright 12/2009
  * @version 0.1
  */
-define('IN_PHPBB',true);
 class account extends FFB_Auth_User
 {
     public function __construct()
     {
         parent::__construct();
-
-        require_once(INCLUDE_PATH.'utf/utf_normalizer.php');
-        require_once(INCLUDE_PATH.'utf/utf_tools.php');
-        $phpEx='php';
-        global $phpEx;
 
         $this->htmlFile = $this->config->area_prefix.'_account.php';
         $this->navFile = $this->config->area_prefix.'_account_navigation.php';
@@ -236,7 +230,6 @@ class account extends FFB_Auth_User
 		$chg_user = WebUserPeer::retrieveByPk($user_id);
 		$chg_user_details = WebUserDetailsPeer::retrieveByPk($user_id);
 		$chg_user_perm = WebUserPermissionsPeer::retrieveByPk($user_id);
-		$updateForumAvatar = '';//if a forum avatar is changed fill in the full URL, else empty
 		if($chg_user && $chg_user_details && $chg_user_perm) {
 			$website = '';
 			$own_team = 0;
@@ -266,7 +259,6 @@ class account extends FFB_Auth_User
 			if(!$_FILES['user_details_avatar']['tmp_name'] && $_POST['user_details_avatar_delete'] == 1 && strcmp($old_avatar_file, "avatar_na.png") != 0) {
 				unlink($_SERVER['DOCUMENT_ROOT'].FFB_IMAGE_PATH.'profiles/avatar/'.$old_avatar_file);
 				$chg_user_details->setUserDetailsAvatar('avatar_na.png');
-				$updateForumAvatar = FFB_IMAGE_PATH.'profiles/avatar/avatar_na.png';
 			}
 
 			if($_FILES['user_details_photo']['tmp_name']) {
@@ -294,7 +286,6 @@ class account extends FFB_Auth_User
 				$avatar_file_dst = $_SERVER['DOCUMENT_ROOT'].FFB_IMAGE_PATH.'profiles/avatar/'.$avatar_file_name;
 				if(move_uploaded_file($avatar_file_src, $avatar_file_dst)) {
 					$chg_user_details->setUserDetailsAvatar($avatar_file_name);
-					$updateForumAvatar = FFB_IMAGE_PATH.'profiles/avatar/'.$avatar_file_name;
 				}
 				if(strcmp($old_avatar_file, "avatar_na.png") != 0) {
 					//delete old photo
@@ -336,16 +327,6 @@ class account extends FFB_Auth_User
 			$chg_user_perm->save();
 			$this->user_answer = $answer;
 
-
-			//remote forum avatar update - do at last
-			if($updateForumAvatar) {
-				require_once ('modules/ffbapi/forumUpdate.php');
-				$updateForum = new forumUpdate();
-				$fullPath = $http_prefix.$_SERVER["SERVER_NAME"].'/'.$updateForumAvatar;
-				$updateForum->updateAvatar($fullPath, $chg_user->getUserNickname());
-				$updateForum = null;
-			}
-
 		} else {
 			$this->user_status = STATUS_CODE_ERROR_VALIDATION;
 			$errors[] = 'Update fehlgeschlagen. Deine Daten wurden nicht aktualisiert!';
@@ -375,7 +356,6 @@ class account extends FFB_Auth_User
 
 			if($_POST['user_password_chg'] && $_POST['user_password_val_chg']) {
 				$chg_user->setUserPassword(md5($_POST['user_password_chg']));
-				$this->doBoardPWUpdate();
 			}
 			if($_POST['user_email_chg'] && $_POST['user_email_val_chg']) {
 				$chg_user->setUserEmail($_POST['user_email_chg']);
@@ -384,7 +364,6 @@ class account extends FFB_Auth_User
 				$this->sendMailchangeActivationMail($activation_code, $user_id);
 				$this->session->user_id = 0;
 				$answer .= '<br><b>!!</b> Du hast deine E-Mail Adresse ge&auml;ndert. Ein E-Mail wurde an die neue Adresse geschickt. Um die &Auml;nderung abzuschlie&szlig;en, musst du den Link in dieser E-Mail anklicken. Du wirst jetzt ausgeloggt und kannst dich erst wieder einloggen, wenn der Link geklickt wurde.';
-				$this->doBoardEmailUpdate();
 			}
 
 			$chg_user->setUserIp($_SERVER['REMOTE_ADDR']);
@@ -396,55 +375,6 @@ class account extends FFB_Auth_User
 			$this->errors = $errors;
 			return false;
 		}
-	}
-
-	private function doBoardPWUpdate() {
-        $usernameUTF8 = utf8_clean_string($_POST['user_nickname']);
-        $user_password = md5(md5($_POST['user_password_chg']));
-
-        $db_server = $this->config->board_database_server;
-		$db_name = $this->config->board_database_name;
-		$db_pw = $this->config->board_database_pw;
-		$connection = @mysqli_connect($db_server, $db_name, $db_pw);
-		$db = @mysqli_select_db($connection, $db_name);
-
-		$check_request = "SELECT * FROM ffb_forum_users WHERE username_clean='$usernameUTF8'";
-        $result = mysqli_query($connection, $check_request);
-        $user_exists = mysqli_num_rows($result);
-        if($user_exists) {
-			$insert_request = "UPDATE ffb_forum_users Set user_password='$user_password' WHERE username_clean='$usernameUTF8'";
-	        $ret = @mysqli_query($connection, $insert_request);
-	        if(!$ret || !$db || !$connection) {
-				$errors[] = 'Dein Passwort wurde g&auml;ndert, das Update f&uuml;r das Forum konnte aber nicht durchgef&uuml;hrt werden. Bitte wende dich den Administrator.';
-				$this->errors = $errors;
-			}
-		}
-        mysqli_close($connection);
-	}
-
-	private function doBoardEmailUpdate() {
-        $usernameUTF8 = utf8_clean_string($_POST['user_nickname']);
-        $user_email = strtolower($_POST['user_email_chg']);
-        $user_email_hash = crc32(strtolower($_POST['user_email_chg'])) . strlen($_POST['user_email_chg']);
-
-        $db_server = $this->config->board_database_server;
-		$db_name = $this->config->board_database_name;
-		$db_pw = $this->config->board_database_pw;
-		$connection = @mysqli_connect($db_server, $db_name, $db_pw);
-		$db = @mysqli_select_db($connection, $db_name);
-
-		$check_request = "SELECT * FROM ffb_forum_users WHERE username_clean='$usernameUTF8'";
-        $result = mysqli_query($connection, $check_request);
-        $user_exists = mysqli_num_rows($result);
-        if($user_exists) {
-			$insert_request = "UPDATE ffb_forum_users Set user_email='$user_email',user_email_hash='$user_email_hash' WHERE username_clean='$usernameUTF8'";
-	        $ret = @mysqli_query($connection, $insert_request);
-	        if(!$ret || !$db || !$connection) {
-				$errors[] = 'Deine E-Mail wurde g&auml;ndert, das Update f&uuml;r das Forum konnte aber nicht durchgef&uuml;hrt werden. Bitte wende dich den Administrator.';
-				$this->errors = $errors;
-			}
-		}
-        mysqli_close($connection);
 	}
 
 	public function sendMailchangeActivationMail($activation_code, $user_id) {

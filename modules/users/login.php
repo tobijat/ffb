@@ -58,37 +58,6 @@
                       	  $this->session->game_id_player = $userDetails->getUserDetailsFfbSelectedGame();
                       	  $userDetails = null;
 
-						  //forum alert
-			              /*
-						  $connection = mysqli_connect(FFB_BOARD_DB_SERVER, FFB_BOARD_DB_USER, FFB_BOARD_DB_PASSWORD)
-                               		    or die ("Cannot establish connection to server.");
-                          $search_request = "SELECT wwh_lastpage, user_id FROM ffb_forum_wwh WHERE username='$user_name'";
-
-                      	  $db = mysqli_select_db($connection, FFB_BOARD_DB_NAME)
-                                or die ("Cannot find database.");
-                          $search_result = mysqli_query($connection, $search_request)
-                          or die ("Cannot fetch DATA FROM FORUM-DB. Database problem.");
-                          $row = mysqli_fetch_array($search_result);
-                          if($row["wwh_lastpage"]) {
-                              $this->session->user_forum_lastvisit = $row["wwh_lastpage"];
-                          } else {
-                              $this->session->user_forum_lastvisit = 0;
-                          }
-                          $user_forum_id = $row["user_id"];
-                          $this->session->user_forum_id = $user_forum_id;
-                          $search_request = "SELECT post_time FROM ffb_forum_posts WHERE poster_id!='$user_forum_id' ORDER BY post_time DESC LIMIT 1";
-                          $search_result = mysqli_query($connection, $search_request)
-                          or die ("Cannot fetch DATA FROM FORUM-DB. Database problem.");
-                          $row = mysqli_fetch_array($search_result);
-                          if($row["post_time"]) {
-                              $this->session->user_forum_lastpost = $row["post_time"];
-                          } else {
-                              $this->session->user_forum_lastpost = 0;
-                          }
-                          mysqli_close($connection);
-                          */
-                          // **
-
                           //*** check for administrator ***
                           $criteria = new Criteria();
                           $criteria->add(WebAdminPeer::ADMIN_USER_ID, $curr_user[0]->getUserId());

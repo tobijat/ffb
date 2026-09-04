@@ -7,17 +7,11 @@
  * @copyright 10/2009
  * @version 0.4
  */
-define('IN_PHPBB',true);
 class registration extends FFB_Auth_No
 {
     public function __construct()
     {
         parent::__construct();
-
-        require_once(INCLUDE_PATH.'utf/utf_normalizer.php');
-        require_once(INCLUDE_PATH.'utf/utf_tools.php');
-        $phpEx='php';
-        global $phpEx;
 
         //echo "sub: ".$_REQUEST['subdomain']."<br>";
         //echo "sub: ".$_SERVER["argv"][0]."<br>";
@@ -181,11 +175,6 @@ class registration extends FFB_Auth_No
 							 'Nach dem Anmelden kannst du weitere Informationen &uuml;ber dich eintragen indem du auf "Account" klickst.<br>'.
 							 'Bitte pr&uuml;f auch den Spam-Ordner deiner Mailbox, es kann vorkommen, dass die Mail dort gelandet ist!';
 		$this->user_status = STATUS_CODE_SUCCESS_INSERT;
-
-		//for board registration:
-		if($this->config->board_registration) {
-			$this->doBoardRegistration();
-		}
 	}
 
 	public function sendActivationMail($activation_code, $user_id) {
@@ -204,79 +193,6 @@ class registration extends FFB_Auth_No
 		$mail = new FFB_Mail($this->config, array($user_id), $subject, $message, 'force', 'system/account activation');
 
 		return ($mail->send());
-	}
-
-	private function doBoardRegistration() {
-		$usernameUTF8 = utf8_clean_string($_POST['user_nickname']);
-		$sql_ary = array(
-			        'username'           => $_POST['user_nickname'],
-			        'user_ip'            => $_SERVER['REMOTE_ADDR'],
-			        'user_regdate'       => time(),
-			        'username_clean'     => $usernameUTF8,
-			        'user_password'      => md5(md5($_POST['user_password'])),
-			        'user_passchg'       => time(),
-			        'user_email'         => strtolower($_POST['user_email']),
-			        'user_email_hash'    => crc32(strtolower($_POST['user_email'])) . strlen($_POST['user_email']),
-			        'group_id'           => 2,
-			        'user_dateformat'    => 'D M d, Y g:i a',
-			        'user_lang'          => 'de',
-			        'user_style'         => 8,
-			        'user_colour'		 => '3366CC',
-			        'user_form_salt'     => substr(md5($_POST['user_nickname'].time()),4 ,16),
-			);
-
-		$insert_request='INSERT INTO ffb_forum_users
-	        (
-	             group_id,
-	             user_ip,
-	             user_regdate,
-	             username,
-	             username_clean,
-	             user_password,
-	             user_passchg,
-	             user_email,
-	             user_email_hash,
-	             user_lang,
-	             user_style,
-	             user_dateformat,
-	             user_form_salt,
-	             user_colour
-	        )
-
-	        VALUES(
-	          '.$sql_ary['group_id'].',
-	          "'.$sql_ary['user_ip'].'",
-	          "'.$sql_ary['user_regdate'].'",
-	          "'.$sql_ary['username'].'",
-	          "'.$sql_ary['username_clean'].'",
-	          "'.$sql_ary['user_password'].'",
-	          "'.$sql_ary['user_passchg'].'",
-	          "'.$sql_ary['user_email'].'",
-	          "'.$sql_ary['user_email_hash'].'",
-	          "'.$sql_ary['user_lang'].'",
-	          "'.$sql_ary['user_style'].'",
-	          "'.$sql_ary['user_dateformat'].'",
-	          "'.$sql_ary['user_form_salt'].'",
-	          "'.$sql_ary['user_colour'].'"
-	          )';
-
-		$db_server = $this->config->board_database_server;
-		$db_name = $this->config->board_database_name;
-		$db_pw = $this->config->board_database_pw;
-		$connection = @mysqli_connect($db_server, $db_name, $db_pw);
-		$db = @mysqli_select_db($connection, $db_name);
-
-		@mysqli_query($connection, $insert_request);
-		$newuser_id = mysqli_insert_id($connection);
-
-		$insert_request = 'INSERT INTO ffb_forum_user_group (group_id, user_id, group_leader, user_pending) VALUES(2, '.$newuser_id.',0,0)';
-		$ret = @mysqli_query($connection, $insert_request);
-		if(!$ret || !$db || !$connection) {
-			$errors[] = 'Ein Problem bei der Forumregistrierung ist aufgetreten. Du wurdest erfolgreich f&uuml;r FantasyFootball registriert, jedoch nicht für das Forum. Bitte wende dich an ffb@tobijat.at!';
-			$this->errors = $errors;
-		}
-
-		mysqli_close($connection);
 	}
 
     //activate account (by link from mail)
@@ -375,18 +291,6 @@ class registration extends FFB_Auth_No
 
                     $user[0]->setUserPassword(md5($newPassword));
                     $user[0]->save();
-                    //for ffb board
-                    $user_nickname = $_POST['user_nickname'];
-                    $user_password = md5(md5($newPassword));
-                    $insert_request = "UPDATE ffb_forum_users Set user_password='$user_password' WHERE username='$user_nickname'";
-                    $connection = mysqli_connect(FFB_BOARD_DB_SERVER, FFB_BOARD_DB_USER, FFB_BOARD_DB_PASSWORD)
-                           		  or die ("Cannot establish connection to server.");
-                  	$db = mysqli_select_db($connection, FFB_BOARD_DB_NAME)
-                          or die ("Cannot find database.");
-                    mysqli_query($connection, $insert_request)
-                    or die ("Cannot update USER. Database problem.");
-                    mysqli_close($connection);
-                    //*****
                     $this->user_answer = 'Ein neues Passwort wurde an deine Email-Adresse gesendet!';
                     $this->user_status = STATUS_CODE_SUCCESS;
                 } else {
