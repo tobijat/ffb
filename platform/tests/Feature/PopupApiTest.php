@@ -6,6 +6,7 @@ use App\Models\WebUser;
 use App\Services\FfbAuth;
 use App\Services\FfbUserResolver;
 use App\Services\MatchPopupService;
+use App\Services\PlayerPopupService;
 use App\Services\ProfilePopupService;
 use Tests\TestCase;
 
@@ -182,5 +183,129 @@ class PopupApiTest extends TestCase
             ->getJson('/api/popups/match/99999')
             ->assertStatus(404)
             ->assertJsonPath('error', 'Match not found');
+    }
+
+    public function test_player_popup_requires_auth(): void
+    {
+        $this->getJson('/api/popups/player/55')->assertStatus(401);
+        $this->getJson('/api/popups/player/55/rounds/10')->assertStatus(401);
+    }
+
+    public function test_player_popup_returns_payload(): void
+    {
+        $this->actingAsFfbUser();
+
+        $payload = [
+            'player' => [
+                'playerteam_id' => 55,
+                'player_fname' => 'Max',
+                'player_lname' => 'Mustermann',
+                'player_name' => 'Max Mustermann',
+                'player_nationality' => 'aut',
+                'player_team_name' => 'Rapid',
+                'player_team_nationality' => 'aut',
+                'player_team_id' => 1,
+                'player_picture_url' => '/images/ffb/players/image_na.gif',
+            ],
+            'pricemode' => 'dynamic',
+            'stats' => [
+                'num_lineups' => 12,
+                'sum_score' => 40,
+                'sum_goals' => 3,
+                'sum_assists' => 1,
+                'sum_minutes' => 270,
+                'sum_cards_y' => 1,
+                'sum_cards_yr' => 0,
+                'sum_cards_r' => 0,
+                'av_score' => 13.33,
+                'av_goals' => 1,
+                'av_assists' => 0.33,
+                'av_minutes' => 90,
+                'match_count_total' => 5,
+                'match_count_played' => 3,
+                'match_count_percent' => 60,
+            ],
+            'matchrounds' => [],
+            'pastmatches' => [],
+        ];
+
+        $this->mock(PlayerPopupService::class, function ($mock) use ($payload) {
+            $mock->shouldReceive('forPlayerteam')->once()->with(544, 55)->andReturn([
+                'ok' => true,
+                'data' => $payload,
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->getJson('/api/popups/player/55')
+            ->assertOk()
+            ->assertJsonPath('status', 200)
+            ->assertJsonPath('data.player.player_name', 'Max Mustermann')
+            ->assertJsonPath('data.stats.num_lineups', 12);
+    }
+
+    public function test_player_round_popup_returns_payload(): void
+    {
+        $this->actingAsFfbUser();
+
+        $payload = [
+            'playerteam_id' => 55,
+            'matchround_id' => 10,
+            'pricemode' => 'constant',
+            'played' => true,
+            'player' => [
+                'playerteam_id' => 55,
+                'player_fname' => 'Max',
+                'player_lname' => 'Mustermann',
+                'player_name' => 'Max Mustermann',
+                'player_nationality' => 'aut',
+                'player_team_name' => 'Rapid',
+                'player_team_nationality' => 'aut',
+                'player_picture_url' => '/images/ffb/players/image_na.gif',
+            ],
+            'stats' => [
+                'playerstats_goals' => 1,
+                'playerstats_assists' => 0,
+                'playerstats_minutes' => 90,
+                'playerstats_minute_in' => 1,
+                'playerstats_minute_out' => 90,
+                'playerstats_cards' => 'n',
+                'playerstats_owngoals' => 0,
+                'playerstats_penaltiessaved' => 0,
+                'playerstats_penaltieslost' => 0,
+                'playerstats_penaltyshootout_lost' => 0,
+                'playerstats_penaltyshootout_hit' => 0,
+                'playerstats_penaltyshootout_save' => 0,
+                'playerstats_oppgoals' => 1,
+                'playerstats_player_oppgoals' => 1,
+                'playerstats_player_oppgoals_string' => null,
+                'playerstats_score_goals' => 5,
+                'playerstats_score_assists' => 0,
+                'playerstats_score_minutes' => 2,
+                'playerstats_score_cards' => 0,
+                'playerstats_score_owngoals' => 0,
+                'playerstats_score_penaltiessaved' => 0,
+                'playerstats_score_penaltieslost' => 0,
+                'playerstats_score_penaltyshootout_lost' => 0,
+                'playerstats_score_penaltyshootout_hit' => 0,
+                'playerstats_score_penaltyshootout_save' => 0,
+                'playerstats_score_oppgoals' => 0,
+                'playerstats_score_nooppgoals' => 0,
+                'playerstats_score' => 7,
+            ],
+        ];
+
+        $this->mock(PlayerPopupService::class, function ($mock) use ($payload) {
+            $mock->shouldReceive('forRound')->once()->with(544, 55, 10)->andReturn([
+                'ok' => true,
+                'data' => $payload,
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->getJson('/api/popups/player/55/rounds/10')
+            ->assertOk()
+            ->assertJsonPath('data.played', true)
+            ->assertJsonPath('data.stats.playerstats_score', 7);
     }
 }

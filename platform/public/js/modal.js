@@ -672,7 +672,13 @@
             root.hidden = false;
             document.body.style.overflow = 'hidden';
 
-            const entry = { type: type, id: id, tab: opts.tab };
+            const entry = {
+                type: type,
+                id: id,
+                tab: opts.tab,
+                matchroundId: opts.matchroundId,
+                showAll: opts.showAll,
+            };
             const top = stack[stack.length - 1];
             if (top && top.type === type && String(top.id) === String(id)) {
                 stack[stack.length - 1] = entry;
@@ -749,6 +755,9 @@
         FfbModal.open({
             type: trigger.getAttribute('data-modal'),
             id: trigger.getAttribute('data-id'),
+            tab: trigger.getAttribute('data-tab') || undefined,
+            matchroundId: trigger.getAttribute('data-matchround-id') || undefined,
+            showAll: trigger.getAttribute('data-show-all') || undefined,
         });
     });
 

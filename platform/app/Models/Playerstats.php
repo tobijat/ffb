@@ -17,4 +17,14 @@ class Playerstats extends Model
     {
         return $this->belongsTo(Playerteam::class, 'playerstats_playerteam_id', 'playerteam_id');
     }
+
+    public function match(): BelongsTo
+    {
+        return $this->belongsTo(MatchGame::class, 'playerstats_match_id', 'match_id');
+    }
+
+    public function matchround(): BelongsTo
+    {
+        return $this->belongsTo(Matchround::class, 'playerstats_matchround_id', 'matchround_id');
+    }
 }

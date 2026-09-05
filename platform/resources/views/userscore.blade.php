@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/start.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/userscore.css?v=7">
-    <link rel="stylesheet" href="css/modal.css?v=2">
+    <link rel="stylesheet" href="css/modal.css?v=4">
 </head>
 <body class="dash-body">
     @php
@@ -87,7 +87,8 @@
             legacyBase: @json($legacyBase),
         };
     </script>
-    <script src="js/modal.js?v=2" defer></script>
+    <script src="js/modal.js?v=3" defer></script>
+    <script src="js/player-modal.js?v=1" defer></script>
     <script src="js/userscore.js?v=8" defer></script>
 </body>
 </html>
