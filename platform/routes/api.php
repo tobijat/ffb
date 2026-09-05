@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\LineupController;
+use App\Http\Controllers\Api\PopupController;
 use App\Http\Controllers\Api\UserscoreController;
 use App\Http\Controllers\StartController;
 use App\Http\Middleware\ResolveFfbUser;
@@ -21,4 +22,7 @@ Route::middleware([ResolveFfbUser::class])->group(function () {
     Route::get('/userscore', [UserscoreController::class, 'overall']);
     Route::get('/userscore/rounds/{matchroundId}', [UserscoreController::class, 'round'])
         ->whereNumber('matchroundId');
+
+    Route::get('/popups/user/{userId}', [PopupController::class, 'user'])
+        ->whereNumber('userId');
 });

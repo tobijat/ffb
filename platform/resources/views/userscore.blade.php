@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/start.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/userscore.css?v=6">
+    <link rel="stylesheet" href="css/modal.css?v=1">
 </head>
 <body class="dash-body">
     @php
@@ -81,7 +82,12 @@
             userId: @json($user['user_id']),
             pageSize: 75,
         };
+        window.FFB_MODAL = {
+            apiBase: 'api',
+            legacyBase: @json($legacyBase),
+        };
     </script>
-    <script src="js/userscore.js?v=6" defer></script>
+    <script src="js/modal.js?v=1" defer></script>
+    <script src="js/userscore.js?v=7" defer></script>
 </body>
 </html>
