@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\StartController;
+use App\Http\Controllers\UserscorePageController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,3 +14,5 @@ Route::get('/', [StartController::class, 'show'])->name('start');
 
 Route::post('/login', [LoginController::class, 'login'])->name('login');
 Route::match(['get', 'post'], '/logout', [LoginController::class, 'logout'])->name('logout');
+
+Route::get('/userscore', [UserscorePageController::class, 'show'])->name('userscore');

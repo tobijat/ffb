@@ -25,7 +25,7 @@ class DashboardService
             ['symbol' => 'nav_team.png', 'name' => 'Aufstellung', 'link' => '/ffb/lineup', 'style' => 'big'],
             ['symbol' => 'nav_player.png', 'name' => 'Mannschaft', 'link' => '/ffb/myteam', 'style' => 'big'],
             ['symbol' => 'nav_topflop.png', 'name' => 'Top&Flop', 'link' => '/ffb/bestteam', 'style' => 'big'],
-            ['symbol' => 'nav_results.png', 'name' => 'Rangliste', 'link' => '/ffb/userscore', 'style' => 'big'],
+            ['symbol' => 'nav_results.png', 'name' => 'Rangliste', 'link' => '/platform/userscore', 'style' => 'big'],
             ['symbol' => 'nav_help.png', 'name' => 'Regeln', 'link' => '/users/help', 'style' => 'big'],
             ['symbol' => 'nav_user.png', 'name' => 'Account', 'link' => '/users/account', 'style' => 'big'],
             ['symbol' => 'nav_profile.png', 'name' => 'Profil', 'link' => '/users/account/accountDetails.html', 'style' => 'big'],
