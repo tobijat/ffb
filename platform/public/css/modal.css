@@ -1,0 +1,232 @@
+/* Shared FFB modal shell — used by profile and future popups */
+
+.ffb-modal-root {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 4vh 1rem 2rem;
+    overflow-y: auto;
+}
+
+.ffb-modal-root[hidden] {
+    display: none !important;
+}
+
+.ffb-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 40, 20, 0.45);
+}
+
+.ffb-modal-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(520px, 100%);
+    margin: 0 auto;
+    background: linear-gradient(180deg, #e8f5e8 0%, #d4ebd4 100%);
+    border: 1px solid #2a5a2a;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    font-size: 10pt;
+    color: #1a2e1a;
+}
+
+.ffb-modal-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #bbeebb;
+    padding: 0.35rem 0.5rem;
+}
+
+.ffb-modal-head-avatar {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.ffb-modal-head-title {
+    flex: 1;
+    text-align: center;
+    font-size: 12pt;
+    font-weight: 600;
+}
+
+.ffb-modal-close {
+    flex-shrink: 0;
+    border: 0;
+    background: transparent;
+    padding: 0.25rem;
+    cursor: pointer;
+    line-height: 0;
+}
+
+.ffb-modal-close img {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
+
+.ffb-modal-tabs {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.35rem 0.6rem;
+    background: #bbeebb;
+    border-top: 1px solid #99cc99;
+}
+
+.ffb-modal-tabs a,
+.ffb-modal-tabs button {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: #1a4a1a;
+    cursor: pointer;
+    font: inherit;
+    text-decoration: underline;
+}
+
+.ffb-modal-tabs .is-active {
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.ffb-modal-body {
+    padding: 0.5rem 0.6rem 0.75rem;
+    background: #f4faf4;
+    border-top: 1px solid #2a5a2a;
+    min-height: 4rem;
+}
+
+.ffb-modal-loading,
+.ffb-modal-error {
+    padding: 1.25rem 0.5rem;
+    text-align: center;
+}
+
+.ffb-modal-error {
+    color: #7a2020;
+}
+
+/* Profile content */
+
+.ffb-profile {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 0.75rem;
+    align-items: start;
+}
+
+.ffb-profile-photo {
+    width: 100px;
+    border: 1px solid #c00;
+    display: block;
+}
+
+.ffb-profile-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.ffb-profile-row {
+    display: grid;
+    grid-template-columns: 18px auto 1fr;
+    gap: 0.35rem;
+    align-items: center;
+    padding: 0.15rem 0.25rem;
+    text-align: left;
+}
+
+.ffb-profile-row:hover {
+    background: #99cc99;
+}
+
+.ffb-profile-row img {
+    width: 16px;
+    height: 16px;
+}
+
+.ffb-profile-row .label {
+    white-space: nowrap;
+}
+
+.ffb-profile-row .value {
+    text-align: right;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ffb-profile-row .value a {
+    color: inherit;
+}
+
+.ffb-profile-section {
+    margin-top: 0.75rem;
+    clear: both;
+}
+
+.ffb-profile-section > h3 {
+    margin: 0 0 0.4rem;
+    text-align: center;
+    font-size: 10pt;
+}
+
+.ffb-profile-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt;
+    text-align: center;
+}
+
+.ffb-profile-table th,
+.ffb-profile-table td {
+    border: 1px solid #99cc99;
+    padding: 0.3rem 0.35rem;
+}
+
+.ffb-profile-table th {
+    background: #bbeebb;
+}
+
+.ffb-profile-table td.liga {
+    text-align: left;
+}
+
+.ffb-profile-table td.liga img {
+    vertical-align: middle;
+    margin-right: 0.25rem;
+}
+
+.ffb-profile-table .rank-1 {
+    background: #ffd700;
+}
+
+.ffb-profile-table .rank-2 {
+    background: #cccccc;
+}
+
+.ffb-profile-table .rank-3 {
+    background: #cd853f;
+}
+
+.ffb-profile-awards-stub {
+    padding: 1rem 0.5rem;
+    text-align: center;
+    color: #3a5a3a;
+}
+
+@media (max-width: 560px) {
+    .ffb-profile {
+        grid-template-columns: 1fr;
+        justify-items: center;
+    }
+
+    .ffb-profile-rows {
+        width: 100%;
+    }
+}

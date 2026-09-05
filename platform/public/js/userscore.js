@@ -212,7 +212,7 @@
             html += '<tr class="' + cls.trim() + '">';
             html += '<td class="col-rank">' + row.user_rank + '</td>';
             html += '<td class="col-flag"><img src="' + flagUrl(row.user_favourite_team_nationality) + '" alt="" width="16" height="11"></td>';
-            html += '<td><a class="nolink" href="' + legacyBase + 'ffb/user/getUserDetails.html?user_id=' + row.user_id + '">' +
+            html += '<td><a class="nolink" href="#" data-modal="profile" data-id="' + row.user_id + '">' +
                 escapeHtml(row.user_nickname) + '</a></td>';
             html += '<td class="col-part">' + row.participations + '</td>';
             html += '<td class="col-wins">' + row.matchround_wins + '</td>';
