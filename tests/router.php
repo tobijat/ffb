@@ -21,7 +21,24 @@ if (preg_match('#^/platform(?:/public)?(/.*)?$#', $uriPath, $m)) {
 
     $staticFile = $platformPublic . str_replace('/', DIRECTORY_SEPARATOR, $subPath);
     if ($subPath !== '/' && is_file($staticFile)) {
-        return false;
+        $mime = match (strtolower(pathinfo($staticFile, PATHINFO_EXTENSION))) {
+            'css' => 'text/css; charset=UTF-8',
+            'js' => 'application/javascript; charset=UTF-8',
+            'json' => 'application/json; charset=UTF-8',
+            'svg' => 'image/svg+xml',
+            'png' => 'image/png',
+            'jpg', 'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            'woff' => 'font/woff',
+            'woff2' => 'font/woff2',
+            'map' => 'application/json',
+            default => 'application/octet-stream',
+        };
+        header('Content-Type: ' . $mime);
+        header('Content-Length: ' . (string) filesize($staticFile));
+        readfile($staticFile);
+        return true;
     }
 
     $queryString = !empty($_SERVER['QUERY_STRING']) ? ('?' . $_SERVER['QUERY_STRING']) : '';

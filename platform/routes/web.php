@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\StartController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -7,9 +8,4 @@ use Illuminate\Support\Facades\Route;
 | Mounted under /platform/public via Apache (see repo-root .htaccess).
 */
 
-Route::get('/', function () {
-    return response()->json([
-        'status' => 'ok',
-        'message' => 'FFB Laravel platform',
-    ]);
-});
+Route::get('/', [StartController::class, 'show'])->name('start');
