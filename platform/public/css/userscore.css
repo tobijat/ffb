@@ -148,20 +148,51 @@
 
 .match-list li {
     display: grid;
-    grid-template-columns: auto 1fr auto 1fr;
-    gap: 4px 6px;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 6px 8px;
     align-items: center;
     font-size: 9pt;
+}
+
+.match-list .home {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    text-align: right;
+}
+
+.match-list .away {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+    text-align: left;
 }
 
 .match-list .score {
     font-weight: bold;
     text-align: center;
+    min-width: 3.5rem;
+    line-height: 1.15;
+}
+
+.match-list .score-hint {
+    font-size: 7pt;
+    font-weight: normal;
+}
+
+.match-list .score-reg {
+    display: block;
+    font-size: 7pt;
+    font-weight: normal;
+    color: var(--muted);
 }
 
 .match-list img {
     width: 16px;
     height: 11px;
+    flex-shrink: 0;
 }
 
 @media (max-width: 860px) {

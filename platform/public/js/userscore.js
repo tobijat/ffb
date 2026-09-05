@@ -98,19 +98,48 @@
             const li = document.createElement('li');
             const homeFlag = flagUrl(match.match_hometeam_nationality);
             const guestFlag = flagUrl(match.match_guestteam_nationality);
-            const score = (match.match_homescore != null && match.match_guestscore != null)
-                ? (match.match_homescore + ':' + match.match_guestscore)
-                : '-:-';
+            const scoreHtml = formatMatchScore(match);
             li.innerHTML =
-                '<img src="' + homeFlag + '" alt="">' +
-                '<span>' + escapeHtml(match.match_hometeam_name) + '</span>' +
-                '<span class="score">' + score + '</span>' +
-                '<span>' + escapeHtml(match.match_guestteam_name) +
-                ' <img src="' + guestFlag + '" alt=""></span>';
+                '<span class="home">' + escapeHtml(match.match_hometeam_name) +
+                ' <img src="' + homeFlag + '" alt=""></span>' +
+                '<span class="score">' + scoreHtml + '</span>' +
+                '<span class="away"><img src="' + guestFlag + '" alt=""> ' +
+                escapeHtml(match.match_guestteam_name) + '</span>';
             ul.appendChild(li);
         });
         matchlistEl.innerHTML = '';
         matchlistEl.appendChild(ul);
+    }
+
+    function hasPenaltyScore(match) {
+        const homePen = parseInt(match.match_homescore_penalty, 10);
+        const guestPen = parseInt(match.match_guestscore_penalty, 10);
+        return !Number.isNaN(homePen) && !Number.isNaN(guestPen) && homePen > -1 && guestPen > -1;
+    }
+
+    function formatMatchScore(match) {
+        if (hasPenaltyScore(match)) {
+            let html = '<span class="score-final">' +
+                escapeHtml(match.match_homescore_penalty) + ':' +
+                escapeHtml(match.match_guestscore_penalty) +
+                ' <span class="score-hint" title="nach Elfmeterschießen">n.E.</span></span>';
+
+            if (match.match_homescore != null && match.match_guestscore != null
+                && String(match.match_homescore) !== '' && String(match.match_guestscore) !== ''
+                && Number(match.match_homescore) >= 0 && Number(match.match_guestscore) >= 0) {
+                html += '<span class="score-reg">(' +
+                    escapeHtml(match.match_homescore) + ':' +
+                    escapeHtml(match.match_guestscore) +
+                    ' <span class="score-hint" title="nach Verlängerung">n.V.</span>)</span>';
+            }
+            return html;
+        }
+        if (match.match_homescore != null && match.match_guestscore != null
+            && String(match.match_homescore) !== '' && String(match.match_guestscore) !== ''
+            && Number(match.match_homescore) >= 0 && Number(match.match_guestscore) >= 0) {
+            return escapeHtml(match.match_homescore) + ':' + escapeHtml(match.match_guestscore);
+        }
+        return '-:-';
     }
 
     function escapeHtml(value) {
