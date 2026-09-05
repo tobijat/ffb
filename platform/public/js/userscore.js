@@ -102,7 +102,8 @@
             li.innerHTML =
                 '<span class="home">' + escapeHtml(match.match_hometeam_name) +
                 ' <img src="' + homeFlag + '" alt=""></span>' +
-                '<span class="score">' + scoreHtml + '</span>' +
+                '<span class="score"><a class="nolink under" href="#" data-modal="match" data-id="' +
+                match.match_id + '" title="Klicken für Matchinfos">' + scoreHtml + '</a></span>' +
                 '<span class="away"><img src="' + guestFlag + '" alt=""> ' +
                 escapeHtml(match.match_guestteam_name) + '</span>';
             ul.appendChild(li);
