@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\AwardsPopupService;
 use App\Services\MatchPopupService;
 use App\Services\PlayerPopupService;
 use App\Services\ProfilePopupService;
@@ -15,6 +16,7 @@ class PopupController extends Controller
         private readonly ProfilePopupService $profiles,
         private readonly MatchPopupService $matches,
         private readonly PlayerPopupService $players,
+        private readonly AwardsPopupService $awards,
     ) {
     }
 
@@ -22,6 +24,13 @@ class PopupController extends Controller
     {
         $viewerId = (int) $request->attributes->get('ffb_user_id');
         $result = $this->profiles->forUser($viewerId, $userId);
+
+        return $this->respond($result);
+    }
+
+    public function userAwards(int $userId): JsonResponse
+    {
+        $result = $this->awards->forUser($userId);
 
         return $this->respond($result);
     }

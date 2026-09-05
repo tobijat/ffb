@@ -251,23 +251,87 @@
         );
     }
 
+    let lastProfileData = null;
+
+    function renderAwardsBody(data) {
+        const groups = data.groups || [];
+        if (!groups.length) {
+            return '<p class="ffb-profile-awards-stub">Keine Auszeichnungen vorhanden.</p>';
+        }
+
+        let html =
+            '<div class="ffb-awards">' +
+            '<div class="ffb-awards-header">' +
+            '<div class="ffb-awards-col-symbol"><b>Auszeichnung</b></div>' +
+            '<div class="ffb-awards-col-ranks"><b>Rang</b></div>' +
+            '</div>';
+
+        for (let i = 0; i < groups.length; i++) {
+            const g = groups[i];
+            html += '<div class="ffb-awards-row">';
+            html +=
+                '<div class="ffb-awards-col-symbol">' +
+                '<img src="' +
+                escapeHtml(imgUrl(g.image_url)) +
+                '" width="35" height="35" title="' +
+                escapeHtml(g.description || g.name) +
+                '" alt="">' +
+                '<em>' +
+                escapeHtml(g.name) +
+                '</em></div>';
+            html += '<div class="ffb-awards-col-ranks">';
+
+            const ranks = g.ranks || [];
+            for (let j = 0; j < ranks.length; j++) {
+                const r = ranks[j];
+                const title = r.finished
+                    ? 'Ausgezeichnet mit ' + String(r.name).toUpperCase() + '!'
+                    : String(r.name).toUpperCase() + ' - ' + (r.description || '');
+                html +=
+                    '<div class="ffb-awards-rank' +
+                    (r.finished ? ' is-earned' : ' is-silhouette') +
+                    '">' +
+                    '<img src="' +
+                    escapeHtml(imgUrl(r.image_url)) +
+                    '" height="45" title="' +
+                    escapeHtml(title) +
+                    '" alt="' +
+                    escapeHtml(r.name) +
+                    '"></div>';
+            }
+
+            html += '</div></div>';
+        }
+
+        html += '</div>';
+        return html;
+    }
+
     async function openProfile(userId, tab) {
         waitingUi();
-        const json = await fetchJson(apiBase + '/popups/user/' + encodeURIComponent(userId));
-        const data = json.data;
-        const user = data.user;
+        const active = tab || 'profile';
 
+        if (
+            !lastProfileData ||
+            Number(lastProfileData.user.user_id) !== Number(userId)
+        ) {
+            const json = await fetchJson(apiBase + '/popups/user/' + encodeURIComponent(userId));
+            lastProfileData = json.data;
+        }
+
+        const user = lastProfileData.user;
         setHead(renderProfileHead(user));
-        setTabs(renderProfileTabs(user.user_id, tab || 'profile'));
+        setTabs(renderProfileTabs(user.user_id, active));
 
-        if (tab === 'awards') {
-            setBody(
-                '<p class="ffb-profile-awards-stub">Auszeichnungen folgen in einem späteren Schritt.</p>'
+        if (active === 'awards') {
+            const awardsJson = await fetchJson(
+                apiBase + '/popups/user/' + encodeURIComponent(userId) + '/awards'
             );
+            setBody(renderAwardsBody(awardsJson.data));
             return;
         }
 
-        setBody(renderProfileBody(data));
+        setBody(renderProfileBody(lastProfileData));
     }
 
     function flagUrl(code) {

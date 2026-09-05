@@ -220,6 +220,65 @@
     color: #3a5a3a;
 }
 
+.ffb-awards {
+    font-size: 8pt;
+}
+
+.ffb-awards-header,
+.ffb-awards-row {
+    display: grid;
+    grid-template-columns: 21% 79%;
+    gap: 0.25rem;
+    align-items: center;
+    background: #bbeebb;
+    margin: 0.15rem 0;
+    padding: 0.2rem 0.25rem;
+}
+
+.ffb-awards-header {
+    font-size: 10pt;
+    text-align: center;
+}
+
+.ffb-awards-col-symbol {
+    text-align: center;
+    line-height: 1.2;
+}
+
+.ffb-awards-col-symbol img {
+    display: block;
+    margin: 0 auto 0.15rem;
+}
+
+.ffb-awards-col-symbol em {
+    font-size: 8pt;
+}
+
+.ffb-awards-col-ranks {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.15rem 0.35rem;
+    min-height: 45px;
+}
+
+.ffb-awards-rank {
+    flex: 0 0 15%;
+    max-width: 15%;
+    text-align: center;
+}
+
+.ffb-awards-rank img {
+    height: 45px;
+    width: auto;
+    vertical-align: middle;
+}
+
+.ffb-awards-rank.is-silhouette img {
+    opacity: 0.95;
+}
+
 /* Match content */
 
 .ffb-match {
