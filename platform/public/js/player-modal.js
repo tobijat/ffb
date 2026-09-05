@@ -216,9 +216,9 @@
                 '<td>' +
                 cardCell(r.matchround_cards) +
                 '</td>' +
-                '<td><a class="nolink" href="#" data-modal="player" data-id="' +
+                '<td><a class="nolink" href="#" data-modal="player-points" data-id="' +
                 escapeHtml(playerteamId) +
-                '" data-tab="round" data-matchround-id="' +
+                '" data-matchround-id="' +
                 escapeHtml(r.matchround_id) +
                 '"><b><u>' +
                 escapeHtml(r.matchround_score) +
@@ -537,21 +537,6 @@
     async function openPlayer(playerteamId, opts) {
         const tab = (opts && opts.tab) || 'info';
         const showAll = !!(opts && (opts.showAll || opts.show_all || opts['show-all']));
-        const matchroundId = opts && (opts.matchroundId || opts.matchround_id || opts['matchround-id']);
-
-        if (tab === 'round' && matchroundId) {
-            waitingUi();
-            const json = await fetchJson(
-                apiBase +
-                    '/popups/player/' +
-                    encodeURIComponent(playerteamId) +
-                    '/rounds/' +
-                    encodeURIComponent(matchroundId)
-            );
-            const data = json.data;
-            setModal(renderPlayerHead(data.player), '', renderPlayerRoundBody(data));
-            return;
-        }
 
         if (
             (tab === 'graphic' || tab === 'price') &&
@@ -581,8 +566,30 @@
         );
     }
 
+    async function openPlayerPoints(playerteamId, opts) {
+        const matchroundId = opts && (opts.matchroundId || opts.matchround_id || opts['matchround-id']);
+        if (!matchroundId) {
+            throw new Error('matchround_id is required');
+        }
+
+        waitingUi();
+        const json = await fetchJson(
+            apiBase +
+                '/popups/player/' +
+                encodeURIComponent(playerteamId) +
+                '/rounds/' +
+                encodeURIComponent(matchroundId)
+        );
+        const data = json.data;
+        setModal(renderPlayerHead(data.player), '', renderPlayerRoundBody(data));
+    }
+
     window.FfbModal.register('player', function (id, opts) {
         return openPlayer(id, opts || {});
+    });
+
+    window.FfbModal.register('player-points', function (id, opts) {
+        return openPlayerPoints(id, opts || {});
     });
 
     document.addEventListener('click', function (e) {

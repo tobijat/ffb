@@ -46,7 +46,7 @@
         root.setAttribute('role', 'dialog');
         root.setAttribute('aria-modal', 'true');
         root.innerHTML =
-            '<div class="ffb-modal-backdrop" data-ffb-modal-close></div>' +
+            '<div class="ffb-modal-backdrop" data-ffb-modal-close-all></div>' +
             '<div class="ffb-modal-dialog" role="document">' +
             '<div class="ffb-modal-head"></div>' +
             '<div class="ffb-modal-tabs" hidden></div>' +
@@ -60,6 +60,10 @@
         bodyEl = root.querySelector('.ffb-modal-body');
 
         root.addEventListener('click', function (e) {
+            if (e.target.closest('[data-ffb-modal-close-all]')) {
+                FfbModal.closeAll();
+                return;
+            }
             if (e.target.closest('[data-ffb-modal-close]')) {
                 FfbModal.close();
             }
@@ -658,6 +662,9 @@
         player: function () {
             return openPlayerStub();
         },
+        'player-points': function () {
+            return openPlayerStub();
+        },
     };
 
     const FfbModal = {
@@ -730,6 +737,19 @@
             }
             const prev = stack.pop();
             FfbModal.open(prev);
+        },
+
+        closeAll: function () {
+            if (!root) {
+                return;
+            }
+            openToken++;
+            stack.length = 0;
+            root.hidden = true;
+            setBody('');
+            setTabs('');
+            setHead('');
+            document.body.style.overflow = '';
         },
 
         register: function (type, fn) {
