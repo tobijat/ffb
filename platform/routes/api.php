@@ -1,8 +1,11 @@
 <?php
 
 use App\Http\Controllers\Api\LineupController;
+use App\Http\Controllers\StartController;
 use App\Http\Middleware\ResolveFfbUser;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/start', [StartController::class, 'data']);
 
 Route::middleware([ResolveFfbUser::class])->group(function () {
     Route::get('/lineup', [LineupController::class, 'show']);
