@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Services\LegacyPhpSession;
 use App\Services\StartPageService;
 use Tests\TestCase;
 
@@ -10,10 +9,6 @@ class StartPageTest extends TestCase
 {
     public function test_start_page_renders(): void
     {
-        $this->mock(LegacyPhpSession::class, function ($mock) {
-            $mock->shouldReceive('userId')->andReturn(0);
-        });
-
         $this->mock(StartPageService::class, function ($mock) {
             $mock->shouldReceive('payload')->once()->andReturn([
                 'stats' => [
@@ -47,7 +42,9 @@ class StartPageTest extends TestCase
             ->assertSee('SoccerSportsfan', false)
             ->assertSee('Stell dein Team auf.', false)
             ->assertSee('Testliga', false)
-            ->assertSee('Alpha', false);
+            ->assertSee('Alpha', false)
+            ->assertSee('action="login"', false)
+            ->assertSee('js/start.js?v=2', false);
     }
 
     public function test_start_api_returns_payload(): void

@@ -16,7 +16,7 @@ class LineupController extends Controller
 
     /**
      * GET /api/lineup?matchround_id=…
-     * Auth: legacy PHP login session (PHPSESSID), optional local X-FFB-User-Id bridge.
+     * Auth: Laravel session (ffb_user_id), optional local X-FFB-User-Id bridge.
      */
     public function show(Request $request): JsonResponse
     {

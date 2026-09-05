@@ -38,9 +38,57 @@
         return out.length ? out : ['Unbekannter Fehler.'];
     }
 
-    async function postForm(url) {
+    function collectLoginErrors(data, httpStatus) {
+        if (data && Array.isArray(data.errors) && data.errors.length) {
+            return data.errors;
+        }
+        if (data && typeof data.message === 'string' && data.message !== '') {
+            return [data.message];
+        }
+        if (httpStatus === 419) {
+            return ['Sitzung abgelaufen. Bitte Seite neu laden und erneut versuchen.'];
+        }
+        return ['Unbekannter Fehler. (HTTP ' + httpStatus + ')'];
+    }
+
+    function xsrfToken() {
+        const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+        return match ? decodeURIComponent(match[1]) : '';
+    }
+
+    async function postLogin() {
         const body = new URLSearchParams(new FormData(form));
-        const response = await fetch(url, {
+        const headers = {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+        };
+        const xsrf = xsrfToken();
+        if (xsrf) {
+            headers['X-XSRF-TOKEN'] = xsrf;
+        }
+
+        const response = await fetch(config.loginUrl || 'login', {
+            method: 'POST',
+            headers: headers,
+            body: body.toString(),
+            credentials: 'same-origin',
+            redirect: 'error',
+        });
+
+        const text = await response.text();
+        let data = null;
+        try {
+            data = text ? JSON.parse(text) : null;
+        } catch (err) {
+            throw new Error('Non-JSON login response (HTTP ' + response.status + ')');
+        }
+        return { ok: response.ok, status: response.status, data };
+    }
+
+    async function postForgotPassword() {
+        const body = new URLSearchParams(new FormData(form));
+        const response = await fetch(config.passwordUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
@@ -58,13 +106,12 @@
         feedback.hidden = true;
 
         try {
-            const xml = await postForm(config.loginUrl);
-            const status = firstText(xml, 'administration_status');
-            if (status === '200') {
-                window.location.href = firstText(xml, 'administration_destination') || '/ffb';
+            const result = await postLogin();
+            if (result.data && Number(result.data.status) === 200) {
+                window.location.href = result.data.destination || '/platform/public/';
                 return;
             }
-            const errors = collectErrors(xml);
+            const errors = collectLoginErrors(result.data, result.status);
             showFeedback('<strong>Es sind Fehler aufgetreten:</strong><br>' + errors.join('<br>'), 'error');
         } catch (err) {
             showFeedback('Login derzeit nicht erreichbar. Bitte später erneut versuchen.', 'error');
@@ -82,7 +129,7 @@
             }
 
             try {
-                const xml = await postForm(config.passwordUrl);
+                const xml = await postForgotPassword();
                 const status = firstText(xml, 'user_status');
                 if (status === '200') {
                     showFeedback(firstText(xml, 'user_answer') || 'E-Mail wurde gesendet.', 'ok');

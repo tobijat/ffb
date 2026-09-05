@@ -5,8 +5,8 @@ namespace Tests\Feature;
 use App\Http\Controllers\Api\LineupController;
 use App\Http\Middleware\ResolveFfbUser;
 use App\Models\WebUser;
+use App\Services\FfbAuth;
 use App\Services\FfbUserResolver;
-use App\Services\LegacyPhpSession;
 use App\Services\LineupService;
 use Illuminate\Http\Request;
 use Tests\TestCase;
@@ -22,16 +22,12 @@ class LineupApiTest extends TestCase
             ->assertJsonPath('error', 'Authentication required (login session)');
     }
 
-    public function test_accepts_legacy_session_cookie(): void
+    public function test_accepts_laravel_session(): void
     {
         $user = new WebUser;
         $user->user_id = 544;
         $user->user_status = 'active';
         $user->user_nickname = 'tester';
-
-        $this->mock(LegacyPhpSession::class, function ($mock) {
-            $mock->shouldReceive('userId')->once()->andReturn(544);
-        });
 
         $this->mock(FfbUserResolver::class, function ($mock) use ($user) {
             $mock->shouldReceive('findActive')->once()->with(544)->andReturn($user);
@@ -50,7 +46,8 @@ class LineupApiTest extends TestCase
                 ]);
         });
 
-        $response = $this->getJson('/api/lineup?matchround_id=280');
+        $response = $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->getJson('/api/lineup?matchround_id=280');
 
         $response->assertOk()
             ->assertJsonPath('status', 200)
