@@ -503,6 +503,8 @@ class UserscoreService
                 'match_guestteam_nationality' => (string) ($match->guestTeam?->team_nationality ?? ''),
                 'match_homescore' => $match->match_homescore,
                 'match_guestscore' => $match->match_guestscore,
+                'match_homescore_penalty' => $match->match_homescore_penalty,
+                'match_guestscore_penalty' => $match->match_guestscore_penalty,
                 'match_status' => (int) $match->match_status,
             ];
         }

@@ -6,7 +6,7 @@
     <title>Rangliste — SoccerSportsfan</title>
     <link rel="stylesheet" href="css/start.css">
     <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/userscore.css?v=2">
+    <link rel="stylesheet" href="css/userscore.css?v=6">
 </head>
 <body class="dash-body">
     @php
@@ -82,6 +82,6 @@
             pageSize: 75,
         };
     </script>
-    <script src="js/userscore.js?v=2" defer></script>
+    <script src="js/userscore.js?v=6" defer></script>
 </body>
 </html>
