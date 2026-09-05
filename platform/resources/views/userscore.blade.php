@@ -87,8 +87,8 @@
             legacyBase: @json($legacyBase),
         };
     </script>
-    <script src="js/modal.js?v=3" defer></script>
-    <script src="js/player-modal.js?v=1" defer></script>
+    <script src="js/modal.js?v=4" defer></script>
+    <script src="js/player-modal.js?v=2" defer></script>
     <script src="js/userscore.js?v=8" defer></script>
 </body>
 </html>
