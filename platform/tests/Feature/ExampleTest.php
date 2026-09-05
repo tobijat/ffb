@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Services\LegacyPhpSession;
 use App\Services\StartPageService;
 use Tests\TestCase;
 
@@ -10,10 +9,6 @@ class ExampleTest extends TestCase
 {
     public function test_the_application_returns_a_successful_response(): void
     {
-        $this->mock(LegacyPhpSession::class, function ($mock) {
-            $mock->shouldReceive('userId')->andReturn(0);
-        });
-
         $this->mock(StartPageService::class, function ($mock) {
             $mock->shouldReceive('payload')->andReturn([
                 'stats' => [

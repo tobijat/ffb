@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\FfbAuth;
 use App\Services\FfbUserResolver;
-use App\Services\LegacyPhpSession;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,21 +12,21 @@ use Symfony\Component\HttpFoundation\Response;
  * Resolve the FFB user for JSON APIs.
  *
  * Auth order:
- * 1. Legacy PHP session cookie (PHPSESSID → $_SESSION['user_id']) — production path
+ * 1. Laravel session (`ffb_user_id`) — production path
  * 2. Optional bridge: X-FFB-User-Id / user_id / userteam_user_id when enabled
  *    (local/testing by default; see config/ffb.php)
  */
 class ResolveFfbUser
 {
     public function __construct(
-        private readonly LegacyPhpSession $legacySession,
+        private readonly FfbAuth $auth,
         private readonly FfbUserResolver $users,
     ) {
     }
 
     public function handle(Request $request, Closure $next): Response
     {
-        $userId = $this->legacySession->userId($request);
+        $userId = $this->auth->userId($request);
 
         if ($userId <= 0 && config('ffb.allow_user_id_header')) {
             $bridge = $request->header('X-FFB-User-Id')

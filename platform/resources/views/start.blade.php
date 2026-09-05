@@ -5,14 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SoccerSportsfan — Fantasy Football</title>
     <meta name="description" content="Fantasy Football Manager bei SoccerSportsfan. Kostenlos mitspielen.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/start.css">
 </head>
 <body>
-    <div class="pitch-bg" aria-hidden="true"></div>
-
     <header class="topbar">
         <a class="brand" href="/platform/">SoccerSportsfan</a>
         <a class="top-link" href="{{ $legacyBase }}users/registration">Registrieren</a>
@@ -30,7 +25,8 @@
                 </div>
             </div>
 
-            <form id="login" class="login-panel" method="post" action="#" novalidate>
+            <form id="login" class="login-panel" method="post" action="login" novalidate>
+                @csrf
                 <h2>Anmelden</h2>
                 <div id="login-feedback" class="feedback" hidden></div>
 
@@ -100,10 +96,11 @@
 
     <script>
         window.FFB_START = {
-            loginUrl: @json($legacyBase . 'users/login/loginAjax.xml'),
+            // Relative to /platform/ or /platform/public/ — avoids Apache 302 breaking POST.
+            loginUrl: new URL('login', window.location.href).pathname,
             passwordUrl: @json($legacyBase . 'users/registration/getPassword.xml'),
         };
     </script>
-    <script src="js/start.js" defer></script>
+    <script src="js/start.js?v=2" defer></script>
 </body>
 </html>

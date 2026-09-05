@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\LegacyPhpSession;
+use App\Services\DashboardService;
+use App\Services\FfbAuth;
 use App\Services\StartPageService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -13,14 +13,24 @@ class StartController extends Controller
 {
     public function __construct(
         private readonly StartPageService $startPage,
-        private readonly LegacyPhpSession $legacySession,
+        private readonly DashboardService $dashboard,
+        private readonly FfbAuth $auth,
     ) {
     }
 
-    public function show(Request $request): View|RedirectResponse
+    public function show(Request $request): View
     {
-        if ($this->legacySession->userId($request) > 0) {
-            return redirect('/ffb');
+        $userId = $this->auth->userId($request);
+
+        if ($userId > 0) {
+            $page = max(1, (int) $request->query('news_page', 1));
+            $archive = (bool) $request->boolean('archive');
+            $data = $this->dashboard->payload($userId, $page, $archive);
+
+            return view('dashboard', [
+                'data' => $data,
+                'legacyBase' => '/',
+            ]);
         }
 
         $data = $this->startPage->payload();
