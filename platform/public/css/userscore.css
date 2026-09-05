@@ -1,0 +1,171 @@
+.userscore-layout {
+    display: grid;
+    grid-template-columns: 1.4fr 0.8fr;
+    gap: 10px;
+    align-items: start;
+}
+
+.userscore-side {
+    display: grid;
+    gap: 10px;
+}
+
+.userscore-side .tip {
+    margin: 0 0 10px;
+    font-size: 8pt;
+    line-height: 1.35;
+}
+
+.round-label {
+    display: block;
+    font-size: 9pt;
+    margin-bottom: 4px;
+}
+
+.ffb-select {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 10pt;
+    padding: 4px;
+    border: 1px solid #666;
+    background: #fff;
+}
+
+.userscore-table-wrap {
+    overflow-x: auto;
+}
+
+.userscore-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+}
+
+.userscore-table th,
+.userscore-table td {
+    padding: 4px 6px;
+    border-bottom: 1px solid #7aaa7a;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.userscore-table th {
+    background: #99bb99;
+    font-size: 9pt;
+}
+
+.userscore-table th a {
+    color: var(--ink);
+    text-decoration: none;
+    margin-left: 2px;
+}
+
+.userscore-table th a:hover {
+    background: var(--link-hover-bg);
+    color: var(--link-hover);
+}
+
+.userscore-table .col-rank,
+.userscore-table .col-part,
+.userscore-table .col-wins,
+.userscore-table .col-score {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.userscore-table .col-flag {
+    width: 24px;
+    text-align: center;
+}
+
+.userscore-table tr.row-even td {
+    background: #99de99;
+}
+
+.userscore-table tr.row-odd td {
+    background: #99cc99;
+}
+
+.userscore-table tr.is-me td {
+    font-weight: bold;
+}
+
+.userscore-table tbody tr:not(.rank-1):not(.rank-2):not(.rank-3):hover td {
+    background: #ccffcc;
+}
+
+.userscore-table tr.rank-1 td {
+    background: #ffd700;
+}
+
+.userscore-table tr.rank-2 td {
+    background: #cccccc;
+}
+
+.userscore-table tr.rank-3 td {
+    background: #cd853f;
+    color: #fff;
+}
+
+.userscore-table tr.rank-3 a {
+    color: #fff;
+}
+
+.userscore-table .subscore {
+    font-size: 6pt;
+    font-weight: normal;
+    margin-right: 4px;
+}
+
+.userscore-sites {
+    margin: 8px 0;
+    font-size: 9pt;
+}
+
+.userscore-sites button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    font: inherit;
+    padding: 0 4px;
+    text-decoration: underline;
+}
+
+.userscore-sites button.is-active {
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.match-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+}
+
+.match-list li {
+    display: grid;
+    grid-template-columns: auto 1fr auto 1fr;
+    gap: 4px 6px;
+    align-items: center;
+    font-size: 9pt;
+}
+
+.match-list .score {
+    font-weight: bold;
+    text-align: center;
+}
+
+.match-list img {
+    width: 16px;
+    height: 11px;
+}
+
+@media (max-width: 860px) {
+    .userscore-layout {
+        grid-template-columns: 1fr;
+    }
+}
