@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\WebUser;
 use App\Services\FfbAuth;
 use App\Services\FfbUserResolver;
+use App\Services\MatchPopupService;
 use App\Services\ProfilePopupService;
 use Tests\TestCase;
 
@@ -102,5 +103,84 @@ class PopupApiTest extends TestCase
             ->getJson('/api/popups/user/99999')
             ->assertStatus(404)
             ->assertJsonPath('error', 'User not found');
+    }
+
+    public function test_match_popup_requires_auth(): void
+    {
+        $this->getJson('/api/popups/match/100')->assertStatus(401);
+    }
+
+    public function test_match_popup_returns_payload(): void
+    {
+        $this->actingAsFfbUser();
+
+        $payload = [
+            'match' => [
+                'match_id' => 100,
+                'match_hometeam_id' => 1,
+                'match_guestteam_id' => 2,
+                'match_hometeam_name' => 'Home',
+                'match_guestteam_name' => 'Away',
+                'match_hometeam_nationality' => 'aut',
+                'match_guestteam_nationality' => 'ger',
+                'match_hometeam_score' => 2,
+                'match_guestteam_score' => 1,
+                'match_hometeam_score_penalty' => null,
+                'match_guestteam_score_penalty' => null,
+                'match_minutes' => 90,
+                'match_date' => '01.09.2025',
+                'match_matchround_id' => 10,
+                'match_matchround_name' => 'Runde 1',
+                'match_game_title' => 'Testliga',
+            ],
+            'hometeam_players' => [],
+            'guestteam_players' => [],
+            'goals' => [
+                [
+                    'goal_minute' => 12,
+                    'goal_playerteam_id' => 55,
+                    'goal_team_id' => 1,
+                    'goal_team_name' => 'Home',
+                    'goal_player_name' => 'Max Mustermann',
+                    'goal_owngoal' => false,
+                    'goal_penalty' => false,
+                    'goal_penaltyshootout' => false,
+                ],
+            ],
+            'psgoals' => [],
+            'prev_matches' => [],
+        ];
+
+        $this->mock(MatchPopupService::class, function ($mock) use ($payload) {
+            $mock->shouldReceive('forMatch')->once()->with(100)->andReturn([
+                'ok' => true,
+                'data' => $payload,
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->getJson('/api/popups/match/100')
+            ->assertOk()
+            ->assertJsonPath('status', 200)
+            ->assertJsonPath('data.match.match_hometeam_name', 'Home')
+            ->assertJsonPath('data.goals.0.goal_minute', 12);
+    }
+
+    public function test_match_popup_not_found(): void
+    {
+        $this->actingAsFfbUser();
+
+        $this->mock(MatchPopupService::class, function ($mock) {
+            $mock->shouldReceive('forMatch')->once()->with(99999)->andReturn([
+                'ok' => false,
+                'status' => 404,
+                'error' => 'Match not found',
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->getJson('/api/popups/match/99999')
+            ->assertStatus(404)
+            ->assertJsonPath('error', 'Match not found');
     }
 }

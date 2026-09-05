@@ -177,6 +177,11 @@
     line-height: 1.15;
 }
 
+.match-list .score a {
+    color: inherit;
+    text-decoration: underline;
+}
+
 .match-list .score-hint {
     font-size: 7pt;
     font-weight: normal;
