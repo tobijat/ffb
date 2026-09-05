@@ -392,6 +392,132 @@
     color: inherit;
 }
 
+.ffb-modal-head-flag {
+    flex-shrink: 0;
+    margin-right: 0.15rem;
+}
+
+.ffb-player-tables {
+    margin-top: 0.75rem;
+    overflow-x: auto;
+}
+
+.ffb-player-rounds {
+    font-size: 8pt;
+}
+
+.ffb-player-rounds .result-cell {
+    min-width: 9rem;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.ffb-player-more {
+    text-align: center;
+    margin: 0.4rem 0 0;
+}
+
+.ffb-player-statline {
+    display: grid;
+    grid-template-columns: 18px 7.5rem 3.75rem 1fr;
+    gap: 0.25rem;
+    align-items: center;
+    padding: 0.15rem 0.25rem;
+    font-size: 9pt;
+}
+
+.ffb-player-statline:hover {
+    background: #99cc99;
+}
+
+.ffb-player-statline .sym-spacer {
+    width: 16px;
+}
+
+.ffb-player-statline .label {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.ffb-player-statline .amount {
+    text-align: left;
+    white-space: nowrap;
+}
+
+.ffb-player-statline .pts {
+    text-align: left;
+    white-space: nowrap;
+}
+
+.ffb-player-chart {
+    text-align: center;
+    padding: 0.5rem 0;
+}
+
+.ffb-player-chart img {
+    max-width: 100%;
+    height: auto;
+}
+
+.ffb-player-caption {
+    text-align: left;
+    font-size: 8pt;
+    margin: 0.5rem auto 0;
+    max-width: 28rem;
+}
+
+.ffb-player-caption > div {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.15rem;
+}
+
+.ffb-player-caption .cap-points,
+.ffb-player-caption .cap-yellow,
+.ffb-player-caption .cap-red,
+.ffb-player-caption .cap-curve,
+.ffb-player-caption .cap-gray,
+.ffb-player-caption .cap-avg {
+    display: inline-block;
+    width: 1rem;
+    height: 0.7rem;
+    flex-shrink: 0;
+}
+
+.ffb-player-caption .cap-points {
+    background: #235e23;
+}
+
+.ffb-player-caption .cap-yellow {
+    background: #f0f014;
+}
+
+.ffb-player-caption .cap-red {
+    background: #f00000;
+}
+
+.ffb-player-caption .cap-curve {
+    background: #1919e1;
+}
+
+.ffb-player-caption .cap-gray {
+    background: #e6e1e1;
+}
+
+.ffb-player-caption .cap-avg {
+    background: transparent;
+    text-align: center;
+    font-weight: 700;
+    width: auto;
+}
+
+.ffb-player-chart-note {
+    font-size: 8pt;
+    color: #5a7a5a;
+    margin: 0.5rem 0 0;
+}
+
 @media (max-width: 560px) {
     .ffb-profile {
         grid-template-columns: 1fr;
