@@ -10,8 +10,19 @@
     border: 1px solid #7aaa7a;
     margin-top: 6px;
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+}
+
+.dash-top-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .dash-nav {
@@ -33,12 +44,6 @@
     background: transparent;
 }
 
-.dash-nav a.nav-small {
-    flex-direction: row;
-    gap: 3px;
-    font-size: 8pt;
-}
-
 .dash-nav a:hover {
     color: var(--link-hover);
     background: var(--link-hover-bg);
@@ -52,33 +57,41 @@
 
 .user-card {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
     background: var(--panel-light);
     border: 1px solid #7aaa7a;
     color: var(--ink);
-    padding: 8px 10px;
-    max-width: 28rem;
+    padding: 6px 8px;
+    margin-left: auto;
+    flex: 0 1 auto;
+    max-width: 18rem;
 }
 
 .user-photo {
-    width: 60px;
-    height: 60px;
+    width: 48px;
+    height: 48px;
     object-fit: cover;
     border: 1px solid #666;
     background: #fff;
+    flex-shrink: 0;
 }
 
 .hello {
     margin: 0 0 2px;
     font-family: var(--font-body);
-    font-size: 12pt;
+    font-size: 10pt;
+}
+
+.user-card .muted {
+    margin: 0;
+    font-size: 8pt;
 }
 
 .nag {
     margin: 4px 0 0;
     color: #ff0000;
-    font-size: 10pt;
+    font-size: 8pt;
 }
 
 .nag a {
@@ -282,5 +295,11 @@
 @media (max-width: 860px) {
     .dash-columns {
         grid-template-columns: 1fr;
+    }
+
+    .user-card {
+        margin-left: 0;
+        width: 100%;
+        max-width: none;
     }
 }

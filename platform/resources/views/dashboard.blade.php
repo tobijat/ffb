@@ -20,33 +20,33 @@
     @endphp
 
     <header class="dash-top">
-        <a class="brand" href="/platform/">SoccerSportsfan</a>
-        <nav class="dash-nav" aria-label="Hauptnavigation">
-            @foreach ($nav as $item)
-                <a class="nav-{{ $item['style'] }}" href="{{ $item['link'] }}" title="{{ $item['name'] }}">
-                    <img src="{{ $legacyBase }}images/ffb/navigation/{{ $item['symbol'] }}" alt="" width="{{ $item['style'] === 'big' ? 40 : 18 }}" height="{{ $item['style'] === 'big' ? 40 : 18 }}" loading="lazy">
-                    <span>{{ $item['name'] }}</span>
-                </a>
-            @endforeach
-        </nav>
+        <div class="dash-top-main">
+            <a class="brand" href="/platform/">SoccerSportsfan</a>
+            <nav class="dash-nav" aria-label="Hauptnavigation">
+                @foreach ($nav as $item)
+                    <a class="nav-big" href="{{ $item['link'] }}" title="{{ $item['name'] }}">
+                        <img src="{{ $legacyBase }}images/ffb/navigation/{{ $item['symbol'] }}" alt="" width="40" height="40" loading="lazy">
+                        <span>{{ $item['name'] }}</span>
+                    </a>
+                @endforeach
+            </nav>
+        </div>
+
+        <div class="user-card">
+            <a href="{{ $legacyBase }}users/account/accountDetails.html" title="Profil bearbeiten">
+                <img class="user-photo" src="{{ $user['photo_url'] }}" alt="Foto {{ $user['user_nickname'] }}" width="48" height="48">
+            </a>
+            <div>
+                <p class="hello">Hallo <strong>{{ $user['user_nickname'] }}</strong></p>
+                <p class="muted">Du bist angemeldet.</p>
+                @if ($user['update_profile_nag'])
+                    <p class="nag">Dein Profil ist noch leer. <a href="{{ $legacyBase }}users/account/accountDetails.html">Profil aktualisieren</a></p>
+                @endif
+            </div>
+        </div>
     </header>
 
     <main class="dash-main">
-        <section class="dash-hero">
-            <div class="user-card">
-                <a href="{{ $legacyBase }}users/account/accountDetails.html" title="Profil bearbeiten">
-                    <img class="user-photo" src="{{ $user['photo_url'] }}" alt="Foto {{ $user['user_nickname'] }}" width="72" height="72">
-                </a>
-                <div>
-                    <p class="hello">Hallo <strong>{{ $user['user_nickname'] }}</strong></p>
-                    <p class="muted">Du bist angemeldet.</p>
-                    @if ($user['update_profile_nag'])
-                        <p class="nag">Dein Profil ist noch leer. <a href="{{ $legacyBase }}users/account/accountDetails.html">Profil aktualisieren</a></p>
-                    @endif
-                </div>
-            </div>
-        </section>
-
         <section class="games-section" aria-labelledby="games-title">
             <div class="section-head">
                 <h2 id="games-title">{{ $selectedId === 0 ? 'Spiel auswählen' : 'Verfügbare Spiele' }}</h2>
