@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\WebUser;
+use App\Services\AwardsPopupService;
 use App\Services\FfbAuth;
 use App\Services\FfbUserResolver;
 use App\Services\MatchPopupService;
@@ -104,6 +105,63 @@ class PopupApiTest extends TestCase
             ->getJson('/api/popups/user/99999')
             ->assertStatus(404)
             ->assertJsonPath('error', 'User not found');
+    }
+
+    public function test_awards_popup_requires_auth(): void
+    {
+        $this->getJson('/api/popups/user/12/awards')->assertStatus(401);
+    }
+
+    public function test_awards_popup_returns_payload(): void
+    {
+        $this->actingAsFfbUser();
+
+        $payload = [
+            'user_id' => 12,
+            'groups' => [
+                [
+                    'id' => 1,
+                    'name' => 'Weltmeister',
+                    'description' => 'Liga gewinnen',
+                    'image_url' => '/images/ffb/awards/wm.png',
+                    'ranks' => [
+                        [
+                            'id' => 10,
+                            'name' => 'Bronze',
+                            'description' => '1x gewinnen',
+                            'rank' => 1,
+                            'finished' => true,
+                            'image' => 'awards/wm_bronze.png',
+                            'image_url' => '/images/ffb/awards/wm_bronze.png',
+                        ],
+                        [
+                            'id' => 11,
+                            'name' => 'Silber',
+                            'description' => '3x gewinnen',
+                            'rank' => 2,
+                            'finished' => false,
+                            'image' => 'awards/wm_silver.png',
+                            'image_url' => '/images/ffb/awards/wm_silver_disabled.png',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $this->mock(AwardsPopupService::class, function ($mock) use ($payload) {
+            $mock->shouldReceive('forUser')->once()->with(12)->andReturn([
+                'ok' => true,
+                'data' => $payload,
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->getJson('/api/popups/user/12/awards')
+            ->assertOk()
+            ->assertJsonPath('status', 200)
+            ->assertJsonPath('data.groups.0.name', 'Weltmeister')
+            ->assertJsonPath('data.groups.0.ranks.1.finished', false)
+            ->assertJsonPath('data.groups.0.ranks.1.image_url', '/images/ffb/awards/wm_silver_disabled.png');
     }
 
     public function test_match_popup_requires_auth(): void
