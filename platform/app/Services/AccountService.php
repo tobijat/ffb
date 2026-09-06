@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Mail\EmailChangeMail;
 use App\Models\Team;
 use App\Models\UserPermissions;
 use App\Models\WebUser;
@@ -463,20 +464,15 @@ class AccountService
 
     private function sendEmailChangeMail(WebUser $user, string $activationCode, string $serverName): void
     {
-        $nickname = (string) $user->user_nickname;
-        $userId = (int) $user->user_id;
-        $actLink = 'http://'.$serverName.'/users/registration/activateEmail.html?id='.$activationCode.'-'.$userId;
+        $activationUrl = route('registration.activate-email', [
+            'id' => $activationCode.'-'.(int) $user->user_id,
+        ]);
 
-        $message = "Hallo {$nickname}!\n\n";
-        $message .= "Du hast auf http://{$serverName} deine E-Mail Adresse geändert.\n";
-        $message .= "Um die Änderung abzuschließen, musst du nur noch folgenden Link anklicken oder ihn in die Adresszeile deines Browsers kopieren. ";
-        $message .= "Anschließend kannst du dich wie gewohnt mit deinem Benutzernamen und Passwort anmelden.\n\n";
-        $message .= $actLink."\n";
-
-        Mail::raw($message, function ($mail) use ($user): void {
-            $mail->to((string) $user->user_email)
-                ->subject('E-Mail Änderung');
-        });
+        Mail::to((string) $user->user_email)->send(new EmailChangeMail(
+            (string) $user->user_nickname,
+            $activationUrl,
+            $serverName,
+        ));
     }
 
     /**

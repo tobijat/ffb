@@ -10,7 +10,7 @@
 <body>
     <header class="topbar">
         <a class="brand" href="/platform/">SoccerSportsfan</a>
-        <a class="top-link" href="{{ $legacyBase }}users/registration">Registrieren</a>
+        <a class="top-link" href="/platform/registration">Registrieren</a>
     </header>
 
     <main>
@@ -21,7 +21,7 @@
                 <p class="lede">Fantasy Football mit echten Ligen — aufstellen, punkten, gewinnen.</p>
                 <div class="hero-actions">
                     <a class="btn btn-primary" href="#login">Anmelden</a>
-                    <a class="btn btn-ghost" href="{{ $legacyBase }}users/registration">Kostenlos starten</a>
+                    <a class="btn btn-ghost" href="/platform/registration">Kostenlos starten</a>
                 </div>
             </div>
 
@@ -46,8 +46,12 @@
                 <button type="submit" class="btn btn-primary btn-block">Anmelden</button>
                 <p class="login-links">
                     <button type="button" id="forgot-password" class="linkish">Passwort vergessen?</button>
-                    <a href="{{ $legacyBase }}users/registration">Registrieren</a>
+                    <a href="/platform/registration">Registrieren</a>
                 </p>
+                <label id="forgot-email-wrap" class="forgot-email" hidden>
+                    <span>E-Mail (für Passwort-Reset)</span>
+                    <input type="email" name="user_email" id="forgot-email" autocomplete="email">
+                </label>
             </form>
         </section>
 
@@ -94,16 +98,16 @@
 
     <footer class="foot">
         <span>SoccerSportsfan</span>
-        <a href="{{ $legacyBase }}users/help">Hilfe</a>
+        <a href="/platform/help">Hilfe</a>
     </footer>
 
     <script>
         window.FFB_START = {
             // Relative to /platform/ or /platform/public/ — avoids Apache 302 breaking POST.
             loginUrl: new URL('login', window.location.href).pathname,
-            passwordUrl: @json($legacyBase . 'users/registration/getPassword.xml'),
+            passwordUrl: new URL('registration/password', window.location.href).pathname,
         };
     </script>
-    <script src="js/start.js?v=2" defer></script>
+    <script src="js/start.js?v=3" defer></script>
 </body>
 </html>

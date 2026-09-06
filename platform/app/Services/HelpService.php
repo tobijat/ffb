@@ -42,7 +42,7 @@ class HelpService
                 'wc_points' => $this->parseWcPoints((string) ($options['options_game_wcpoints'] ?? '')),
                 'navigation' => $user
                     ? app(DashboardService::class)->navigation()
-                    : $this->guestNavigation(),
+                    : self::guestNavigation(),
             ],
         ];
     }
@@ -50,11 +50,11 @@ class HelpService
     /**
      * @return list<array{symbol: string, name: string, link: string, style: string}>
      */
-    private function guestNavigation(): array
+    public static function guestNavigation(): array
     {
         return [
             ['symbol' => 'nav_start.png', 'name' => 'Start', 'link' => '/platform/', 'style' => 'big'],
-            ['symbol' => 'nav_user.png', 'name' => 'Registrieren', 'link' => '/users/registration', 'style' => 'big'],
+            ['symbol' => 'nav_user.png', 'name' => 'Registrieren', 'link' => '/platform/registration', 'style' => 'big'],
             ['symbol' => 'nav_help.png', 'name' => 'Regeln', 'link' => '/platform/help', 'style' => 'big'],
             ['symbol' => 'nav_login.png', 'name' => 'Anmelden', 'link' => '/platform/', 'style' => 'big'],
         ];

@@ -6,6 +6,7 @@ use App\Http\Controllers\BestteamPageController;
 use App\Http\Controllers\HelpPageController;
 use App\Http\Controllers\LineupPageController;
 use App\Http\Controllers\MyteamPageController;
+use App\Http\Controllers\RegistrationPageController;
 use App\Http\Controllers\StartController;
 use App\Http\Controllers\UserscorePageController;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,12 @@ Route::get('/', [StartController::class, 'show'])->name('start');
 
 Route::post('/login', [LoginController::class, 'login'])->name('login');
 Route::match(['get', 'post'], '/logout', [LoginController::class, 'logout'])->name('logout');
+
+Route::get('/registration', [RegistrationPageController::class, 'show'])->name('registration');
+Route::post('/registration', [RegistrationPageController::class, 'store'])->name('registration.store');
+Route::get('/registration/activate', [RegistrationPageController::class, 'activate'])->name('registration.activate');
+Route::get('/registration/activate-email', [RegistrationPageController::class, 'activateEmail'])->name('registration.activate-email');
+Route::post('/registration/password', [RegistrationPageController::class, 'resetPassword'])->name('registration.password');
 
 Route::get('/userscore', [UserscorePageController::class, 'show'])->name('userscore');
 Route::get('/myteam', [MyteamPageController::class, 'show'])->name('myteam');

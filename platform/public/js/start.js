@@ -3,6 +3,8 @@
     const form = document.getElementById('login');
     const feedback = document.getElementById('login-feedback');
     const forgotBtn = document.getElementById('forgot-password');
+    const forgotEmailWrap = document.getElementById('forgot-email-wrap');
+    const forgotEmail = document.getElementById('forgot-email');
 
     if (!form) {
         return;
@@ -12,30 +14,6 @@
         feedback.hidden = false;
         feedback.className = 'feedback feedback-' + kind;
         feedback.innerHTML = html;
-    }
-
-    function parseXml(text) {
-        return new DOMParser().parseFromString(text, 'application/xml');
-    }
-
-    function firstText(xml, tag) {
-        const node = xml.getElementsByTagName(tag)[0];
-        return node && node.firstChild ? node.firstChild.nodeValue : '';
-    }
-
-    function collectErrors(xml) {
-        const errorsRoot = xml.getElementsByTagName('errors')[0];
-        if (!errorsRoot) {
-            return ['Unbekannter Fehler.'];
-        }
-        const tags = errorsRoot.getElementsByTagName('XML_Serializer_Tag');
-        const out = [];
-        for (let i = 0; i < tags.length; i++) {
-            if (tags[i].firstChild) {
-                out.push(tags[i].firstChild.nodeValue);
-            }
-        }
-        return out.length ? out : ['Unbekannter Fehler.'];
     }
 
     function collectLoginErrors(data, httpStatus) {
@@ -56,8 +34,7 @@
         return match ? decodeURIComponent(match[1]) : '';
     }
 
-    async function postLogin() {
-        const body = new URLSearchParams(new FormData(form));
+    function jsonHeaders() {
         const headers = {
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
             Accept: 'application/json',
@@ -67,10 +44,14 @@
         if (xsrf) {
             headers['X-XSRF-TOKEN'] = xsrf;
         }
+        return headers;
+    }
 
+    async function postLogin() {
+        const body = new URLSearchParams(new FormData(form));
         const response = await fetch(config.loginUrl || 'login', {
             method: 'POST',
-            headers: headers,
+            headers: jsonHeaders(),
             body: body.toString(),
             credentials: 'same-origin',
             redirect: 'error',
@@ -87,18 +68,25 @@
     }
 
     async function postForgotPassword() {
-        const body = new URLSearchParams(new FormData(form));
-        const response = await fetch(config.passwordUrl, {
+        const body = new URLSearchParams();
+        body.set('user_nickname', form.user_nickname.value.trim());
+        body.set('user_email', (forgotEmail && forgotEmail.value || '').trim());
+        body.set('users_registration_getpassword', '1');
+
+        const response = await fetch(config.passwordUrl || 'registration/password', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                Accept: 'application/xml, text/xml, */*',
-            },
+            headers: jsonHeaders(),
             body: body.toString(),
             credentials: 'same-origin',
         });
         const text = await response.text();
-        return parseXml(text);
+        let data = null;
+        try {
+            data = text ? JSON.parse(text) : null;
+        } catch (err) {
+            throw new Error('Non-JSON password response (HTTP ' + response.status + ')');
+        }
+        return { ok: response.ok, status: response.status, data };
     }
 
     form.addEventListener('submit', async function (event) {
@@ -128,14 +116,30 @@
                 return;
             }
 
+            if (forgotEmailWrap && forgotEmailWrap.hidden) {
+                forgotEmailWrap.hidden = false;
+                if (forgotEmail) {
+                    forgotEmail.focus();
+                }
+                showFeedback('Bitte E-Mail eingeben und erneut auf „Passwort vergessen?“ klicken.', 'ok');
+                return;
+            }
+
+            if (!forgotEmail || !forgotEmail.value.trim()) {
+                showFeedback('Bitte E-Mail-Adresse eingeben.', 'error');
+                if (forgotEmail) {
+                    forgotEmail.focus();
+                }
+                return;
+            }
+
             try {
-                const xml = await postForgotPassword();
-                const status = firstText(xml, 'user_status');
-                if (status === '200') {
-                    showFeedback(firstText(xml, 'user_answer') || 'E-Mail wurde gesendet.', 'ok');
+                const result = await postForgotPassword();
+                if (result.data && Number(result.data.status) === 200) {
+                    showFeedback(result.data.message || 'E-Mail wurde gesendet.', 'ok');
                     return;
                 }
-                const errors = collectErrors(xml);
+                const errors = collectLoginErrors(result.data, result.status);
                 showFeedback('<strong>Es sind Fehler aufgetreten:</strong><br>' + errors.join('<br>'), 'error');
             } catch (err) {
                 showFeedback('Anfrage fehlgeschlagen. Bitte später erneut versuchen.', 'error');
