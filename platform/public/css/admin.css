@@ -6,3 +6,132 @@
 .admin-main {
     padding: 8px 10px 12px;
 }
+
+.admin-form {
+    display: grid;
+    gap: 8px;
+    margin-top: 8px;
+    max-width: 40rem;
+}
+
+.admin-field {
+    display: grid;
+    grid-template-columns: minmax(7rem, 10rem) 1fr;
+    gap: 8px;
+    align-items: center;
+}
+
+.admin-field-top {
+    align-items: start;
+}
+
+.admin-field label {
+    font-size: 10pt;
+    margin: 0;
+}
+
+.admin-field input[type="text"],
+.admin-field select,
+.admin-field textarea {
+    width: 100%;
+    border: 1px solid #666;
+    background: #fff;
+    color: var(--ink);
+    padding: 4px 6px;
+    font-family: var(--font-body);
+    font-size: 10pt;
+    box-sizing: border-box;
+}
+
+.admin-field textarea {
+    min-height: 7rem;
+    resize: vertical;
+}
+
+.admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-top: 4px;
+    padding-left: calc(10rem + 8px);
+}
+
+.admin-submit {
+    border: 1px solid #008000;
+    background: var(--panel, #99cc99);
+    color: var(--ink);
+    padding: 4px 12px;
+    font-family: var(--font-body);
+    font-size: 10pt;
+    cursor: pointer;
+}
+
+.admin-submit:hover {
+    background: var(--link-hover-bg, #008000);
+    color: var(--link-hover, #fff);
+}
+
+.admin-cancel {
+    font-size: 10pt;
+    color: var(--ink);
+}
+
+.admin-list-item {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: flex-start;
+    border: 1px solid #7aaa7a;
+    background: var(--panel-light, #ccffcc);
+    padding: 8px 10px;
+    margin-top: 8px;
+}
+
+.admin-list-title {
+    margin: 0 0 2px;
+    font-size: 11pt;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.admin-list-text {
+    margin-top: 6px;
+    text-align: justify;
+    font-size: 10pt;
+}
+
+.admin-list-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.admin-icon-btn {
+    display: inline-flex;
+    border: 0;
+    background: transparent;
+    padding: 2px;
+    cursor: pointer;
+    line-height: 0;
+}
+
+.dash-nav a.is-active {
+    font-weight: bold;
+    background: var(--link-hover-bg, #008000);
+    color: var(--link-hover, #fff);
+}
+
+@media (max-width: 640px) {
+    .admin-field,
+    .admin-actions {
+        grid-template-columns: 1fr;
+        padding-left: 0;
+    }
+
+    .admin-list-item {
+        flex-direction: column;
+    }
+}

@@ -11,7 +11,7 @@ array('symbol'=>'nav_results.png','name'=>'player points','link'=>'administratio
 array('symbol'=>'nav_results.png','name'=>'PM','link'=>'administration/fifa_playermanagement'),
 array('symbol'=>'nav_config.png','name'=>'configuration','link'=>'administration/matchpoints/config.html'),
 array('symbol'=>'nav_mail.png','name'=>'mailservice','link'=>'administration/mailservice'),
-array('symbol'=>'nav_news.png','name'=>'news','link'=>'administration/news'),
+array('symbol'=>'nav_news.png','name'=>'news','link'=>'platform/admin/news'),
 array('symbol'=>'nav_award.png','name'=>'awards','link'=>'administration/awards'),
 array('symbol'=>'nav_logout.png','name'=>'logout','link'=>'platform/logout')
 );

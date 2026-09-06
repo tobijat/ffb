@@ -30,9 +30,12 @@ RewriteCond %{REQUEST_URI} !^/platform/public
 RewriteRule ^platform/(.*)$ /platform/public/$1 [R=307,L]
 
 # ---------------------------------------------------------------------------
-# Legacy player UI → platform (admin + *.xml stay on index.php for now)
+# Legacy player UI → platform (admin HTML pages migrate gradually; *.xml stay on index.php)
 # ---------------------------------------------------------------------------
 RewriteRule ^/?$ /platform/public/ [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^administration/news/?$ /platform/public/admin/news [R=301,L]
 
 RewriteCond %{REQUEST_URI} !\.xml$ [NC]
 RewriteRule ^users/?$ /platform/public/ [R=301,L]

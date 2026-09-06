@@ -12,7 +12,7 @@ class AdminCenterService
     }
 
     /**
-     * @return array{user: array<string, mixed>, navigation: list<array{symbol: string, name: string, link: string, style: string}>}
+     * @return array{user: array<string, mixed>, navigation: list<array{symbol: string, name: string, link: string, style: string, image_dir: string}>}
      */
     public function pagePayload(int $userId): array
     {
@@ -26,8 +26,23 @@ class AdminCenterService
                 'photo_url' => '/images/ffb/profiles/photo/'.$photo,
                 'is_ffb_admin' => $this->admins->isAdmin($userId),
             ],
-            // Admin nav replaces the player app nav; items land here as pages are migrated.
-            'navigation' => [],
+            'navigation' => $this->navigation(),
+        ];
+    }
+
+    /**
+     * @return list<array{symbol: string, name: string, link: string, style: string, image_dir: string}>
+     */
+    public function navigation(): array
+    {
+        return [
+            [
+                'symbol' => 'nav_news.png',
+                'name' => 'News',
+                'link' => '/platform/admin/news',
+                'style' => 'big',
+                'image_dir' => 'images/admin/navigation/',
+            ],
         ];
     }
 }

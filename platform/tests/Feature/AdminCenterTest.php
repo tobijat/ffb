@@ -41,7 +41,15 @@ class AdminCenterTest extends TestCase
                     'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
                     'is_ffb_admin' => true,
                 ],
-                'navigation' => [],
+                'navigation' => [
+                    [
+                        'symbol' => 'nav_news.png',
+                        'name' => 'News',
+                        'link' => '/platform/admin/news',
+                        'style' => 'big',
+                        'image_dir' => 'images/admin/navigation/',
+                    ],
+                ],
             ]);
         });
 
@@ -50,10 +58,10 @@ class AdminCenterTest extends TestCase
             ->assertOk()
             ->assertSee('Admin Center', false)
             ->assertSee('css/admin.css', false)
+            ->assertSee('News', false)
+            ->assertSee('href="/platform/admin/news"', false)
             ->assertSee('Soccer Sportsfan', false)
-            ->assertSee('href="/platform/"', false)
-            ->assertDontSee('href="/platform/admin"', false)
-            ->assertDontSee('Regeln', false);
+            ->assertDontSee('href="/platform/admin"', false);
     }
 
     public function test_user_card_shows_admin_center_link_when_flag_set(): void

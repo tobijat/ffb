@@ -21,6 +21,8 @@ $isXml = str_ends_with(strtolower($uriPath), '.xml');
 if (! $isXml) {
     if ($uriPath === '/' || $uriPath === '') {
         $redirectTo = '/platform/public/';
+    } elseif (preg_match('#^/administration/news/?$#', $uriPath)) {
+        $redirectTo = '/platform/public/admin/news';
     } elseif (preg_match('#^/users/?$#', $uriPath) || preg_match('#^/users/login(?:/.*)?$#', $uriPath)) {
         $redirectTo = '/platform/public/';
     } elseif (preg_match('#^/users/logout(?:/.*)?$#', $uriPath)) {

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountPageController;
 use App\Http\Controllers\Admin\AdminCenterController;
+use App\Http\Controllers\Admin\AdminNewsController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BestteamPageController;
 use App\Http\Controllers\HelpPageController;
@@ -53,4 +54,10 @@ Route::post('/profile', [AccountPageController::class, 'updateProfile'])->name('
 
 Route::middleware('ffb.admin')->group(function () {
     Route::get('/admin', [AdminCenterController::class, 'show'])->name('admin.center');
+
+    Route::get('/admin/news', [AdminNewsController::class, 'show'])->name('admin.news');
+    Route::post('/admin/news', [AdminNewsController::class, 'store'])->name('admin.news.store');
+    Route::get('/admin/news/{news}/edit', [AdminNewsController::class, 'edit'])->name('admin.news.edit');
+    Route::put('/admin/news/{news}', [AdminNewsController::class, 'update'])->name('admin.news.update');
+    Route::delete('/admin/news/{news}', [AdminNewsController::class, 'destroy'])->name('admin.news.destroy');
 });
