@@ -8,59 +8,98 @@ use Tests\TestCase;
 
 class AccountPageTest extends TestCase
 {
+    /**
+     * @return array<string, mixed>
+     */
+    private function accountPayload(): array
+    {
+        return [
+            'ok' => true,
+            'data' => [
+                'user' => [
+                    'user_id' => 544,
+                    'user_nickname' => 'tester',
+                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'update_profile_nag' => false,
+                ],
+                'form' => [
+                    'user_nickname' => 'tester',
+                    'user_email' => 'tester@example.com',
+                    'user_fname' => 'Max',
+                    'user_lname' => 'Muster',
+                    'user_nationality' => 'AUT',
+                    'user_birth_day' => 1,
+                    'user_birth_month' => 2,
+                    'user_birth_year' => 1990,
+                    'user_email_chg' => '',
+                    'user_email_val_chg' => '',
+                ],
+                'countries' => ['AUT' => 'Österreich', 'GER' => 'Deutschland'],
+                'birth_years' => [2010, 2009, 1990],
+                'navigation' => [
+                    ['symbol' => 'nav_help.png', 'name' => 'Regeln', 'link' => '/platform/help', 'style' => 'big'],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function profilePayload(): array
+    {
+        return [
+            'ok' => true,
+            'data' => [
+                'user' => [
+                    'user_id' => 544,
+                    'user_nickname' => 'tester',
+                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'update_profile_nag' => false,
+                ],
+                'form' => [
+                    'user_details_city' => 'Wien',
+                    'user_details_zip' => '1010',
+                    'user_details_street' => '',
+                    'user_details_phone' => '',
+                    'user_details_website' => '',
+                    'user_details_ffb_favourite_team' => 3,
+                    'user_details_photo' => 'profile_na.png',
+                    'user_details_avatar' => 'avatar_na.png',
+                    'user_details_photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'user_details_avatar_url' => '/images/ffb/profiles/avatar/avatar_na.png',
+                    'user_permissions_ffb_mailservice_reminder' => 1,
+                    'user_permissions_ffb_mailservice_info' => 0,
+                    'user_permissions_ffb_visible_profile' => 0,
+                ],
+                'teams' => [
+                    ['team_id' => 3, 'team_name' => 'Rapid', 'team_nationality' => 'AUT'],
+                ],
+                'navigation' => [
+                    ['symbol' => 'nav_help.png', 'name' => 'Regeln', 'link' => '/platform/help', 'style' => 'big'],
+                ],
+            ],
+        ];
+    }
+
     public function test_account_page_redirects_guests(): void
     {
         $this->get('/account')
-            ->assertRedirect(route('start', ['destination' => '/platform/account']));
+            ->assertRedirect(route('start', ['destination' => '/platform/profile?tab=account']));
     }
 
-    public function test_account_page_renders_for_logged_in_user(): void
+    public function test_account_page_redirects_to_profile_tab(): void
     {
-        $this->mock(AccountService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544)->andReturn([
-                'ok' => true,
-                'data' => [
-                    'user' => [
-                        'user_id' => 544,
-                        'user_nickname' => 'tester',
-                        'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
-                        'update_profile_nag' => false,
-                    ],
-                    'form' => [
-                        'user_nickname' => 'tester',
-                        'user_email' => 'tester@example.com',
-                        'user_fname' => 'Max',
-                        'user_lname' => 'Muster',
-                        'user_nationality' => 'AUT',
-                        'user_birth_day' => 1,
-                        'user_birth_month' => 2,
-                        'user_birth_year' => 1990,
-                        'user_email_chg' => '',
-                        'user_email_val_chg' => '',
-                    ],
-                    'countries' => ['AUT' => 'Österreich', 'GER' => 'Deutschland'],
-                    'birth_years' => [2010, 2009, 1990],
-                    'navigation' => [
-                        ['symbol' => 'nav_user.png', 'name' => 'Account', 'link' => '/platform/account', 'style' => 'big'],
-                    ],
-                ],
-            ]);
-        });
-
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->get('/account')
-            ->assertOk()
-            ->assertSee('Profildaten bearbeiten', false)
-            ->assertSee('tester', false)
-            ->assertSee('tester@example.com', false)
-            ->assertSee('js/account.js', false);
+            ->assertRedirect(route('profile', ['tab' => 'account']));
     }
 
     public function test_account_update_requires_auth(): void
     {
         $this->post('/account', [
             'user_tos' => 'user_tos_yes',
-        ])->assertRedirect(route('start', ['destination' => '/platform/account']));
+        ])->assertRedirect(route('start', ['destination' => '/platform/profile?tab=account']));
     }
 
     public function test_account_update_shows_validation_errors(): void
@@ -83,32 +122,8 @@ class AccountPageTest extends TestCase
                     'user_email_val_chg' => '',
                 ],
             ]);
-            $mock->shouldReceive('pagePayload')->once()->andReturn([
-                'ok' => true,
-                'data' => [
-                    'user' => [
-                        'user_id' => 544,
-                        'user_nickname' => 'tester',
-                        'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
-                        'update_profile_nag' => false,
-                    ],
-                    'form' => [
-                        'user_nickname' => 'tester',
-                        'user_email' => 'tester@example.com',
-                        'user_fname' => '',
-                        'user_lname' => '',
-                        'user_nationality' => '',
-                        'user_birth_day' => 0,
-                        'user_birth_month' => 0,
-                        'user_birth_year' => 0,
-                        'user_email_chg' => '',
-                        'user_email_val_chg' => '',
-                    ],
-                    'countries' => [],
-                    'birth_years' => [1990],
-                    'navigation' => [],
-                ],
-            ]);
+            $mock->shouldReceive('pagePayload')->once()->andReturn($this->accountPayload());
+            $mock->shouldReceive('profilePayload')->once()->andReturn($this->profilePayload());
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
@@ -116,6 +131,7 @@ class AccountPageTest extends TestCase
                 'user_fname' => 'Max',
             ])
             ->assertOk()
+            ->assertSee('Accountdaten', false)
             ->assertSee('Es sind Fehler aufgetreten', false)
             ->assertSee('Bedingungen gelesen', false);
     }
@@ -140,32 +156,8 @@ class AccountPageTest extends TestCase
                     'user_email_val_chg' => '',
                 ],
             ]);
-            $mock->shouldReceive('pagePayload')->once()->andReturn([
-                'ok' => true,
-                'data' => [
-                    'user' => [
-                        'user_id' => 544,
-                        'user_nickname' => 'tester',
-                        'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
-                        'update_profile_nag' => false,
-                    ],
-                    'form' => [
-                        'user_nickname' => 'tester',
-                        'user_email' => 'tester@example.com',
-                        'user_fname' => 'Max',
-                        'user_lname' => '',
-                        'user_nationality' => 'AUT',
-                        'user_birth_day' => 0,
-                        'user_birth_month' => 0,
-                        'user_birth_year' => 0,
-                        'user_email_chg' => '',
-                        'user_email_val_chg' => '',
-                    ],
-                    'countries' => ['AUT' => 'Österreich'],
-                    'birth_years' => [1990],
-                    'navigation' => [],
-                ],
-            ]);
+            $mock->shouldReceive('pagePayload')->once()->andReturn($this->accountPayload());
+            $mock->shouldReceive('profilePayload')->once()->andReturn($this->profilePayload());
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
@@ -174,7 +166,8 @@ class AccountPageTest extends TestCase
                 'user_tos' => 'user_tos_yes',
             ])
             ->assertOk()
-            ->assertSee('Deine Daten wurden aktualisiert', false);
+            ->assertSee('Deine Daten wurden aktualisiert', false)
+            ->assertSee('user-card-logout', false);
     }
 
     public function test_email_change_redirects_to_start_logged_out(): void
@@ -206,66 +199,43 @@ class AccountPageTest extends TestCase
     public function test_profile_page_renders_for_logged_in_user(): void
     {
         $this->mock(AccountService::class, function ($mock) {
-            $mock->shouldReceive('profilePayload')->once()->with(544)->andReturn([
-                'ok' => true,
-                'data' => [
-                    'user' => [
-                        'user_id' => 544,
-                        'user_nickname' => 'tester',
-                        'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
-                        'update_profile_nag' => false,
-                    ],
-                    'form' => [
-                        'user_details_city' => 'Wien',
-                        'user_details_zip' => '1010',
-                        'user_details_street' => '',
-                        'user_details_phone' => '',
-                        'user_details_website' => '',
-                        'user_details_ffb_favourite_team' => 3,
-                        'user_details_photo' => 'profile_na.png',
-                        'user_details_avatar' => 'avatar_na.png',
-                        'user_details_photo_url' => '/images/ffb/profiles/photo/profile_na.png',
-                        'user_details_avatar_url' => '/images/ffb/profiles/avatar/avatar_na.png',
-                        'user_permissions_ffb_mailservice_reminder' => 1,
-                        'user_permissions_ffb_mailservice_info' => 0,
-                        'user_permissions_ffb_visible_profile' => 0,
-                    ],
-                    'teams' => [
-                        ['team_id' => 3, 'team_name' => 'Rapid', 'team_nationality' => 'AUT'],
-                    ],
-                    'navigation' => [
-                        ['symbol' => 'nav_profile.png', 'name' => 'Profil', 'link' => '/platform/profile', 'style' => 'big'],
-                    ],
-                ],
-            ]);
+            $mock->shouldReceive('pagePayload')->once()->andReturn($this->accountPayload());
+            $mock->shouldReceive('profilePayload')->once()->andReturn($this->profilePayload());
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->get('/profile')
             ->assertOk()
-            ->assertSee('Profildetails bearbeiten', false)
+            ->assertSee('Profildetails', false)
+            ->assertSee('Accountdaten', false)
             ->assertSee('Wien', false)
             ->assertSee('Rapid', false)
+            ->assertSee('Ausloggen', false)
+            ->assertDontSee('>Account</span>', false)
+            ->assertDontSee('>Profil</span>', false)
             ->assertSee('js/account.js', false);
+    }
+
+    public function test_profile_account_tab_renders(): void
+    {
+        $this->mock(AccountService::class, function ($mock) {
+            $mock->shouldReceive('pagePayload')->once()->andReturn($this->accountPayload());
+            $mock->shouldReceive('profilePayload')->once()->andReturn($this->profilePayload());
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->get('/profile?tab=account')
+            ->assertOk()
+            ->assertSee('Benutzername', false)
+            ->assertSee('tester@example.com', false)
+            ->assertSee('account-tab is-active', false);
     }
 
     public function test_profile_update_shows_success(): void
     {
-        $form = [
-            'user_details_city' => 'Graz',
-            'user_details_zip' => '8010',
-            'user_details_street' => '',
-            'user_details_phone' => '',
-            'user_details_website' => '',
-            'user_details_ffb_favourite_team' => 3,
-            'user_details_photo' => 'profile_na.png',
-            'user_details_avatar' => 'avatar_na.png',
-            'user_details_photo_url' => '/images/ffb/profiles/photo/profile_na.png',
-            'user_details_avatar_url' => '/images/ffb/profiles/avatar/avatar_na.png',
-            'user_permissions_ffb_mailservice_reminder' => 0,
-            'user_permissions_ffb_mailservice_info' => 0,
-            'user_permissions_ffb_visible_profile' => 1,
-        ];
+        $form = $this->profilePayload()['data']['form'];
+        $form['user_details_city'] = 'Graz';
+        $form['user_details_zip'] = '8010';
 
         $this->mock(AccountService::class, function ($mock) use ($form) {
             $mock->shouldReceive('updateProfile')->once()->andReturn([
@@ -273,21 +243,10 @@ class AccountPageTest extends TestCase
                 'message' => '<b>Deine Daten wurden aktualisiert!</b>',
                 'form' => $form,
             ]);
+            $mock->shouldReceive('pagePayload')->once()->andReturn($this->accountPayload());
             $mock->shouldReceive('profilePayload')->once()->andReturn([
                 'ok' => true,
-                'data' => [
-                    'user' => [
-                        'user_id' => 544,
-                        'user_nickname' => 'tester',
-                        'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
-                        'update_profile_nag' => false,
-                    ],
-                    'form' => $form,
-                    'teams' => [
-                        ['team_id' => 3, 'team_name' => 'Rapid', 'team_nationality' => 'AUT'],
-                    ],
-                    'navigation' => [],
-                ],
+                'data' => array_merge($this->profilePayload()['data'], ['form' => $form]),
             ]);
         });
 

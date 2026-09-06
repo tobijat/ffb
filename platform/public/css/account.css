@@ -5,6 +5,38 @@
     align-items: start;
 }
 
+.account-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0 0 10px;
+}
+
+.account-tab {
+    display: inline-block;
+    padding: 4px 10px;
+    border: 1px solid #7aaa7a;
+    background: var(--panel-light, #ccffcc);
+    color: var(--ink, #000);
+    text-decoration: none;
+    font-size: 10pt;
+    font-weight: bold;
+}
+
+.account-tab:hover {
+    color: var(--link-hover, #fff);
+    background: var(--link-hover-bg, #008000);
+}
+
+.account-tab.is-active {
+    background: var(--panel, #99cc99);
+    border-color: #008000;
+}
+
+.account-tab-panel[hidden] {
+    display: none !important;
+}
+
 .account-form {
     display: grid;
     gap: 8px;

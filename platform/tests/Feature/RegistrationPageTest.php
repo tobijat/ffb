@@ -48,7 +48,7 @@ class RegistrationPageTest extends TestCase
     {
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->get('/registration')
-            ->assertRedirect(route('account'));
+            ->assertRedirect(route('profile', ['tab' => 'account']));
     }
 
     public function test_registration_store_shows_validation_errors(): void

@@ -32,18 +32,7 @@
             </nav>
         </div>
 
-        <div class="user-card">
-            <a href="/platform/profile" title="Profil bearbeiten">
-                <img class="user-photo" src="{{ $user['photo_url'] }}" alt="Foto {{ $user['user_nickname'] }}" width="48" height="48">
-            </a>
-            <div>
-                <p class="hello">Hallo <strong>{{ $user['user_nickname'] }}</strong></p>
-                <p class="muted">Du bist angemeldet.</p>
-                @if ($user['update_profile_nag'])
-                    <p class="nag">Dein Profil ist noch leer. <a href="/platform/profile">Profil aktualisieren</a></p>
-                @endif
-            </div>
-        </div>
+        @include('partials.user-card', ['showProfileNag' => true])
     </header>
 
     <main class="dash-main">

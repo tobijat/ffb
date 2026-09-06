@@ -21,7 +21,7 @@ class RegistrationPageController extends Controller
     public function show(Request $request): View|RedirectResponse
     {
         if ($this->auth->userId($request) > 0) {
-            return redirect()->route('account');
+            return redirect()->route('profile', ['tab' => 'account']);
         }
 
         $payload = $this->registration->pagePayload();
@@ -37,7 +37,7 @@ class RegistrationPageController extends Controller
     public function store(Request $request): View|RedirectResponse
     {
         if ($this->auth->userId($request) > 0) {
-            return redirect()->route('account');
+            return redirect()->route('profile', ['tab' => 'account']);
         }
 
         $result = $this->registration->register($request->all(), $request);
