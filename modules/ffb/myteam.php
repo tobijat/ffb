@@ -27,8 +27,6 @@ class myteam extends FFB_Auth_User {
 	public function myteam() {
         $this->htmlFile = 'myteam.php';
 		$this->htmlTitle = 'Show My Team';
-        require_once('comments.php');
-        comments::loadInto($this, 'myteam', null, DEFAULT_COMMENT_NUMBER, false);
 	}
 }
 ?>

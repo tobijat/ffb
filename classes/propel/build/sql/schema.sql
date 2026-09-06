@@ -94,39 +94,6 @@ CREATE TABLE `ffb_cronjob`
 	PRIMARY KEY (`cronjob_id`)
 ) ENGINE=MyISAM;
 
-#-----------------------------------------------------------------------------
-#-- ffb_comments
-#-----------------------------------------------------------------------------
-
-DROP TABLE IF EXISTS `ffb_comments`;
-
-
-CREATE TABLE `ffb_comments`
-(
-	`comments_id` INTEGER  NOT NULL AUTO_INCREMENT,
-	`comments_user_id` INTEGER  NOT NULL,
-	`comments_game_id` INTEGER  NOT NULL,
-	`comments_matchround_id` INTEGER  NOT NULL,
-	`comments_location` VARCHAR(255)  NOT NULL,
-	`comments_text` TEXT  NOT NULL,
-	`comments_date` DATETIME  NOT NULL,
-	PRIMARY KEY (`comments_id`),
-	INDEX `ffb_comments_FI_1` (`comments_user_id`),
-	CONSTRAINT `ffb_comments_FK_1`
-		FOREIGN KEY (`comments_user_id`)
-		REFERENCES `web_user` (`user_id`)
-		ON DELETE CASCADE,
-	INDEX `ffb_comments_FI_2` (`comments_game_id`),
-	CONSTRAINT `ffb_comments_FK_2`
-		FOREIGN KEY (`comments_game_id`)
-		REFERENCES `ffb_game` (`game_id`)
-		ON DELETE CASCADE,
-	INDEX `ffb_comments_FI_3` (`comments_matchround_id`),
-	CONSTRAINT `ffb_comments_FK_3`
-		FOREIGN KEY (`comments_matchround_id`)
-		REFERENCES `ffb_matchround` (`matchround_id`)
-		ON DELETE CASCADE
-) ENGINE=MyISAM;
 
 #-----------------------------------------------------------------------------
 #-- ffb_apikey

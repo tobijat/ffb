@@ -57,8 +57,6 @@ define('FFB_DEFAULT_MODULE','welcome');
 
 define('PROPEL_CONFIG_FILE', 'classes/propel/build/conf/ffb-conf.php');
 
-define('DEFAULT_COMMENT_NUMBER', 30);
-
 $dbHost = FFB_Env::require('FFB_DB_HOST');
 $dbName = FFB_Env::require('FFB_DB_NAME');
 $dbUser = FFB_Env::require('FFB_DB_USER');

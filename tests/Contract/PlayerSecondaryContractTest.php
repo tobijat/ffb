@@ -42,27 +42,6 @@ final class PlayerSecondaryContractTest extends XmlContractTestCase
         $this->assertNotNull($xml->documentElement);
     }
 
-    public function testGetComments(): void
-    {
-        $response = $this->client->postXml('ffb/comments/getComments.xml', [
-            'location' => 'lineup',
-            'matchround_id' => $this->env('FFB_TEST_MATCHROUND_ID'),
-        ]);
-        $xml = XmlApiClient::assertXmlResponse($response);
-        $this->assertNotNull($xml->documentElement);
-    }
-
-    public function testAddCommentReturnsStatusShape(): void
-    {
-        $response = $this->client->postXml('ffb/comments/addComment.xml', [
-            'comment' => 'contract-test-' . time(),
-            'location' => 'lineup',
-            'matchround_id' => $this->env('FFB_TEST_MATCHROUND_ID'),
-        ]);
-        $xml = XmlApiClient::assertXmlResponse($response);
-        $this->assertNotNull($xml->documentElement);
-    }
-
     public function testGetPolls(): void
     {
         $response = $this->client->getXml('ffb/poll/getPolls.xml');

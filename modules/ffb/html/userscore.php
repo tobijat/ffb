@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>standard.css" type="text/css">
     <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>playerstats.css" type="text/css">
     <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>matchdata.css" type="text/css">
-    <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>comments.css" type="text/css">
     <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>statistics.css" type="text/css">
     <script type="text/javascript" src="<?php echo FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
 	<script type="text/javascript" src="<?php echo FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
@@ -21,7 +20,6 @@
 	<script type="text/javascript" src="<?php echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>info_popup.js"></script>
 	<script type="text/javascript" src="<?php echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>playerinfo.js"></script>
 	<script type="text/javascript" src="<?php echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>userprofile.js"></script>
-	<script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>comments.js"></script>
 	<script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>countdown.js"></script>
 </head>
 
@@ -110,96 +108,7 @@
 		    </div>
 			<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
 		</div>
-		
-		
-		  <!--comments start -->
-			<div class="roundcorner_dark">
-			<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
-			<div id="Mainright_comments">
-        <div class="userComment" id="comment_box">
-          <div class="userCommentHead">
-            Kommentar verfassen:
-          </div>
-          <div class="userCommentBody">
-            <form name="addCommentForm" id="addCommentForm" >
-              <textarea name="comment_text" cols="30" rows="2" id="comment_text"></textarea>
-            </form>
-          </div>
-          <div class="userCommentFooter">
-            <input class="commentButton" type="button" onclick="javascript:addComment('userscore', null);" value="Meinung teilen"/>
-          </div>
-        </div>
-        
-        <?php 
-          $index  = 0;
-          $modulo = 3;
-          $mstart = $modulo;
-          if($this->comments) {
-          echo '<div id="comments_1">';
-          
-          for(;$index<count($this->comments) && $index<3;$index++) {
-            echo  '<div class="userComment' . $index%2 .  '"><div class="userCommentHead">';
-            echo  '<img src="' .  FFB_BASE_PATH . FFB_IMAGE_PATH . 'profiles/avatar/' . $this->comments[$index]['user_avatar'] . '" width="25px" /> ';
-            echo  $this->comments[$index]['user_nick'] . ':</div>';
-            echo  '<div class="userCommentBody">'   . $this->comments[$index]['comment_text'] ."</div>\r\n";
-            echo  '<div class="userCommentFooter">' . $this->comments[$index]['comment_date'] . '</div></div>';
-          }
-          
-        echo "</div>\r\n";
-          
-        echo '<div id="comments_2">';
-          
-          for(;$index<count($this->comments) && $index<7;$index++) {
-            echo  '<div class="userComment' . $index%2 .  '"><div class="userCommentHead">';
-            echo  '<img src="' .  FFB_BASE_PATH . FFB_IMAGE_PATH . 'profiles/avatar/' . $this->comments[$index]['user_avatar'] . '" width="25px" /> ';
-            echo  $this->comments[$index]['user_nick'] . ':</div>';
-            echo  '<div class="userCommentBody">'   . $this->comments[$index]['comment_text'] ."</div>\r\n";
-            echo  '<div class="userCommentFooter">' . $this->comments[$index]['comment_date'] . '</div></div>';
-          }
-         
-        echo "</div>\r\n";
-           
-        echo '<div id="comments_3">';
-          
-          for(;$index<count($this->comments) && $index<15;$index++) {
-            echo  '<div class="userComment' . $index%2 .  '"><div class="userCommentHead">';
-            echo  '<img src="' .  FFB_BASE_PATH . FFB_IMAGE_PATH . 'profiles/avatar/' . $this->comments[$index]['user_avatar'] . '" width="25px" /> ';
-            echo  $this->comments[$index]['user_nick'] . ':</div>';
-            echo  '<div class="userCommentBody">'   . $this->comments[$index]['comment_text'] ."</div>\r\n";
-            echo  '<div class="userCommentFooter">' . $this->comments[$index]['comment_date'] . '</div></div>';
-          }
-          
-        echo "</div>\r\n";
-            
-         echo '<div id="comments_4">';
-          
-          for(;$index<count($this->comments) ;$index++) {
-            echo  '<div class="userComment' . $index%2 .  '"><div class="userCommentHead">';
-            echo  '<img src="' .  FFB_BASE_PATH . FFB_IMAGE_PATH . 'profiles/avatar/' . $this->comments[$index]['user_avatar'] . '" width="25px" /> ';
-            echo  $this->comments[$index]['user_nick'] . ':</div>';
-            echo  '<div class="userCommentBody">'   . $this->comments[$index]['comment_text'] ."</div>\r\n";
-            echo  '<div class="userCommentFooter">' . $this->comments[$index]['comment_date'] . '</div></div>';
-          }
-          
-        echo "</div>\r\n";
-          
-       if($this->numComments>0) { ?>
-        <a href="javascript:void(0);" onclick="javascript:getComments('userscore', null);return;" style="font-size:80%;">alle <?php  echo $this->numTotalComments; ?> Community Meinungen anzeigen</a>
-        <?php }
-        } else {
-          echo '<div id="comments_1"></div>';
-          echo '<div id="comments_2"></div>';
-          echo '<div id="comments_3"></div>';
-          echo '<div id="comments_4"></div>';
-        }?>
 
-			</div>
-			<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
-		</div>
-		<!--comments end-->
-		
-		
-		
 	</div>
 
 

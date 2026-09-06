@@ -209,11 +209,9 @@ final class FixtureManager
             $this->pdo->exec("DELETE FROM ffb_playerstats WHERE playerstats_matchround_id IN ($in)");
             $this->pdo->exec("DELETE FROM ffb_playerprice WHERE playerprice_matchround_id IN ($in)");
             $this->pdo->exec("DELETE FROM ffb_userteam WHERE userteam_matchround_id IN ($in)");
-            $this->pdo->exec("DELETE FROM ffb_comments WHERE comments_matchround_id IN ($in)");
             $this->pdo->exec("DELETE FROM ffb_matchround WHERE matchround_id IN ($in)");
         }
 
-        $this->pdo->exec('DELETE FROM ffb_comments WHERE comments_game_id = ' . $gameId);
         $this->pdo->exec('DELETE FROM ffb_userscore WHERE userscore_game_id = ' . $gameId);
         $this->pdo->exec('DELETE FROM ffb_news WHERE news_game_id = ' . $gameId);
         $this->pdo->exec('DELETE FROM ffb_options WHERE options_game_id = ' . $gameId);

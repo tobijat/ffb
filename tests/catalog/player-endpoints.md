@@ -24,8 +24,6 @@ URL form: `{module}/{class}/{event}.xml` → presenter `xml`.
 | playerinfo.js | GET | ffb/options/getLineupOptions.xml | user | — | (same options) |
 | playerinfo.js | POST | ffb/player/getPlayerInfo.xml | user | player params | player info tags |
 | playerinfo.js | POST | ffb/player/getPlayerStats.xml | user | player params | stats tags |
-| comments.js | POST | ffb/comments/getComments.xml | user | location, matchround_id | comments |
-| comments.js | POST | ffb/comments/addComment.xml | user | comment, location, matchround_id | status/answer |
 | poll.js | GET | ffb/poll/getPolls.xml | user | — | polls |
 | poll.js | POST | ffb/poll/getSelectPollById.xml | user | poll_id | poll detail |
 | poll.js | POST | ffb/poll/savePollSelectAnswer.xml | user | poll_id, poll_answer_id | status |

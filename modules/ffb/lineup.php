@@ -33,8 +33,6 @@ class lineup extends FFB_Auth_User {
         $this->checkGame();
         $this->htmlFile = 'lineup.php';
 		$this->htmlTitle = 'Lineup';
-        require_once('comments.php');
-        comments::loadInto($this, 'lineup', null, DEFAULT_COMMENT_NUMBER, false);
 	}
 
     public function getMatchroundAndTeams() {

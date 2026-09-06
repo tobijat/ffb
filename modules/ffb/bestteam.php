@@ -30,8 +30,6 @@ class bestteam extends FFB_Auth_User {
 	public function bestteam() {
         $this->htmlFile = 'bestteam.php';
 		$this->htmlTitle = 'Top / Flop Teams';
-        require_once('comments.php');
-        comments::loadInto($this, 'bestteam', null, DEFAULT_COMMENT_NUMBER, false);
 	}
 
 	public function getBestTeam() {
