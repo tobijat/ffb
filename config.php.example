@@ -34,12 +34,10 @@ define('PIC_IMAGE_PATH','images/pictory/');
 define('ADM_IMAGE_PATH','images/admin/');
 
 define('INCLUDE_PATH','include/');
-define('FFB_INCLUDE_PATH','include/ffb/');
 define('PIC_INCLUDE_PATH','include/pictory/');
 define('ADM_INCLUDE_PATH','include/admin/');
 
 define('SCRIPT_PATH','script/');
-define('FFB_SCRIPT_PATH','script/ffb/');
 define('PIC_SCRIPT_PATH','script/pictory/');
 define('ADM_SCRIPT_PATH','script/admin/');
 
@@ -56,8 +54,6 @@ define('PIC_SUBDOMAIN','pictory');
 define('FFB_DEFAULT_MODULE','welcome');
 
 define('PROPEL_CONFIG_FILE', 'classes/propel/build/conf/ffb-conf.php');
-
-define('DEFAULT_COMMENT_NUMBER', 30);
 
 $dbHost = FFB_Env::require('FFB_DB_HOST');
 $dbName = FFB_Env::require('FFB_DB_NAME');

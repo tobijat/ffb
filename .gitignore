@@ -23,6 +23,11 @@
 /tests/.ffb_test_fixture.json
 /composer.phar
 
+# Laravel platform (also covered by platform/.gitignore)
+/platform/vendor/
+/platform/node_modules/
+/platform/.env
+
 # OS / editor
 .DS_Store
 Thumbs.db
@@ -36,6 +41,7 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+!platform/.env.example
 *.pem
 *.key
 credentials.json

@@ -1,0 +1,608 @@
+/* Shared FFB modal shell — used by profile and future popups */
+
+.ffb-modal-root {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 4vh 1rem 2rem;
+    overflow-y: auto;
+}
+
+.ffb-modal-root[hidden] {
+    display: none !important;
+}
+
+.ffb-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 40, 20, 0.45);
+}
+
+.ffb-modal-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(520px, 100%);
+    margin: 0 auto;
+    background: linear-gradient(180deg, #e8f5e8 0%, #d4ebd4 100%);
+    border: 1px solid #2a5a2a;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    font-size: 10pt;
+    color: #1a2e1a;
+}
+
+.ffb-modal-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #bbeebb;
+    padding: 0.35rem 0.5rem;
+}
+
+.ffb-modal-head-avatar {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.ffb-modal-head-title {
+    flex: 1;
+    text-align: center;
+    font-size: 12pt;
+    font-weight: 600;
+}
+
+.ffb-modal-close {
+    flex-shrink: 0;
+    border: 0;
+    background: transparent;
+    padding: 0.25rem;
+    cursor: pointer;
+    line-height: 0;
+}
+
+.ffb-modal-close img {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
+
+.ffb-modal-tabs {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.35rem 0.6rem;
+    background: #bbeebb;
+    border-top: 1px solid #99cc99;
+}
+
+.ffb-modal-tabs a,
+.ffb-modal-tabs button {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: #1a4a1a;
+    cursor: pointer;
+    font: inherit;
+    text-decoration: underline;
+}
+
+.ffb-modal-tabs .is-active {
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.ffb-modal-body {
+    padding: 0.5rem 0.6rem 0.75rem;
+    background: #f4faf4;
+    border-top: 1px solid #2a5a2a;
+    min-height: 4rem;
+}
+
+.ffb-modal-loading,
+.ffb-modal-error {
+    padding: 1.25rem 0.5rem;
+    text-align: center;
+}
+
+.ffb-modal-error {
+    color: #7a2020;
+}
+
+/* Profile content */
+
+.ffb-profile {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 0.75rem;
+    align-items: start;
+}
+
+.ffb-profile-photo {
+    width: 100px;
+    border: 1px solid #c00;
+    display: block;
+}
+
+.ffb-profile-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.ffb-profile-row {
+    display: grid;
+    grid-template-columns: 18px auto 1fr;
+    gap: 0.35rem;
+    align-items: center;
+    padding: 0.15rem 0.25rem;
+    text-align: left;
+}
+
+.ffb-profile-row:hover {
+    background: #99cc99;
+}
+
+.ffb-profile-row img {
+    width: 16px;
+    height: 16px;
+}
+
+.ffb-profile-row .label {
+    white-space: nowrap;
+}
+
+.ffb-profile-row .value {
+    text-align: right;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ffb-profile-row .value a {
+    color: inherit;
+}
+
+.ffb-profile-section {
+    margin-top: 0.75rem;
+    clear: both;
+}
+
+.ffb-profile-section > h3 {
+    margin: 0 0 0.4rem;
+    text-align: center;
+    font-size: 10pt;
+}
+
+.ffb-profile-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt;
+    text-align: center;
+}
+
+.ffb-profile-table th,
+.ffb-profile-table td {
+    border: 1px solid #99cc99;
+    padding: 0.3rem 0.35rem;
+}
+
+.ffb-profile-table th {
+    background: #bbeebb;
+}
+
+.ffb-profile-table td.liga {
+    text-align: left;
+}
+
+.ffb-profile-table td.liga img {
+    vertical-align: middle;
+    margin-right: 0.25rem;
+}
+
+.ffb-profile-table .rank-1 {
+    background: #ffd700;
+}
+
+.ffb-profile-table .rank-2 {
+    background: #cccccc;
+}
+
+.ffb-profile-table .rank-3 {
+    background: #cd853f;
+}
+
+.ffb-profile-awards-stub {
+    padding: 1rem 0.5rem;
+    text-align: center;
+    color: #3a5a3a;
+}
+
+.ffb-awards {
+    font-size: 8pt;
+}
+
+.ffb-awards-header,
+.ffb-awards-row {
+    display: grid;
+    grid-template-columns: 21% 79%;
+    gap: 0.25rem;
+    align-items: center;
+    background: #bbeebb;
+    margin: 0.15rem 0;
+    padding: 0.2rem 0.25rem;
+}
+
+.ffb-awards-header {
+    font-size: 10pt;
+    text-align: center;
+}
+
+.ffb-awards-col-symbol {
+    text-align: center;
+    line-height: 1.2;
+}
+
+.ffb-awards-col-symbol img {
+    display: block;
+    margin: 0 auto 0.15rem;
+}
+
+.ffb-awards-col-symbol em {
+    font-size: 8pt;
+}
+
+.ffb-awards-col-ranks {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.15rem 0.35rem;
+    min-height: 45px;
+}
+
+.ffb-awards-rank {
+    flex: 0 0 15%;
+    max-width: 15%;
+    text-align: center;
+}
+
+.ffb-awards-rank img {
+    height: 45px;
+    width: auto;
+    vertical-align: middle;
+}
+
+.ffb-awards-rank.is-silhouette img {
+    opacity: 0.95;
+}
+
+/* Match content */
+
+.ffb-match {
+    font-size: 8pt;
+}
+
+.ffb-match-header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.35rem;
+    align-items: center;
+    font-size: 14pt;
+    padding: 0.25rem 0;
+}
+
+.ffb-match-header .home {
+    text-align: left;
+}
+
+.ffb-match-header .guest {
+    text-align: right;
+}
+
+.ffb-match-header .result {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.ffb-match-score-reg {
+    font-size: 12pt;
+}
+
+.ffb-match-meta {
+    text-align: center;
+    font-size: 10pt;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #2a5a2a;
+    margin-bottom: 0.4rem;
+}
+
+.ffb-match-lineups {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #2a5a2a;
+    margin-bottom: 0.4rem;
+}
+
+.ffb-match-lineups .home {
+    text-align: left;
+}
+
+.ffb-match-lineups .guest {
+    text-align: right;
+}
+
+.ffb-match-player {
+    line-height: 1.45;
+}
+
+.ffb-match-player img {
+    vertical-align: middle;
+}
+
+.ffb-match-info img {
+    vertical-align: middle;
+}
+
+.ffb-match-section {
+    padding: 0.35rem 0 0.5rem;
+    border-bottom: 1px solid #2a5a2a;
+    margin-bottom: 0.25rem;
+}
+
+.ffb-match-section:last-child {
+    border-bottom: 0;
+    margin-bottom: 0;
+}
+
+.ffb-match-section > h3 {
+    margin: 0 0 0.35rem;
+    text-align: center;
+    font-size: 10pt;
+}
+
+.ffb-match-goals,
+.ffb-match-prev {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.ffb-match-goals li {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.25rem;
+    align-items: baseline;
+    margin-bottom: 0.15rem;
+}
+
+.ffb-match-goals .minute {
+    text-align: right;
+}
+
+.ffb-match-goals .result {
+    text-align: center;
+}
+
+.ffb-match-goals .scorer {
+    text-align: left;
+}
+
+.ffb-match-ps {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    width: 90%;
+    margin: 0 auto;
+}
+
+.ffb-match-ps .home {
+    text-align: left;
+}
+
+.ffb-match-ps .guest {
+    text-align: right;
+}
+
+.ffb-match-ps-row {
+    margin-bottom: 0.15rem;
+}
+
+.ffb-match-ps-row img {
+    vertical-align: middle;
+}
+
+.ffb-match-prev li {
+    display: grid;
+    grid-template-columns: 29% 14% 23% 11% 23%;
+    gap: 0;
+    align-items: baseline;
+    margin-bottom: 0.15rem;
+}
+
+.ffb-match-prev .round {
+    text-align: left;
+}
+
+.ffb-match-prev .date {
+    text-align: right;
+}
+
+.ffb-match-prev .home {
+    text-align: right;
+    padding-right: 0.25rem;
+}
+
+.ffb-match-prev .result {
+    text-align: center;
+}
+
+.ffb-match-prev .guest {
+    text-align: left;
+    padding-left: 0.25rem;
+}
+
+.ffb-match a.under {
+    text-decoration: underline;
+    color: inherit;
+}
+
+.ffb-modal-head-flag {
+    flex-shrink: 0;
+    margin-right: 0.15rem;
+}
+
+.ffb-player-tables {
+    margin-top: 0.75rem;
+    overflow-x: auto;
+}
+
+.ffb-player-rounds {
+    font-size: 8pt;
+}
+
+.ffb-player-rounds .result-cell {
+    min-width: 9rem;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.ffb-player-more {
+    text-align: center;
+    margin: 0.4rem 0 0;
+}
+
+.ffb-player-statline {
+    display: grid;
+    grid-template-columns: 18px 7.5rem 3.75rem 1fr;
+    gap: 0.25rem;
+    align-items: center;
+    padding: 0.15rem 0.25rem;
+    font-size: 9pt;
+}
+
+.ffb-player-statline:hover {
+    background: #99cc99;
+}
+
+.ffb-player-statline .sym-spacer {
+    width: 16px;
+}
+
+.ffb-player-statline .label {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.ffb-player-statline .amount {
+    text-align: left;
+    white-space: nowrap;
+}
+
+.ffb-player-statline .pts {
+    text-align: left;
+    white-space: nowrap;
+}
+
+.ffb-player-chart {
+    text-align: center;
+    padding: 0.5rem 0;
+}
+
+.ffb-player-chart img {
+    max-width: 100%;
+    height: auto;
+}
+
+.ffb-player-caption {
+    text-align: left;
+    font-size: 8pt;
+    margin: 0.5rem auto 0;
+    max-width: 28rem;
+}
+
+.ffb-player-caption > div {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.15rem;
+}
+
+.ffb-player-caption .cap-points,
+.ffb-player-caption .cap-yellow,
+.ffb-player-caption .cap-red,
+.ffb-player-caption .cap-curve,
+.ffb-player-caption .cap-gray,
+.ffb-player-caption .cap-avg {
+    display: inline-block;
+    width: 1rem;
+    height: 0.7rem;
+    flex-shrink: 0;
+}
+
+.ffb-player-caption .cap-points {
+    background: #235e23;
+}
+
+.ffb-player-caption .cap-yellow {
+    background: #f0f014;
+}
+
+.ffb-player-caption .cap-red {
+    background: #f00000;
+}
+
+.ffb-player-caption .cap-curve {
+    background: #1919e1;
+}
+
+.ffb-player-caption .cap-gray {
+    background: #e6e1e1;
+}
+
+.ffb-player-caption .cap-avg {
+    background: transparent;
+    text-align: center;
+    font-weight: 700;
+    width: auto;
+}
+
+.ffb-player-chart-note {
+    font-size: 8pt;
+    color: #5a7a5a;
+    margin: 0.5rem 0 0;
+}
+
+@media (max-width: 560px) {
+    .ffb-profile {
+        grid-template-columns: 1fr;
+        justify-items: center;
+    }
+
+    .ffb-profile-rows {
+        width: 100%;
+    }
+
+    .ffb-match-header {
+        font-size: 11pt;
+    }
+
+    .ffb-match-prev li {
+        grid-template-columns: 1fr;
+        gap: 0.1rem;
+        padding: 0.35rem 0;
+        border-bottom: 1px solid #c5dfc5;
+    }
+
+    .ffb-match-prev .home,
+    .ffb-match-prev .date,
+    .ffb-match-prev .round,
+    .ffb-match-prev .guest {
+        text-align: left;
+        padding: 0;
+    }
+}

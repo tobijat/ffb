@@ -56,25 +56,6 @@
         <column name="cronjob_runhour" type="integer" required="true" default="5"/>
     </table>
     
-    <table name="ffb_comments">
-        <column name="comments_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
-        <column name="comments_user_id" type="integer" required="true"/>
-        <column name="comments_game_id" type="integer" required="true"/>
-        <column name="comments_matchround_id" type="integer" required="true"/>
-        <column name="comments_location" type="varchar" required="true" size="255"/>
-        <column name="comments_text" type="longvarchar" required="true"/>
-        <column name="comments_date" type="timestamp" required="true"/>            
-        <foreign-key foreignTable="web_user" onDelete="cascade">
-	    <reference local="comments_user_id" foreign="user_id"/>
-	</foreign-key>
-	<foreign-key foreignTable="ffb_game" onDelete="cascade">
-	    <reference local="comments_game_id" foreign="game_id"/>
-	</foreign-key>
-	<foreign-key foreignTable="ffb_matchround" onDelete="cascade">
-	    <reference local="comments_matchround_id" foreign="matchround_id"/>
-	</foreign-key>
-    </table>
-    
     <table name="ffb_apikey">
         <column name="apikey_id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
         <column name="apikey_key" type="varchar" required="true" size="255"/>

@@ -429,9 +429,6 @@ abstract class BaseWebUserPeer {
 		// Invalidate objects in WebUserPermissionsPeer instance pool, 
 		// since one or more of them may be deleted by ON DELETE CASCADE/SETNULL rule.
 		WebUserPermissionsPeer::clearInstancePool();
-		// Invalidate objects in FfbCommentsPeer instance pool, 
-		// since one or more of them may be deleted by ON DELETE CASCADE/SETNULL rule.
-		FfbCommentsPeer::clearInstancePool();
 		// Invalidate objects in FfbInvitationPeer instance pool, 
 		// since one or more of them may be deleted by ON DELETE CASCADE/SETNULL rule.
 		FfbInvitationPeer::clearInstancePool();
@@ -793,11 +790,6 @@ abstract class BaseWebUserPeer {
 			$criteria->add(WebUserPermissionsPeer::USER_ID, $obj->getUserId());
 			$affectedRows += WebUserPermissionsPeer::doDelete($criteria, $con);
 
-			// delete related FfbComments objects
-			$criteria = new Criteria(FfbCommentsPeer::DATABASE_NAME);
-			
-			$criteria->add(FfbCommentsPeer::COMMENTS_USER_ID, $obj->getUserId());
-			$affectedRows += FfbCommentsPeer::doDelete($criteria, $con);
 
 			// delete related FfbInvitation objects
 			$criteria = new Criteria(FfbInvitationPeer::DATABASE_NAME);

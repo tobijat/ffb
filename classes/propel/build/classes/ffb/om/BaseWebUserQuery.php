@@ -56,10 +56,6 @@
  * @method     WebUserQuery rightJoinWebUserPermissions($relationAlias = null) Adds a RIGHT JOIN clause to the query using the WebUserPermissions relation
  * @method     WebUserQuery innerJoinWebUserPermissions($relationAlias = null) Adds a INNER JOIN clause to the query using the WebUserPermissions relation
  *
- * @method     WebUserQuery leftJoinFfbComments($relationAlias = null) Adds a LEFT JOIN clause to the query using the FfbComments relation
- * @method     WebUserQuery rightJoinFfbComments($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbComments relation
- * @method     WebUserQuery innerJoinFfbComments($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbComments relation
- *
  * @method     WebUserQuery leftJoinFfbPollResult($relationAlias = null) Adds a LEFT JOIN clause to the query using the FfbPollResult relation
  * @method     WebUserQuery rightJoinFfbPollResult($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FfbPollResult relation
  * @method     WebUserQuery innerJoinFfbPollResult($relationAlias = null) Adds a INNER JOIN clause to the query using the FfbPollResult relation
@@ -791,69 +787,6 @@ abstract class BaseWebUserQuery extends ModelCriteria
 			->useQuery($relationAlias ? $relationAlias : 'WebUserPermissions', 'WebUserPermissionsQuery');
 	}
 
-	/**
-	 * Filter the query by a related FfbComments object
-	 *
-	 * @param     FfbComments $ffbComments  the related object to use as filter
-	 * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
-	 *
-	 * @return    WebUserQuery The current query, for fluid interface
-	 */
-	public function filterByFfbComments($ffbComments, $comparison = null)
-	{
-		return $this
-			->addUsingAlias(WebUserPeer::USER_ID, $ffbComments->getCommentsUserId(), $comparison);
-	}
-
-	/**
-	 * Adds a JOIN clause to the query using the FfbComments relation
-	 * 
-	 * @param     string $relationAlias optional alias for the relation
-	 * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
-	 *
-	 * @return    WebUserQuery The current query, for fluid interface
-	 */
-	public function joinFfbComments($relationAlias = null, $joinType = Criteria::INNER_JOIN)
-	{
-		$tableMap = $this->getTableMap();
-		$relationMap = $tableMap->getRelation('FfbComments');
-		
-		// create a ModelJoin object for this join
-		$join = new ModelJoin();
-		$join->setJoinType($joinType);
-		$join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
-		if ($previousJoin = $this->getPreviousJoin()) {
-			$join->setPreviousJoin($previousJoin);
-		}
-		
-		// add the ModelJoin to the current object
-		if($relationAlias) {
-			$this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
-			$this->addJoinObject($join, $relationAlias);
-		} else {
-			$this->addJoinObject($join, 'FfbComments');
-		}
-		
-		return $this;
-	}
-
-	/**
-	 * Use the FfbComments relation FfbComments object
-	 *
-	 * @see       useQuery()
-	 * 
-	 * @param     string $relationAlias optional alias for the relation,
-	 *                                   to be used as main alias in the secondary query
-	 * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
-	 *
-	 * @return    FfbCommentsQuery A secondary query class using the current class as primary query
-	 */
-	public function useFfbCommentsQuery($relationAlias = null, $joinType = Criteria::INNER_JOIN)
-	{
-		return $this
-			->joinFfbComments($relationAlias, $joinType)
-			->useQuery($relationAlias ? $relationAlias : 'FfbComments', 'FfbCommentsQuery');
-	}
 
 	/**
 	 * Filter the query by a related FfbPollResult object

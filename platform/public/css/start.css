@@ -1,0 +1,458 @@
+:root {
+    --bg: #ccffcc;
+    --panel: #99cc99;
+    --panel-light: #ccffcc;
+    --panel-hover: #bbffbb;
+    --ink: #000000;
+    --muted: #333333;
+    --link: #000000;
+    --link-hover-bg: #008000;
+    --link-hover: #ffffff;
+    --danger-bg: #ff0000;
+    --ok-bg: #00ff00;
+    --selected: #ff0000;
+    --btn-bg: #00ff00;
+    --btn-border: #696 #363 #363 #696;
+    --font-body: Verdana, sans-serif;
+    --font-title: "Kristen ITC", "Comic Sans MS", Verdana, sans-serif;
+    --page-max: 1100px;
+    --page-gutter: 10px;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--font-body);
+    font-size: 12pt;
+    color: var(--ink);
+    background: var(--bg);
+}
+
+a {
+    color: var(--link);
+    text-decoration: underline;
+}
+
+a:hover {
+    color: var(--link-hover);
+    background: var(--link-hover-bg);
+}
+
+.pitch-bg {
+    display: none;
+}
+
+.topbar,
+.dash-top,
+main,
+.dash-main,
+.foot {
+    max-width: var(--page-max);
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+}
+
+/* Align nav/footer chrome with panels inside padded main */
+.dash-top,
+.topbar {
+    width: calc(100% - (2 * var(--page-gutter)));
+    max-width: calc(var(--page-max) - (2 * var(--page-gutter)));
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: var(--panel);
+    border: 1px solid #7aaa7a;
+    margin-top: 6px;
+}
+
+.brand {
+    font-family: var(--font-title);
+    font-weight: bold;
+    font-size: 16pt;
+    color: var(--ink);
+    text-decoration: none;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.1;
+}
+
+.brand img {
+    display: block;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+}
+
+.brand span {
+    white-space: nowrap;
+}
+
+.brand:hover {
+    color: var(--link-hover);
+    background: var(--link-hover-bg);
+}
+
+.top-link {
+    color: var(--ink);
+    font-size: 10pt;
+}
+
+main {
+    padding: 8px var(--page-gutter) 24px;
+}
+
+.start-page main {
+    padding-top: 16px;
+}
+
+.start-layout {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 10px;
+    align-items: start;
+    margin-top: 8px;
+}
+
+.start-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.hero-copy {
+    background: var(--panel);
+    border: 1px solid #7aaa7a;
+    padding: 12px;
+}
+
+.brand-mark {
+    font-family: var(--font-title);
+    font-size: 20pt;
+    margin: 0 0 8px;
+    text-align: center;
+}
+
+.hero-copy h1 {
+    font-family: var(--font-body);
+    font-size: 14pt;
+    margin: 0 0 8px;
+    text-align: center;
+}
+
+.lede {
+    margin: 0 0 12px;
+    font-size: 11pt;
+    text-align: center;
+    color: var(--muted);
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+.btn {
+    display: inline-block;
+    border: 2px outset;
+    border-color: var(--btn-border);
+    border-radius: 0;
+    padding: 4px 12px;
+    font-family: var(--font-body);
+    font-size: 10pt;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+    background: var(--btn-bg);
+    color: var(--ink);
+}
+
+.btn:hover {
+    background: #66ff66;
+    color: var(--ink);
+}
+
+.btn-ghost {
+    background: var(--panel-light);
+}
+
+.btn-block {
+    width: 100%;
+}
+
+.login-panel .btn {
+    margin-top: 2px;
+}
+
+.login-panel {
+    background: var(--panel);
+    border: 1px solid #7aaa7a;
+    padding: 10px;
+    color: var(--ink);
+}
+
+.login-panel h2 {
+    margin: 0 0 8px;
+    font-size: 16pt;
+    text-align: center;
+    font-family: var(--font-body);
+}
+
+.login-panel label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 10pt;
+    text-align: left;
+}
+
+.login-panel label[hidden] {
+    display: none !important;
+}
+
+.login-panel label span {
+    display: block;
+    margin-bottom: 2px;
+    font-weight: bold;
+    text-align: left;
+}
+
+.login-panel input[type="text"],
+.login-panel input[type="password"],
+.login-panel input[type="email"] {
+    display: block;
+    width: 100%;
+    max-width: 220px;
+    padding: 2px 4px;
+    border: 1px solid #666;
+    font-family: var(--font-body);
+    font-size: 10pt;
+    background: #fff;
+    color: var(--ink);
+}
+
+.login-panel input:focus {
+    outline: 1px solid #008000;
+}
+
+.login-links {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 8px 0 0;
+    font-size: 9pt;
+}
+
+.login-links a,
+.linkish {
+    color: var(--ink);
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.login-links a:hover,
+.linkish:hover {
+    color: var(--link-hover);
+    background: var(--link-hover-bg);
+}
+
+.feedback {
+    margin-bottom: 8px;
+    padding: 5px;
+    font-size: 10pt;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.feedback-error {
+    background: var(--danger-bg);
+    color: var(--ink);
+}
+
+.feedback-ok {
+    background: var(--ok-bg);
+    color: var(--ink);
+}
+
+.below h2,
+.results h2,
+.stats h2 {
+    margin: 0 0 8px;
+    font-size: 12pt;
+    font-family: var(--font-body);
+}
+
+.results,
+.stats {
+    background: var(--panel);
+    border: 1px solid #7aaa7a;
+    padding: 10px;
+}
+
+.result-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.result-list li {
+    display: grid;
+    grid-template-columns: 5.2rem 1fr auto 1fr;
+    gap: 6px;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid #7aaa7a;
+    font-size: 10pt;
+}
+
+.result-list time {
+    color: var(--muted);
+    font-size: 9pt;
+}
+
+.result-list .side {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+}
+
+.result-list .side:last-child {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+.score {
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.score .score-final,
+.score .score-reg {
+    display: inline;
+}
+
+.score .score-reg {
+    margin-left: 4px;
+    font-weight: normal;
+    font-size: 9pt;
+}
+
+.score .score-hint {
+    font-weight: normal;
+    font-size: 8pt;
+}
+
+.stats dl {
+    margin: 0;
+}
+
+.stats dl > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 3px 0;
+    border-bottom: 1px solid #7aaa7a;
+    font-size: 10pt;
+}
+
+.stats dt {
+    color: var(--muted);
+}
+
+.stats dd {
+    margin: 0;
+    font-weight: bold;
+}
+
+.leagues {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 9pt;
+}
+
+.muted {
+    color: var(--muted);
+    font-size: 10pt;
+}
+
+.foot {
+    padding: 8px 10px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9pt;
+    color: var(--muted);
+}
+
+.foot-copy,
+.foot-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    align-items: center;
+}
+
+.foot-sep {
+    opacity: 0.6;
+}
+
+.foot a {
+    color: var(--ink);
+}
+
+@media (max-width: 860px) {
+    .start-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .result-list li {
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+            "date date"
+            "home score"
+            "guest score";
+        gap: 2px 8px;
+    }
+
+    .result-list time { grid-area: date; }
+    .result-list .side:first-of-type { grid-area: home; }
+    .result-list .score { grid-area: score; align-self: center; }
+    .result-list .side:last-child {
+        grid-area: guest;
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+    .login-panel input[type="text"],
+    .login-panel input[type="password"],
+    .login-panel input[type="email"] {
+        max-width: none;
+    }
+}

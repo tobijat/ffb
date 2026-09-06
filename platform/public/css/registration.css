@@ -1,0 +1,9 @@
+/* Registration reuses account layout; small tweaks only. */
+
+.reg-captcha {
+    margin-top: 4px;
+}
+
+.account-field-check a {
+    color: inherit;
+}
