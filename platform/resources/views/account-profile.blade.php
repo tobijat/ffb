@@ -262,7 +262,7 @@
                     <div class="account-field account-field-check">
                         <label for="user_tos">
                             <input id="user_tos" type="checkbox" name="user_tos" value="user_tos_yes" data-help="user_tos">
-                            Ich habe die <a href="{{ $legacyBase }}resource/Registrierung.pdf" target="_blank" rel="noopener">Bedingungen</a> akzeptiert
+                            Ich habe die <a href="{{ config('ffb.registration_tos_url') }}" target="_blank" rel="noopener">Bedingungen</a> akzeptiert
                         </label>
                     </div>
 
