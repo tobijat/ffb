@@ -323,11 +323,6 @@ function dispUserLineup() {
     dropLineW3('line_elements_d', tmpDefenceString);
     dropLineW3('line_elements_m', tmpMidfieldString);
     dropLineW3('line_elements_s', tmpStrikerString);
-
-    var printLink = '';
-    printLink += '<img src="' + server + symbolImages_ + 'print.gif" width="15px">';
-    printLink += '<a target="_blank" href="printme?uid='+selected_user_id+'&mid='+matchround_id+'">drucken</a>';
-    dropLineW3('print_lineup', printLink);
     /*
     if(!_user_lineup[_matchround_select_index][selected_user_id]['statistics']) {
         _user_lineup[_matchround_select_index][selected_user_id]['statistics'] = new Object();

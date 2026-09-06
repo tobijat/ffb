@@ -33,16 +33,9 @@ URL form: `{module}/{class}/{event}.xml` → presenter `xml`.
 | userprofile.js | POST | ffb/user/getUserDetails.xml | user | user_id | user + participations |
 | statistics.js | POST | ffb/statistics/getUserStats.xml | user | matchround_id, user_id | user stats |
 | statistics.js | POST | ffb/statistics/getRoundStats.xml | user | matchround_id | round stats |
-| stats.js | GET/POST | ffb/stats/getTeams.xml | user | — | teams |
-| stats.js | GET/POST | ffb/stats/getLeagues.xml | user | — | leagues |
-| stats.js | POST | ffb/stats/getTeamPlayers.xml | user | team_id | players |
-| stats.js | POST | ffb/stats/getPlayerOverallStats.xml | user | player_id | overall stats |
-| stats.js | POST | ffb/stats/getLeagueMatches.xml | user | game_id | matches |
 | gamemgmt.js | GET | ffb/game/checkSelectedGame.xml | user | — | administration_status, selected_game_id |
 | gamemgmt.js | GET | ffb/game/getGameList.xml / getPastGames.xml | user | — | games / XML_Serializer_Tag |
 | gamemgmt.js | POST | ffb/game/setSelectedGame.xml | user | game_id | administration_status, administration_answer |
-| countdown.js | GET | ffb/countdown/countdown.xml | user | — | countdown fields |
-| countdown.js | GET | ffb/countdown/stopCounter.xml | user | stop | status |
 
 ## Admin endpoints (script/admin)
 

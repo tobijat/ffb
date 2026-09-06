@@ -15,6 +15,8 @@
     --btn-border: #696 #363 #363 #696;
     --font-body: Verdana, sans-serif;
     --font-title: "Kristen ITC", "Comic Sans MS", Verdana, sans-serif;
+    --page-max: 1100px;
+    --page-gutter: 10px;
 }
 
 *,
@@ -55,9 +57,17 @@ a:hover {
 main,
 .dash-main,
 .foot {
-    max-width: 1100px;
+    max-width: var(--page-max);
     margin-left: auto;
     margin-right: auto;
+    box-sizing: border-box;
+}
+
+/* Align nav/footer chrome with panels inside padded main */
+.dash-top,
+.topbar {
+    width: calc(100% - (2 * var(--page-gutter)));
+    max-width: calc(var(--page-max) - (2 * var(--page-gutter)));
 }
 
 .topbar {
@@ -77,6 +87,21 @@ main,
     color: var(--ink);
     text-decoration: none;
     background: transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.1;
+}
+
+.brand img {
+    display: block;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+}
+
+.brand span {
+    white-space: nowrap;
 }
 
 .brand:hover {
@@ -90,15 +115,26 @@ main,
 }
 
 main {
-    padding: 8px 10px 24px;
+    padding: 8px var(--page-gutter) 24px;
 }
 
-.hero {
+.start-page main {
+    padding-top: 16px;
+}
+
+.start-layout {
     display: grid;
     grid-template-columns: 1.2fr 0.8fr;
     gap: 10px;
     align-items: start;
     margin-top: 8px;
+}
+
+.start-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
 }
 
 .hero-copy {
@@ -163,6 +199,10 @@ main {
     width: 100%;
 }
 
+.login-panel .btn {
+    margin-top: 2px;
+}
+
 .login-panel {
     background: var(--panel);
     border: 1px solid #7aaa7a;
@@ -181,18 +221,25 @@ main {
     display: block;
     margin-bottom: 6px;
     font-size: 10pt;
+    text-align: left;
+}
+
+.login-panel label[hidden] {
+    display: none !important;
 }
 
 .login-panel label span {
-    display: inline-block;
-    min-width: 5.5rem;
+    display: block;
+    margin-bottom: 2px;
     font-weight: bold;
+    text-align: left;
 }
 
 .login-panel input[type="text"],
 .login-panel input[type="password"],
 .login-panel input[type="email"] {
-    width: calc(100% - 6rem);
+    display: block;
+    width: 100%;
     max-width: 220px;
     padding: 2px 4px;
     border: 1px solid #666;
@@ -250,14 +297,9 @@ main {
     color: var(--ink);
 }
 
-.below {
-    display: grid;
-    grid-template-columns: 1.2fr 0.8fr;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.below h2 {
+.below h2,
+.results h2,
+.stats h2 {
     margin: 0 0 8px;
     font-size: 12pt;
     font-family: var(--font-body);
@@ -305,6 +347,24 @@ main {
 
 .score {
     font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.score .score-final,
+.score .score-reg {
+    display: inline;
+}
+
+.score .score-reg {
+    margin-left: 4px;
+    font-weight: normal;
+    font-size: 9pt;
+}
+
+.score .score-hint {
+    font-weight: normal;
+    font-size: 8pt;
 }
 
 .stats dl {
@@ -343,9 +403,24 @@ main {
 .foot {
     padding: 8px 10px 16px;
     display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
     justify-content: space-between;
+    align-items: center;
     font-size: 9pt;
     color: var(--muted);
+}
+
+.foot-copy,
+.foot-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    align-items: center;
+}
+
+.foot-sep {
+    opacity: 0.6;
 }
 
 .foot a {
@@ -353,8 +428,7 @@ main {
 }
 
 @media (max-width: 860px) {
-    .hero,
-    .below {
+    .start-layout {
         grid-template-columns: 1fr;
     }
 
@@ -376,15 +450,9 @@ main {
         text-align: left;
     }
 
-    .login-panel label span {
-        display: block;
-        margin-bottom: 2px;
-    }
-
     .login-panel input[type="text"],
     .login-panel input[type="password"],
     .login-panel input[type="email"] {
-        width: 100%;
         max-width: none;
     }
 }

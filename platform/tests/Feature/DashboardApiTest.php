@@ -92,7 +92,7 @@ class DashboardApiTest extends TestCase
                 ],
                 'polls' => ['text' => null, 'select' => null],
                 'navigation' => [
-                    ['symbol' => 'nav_start.png', 'name' => 'Start', 'link' => '/platform/', 'style' => 'big'],
+                    ['symbol' => 'nav_team.png', 'name' => 'Aufstellung', 'link' => '/platform/lineup', 'style' => 'big'],
                 ],
             ]);
         });
@@ -105,7 +105,8 @@ class DashboardApiTest extends TestCase
             ->assertSee('tester', false)
             ->assertSee('Testliga', false)
             ->assertSee('Hallo News', false)
-            ->assertSee('Start', false)
-            ->assertSee('href="logout"', false);
+            ->assertSee('SoccerSportsfan', false)
+            ->assertSee('nav_start.png', false)
+            ->assertDontSee('>Start</span>', false);
     }
 }

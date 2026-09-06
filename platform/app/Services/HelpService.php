@@ -52,12 +52,8 @@ class HelpService
      */
     public static function guestNavigation(): array
     {
-        return [
-            ['symbol' => 'nav_start.png', 'name' => 'Start', 'link' => '/platform/', 'style' => 'big'],
-            ['symbol' => 'nav_user.png', 'name' => 'Registrieren', 'link' => '/platform/registration', 'style' => 'big'],
-            ['symbol' => 'nav_help.png', 'name' => 'Regeln', 'link' => '/platform/help', 'style' => 'big'],
-            ['symbol' => 'nav_login.png', 'name' => 'Anmelden', 'link' => '/platform/', 'style' => 'big'],
-        ];
+        // Start is the brand link in the header; no other guest nav items.
+        return [];
     }
 
     /**

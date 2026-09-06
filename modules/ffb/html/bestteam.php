@@ -21,7 +21,6 @@
 	<script type="text/javascript" src="<?php echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>info_popup.js"></script>
 	<script type="text/javascript" src="<?php echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>ranking.js"></script>
 	<script type="text/javascript" src="<?php echo FFB_BASE_PATH.FFB_SCRIPT_PATH?>playerinfo.js"></script>
-	<script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>countdown.js"></script>
 </head>
 
 <body onLoad="javascript:initMyteam(<?= $this->session->user_id?>);">
@@ -35,18 +34,7 @@
 				<div id="Navigation">
 			        <?php include(FFB_VIEWER_PATH.'navigation.php')?>
 			    </div>
-			    <div class="rounddiv_countdown">
-					<div class="roundcorner_light">
-						<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
-						<div id="Countdown">
-					        <script>
-					            loadMe();
-					        </script>
-					    </div>
-					    <div style="clear:both;"></div>
-						<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
-					</div>
-				</div>
+
 			    <div style="clear:both;"></div>
 			</div>
 			<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
@@ -84,7 +72,6 @@
 			                </div>
 			            </div>
 			        </div>
-			        <div class="printLineup" id="print_lineup"></div>
 			    </div>
 			    <b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
 			</div>

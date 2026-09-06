@@ -2,11 +2,11 @@ Hallo {{ $nickname }}!
 
 Du hast für die Seite http://{{ $siteHost }} ein neues Passwort angefordert.
 
-Dein neues Passwort lautet: {{ $newPassword }}
+Klicke auf folgenden Link, um ein neues Passwort zu setzen (gültig für 24 Stunden):
 
-Du kannst dich jetzt mit deinem Benutzernamen und dem neuen Passwort einloggen!
+{{ $resetUrl }}
 
-Nach dem Anmelden kannst du unter "Account" das Passwort wieder ändern.
+Wenn du diese Anfrage nicht gestellt hast, kannst du diese E-Mail ignorieren.
 
 --
 Du kannst auf dieses E-Mail nicht antworten. Wende dich bei Fragen oder Problemen an die auf der Website angegebene Adresse!

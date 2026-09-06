@@ -192,7 +192,7 @@ class registration extends FFB_Auth_No
 		$add_text = $this->config->mail_activation_add_text;
 		$subject = 'Account-Aktivierung';
 		$server_name = $_SERVER["SERVER_NAME"];
-		$act_link = 'http://'.$server_name.'/users/registration/activate.html?id='.$activation_code.'-'.$user_id;
+		$act_link = 'http://'.$server_name.'/platform/registration/activate?id='.$activation_code.'-'.$user_id;
 		$message = '';
 		$message .= "Hallo ".$_POST['user_nickname']."!\n\n";
 		$message .= "Du hast dich auf http://".$server_name." registriert.\n";

@@ -119,20 +119,18 @@ class RegistrationPageTest extends TestCase
     public function test_password_reset_returns_json(): void
     {
         $this->mock(RegistrationService::class, function ($mock) {
-            $mock->shouldReceive('resetPassword')->once()->andReturn([
+            $mock->shouldReceive('requestPasswordReset')->once()->andReturn([
                 'ok' => true,
-                'message' => 'Ein neues Passwort wurde an deine Email-Adresse gesendet!',
+                'message' => 'Wenn ein Account mit diesen Angaben existiert, hast du eine E-Mail mit einem Link zum Zurücksetzen des Passworts erhalten.',
             ]);
         });
 
         $this->postJson('/registration/password', [
-            'user_nickname' => 'tester',
-            'user_email' => 'tester@example.com',
+            'identifier' => 'tester@example.com',
         ])
             ->assertOk()
             ->assertJson([
                 'status' => 200,
-                'message' => 'Ein neues Passwort wurde an deine Email-Adresse gesendet!',
             ]);
     }
 }

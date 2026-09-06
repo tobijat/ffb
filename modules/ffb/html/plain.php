@@ -12,7 +12,6 @@
 	<link rel="stylesheet" href="<?php echo FFB_BASE_PATH.FFB_INCLUDE_PATH?>standard.css" type="text/css">
     <script type="text/javascript" src="<?php echo FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
 	<script type="text/javascript" src="<?php echo FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
-	<script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>countdown.js"></script>
 </head>
 
 <body>
@@ -25,18 +24,7 @@
 				<div id="Navigation">
 			        <?php include(FFB_VIEWER_PATH.'navigation.php')?>
 			    </div>
-			    <div class="rounddiv_countdown">
-					<div class="roundcorner_light">
-						<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
-						<div id="Countdown">
-					        <script>
-					            loadMe();
-					        </script>
-					    </div>
-					    <div style="clear:both;"></div>
-						<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
-					</div>
-				</div>
+
 			    <div style="clear:both;"></div>
 			</div>
 			<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
