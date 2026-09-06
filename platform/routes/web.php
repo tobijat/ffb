@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountPageController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BestteamPageController;
+use App\Http\Controllers\HelpPageController;
 use App\Http\Controllers\LineupPageController;
 use App\Http\Controllers\MyteamPageController;
 use App\Http\Controllers\StartController;
@@ -23,6 +24,7 @@ Route::get('/userscore', [UserscorePageController::class, 'show'])->name('usersc
 Route::get('/myteam', [MyteamPageController::class, 'show'])->name('myteam');
 Route::get('/bestteam', [BestteamPageController::class, 'show'])->name('bestteam');
 Route::get('/lineup', [LineupPageController::class, 'show'])->name('lineup');
+Route::get('/help', [HelpPageController::class, 'show'])->name('help');
 
 Route::get('/account', [AccountPageController::class, 'show'])->name('account');
 Route::post('/account', [AccountPageController::class, 'update'])->name('account.update');
