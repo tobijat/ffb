@@ -1,0 +1,8 @@
+.admin-layout {
+    display: grid;
+    gap: 10px;
+}
+
+.admin-main {
+    padding: 8px 10px 12px;
+}
