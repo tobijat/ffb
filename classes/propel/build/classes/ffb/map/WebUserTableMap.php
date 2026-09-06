@@ -65,7 +65,6 @@ class WebUserTableMap extends TableMap {
 	{
     $this->addRelation('WebUserDetails', 'WebUserDetails', RelationMap::ONE_TO_ONE, array('user_id' => 'user_id', ), 'CASCADE', null);
     $this->addRelation('WebUserPermissions', 'WebUserPermissions', RelationMap::ONE_TO_ONE, array('user_id' => 'user_id', ), 'CASCADE', null);
-    $this->addRelation('FfbComments', 'FfbComments', RelationMap::ONE_TO_MANY, array('user_id' => 'comments_user_id', ), 'CASCADE', null);
     $this->addRelation('FfbPollResult', 'FfbPollResult', RelationMap::ONE_TO_MANY, array('user_id' => 'poll_result_user_id', ), null, null);
     $this->addRelation('FfbInvitation', 'FfbInvitation', RelationMap::ONE_TO_MANY, array('user_id' => 'invitation_sender_id', ), 'CASCADE', null);
     $this->addRelation('FfbUserteam', 'FfbUserteam', RelationMap::ONE_TO_MANY, array('user_id' => 'userteam_user_id', ), null, null);

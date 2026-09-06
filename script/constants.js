@@ -42,15 +42,3 @@ function handleAjaxError()
 {
   alert("Sorry, an error has been detected.\nClick OK and try to reload the site!");
 }
-
-
-//** print text - open popup print close ****
-function printText(text, title) {
-	popup = window.open('',title,'toolbar=no,menubar=no,width=500,height=768,location=no');
- 	popup.document.open();
-    popup.document.write(	'<html><head><title>'+title+'</title></head><body>' +
-							text +
-							'<a href="javascript:window.print();"><img src="../../images/ffb/symbols/print.gif" /></a> <a href="javascript:window.close();">schlie&szlig;en</a><br /></body></html>');
-	popup.name = title;
-	popup.focus();
-}

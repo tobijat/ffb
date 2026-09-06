@@ -59,11 +59,11 @@ class FFB_Mail {
 		if($this->type == 'reminder') {
 			$mailtype_name = 'Erinnerungsmails';
 			$ms_code = $user_perm->getUserPermissionsFfbMailserviceReminder();
-			$ms_link = 'http://'.$server_name.'/users/mailservice/cancel.html?t=r&id='.$ms_code.'-'.$user_id;
+			$ms_link = 'http://'.$server_name.'/platform/mailservice/cancel?t=r&id='.$ms_code.'-'.$user_id;
 		} elseif($this->type == 'info') {
 			$mailtype_name = 'Infomails';
 			$ms_code = $user_perm->getUserPermissionsFfbMailserviceInfo();
-			$ms_link = 'http://'.$server_name.'/users/mailservice/cancel.html?t=i&id='.$ms_code.'-'.$user_id;
+			$ms_link = 'http://'.$server_name.'/platform/mailservice/cancel?t=i&id='.$ms_code.'-'.$user_id;
 		} else {
 			return false;
 		}

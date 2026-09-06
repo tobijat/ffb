@@ -1,0 +1,94 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Services\AwardsPopupService;
+use App\Services\MatchPopupService;
+use App\Services\PlayerPopupService;
+use App\Services\ProfilePopupService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class PopupController extends Controller
+{
+    public function __construct(
+        private readonly ProfilePopupService $profiles,
+        private readonly MatchPopupService $matches,
+        private readonly PlayerPopupService $players,
+        private readonly AwardsPopupService $awards,
+    ) {
+    }
+
+    public function user(Request $request, int $userId): JsonResponse
+    {
+        $viewerId = (int) $request->attributes->get('ffb_user_id');
+        $result = $this->profiles->forUser($viewerId, $userId);
+
+        return $this->respond($result);
+    }
+
+    public function userAwards(int $userId): JsonResponse
+    {
+        $result = $this->awards->forUser($userId);
+
+        return $this->respond($result);
+    }
+
+    public function match(int $matchId): JsonResponse
+    {
+        $result = $this->matches->forMatch($matchId);
+
+        return $this->respond($result);
+    }
+
+    public function player(Request $request, int $playerteamId): JsonResponse
+    {
+        $viewerId = (int) $request->attributes->get('ffb_user_id');
+        $result = $this->players->forPlayerteam($viewerId, $playerteamId);
+
+        return $this->respond($result);
+    }
+
+    public function playerRound(Request $request, int $playerteamId, int $matchroundId): JsonResponse
+    {
+        $viewerId = (int) $request->attributes->get('ffb_user_id');
+        $result = $this->players->forRound($viewerId, $playerteamId, $matchroundId);
+
+        return $this->respond($result);
+    }
+
+    public function playerChart(Request $request, int $playerteamId): JsonResponse
+    {
+        $gameId = (int) $request->query('game_id', 0);
+        $result = $this->players->chart($playerteamId, $gameId);
+
+        return $this->respond($result);
+    }
+
+    public function playerPrices(Request $request, int $playerteamId): JsonResponse
+    {
+        $gameId = (int) $request->query('game_id', 0);
+        $result = $this->players->prices($playerteamId, $gameId);
+
+        return $this->respond($result);
+    }
+
+    /**
+     * @param  array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}  $result
+     */
+    private function respond(array $result): JsonResponse
+    {
+        if (! $result['ok']) {
+            return response()->json([
+                'status' => $result['status'],
+                'error' => $result['error'],
+            ], $result['status']);
+        }
+
+        return response()->json([
+            'status' => 200,
+            'data' => $result['data'],
+        ]);
+    }
+}
