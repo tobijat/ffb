@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class News extends Model
 {
@@ -13,6 +12,15 @@ class News extends Model
     protected $primaryKey = 'news_id';
 
     public $timestamps = false;
+
+    protected $fillable = [
+        'news_title',
+        'news_text',
+        'news_symbol',
+        'news_priority',
+        'news_game_id',
+        'news_date',
+    ];
 
     public function game(): BelongsTo
     {

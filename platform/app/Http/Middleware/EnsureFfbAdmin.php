@@ -21,8 +21,13 @@ class EnsureFfbAdmin
         $userId = $this->auth->userId($request);
 
         if ($userId <= 0) {
+            $path = trim($request->path(), '/');
+            $destination = $path === ''
+                ? '/platform/admin'
+                : '/platform/'.$path;
+
             return redirect()->route('start', [
-                'destination' => '/platform/admin',
+                'destination' => $destination,
             ]);
         }
 
