@@ -37,4 +37,18 @@ return [
 
         return rtrim($path, '/').'/';
     })(),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Legacy image filesystem root (profiles, flags, …)
+    |--------------------------------------------------------------------------
+    |
+    | Absolute path to images/ffb under the legacy document root. Profile
+    | uploads write here so existing /images/ffb/… URLs keep working.
+    |
+    */
+    'legacy_images_path' => env(
+        'FFB_LEGACY_IMAGES_PATH',
+        dirname(base_path()).DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'ffb'
+    ),
 ];

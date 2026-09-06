@@ -33,14 +33,14 @@
         </div>
 
         <div class="user-card">
-            <a href="{{ $legacyBase }}users/account/accountDetails.html" title="Profil bearbeiten">
+            <a href="/platform/profile" title="Profil bearbeiten">
                 <img class="user-photo" src="{{ $user['photo_url'] }}" alt="Foto {{ $user['user_nickname'] }}" width="48" height="48">
             </a>
             <div>
                 <p class="hello">Hallo <strong>{{ $user['user_nickname'] }}</strong></p>
                 <p class="muted">Du bist angemeldet.</p>
                 @if ($user['update_profile_nag'])
-                    <p class="nag">Dein Profil ist noch leer. <a href="{{ $legacyBase }}users/account/accountDetails.html">Profil aktualisieren</a></p>
+                    <p class="nag">Dein Profil ist noch leer. <a href="/platform/profile">Profil aktualisieren</a></p>
                 @endif
             </div>
         </div>

@@ -29,6 +29,9 @@
                 @csrf
                 <h2>Anmelden</h2>
                 <div id="login-feedback" class="feedback" hidden></div>
+                @if (!empty($accountMessage))
+                    <div class="feedback feedback-ok" role="status">{!! $accountMessage !!}</div>
+                @endif
 
                 <label>
                     <span>Nickname</span>

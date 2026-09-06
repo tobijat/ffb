@@ -29,7 +29,7 @@
         </div>
 
         <div class="user-card">
-            <a href="{{ $legacyBase }}users/account/accountDetails.html" title="Profil bearbeiten">
+            <a href="/platform/profile" title="Profil bearbeiten">
                 <img class="user-photo" src="{{ $user['photo_url'] }}" alt="Foto {{ $user['user_nickname'] }}" width="48" height="48">
             </a>
             <div>
@@ -80,15 +80,17 @@
             apiBase: 'api',
             legacyBase: @json($legacyBase),
             userId: @json($user['user_id']),
+            selectedGameId: @json($data['selected_game_id'] ?? 0),
             pageSize: 75,
         };
         window.FFB_MODAL = {
             apiBase: 'api',
             legacyBase: @json($legacyBase),
+            selectedGameId: @json($data['selected_game_id'] ?? 0),
         };
     </script>
     <script src="js/modal.js?v=5" defer></script>
-    <script src="js/player-modal.js?v=2" defer></script>
+    <script src="js/player-modal.js?v=4" defer></script>
     <script src="js/userscore.js?v=8" defer></script>
 </body>
 </html>
