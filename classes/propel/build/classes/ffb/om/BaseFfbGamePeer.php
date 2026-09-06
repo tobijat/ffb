@@ -373,9 +373,6 @@ abstract class BaseFfbGamePeer {
 	 */
 	public static function clearRelatedInstancePool()
 	{
-		// Invalidate objects in FfbCommentsPeer instance pool, 
-		// since one or more of them may be deleted by ON DELETE CASCADE/SETNULL rule.
-		FfbCommentsPeer::clearInstancePool();
 		// Invalidate objects in FfbMatchroundPeer instance pool, 
 		// since one or more of them may be deleted by ON DELETE CASCADE/SETNULL rule.
 		FfbMatchroundPeer::clearInstancePool();
@@ -722,11 +719,6 @@ abstract class BaseFfbGamePeer {
 		foreach ($objects as $obj) {
 
 
-			// delete related FfbComments objects
-			$criteria = new Criteria(FfbCommentsPeer::DATABASE_NAME);
-			
-			$criteria->add(FfbCommentsPeer::COMMENTS_GAME_ID, $obj->getGameId());
-			$affectedRows += FfbCommentsPeer::doDelete($criteria, $con);
 
 			// delete related FfbMatchround objects
 			$criteria = new Criteria(FfbMatchroundPeer::DATABASE_NAME);

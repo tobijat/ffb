@@ -22,9 +22,6 @@ class userscore extends FFB_Auth_User {
 		$this->htmlFile = 'userscore.php';
 		$this->htmlTitle = 'User Scores';
 
-		require_once('comments.php');
-    	comments::loadInto($this, 'userscore', null, DEFAULT_COMMENT_NUMBER, false);
-
         /*
         $user = WebUserPeer::retrieveByPK($this->session->user_id);
     	$user->setUserDateLaction(date('Y-m-d H:i:s', time()));

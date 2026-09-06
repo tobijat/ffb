@@ -54,7 +54,6 @@ class FfbGameTableMap extends TableMap {
 	public function buildRelations()
 	{
     $this->addRelation('WebUserDetails', 'WebUserDetails', RelationMap::ONE_TO_MANY, array('game_id' => 'user_details_ffb_selected_game', ), null, null);
-    $this->addRelation('FfbComments', 'FfbComments', RelationMap::ONE_TO_MANY, array('game_id' => 'comments_game_id', ), 'CASCADE', null);
     $this->addRelation('FfbPoll', 'FfbPoll', RelationMap::ONE_TO_MANY, array('game_id' => 'poll_game_id', ), null, null);
     $this->addRelation('FfbMatchround', 'FfbMatchround', RelationMap::ONE_TO_MANY, array('game_id' => 'matchround_game_id', ), 'CASCADE', null);
     $this->addRelation('FfbNews', 'FfbNews', RelationMap::ONE_TO_MANY, array('game_id' => 'news_game_id', ), 'CASCADE', null);

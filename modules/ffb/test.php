@@ -20,8 +20,6 @@ class test extends FFB_Auth_No {
     }
     
     public function testme() {
-      require_once('comments.php');
-      comments::loadInto($this, 'myteam', null, DEFAULT_COMMENT_NUMBER, false);
     }
 
 	public function localhost() {
