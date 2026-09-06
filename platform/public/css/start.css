@@ -190,7 +190,8 @@ main {
 }
 
 .login-panel input[type="text"],
-.login-panel input[type="password"] {
+.login-panel input[type="password"],
+.login-panel input[type="email"] {
     width: calc(100% - 6rem);
     max-width: 220px;
     padding: 2px 4px;
@@ -381,7 +382,8 @@ main {
     }
 
     .login-panel input[type="text"],
-    .login-panel input[type="password"] {
+    .login-panel input[type="password"],
+    .login-panel input[type="email"] {
         width: 100%;
         max-width: none;
     }
