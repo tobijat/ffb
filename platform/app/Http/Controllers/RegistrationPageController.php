@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\FfbAuth;
+use App\Services\HelpService;
 use App\Services\RegistrationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -78,9 +79,9 @@ class RegistrationPageController extends Controller
         );
     }
 
-    public function resetPassword(Request $request): JsonResponse
+    public function requestPasswordReset(Request $request): JsonResponse
     {
-        $result = $this->registration->resetPassword($request->all(), $request);
+        $result = $this->registration->requestPasswordReset($request->all(), $request);
 
         if ($result['ok']) {
             return response()->json([
@@ -93,5 +94,53 @@ class RegistrationPageController extends Controller
             'status' => 422,
             'errors' => $result['errors'] ?? ['Unbekannter Fehler.'],
         ], 422);
+    }
+
+    public function showPasswordReset(Request $request, int $user): View|RedirectResponse
+    {
+        $webUser = \App\Models\WebUser::query()->find($user);
+        if (! $webUser) {
+            return redirect()->route('start')->with(
+                'account_message',
+                '<strong>Es sind Fehler aufgetreten:</strong><br>Der Link ist ungültig oder abgelaufen.'
+            );
+        }
+
+        return view('password-reset', [
+            'nickname' => (string) $webUser->user_nickname,
+            'formAction' => $request->fullUrl(),
+            'errors' => [],
+            'legacyBase' => '/',
+            'data' => [
+                'navigation' => HelpService::guestNavigation(),
+            ],
+        ]);
+    }
+
+    public function updatePasswordReset(Request $request, int $user): View|RedirectResponse
+    {
+        $webUser = \App\Models\WebUser::query()->find($user);
+        if (! $webUser) {
+            return redirect()->route('start')->with(
+                'account_message',
+                '<strong>Es sind Fehler aufgetreten:</strong><br>Der Link ist ungültig oder abgelaufen.'
+            );
+        }
+
+        $result = $this->registration->completePasswordReset($webUser, $request->all());
+
+        if ($result['ok']) {
+            return redirect()->route('start')->with('account_message', $result['message']);
+        }
+
+        return view('password-reset', [
+            'nickname' => (string) $webUser->user_nickname,
+            'formAction' => $request->fullUrl(),
+            'errors' => $result['errors'] ?? [],
+            'legacyBase' => '/',
+            'data' => [
+                'navigation' => HelpService::guestNavigation(),
+            ],
+        ]);
     }
 }

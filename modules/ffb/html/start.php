@@ -25,8 +25,6 @@
 	<script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>userprofile.js"></script>
 	<script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>matchdata.js"></script>
 	<script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>info_popup.js"></script>
-	<script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>countdown.js"></script>
-
 	<link rel="alternate" type="application/rss+xml" href="http://feeds2.feedburner.com/ffbat" title="Fantasy Football News (ffb.tobijat.at)" />
 </head>
 
@@ -41,18 +39,7 @@
 			        <?php include(FFB_VIEWER_PATH.'navigation.php')?>
 			    </div>
 
-			    <div class="rounddiv_countdown">
-					<div class="roundcorner_light">
-						<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
-						<div id="Countdown">
-					        <script>
-					            loadMe();
-					        </script>
-					    </div>
-					    <div style="clear:both;"></div>
-						<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
-					</div>
-				</div>
+
 			    <div style="clear:both;"></div>
 			</div>
 			<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>

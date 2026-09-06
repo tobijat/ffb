@@ -10,6 +10,7 @@ use App\Models\WebUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 
 class RegistrationService
 {
@@ -179,46 +180,83 @@ class RegistrationService
     }
 
     /**
+     * Request a password-reset link by nickname OR email.
+     * Always returns the same success message (no account enumeration).
+     *
      * @param  array<string, mixed>  $input
      * @return array{ok: true, message: string}|array{ok: false, errors: list<string>}
      */
-    public function resetPassword(array $input, Request $request): array
+    public function requestPasswordReset(array $input, Request $request): array
     {
-        $nickname = trim((string) ($input['user_nickname'] ?? ''));
-        $email = trim((string) ($input['user_email'] ?? ''));
+        $identifier = trim((string) (
+            $input['identifier']
+            ?? $input['user_nickname']
+            ?? $input['user_email']
+            ?? ''
+        ));
 
-        if ($nickname === '' || $email === '') {
+        if ($identifier === '') {
             return [
                 'ok' => false,
-                'errors' => ['Du musst alle Felder ausfüllen, die mit einem * markiert sind!'],
+                'errors' => ['Bitte Benutzername oder E-Mail eingeben.'],
             ];
         }
 
         $user = WebUser::query()
-            ->where('user_nickname', $nickname)
-            ->where('user_email', $email)
+            ->where(function ($query) use ($identifier): void {
+                $query->where('user_nickname', $identifier)
+                    ->orWhere('user_email', $identifier);
+            })
             ->first();
 
-        if (! $user) {
-            return [
-                'ok' => false,
-                'errors' => ['Benutzer oder Email existieren nicht oder gehören nicht zusammen!'],
-            ];
+        if ($user && filter_var((string) $user->user_email, FILTER_VALIDATE_EMAIL)) {
+            $resetUrl = URL::temporarySignedRoute(
+                'password.reset',
+                now()->addDay(),
+                ['user' => (int) $user->user_id],
+            );
+
+            Mail::to((string) $user->user_email)->send(new PasswordResetMail(
+                (string) $user->user_nickname,
+                $resetUrl,
+                (string) $request->getHost(),
+            ));
         }
-
-        $newPassword = $this->generatePassword();
-        $user->user_password = $this->passwords->hash($newPassword);
-        $user->save();
-
-        Mail::to((string) $user->user_email)->send(new PasswordResetMail(
-            (string) $user->user_nickname,
-            $newPassword,
-            (string) $request->getHost(),
-        ));
 
         return [
             'ok' => true,
-            'message' => 'Ein neues Passwort wurde an deine Email-Adresse gesendet!',
+            'message' => 'Wenn ein Account mit diesen Angaben existiert, hast du eine E-Mail mit einem Link zum Zurücksetzen des Passworts erhalten.',
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array{ok: true, message: string}|array{ok: false, errors: list<string>}
+     */
+    public function completePasswordReset(WebUser $user, array $input): array
+    {
+        $password = (string) ($input['user_password'] ?? '');
+        $passwordVal = (string) ($input['user_password_val'] ?? '');
+        $errors = [];
+
+        if ($password === '' || $passwordVal === '') {
+            $errors[] = 'Bitte beide Passwort-Felder ausfüllen.';
+        } elseif (strlen($password) < 5 || strlen($password) > 32) {
+            $errors[] = 'Passwort: min. Länge ist 5, max. Länge ist 32!';
+        } elseif (strcmp($password, $passwordVal) !== 0) {
+            $errors[] = 'Die Passwörter stimmen nicht überein!';
+        }
+
+        if ($errors !== []) {
+            return ['ok' => false, 'errors' => $errors];
+        }
+
+        $user->user_password = $this->passwords->hash($password);
+        $user->save();
+
+        return [
+            'ok' => true,
+            'message' => 'Dein Passwort wurde geändert. Du kannst dich jetzt damit anmelden.',
         ];
     }
 
@@ -413,21 +451,5 @@ class RegistrationService
         }
 
         return $years;
-    }
-
-    private function generatePassword(int $length = 8): string
-    {
-        $possible = '0123456789bcdfghjkmnpqrstvwxyz';
-        $max = strlen($possible) - 1;
-        $password = '';
-
-        while (strlen($password) < $length) {
-            $char = $possible[random_int(0, $max)];
-            if (! str_contains($password, $char)) {
-                $password .= $char;
-            }
-        }
-
-        return $password;
     }
 }

@@ -382,7 +382,7 @@ class account extends FFB_Auth_User
 		$add_text = $this->config->mail_activation_add_text;
 		$subject = 'E-Mail Änderung';
 		$server_name = $_SERVER["SERVER_NAME"];
-		$act_link = 'http://'.$server_name.'/users/registration/activateEmail.html?id='.$activation_code.'-'.$user_id;
+		$act_link = 'http://'.$server_name.'/platform/registration/activate-email?id='.$activation_code.'-'.$user_id;
 		$message = '';
 		$message .= "Hallo ".$_POST['user_nickname']."!\n\n";
 		$message .= "Du hast auf http://".$server_name." deine E-Mail Adresse geändert.\n";

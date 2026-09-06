@@ -30,6 +30,7 @@ class StartPageTest extends TestCase
                         'guest_team' => 'Beta',
                         'guest_score' => '1',
                         'guest_flag' => 'ger',
+                        'score_html' => '2:1',
                         'date' => '01.01.2026',
                     ],
                 ],
@@ -40,11 +41,20 @@ class StartPageTest extends TestCase
 
         $response->assertOk()
             ->assertSee('SoccerSportsfan', false)
+            ->assertSee('class="brand"', false)
+            ->assertSee('nav_start.png', false)
+            ->assertSee('class="dash-top"', false)
+            ->assertSee('css/start.css?v=9', false)
             ->assertSee('Stell dein Team auf.', false)
+            ->assertSee('Kostenlos registrieren', false)
+            ->assertDontSee('>Registrieren</span>', false)
+            ->assertDontSee('>Anmelden</span>', false)
             ->assertSee('Testliga', false)
             ->assertSee('Alpha', false)
             ->assertSee('action="login"', false)
-            ->assertSee('js/start.js?v=2', false);
+            ->assertDontSee('id="register-link"', false)
+            ->assertDontSee('btn-block', false)
+            ->assertSee('js/start.js?v=6', false);
     }
 
     public function test_start_api_returns_payload(): void

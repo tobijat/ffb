@@ -17,7 +17,7 @@
 
     <header class="dash-top">
         <div class="dash-top-main">
-            <a class="brand" href="/platform/">SoccerSportsfan</a>
+            @include('partials.brand')
             <nav class="dash-nav" aria-label="Hauptnavigation">
                 @foreach ($nav as $item)
                     <a class="nav-big" href="{{ $item['link'] }}" title="{{ $item['name'] }}">
@@ -112,10 +112,8 @@
         </aside>
     </main>
 
-    <footer class="foot">
-        <span>SoccerSportsfan</span>
-        <a href="logout">Ausloggen</a>
-    </footer>
+
+    @include('partials.footer')
 
     <script>
         window.FFB_MYTEAM = {

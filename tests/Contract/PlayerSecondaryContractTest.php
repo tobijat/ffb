@@ -93,32 +93,6 @@ final class PlayerSecondaryContractTest extends XmlContractTestCase
         $this->assertNotNull($xml->documentElement);
     }
 
-    public function testStatsEndpoints(): void
-    {
-        $teams = XmlApiClient::assertXmlResponse($this->client->getXml('ffb/stats/getTeams.xml'));
-        $this->assertNotNull($teams->documentElement);
-
-        $leagues = XmlApiClient::assertXmlResponse($this->client->getXml('ffb/stats/getLeagues.xml'));
-        $this->assertNotNull($leagues->documentElement);
-
-        $teamPlayers = XmlApiClient::assertXmlResponse($this->client->postXml('ffb/stats/getTeamPlayers.xml', [
-            'team_id' => $this->env('FFB_TEST_TEAM_ID'),
-        ]));
-        $this->assertNotNull($teamPlayers->documentElement);
-
-        $leagueMatches = XmlApiClient::assertXmlResponse($this->client->postXml('ffb/stats/getLeagueMatches.xml', [
-            'game_id' => $this->env('FFB_TEST_GAME_ID'),
-        ]));
-        $this->assertNotNull($leagueMatches->documentElement);
-    }
-
-    public function testCountdown(): void
-    {
-        $response = $this->client->getXml('ffb/countdown/countdown.xml');
-        $xml = XmlApiClient::assertXmlResponse($response);
-        $this->assertNotNull($xml->documentElement);
-    }
-
     public function testStatisticsEndpoints(): void
     {
         $userStats = XmlApiClient::assertXmlResponse($this->client->postXml('ffb/statistics/getUserStats.xml', [

@@ -18,7 +18,6 @@
     <link rel="stylesheet" href="<?= FFB_BASE_PATH.FFB_INCLUDE_PATH?>login.css" type="text/css">
     <script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>prototype.js"></script>
     <script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>constants.js"></script>
-    <script type="text/javascript" src="<?= FFB_BASE_PATH.FFB_SCRIPT_PATH?>countdown.js"></script>
     <script type="text/javascript" src="<?= FFB_BASE_PATH.SCRIPT_PATH?>user/login.js"></script>
 
 
@@ -179,18 +178,7 @@ function newsticker()
 			        <?php include(FFB_VIEWER_PATH.'navigation.php')?>
 			    </div>
 
-			    <div class="rounddiv_countdown">
-					<div class="roundcorner_light">
-						<b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b>
-						<div id="Countdown">
-					        <script>
-					            loadMe();
-					        </script>
-					    </div>
-					    <div style="clear:both;"></div>
-						<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
-					</div>
-				</div>
+
 			    <div style="clear:both;"></div>
 			</div>
 			<b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
@@ -218,7 +206,7 @@ function newsticker()
 						<!-- disabled for WM 2014 -->
 						<!--
 						<div style="float:right; width:58%; text-align:left; padding-top:25px;">
-			                <a href="<?= FFB_BASE_PATH?>users/registration" title="teilnehmen">
+			                <a href="<?= FFB_BASE_PATH?>platform/registration" title="teilnehmen">
 								<img border="0" src="<?= FFB_BASE_PATH?>/images/ffb/backgrounds/beapartofit.gif" width="200px"
 									onmouseover="javascript:this.src='<?= FFB_BASE_PATH?>/images/ffb/backgrounds/beapartofit2.gif'"
 									onmouseout="javascript:this.src='<?= FFB_BASE_PATH?>/images/ffb/backgrounds/beapartofit.gif'"/>
@@ -226,7 +214,7 @@ function newsticker()
 						</div>
 						//-->
 						<div style="clear:both;"></div>
-		                <!--b>Registriere dich jetzt und <a class="nav" href="<?= FFB_BASE_PATH?>users/registration">sei <i>kostenlos</i> dabei</a>!</b-->
+		                <!--b>Registriere dich jetzt und <a class="nav" href="<?= FFB_BASE_PATH?>platform/registration">sei <i>kostenlos</i> dabei</a>!</b-->
 		            </div>
 		        </div>
 		        <b class="b4b"></b><b class="b3b"></b><b class="b2b"></b><b class="b1b"></b>
@@ -363,7 +351,7 @@ function newsticker()
 						                </div>
 						                <div id="formline_center">
 						                    <a href="javascript:void(0);" onclick="javascript:forgottenPassword();">Passwort vergessen?</a>
-						                    <a href="<?php  echo FFB_BASE_PATH."users/registration";?>" title="neuen Benutzer anlegen">Registrieren</a>
+						                    <a href="<?php  echo FFB_BASE_PATH."platform/registration";?>" title="neuen Benutzer anlegen">Registrieren</a>
 						                    <!--dummy login für geris handy browser-->
 						                    <!--a href="javascript:authenticate();" style="font-size:50%;" onclick="javascript:authenticate();return;" title="Login" >&nbsp;L&nbsp;</a-->
 						                    <!--end-->

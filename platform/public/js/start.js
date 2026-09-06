@@ -3,12 +3,20 @@
     const form = document.getElementById('login');
     const feedback = document.getElementById('login-feedback');
     const forgotBtn = document.getElementById('forgot-password');
-    const forgotEmailWrap = document.getElementById('forgot-email-wrap');
-    const forgotEmail = document.getElementById('forgot-email');
+    const backBtn = document.getElementById('back-to-login');
+    const title = document.getElementById('login-title');
+    const submitBtn = document.getElementById('login-submit');
+    const nicknameLabel = document.getElementById('label-nickname');
+    const nicknameInput = document.getElementById('user_nickname');
+    const passwordField = document.getElementById('field-password');
+    const passwordInput = document.getElementById('user_password');
+    const registerLink = document.getElementById('register-link');
 
     if (!form) {
         return;
     }
+
+    let mode = 'login';
 
     function showFeedback(html, kind) {
         feedback.hidden = false;
@@ -16,7 +24,7 @@
         feedback.innerHTML = html;
     }
 
-    function collectLoginErrors(data, httpStatus) {
+    function collectErrors(data, httpStatus) {
         if (data && Array.isArray(data.errors) && data.errors.length) {
             return data.errors;
         }
@@ -47,6 +55,44 @@
         return headers;
     }
 
+    function setMode(next) {
+        mode = next;
+        form.setAttribute('data-mode', next);
+        feedback.hidden = true;
+
+        if (next === 'forgot') {
+            title.textContent = 'Passwort vergessen';
+            nicknameLabel.textContent = 'Benutzername oder E-Mail';
+            nicknameInput.required = true;
+            nicknameInput.autocomplete = 'username';
+            passwordField.hidden = true;
+            passwordInput.required = false;
+            passwordInput.disabled = true;
+            passwordInput.value = '';
+            submitBtn.textContent = 'Reset-Link senden';
+            forgotBtn.hidden = true;
+            backBtn.hidden = false;
+            if (registerLink) {
+                registerLink.hidden = true;
+            }
+            nicknameInput.focus();
+            return;
+        }
+
+        title.textContent = 'Anmelden';
+        nicknameLabel.textContent = 'Nickname';
+        nicknameInput.autocomplete = 'username';
+        passwordField.hidden = false;
+        passwordInput.disabled = false;
+        passwordInput.required = true;
+        submitBtn.textContent = 'Anmelden';
+        forgotBtn.hidden = false;
+        backBtn.hidden = true;
+        if (registerLink) {
+            registerLink.hidden = false;
+        }
+    }
+
     async function postLogin() {
         const body = new URLSearchParams(new FormData(form));
         const response = await fetch(config.loginUrl || 'login', {
@@ -56,7 +102,6 @@
             credentials: 'same-origin',
             redirect: 'error',
         });
-
         const text = await response.text();
         let data = null;
         try {
@@ -69,9 +114,7 @@
 
     async function postForgotPassword() {
         const body = new URLSearchParams();
-        body.set('user_nickname', form.user_nickname.value.trim());
-        body.set('user_email', (forgotEmail && forgotEmail.value || '').trim());
-        body.set('users_registration_getpassword', '1');
+        body.set('identifier', nicknameInput.value.trim());
 
         const response = await fetch(config.passwordUrl || 'registration/password', {
             method: 'POST',
@@ -93,57 +136,47 @@
         event.preventDefault();
         feedback.hidden = true;
 
+        if (mode === 'forgot') {
+            if (!nicknameInput.value.trim()) {
+                showFeedback('Bitte Benutzername oder E-Mail eingeben.', 'error');
+                nicknameInput.focus();
+                return;
+            }
+            try {
+                const result = await postForgotPassword();
+                if (result.data && Number(result.data.status) === 200) {
+                    showFeedback(result.data.message || 'E-Mail wurde gesendet.', 'ok');
+                    setMode('login');
+                    return;
+                }
+                showFeedback('<strong>Es sind Fehler aufgetreten:</strong><br>' + collectErrors(result.data, result.status).join('<br>'), 'error');
+            } catch (err) {
+                showFeedback('Anfrage fehlgeschlagen. Bitte später erneut versuchen.', 'error');
+            }
+            return;
+        }
+
         try {
             const result = await postLogin();
             if (result.data && Number(result.data.status) === 200) {
                 window.location.href = result.data.destination || '/platform/public/';
                 return;
             }
-            const errors = collectLoginErrors(result.data, result.status);
-            showFeedback('<strong>Es sind Fehler aufgetreten:</strong><br>' + errors.join('<br>'), 'error');
+            showFeedback('<strong>Es sind Fehler aufgetreten:</strong><br>' + collectErrors(result.data, result.status).join('<br>'), 'error');
         } catch (err) {
             showFeedback('Login derzeit nicht erreichbar. Bitte später erneut versuchen.', 'error');
         }
     });
 
     if (forgotBtn) {
-        forgotBtn.addEventListener('click', async function () {
-            feedback.hidden = true;
-            const nickname = form.user_nickname.value.trim();
-            if (!nickname) {
-                showFeedback('Bitte Nickname eingeben, dann Passwort vergessen wählen.', 'error');
-                form.user_nickname.focus();
-                return;
-            }
+        forgotBtn.addEventListener('click', function () {
+            setMode('forgot');
+        });
+    }
 
-            if (forgotEmailWrap && forgotEmailWrap.hidden) {
-                forgotEmailWrap.hidden = false;
-                if (forgotEmail) {
-                    forgotEmail.focus();
-                }
-                showFeedback('Bitte E-Mail eingeben und erneut auf „Passwort vergessen?“ klicken.', 'ok');
-                return;
-            }
-
-            if (!forgotEmail || !forgotEmail.value.trim()) {
-                showFeedback('Bitte E-Mail-Adresse eingeben.', 'error');
-                if (forgotEmail) {
-                    forgotEmail.focus();
-                }
-                return;
-            }
-
-            try {
-                const result = await postForgotPassword();
-                if (result.data && Number(result.data.status) === 200) {
-                    showFeedback(result.data.message || 'E-Mail wurde gesendet.', 'ok');
-                    return;
-                }
-                const errors = collectLoginErrors(result.data, result.status);
-                showFeedback('<strong>Es sind Fehler aufgetreten:</strong><br>' + errors.join('<br>'), 'error');
-            } catch (err) {
-                showFeedback('Anfrage fehlgeschlagen. Bitte später erneut versuchen.', 'error');
-            }
+    if (backBtn) {
+        backBtn.addEventListener('click', function () {
+            setMode('login');
         });
     }
 })();

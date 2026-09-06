@@ -6,5 +6,4 @@
     define('STATUS_CODE_SUCCESS_UPDATE', '202');
     define('STATUS_CODE_SUCCESS_DELETE', '202');
     define('MAX_NEWS_PER_SITE', 3);
-    define('MAX_COUNTDOWN_ENTRIES', 4);
 ?>

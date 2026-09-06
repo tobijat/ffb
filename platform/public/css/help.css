@@ -5,6 +5,11 @@
     align-items: start;
 }
 
+.reference-page {
+    width: 100%;
+    max-width: none;
+}
+
 .help-toc.panel,
 .help-content.panel {
     background: #99cc99;

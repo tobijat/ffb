@@ -294,53 +294,6 @@ form {
 }
 /* ***** */
 
-/* round countdown */
-.rounddiv_countdown {
-	background-color:#CCFFCC;
-    margin-right:5px;
-    float: right;
-	min-width: 20%;
-}
-#Countdown {
-    background-color: #CCFFCC;
-	font-size: 12px;
-	font-weight: bold;
-}
-.CountdownEntry {
-	/*clear: both;*/
-	padding-right:1px;
-	background-color: #CCFFCC;
-	/*border:solid black 1px;*/
-	/*margin-bottom: 2px;*/
-}
-.CountdownLeft {
-	/*text-shadow: black 1px 1px;*/
-	font-family: "Century Schoolbook";
-	float:left;
-	min-width: 150px;
-    padding-left: 2px;
-    text-align: right;
-    font-weight: bold;
-	background-color: #CCFFCC;
-}
-.CountdownRight {
-	min-width:10px;
-	font-weight: bold;
-	float: left;
-	text-align: right;
-	vertical-align: middle;
-	padding-right: 2px;
-	margin-left: 5px;
-	background-color: #CCFFCC;
-}
-.cd {
-	font-weight: bold;
-	display: inline;
-	text-align: right;
-	background-color: #CCFFCC;
-}
-/* ***** */
-
 /* round Mainright div */
 .rounddiv_mainright {
 	background:transparent;

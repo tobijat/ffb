@@ -22,7 +22,7 @@
 
     <header class="dash-top">
         <div class="dash-top-main">
-            <a class="brand" href="/platform/">SoccerSportsfan</a>
+            @include('partials.brand')
             <nav class="dash-nav" aria-label="Hauptnavigation">
                 @foreach ($nav as $item)
                     <a class="nav-big" href="{{ $item['link'] }}" title="{{ $item['name'] }}">
@@ -360,13 +360,7 @@
         </article>
     </main>
 
-    <footer class="foot">
-        <span>SoccerSportsfan</span>
-        @if ($user)
-            <a href="logout">Ausloggen</a>
-        @else
-            <a href="/platform/">Anmelden</a>
-        @endif
-    </footer>
+
+    @include('partials.footer')
 </body>
 </html>

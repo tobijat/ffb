@@ -24,7 +24,7 @@
 
     <header class="dash-top">
         <div class="dash-top-main">
-            <a class="brand" href="/platform/">SoccerSportsfan</a>
+            @include('partials.brand')
             <nav class="dash-nav" aria-label="Hauptnavigation">
                 @foreach ($nav as $item)
                     <a class="nav-big" href="{{ $item['link'] }}" title="{{ $item['name'] }}">
@@ -163,5 +163,6 @@
     </main>
 
     <script src="js/registration.js?v=1" defer></script>
+    @include('partials.footer')
 </body>
 </html>

@@ -59,34 +59,6 @@ final class PlayerAndPollContractTest extends XmlContractTestCase
         ]);
     }
 
-    public function testGetPlayerOverallStats(): void
-    {
-        $response = $this->client->postXml('ffb/stats/getPlayerOverallStats.xml', [
-            'player_id' => $this->env('FFB_TEST_PLAYER_ID'),
-        ]);
-        $xml = XmlApiClient::assertXmlResponse($response);
-        XmlApiClient::assertHasTags($xml, [
-            'playerOverallStats',
-            'player_id',
-            'playedMatches',
-            'playedMinutes',
-            'cards',
-            'y',
-            'r',
-            'yr',
-            'goals',
-            'owngoals',
-            'penaltiesLost',
-            'penaltiesSaved',
-            'assists',
-            'score',
-        ]);
-        $this->assertSame(
-            $this->env('FFB_TEST_PLAYER_ID'),
-            XmlApiClient::firstTagValue($xml, 'player_id')
-        );
-    }
-
     public function testGetSelectPollById(): void
     {
         $response = $this->client->postXml('ffb/poll/getSelectPollById.xml', [

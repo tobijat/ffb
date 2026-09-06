@@ -14,14 +14,14 @@ class PasswordResetMail extends Mailable
 
     public function __construct(
         public readonly string $nickname,
-        public readonly string $newPassword,
+        public readonly string $resetUrl,
         public readonly string $siteHost,
     ) {
     }
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Hier kommt dein neues Passwort');
+        return new Envelope(subject: 'Passwort zurücksetzen');
     }
 
     public function content(): Content
