@@ -167,6 +167,7 @@ class DashboardService
             'user_avatar' => $avatar,
             'photo_url' => '/images/ffb/profiles/photo/'.$photo,
             'update_profile_nag' => $emptyProfile,
+            'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
         ];
     }
 

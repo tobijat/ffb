@@ -53,6 +53,7 @@ class BestteamService
                     'user_nickname' => (string) $user->user_nickname,
                     'photo_url' => '/images/ffb/profiles/photo/'.$photo,
                     'is_admin' => (bool) ($user->user_admin ?? false),
+                    'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
                 ],
                 'selected_game_id' => $gameId,
                 'navigation' => app(DashboardService::class)->navigation(),

@@ -39,6 +39,7 @@ class UserscoreService
                     'user_nickname' => (string) $user->user_nickname,
                     'photo_url' => '/images/ffb/profiles/photo/'.$photo,
                     'update_profile_nag' => empty($details?->user_details_photo) || $details?->user_details_photo === 'profile_na.png',
+                    'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
                 ],
                 'selected_game_id' => $gameId,
                 'navigation' => app(DashboardService::class)->navigation(),

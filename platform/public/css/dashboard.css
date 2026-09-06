@@ -131,6 +131,16 @@
     font-size: 8pt;
 }
 
+.user-card-admin {
+    margin: 4px 0 0;
+    font-size: 8pt;
+}
+
+.user-card-admin a {
+    color: var(--ink);
+    font-weight: bold;
+}
+
 .nag {
     margin: 4px 0 0;
     color: #ff0000;

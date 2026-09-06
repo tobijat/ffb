@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountPageController;
+use App\Http\Controllers\Admin\AdminCenterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BestteamPageController;
 use App\Http\Controllers\HelpPageController;
@@ -49,3 +50,7 @@ Route::get('/account', [AccountPageController::class, 'show'])->name('account');
 Route::post('/account', [AccountPageController::class, 'update'])->name('account.update');
 Route::get('/profile', [AccountPageController::class, 'showProfile'])->name('profile');
 Route::post('/profile', [AccountPageController::class, 'updateProfile'])->name('profile.update');
+
+Route::middleware('ffb.admin')->group(function () {
+    Route::get('/admin', [AdminCenterController::class, 'show'])->name('admin.center');
+});
