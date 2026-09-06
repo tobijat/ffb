@@ -40,21 +40,17 @@ define('ADM_IMAGE_PATH','images/admin/');
 
 //Folder der allgemeinen Includes/Css
 define('INCLUDE_PATH','include/');
-//Folder der FFB Includes/Css
-define('FFB_INCLUDE_PATH','include/ffb/');
-//Folder der PICTORY Includes/Css
-define('PIC_INCLUDE_PATH','include/pictory/');
 //Folder der ADMIN Includes/Css
 define('ADM_INCLUDE_PATH','include/admin/');
+//Folder der PICTORY Includes/Css
+define('PIC_INCLUDE_PATH','include/pictory/');
 
 //Folder für allgemeine JS
 define('SCRIPT_PATH','script/');
-//Folder für die FFB JS
-define('FFB_SCRIPT_PATH','script/ffb/');
-//Folder für die PICTORY JS
-define('PIC_SCRIPT_PATH','script/pictory/');
 //Folder für die ADMIN JS
 define('ADM_SCRIPT_PATH','script/admin/');
+//Folder für die PICTORY JS
+define('PIC_SCRIPT_PATH','script/pictory/');
 
 //Folder für allgemeine VIEWER-Files
 define('VIEWER_PATH','viewer/');
