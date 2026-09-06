@@ -14,9 +14,30 @@ class LineupController extends Controller
     ) {
     }
 
+    public function options(Request $request): JsonResponse
+    {
+        $userId = (int) $request->attributes->get('ffb_user_id');
+
+        return $this->respond($this->lineups->options($userId));
+    }
+
+    public function matchround(Request $request): JsonResponse
+    {
+        $userId = (int) $request->attributes->get('ffb_user_id');
+
+        return $this->respond($this->lineups->matchroundAndTeams($userId));
+    }
+
+    public function teamPlayers(Request $request, int $teamId): JsonResponse
+    {
+        $userId = (int) $request->attributes->get('ffb_user_id');
+        $matchroundId = (int) $request->query('matchround_id', 0);
+
+        return $this->respond($this->lineups->teamPlayers($userId, $teamId, $matchroundId));
+    }
+
     /**
      * GET /api/lineup?matchround_id=…
-     * Auth: Laravel session (ffb_user_id), optional local X-FFB-User-Id bridge.
      */
     public function show(Request $request): JsonResponse
     {
@@ -39,7 +60,6 @@ class LineupController extends Controller
 
     /**
      * POST /api/lineup
-     * Body: matchround_id + playerteam_ids[11] (or legacy lineup="id,id,...")
      */
     public function store(Request $request): JsonResponse
     {
@@ -72,6 +92,24 @@ class LineupController extends Controller
         return response()->json([
             'status' => 200,
             'message' => $result['message'],
+            'data' => $result['data'],
+        ]);
+    }
+
+    /**
+     * @param  array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}  $result
+     */
+    private function respond(array $result): JsonResponse
+    {
+        if (! $result['ok']) {
+            return response()->json([
+                'status' => $result['status'],
+                'error' => $result['error'],
+            ], $result['status']);
+        }
+
+        return response()->json([
+            'status' => 200,
             'data' => $result['data'],
         ]);
     }
