@@ -1,0 +1,124 @@
+.help-layout {
+    display: grid;
+    grid-template-columns: minmax(10rem, 0.32fr) minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+}
+
+.help-toc.panel,
+.help-content.panel {
+    background: #99cc99;
+    border: 1px solid #7aaa7a;
+    padding: 8px 10px 12px;
+}
+
+.help-title {
+    margin: 0 0 8px;
+    font-size: 16pt;
+    font-weight: bold;
+    text-align: center;
+    color: var(--ink, #000);
+}
+
+.help-toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.help-toc-list li {
+    text-align: center;
+    font-size: 12pt;
+    padding: 3px 0;
+}
+
+.help-chapter {
+    margin-bottom: 14px;
+}
+
+.help-chapter-title {
+    margin: 0;
+    font-size: 12pt;
+    font-weight: bold;
+    text-align: left;
+}
+
+.help-chapter-text {
+    margin-top: 5px;
+    font-size: 10pt;
+    text-align: justify;
+    line-height: 1.35;
+}
+
+.help-chapter-text ul {
+    margin: 6px 0 6px 1.2rem;
+    padding: 0;
+}
+
+.help-note {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.help-points-wrap {
+    text-align: center;
+    margin-top: 8px;
+    overflow-x: auto;
+}
+
+table.help-points {
+    margin: 0 auto;
+    font-size: 10pt;
+    border: solid black 1px;
+    background-color: #99cc99;
+    border-collapse: collapse;
+}
+
+.help-points th {
+    background-color: #ccffcc;
+    font-size: 11pt;
+    text-align: center;
+    padding: 2px 6px;
+    border: solid #ccffcc 1px;
+}
+
+.help-points td {
+    padding: 2px 6px;
+    text-align: center;
+    border: solid #ccffcc 1px;
+}
+
+.help-points tr:hover {
+    background-color: #ccffcc;
+}
+
+a.nolink,
+a.nolink:link,
+a.nolink:visited,
+a.nolink:hover,
+a.nolink:active {
+    color: #000;
+    text-decoration: none;
+}
+
+a.nolink u {
+    text-decoration: underline;
+}
+
+.help-guest-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.help-guest-top .user-card {
+    display: none;
+}
+
+@media (max-width: 800px) {
+    .help-layout {
+        grid-template-columns: 1fr;
+    }
+}
