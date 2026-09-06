@@ -32,7 +32,7 @@ class RegistrationPageTest extends TestCase
                     ],
                     'recaptcha_enabled' => false,
                     'recaptcha_site_key' => '',
-                    'tos_url' => '/resource/Registrierung.pdf',
+                    'tos_url' => '/platform/public/resource/Registrierung.pdf',
                 ],
             ]);
         });
@@ -89,7 +89,7 @@ class RegistrationPageTest extends TestCase
                     'navigation' => [],
                     'recaptcha_enabled' => false,
                     'recaptcha_site_key' => '',
-                    'tos_url' => '/resource/Registrierung.pdf',
+                    'tos_url' => '/platform/public/resource/Registrierung.pdf',
                 ],
             ]);
         });

@@ -66,8 +66,23 @@ return [
     |--------------------------------------------------------------------------
     | Terms PDF (registration TOS link)
     |--------------------------------------------------------------------------
+    |
+    | Served from platform/public/resource/Registrierung.pdf.
+    |
     */
-    'registration_tos_url' => env('FFB_REGISTRATION_TOS_URL', '/resource/Registrierung.pdf'),
+    'registration_tos_url' => (static function (): string {
+        $override = env('FFB_REGISTRATION_TOS_URL');
+        if (is_string($override) && $override !== '') {
+            return $override;
+        }
+
+        $path = parse_url((string) env('APP_URL', 'http://localhost/platform/public'), PHP_URL_PATH);
+        $home = (! is_string($path) || $path === '' || $path === '/')
+            ? '/platform/public'
+            : rtrim($path, '/');
+
+        return $home.'/resource/Registrierung.pdf';
+    })(),
 
     /*
     |--------------------------------------------------------------------------

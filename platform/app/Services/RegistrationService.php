@@ -34,7 +34,7 @@ class RegistrationService
                 'navigation' => HelpService::guestNavigation(),
                 'recaptcha_enabled' => $this->recaptcha->enabled(),
                 'recaptcha_site_key' => $this->recaptcha->siteKey(),
-                'tos_url' => (string) config('ffb.registration_tos_url', '/resource/Registrierung.pdf'),
+                'tos_url' => (string) config('ffb.registration_tos_url'),
             ],
         ];
     }

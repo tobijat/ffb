@@ -163,7 +163,7 @@ var RecaptchaOptions = {
 				    </div>
 				    <div id="reg_formline">
 				        <div id="reg_formdescr">* Ich habe die
-							<a href="<?= FFB_BASE_PATH;?>resource/Registrierung.pdf" target="_blank">Bedingungen</a> akzeptiert:</div>
+							<a href="/platform/public/resource/Registrierung.pdf" target="_blank">Bedingungen</a> akzeptiert:</div>
 				        <div id="reg_forminput" onMouseOver="javascript:dispRegHelp('user_tos');">
 				            <input type="checkbox" name="user_tos" value="user_tos_yes">
 				        </div>
