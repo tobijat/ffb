@@ -5,9 +5,5 @@ array('symbol'=>'nav_player.png','name'=>'Mannschaft','link'=>'/platform/myteam'
 array('symbol'=>'nav_topflop.png','name'=>'Top&Flop','link'=>'/platform/bestteam'),
 array('symbol'=>'nav_results.png','name'=>'Rangliste','link'=>'/platform/userscore'),
 array('symbol'=>'nav_help.png','name'=>'Regeln','link'=>'/platform/help','style'=>'small'),
-//array('symbol'=>'nav_invitation.png','name'=>'Einladen','link'=>'ffb/user/invite.html','style'=>'small'),
-array('symbol'=>'nav_user.png','name'=>'Account','link'=>'/platform/account','style'=>'small'),
-array('symbol'=>'nav_profile.png','name'=>'Profil','link'=>'/platform/profile','style'=>'small'),
-array('symbol'=>'nav_logout.png','name'=>'Ausloggen','link'=>'logout','style'=>'small')
 );
 ?>

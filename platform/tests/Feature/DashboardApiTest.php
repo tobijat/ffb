@@ -107,6 +107,10 @@ class DashboardApiTest extends TestCase
             ->assertSee('Hallo News', false)
             ->assertSee('SoccerSportsfan', false)
             ->assertSee('nav_start.png', false)
-            ->assertDontSee('>Start</span>', false);
+            ->assertSee('user-card-logout', false)
+            ->assertSee('Ausloggen', false)
+            ->assertDontSee('>Start</span>', false)
+            ->assertDontSee('>Account</span>', false)
+            ->assertDontSee('>Profil</span>', false);
     }
 }

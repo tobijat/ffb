@@ -16,26 +16,16 @@ class AccountPageController extends Controller
     ) {
     }
 
-    public function show(Request $request): View|RedirectResponse
+    public function show(Request $request): RedirectResponse
     {
         $userId = $this->auth->userId($request);
         if ($userId <= 0) {
             return redirect()->route('start', [
-                'destination' => '/platform/account',
+                'destination' => '/platform/profile?tab=account',
             ]);
         }
 
-        $result = $this->accounts->pagePayload($userId);
-        if (! $result['ok']) {
-            return redirect()->route('start');
-        }
-
-        return view('account', [
-            'data' => $result['data'],
-            'legacyBase' => '/',
-            'errors' => [],
-            'answer' => null,
-        ]);
+        return redirect()->route('profile', ['tab' => 'account']);
     }
 
     public function update(Request $request): View|RedirectResponse
@@ -43,7 +33,7 @@ class AccountPageController extends Controller
         $userId = $this->auth->userId($request);
         if ($userId <= 0) {
             return redirect()->route('start', [
-                'destination' => '/platform/account',
+                'destination' => '/platform/profile?tab=account',
             ]);
         }
 
@@ -53,21 +43,14 @@ class AccountPageController extends Controller
             return redirect()->route('start')->with('account_message', $result['message']);
         }
 
-        $payload = $this->accounts->pagePayload(
+        return $this->renderProfileHub(
             $userId,
+            'account',
+            $result['ok'] ? [] : ($result['errors'] ?? []),
+            $result['ok'] ? ($result['message'] ?? null) : null,
             $result['form'] ?? null,
+            null,
         );
-
-        if (! $payload['ok']) {
-            return redirect()->route('start');
-        }
-
-        return view('account', [
-            'data' => $payload['data'],
-            'legacyBase' => '/',
-            'errors' => $result['ok'] ? [] : ($result['errors'] ?? []),
-            'answer' => $result['ok'] ? ($result['message'] ?? null) : null,
-        ]);
     }
 
     public function showProfile(Request $request): View|RedirectResponse
@@ -79,17 +62,9 @@ class AccountPageController extends Controller
             ]);
         }
 
-        $result = $this->accounts->profilePayload($userId);
-        if (! $result['ok']) {
-            return redirect()->route('start');
-        }
+        $tab = $this->resolveTab($request->query('tab'));
 
-        return view('account-profile', [
-            'data' => $result['data'],
-            'legacyBase' => '/',
-            'errors' => [],
-            'answer' => null,
-        ]);
+        return $this->renderProfileHub($userId, $tab);
     }
 
     public function updateProfile(Request $request): View|RedirectResponse
@@ -103,20 +78,48 @@ class AccountPageController extends Controller
 
         $result = $this->accounts->updateProfile($userId, $request->all(), $request);
 
-        $payload = $this->accounts->profilePayload(
+        return $this->renderProfileHub(
             $userId,
+            'profile',
+            $result['ok'] ? [] : ($result['errors'] ?? []),
+            $result['ok'] ? ($result['message'] ?? null) : null,
+            null,
             $result['form'] ?? null,
         );
+    }
 
-        if (! $payload['ok']) {
+    private function resolveTab(mixed $tab): string
+    {
+        return $tab === 'account' ? 'account' : 'profile';
+    }
+
+    /**
+     * @param  list<string>  $errors
+     * @param  array<string, mixed>|null  $accountFormOverride
+     * @param  array<string, mixed>|null  $profileFormOverride
+     */
+    private function renderProfileHub(
+        int $userId,
+        string $tab,
+        array $errors = [],
+        ?string $answer = null,
+        ?array $accountFormOverride = null,
+        ?array $profileFormOverride = null,
+    ): View|RedirectResponse {
+        $account = $this->accounts->pagePayload($userId, $accountFormOverride);
+        $profile = $this->accounts->profilePayload($userId, $profileFormOverride);
+
+        if (! $account['ok'] || ! $profile['ok']) {
             return redirect()->route('start');
         }
 
         return view('account-profile', [
-            'data' => $payload['data'],
+            'tab' => $tab,
+            'data' => $profile['data'],
+            'accountData' => $account['data'],
             'legacyBase' => '/',
-            'errors' => $result['ok'] ? [] : ($result['errors'] ?? []),
-            'answer' => $result['ok'] ? ($result['message'] ?? null) : null,
+            'errors' => $errors,
+            'answer' => $answer,
         ]);
     }
 }

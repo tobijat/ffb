@@ -26,9 +26,6 @@ class DashboardService
             ['symbol' => 'nav_topflop.png', 'name' => 'Top&Flop', 'link' => '/platform/bestteam', 'style' => 'big'],
             ['symbol' => 'nav_results.png', 'name' => 'Rangliste', 'link' => '/platform/userscore', 'style' => 'big'],
             ['symbol' => 'nav_help.png', 'name' => 'Regeln', 'link' => '/platform/help', 'style' => 'big'],
-            ['symbol' => 'nav_user.png', 'name' => 'Account', 'link' => '/platform/account', 'style' => 'big'],
-            ['symbol' => 'nav_profile.png', 'name' => 'Profil', 'link' => '/platform/profile', 'style' => 'big'],
-            ['symbol' => 'nav_logout.png', 'name' => 'Ausloggen', 'link' => 'logout', 'style' => 'big'],
         ];
     }
 
