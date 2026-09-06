@@ -1,6 +1,6 @@
-# XML API contract tests
+# Admin XML contract tests
 
-Protect Prototype AJAX `.xml` contracts before larger refactors.
+Protect administration AJAX `.xml` contracts. Player UI contracts were retired with the Laravel platform.
 
 ## Setup
 
@@ -24,13 +24,14 @@ Each suite run:
 1. Ensures permanent user `ffb_contract_tester` / `testpass123` (kept between runs)
 2. Creates a fresh marked game (`game_description = ffb_contract_test_fixture`) with default options (cloned from latest options row), past + future matchrounds, and matches using existing teams/players
 3. Points the tester at that game and grants `ffb_admin` for it
-4. Tears the whole game world down on shutdown (user stays)
+4. Logs in via `/platform/public/login` (sets Laravel session + legacy PHPSESSID bridge)
+5. Tears the whole game world down on shutdown (user stays)
 
 PHPUnit auto-starts `php -S 127.0.0.1:8765 tests/router.php` if that port is free.
 
 ## Layout
 
-- `tests/catalog/player-endpoints.md` — JS ↔ URL ↔ expected tags
-- `tests/Contract/` — PHPUnit HTTP contract tests
+- `tests/Contract/AdminContractTest.php` — administration XML contracts
 - `tests/Support/FixtureManager.php` — ephemeral game fixtures + teardown
+- `tests/Support/XmlApiClient.php` — HTTP client (platform login + admin XML)
 - `tests/router.php` — pretty-URL router for the built-in server
