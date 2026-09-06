@@ -1,6 +1,6 @@
 <?php
 $nav_array = array(
-array('symbol'=>'nav_start.png','name'=>'ffb start','link'=>'ffb'),
+array('symbol'=>'nav_start.png','name'=>'ffb start','link'=>'platform/'),
 array('symbol'=>'nav_admin_start.png','name'=>'admin start','link'=>'administration/start'),
 array('symbol'=>'nav_team.png','name'=>'team','link'=>'administration/team'),
 array('symbol'=>'nav_player.png','name'=>'player','link'=>'administration/player'),
@@ -13,6 +13,6 @@ array('symbol'=>'nav_config.png','name'=>'configuration','link'=>'administration
 array('symbol'=>'nav_mail.png','name'=>'mailservice','link'=>'administration/mailservice'),
 array('symbol'=>'nav_news.png','name'=>'news','link'=>'administration/news'),
 array('symbol'=>'nav_award.png','name'=>'awards','link'=>'administration/awards'),
-array('symbol'=>'nav_logout.png','name'=>'logout','link'=>'users/logout')
+array('symbol'=>'nav_logout.png','name'=>'logout','link'=>'platform/logout')
 );
 ?>

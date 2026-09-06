@@ -13,6 +13,7 @@ class LoginService
     public function __construct(
         private readonly FfbPassword $passwords,
         private readonly FfbAuth $auth,
+        private readonly LegacyPhpSession $legacySession,
     ) {
     }
 
@@ -26,7 +27,7 @@ class LoginService
             return ['ok' => false, 'errors' => ['Bitte Nickname und Passwort eingeben.']];
         }
 
-        $user = WebUser::query()->where('user_nickname', $nickname)->first();
+        $user = WebUser::query()->with('details')->where('user_nickname', $nickname)->first();
         if (! $user) {
             return ['ok' => false, 'errors' => ["Benutzername '{$nickname}' existiert nicht."]];
         }
@@ -73,6 +74,7 @@ class LoginService
         $user->save();
 
         $this->auth->login((int) $user->user_id, $request);
+        $this->syncLegacySession($user, $isAdmin);
 
         return [
             'ok' => true,
@@ -93,6 +95,23 @@ class LoginService
         }
 
         return (string) config('ffb.home_path', '/platform/public/');
+    }
+
+    private function syncLegacySession(WebUser $user, bool $isAdmin): void
+    {
+        $details = $user->details;
+
+        $this->legacySession->put([
+            'user_id' => (int) $user->user_id,
+            'user_nickname' => (string) $user->user_nickname,
+            'user_email' => (string) $user->user_email,
+            'user_name' => trim((string) $user->user_fname.' '.(string) $user->user_lname),
+            'user_avatar' => (string) ($details?->user_details_avatar ?: 'avatar_na.png'),
+            'user_photo' => (string) ($details?->user_details_photo ?: 'profile_na.png'),
+            'game_id_player' => (int) ($details?->user_details_ffb_selected_game ?? 0),
+            'admin_flag' => $isAdmin ? 1 : 0,
+            'admin_section' => $isAdmin ? self::AREA_PREFIX : null,
+        ]);
     }
 
     /**
