@@ -22,7 +22,7 @@ class DashboardService
     {
         return [
             ['symbol' => 'nav_start.png', 'name' => 'Start', 'link' => '/platform/', 'style' => 'big'],
-            ['symbol' => 'nav_team.png', 'name' => 'Aufstellung', 'link' => '/ffb/lineup', 'style' => 'big'],
+            ['symbol' => 'nav_team.png', 'name' => 'Aufstellung', 'link' => '/platform/lineup', 'style' => 'big'],
             ['symbol' => 'nav_player.png', 'name' => 'Mannschaft', 'link' => '/platform/myteam', 'style' => 'big'],
             ['symbol' => 'nav_topflop.png', 'name' => 'Top&Flop', 'link' => '/platform/bestteam', 'style' => 'big'],
             ['symbol' => 'nav_results.png', 'name' => 'Rangliste', 'link' => '/platform/userscore', 'style' => 'big'],

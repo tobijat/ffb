@@ -139,7 +139,7 @@
             const opt = document.createElement('option');
             opt.value = String(index);
             opt.textContent = round.matchround_title;
-            opt.className = 'ffb_select_' + (index % 2);
+            opt.className = 'ffb-select-' + (index % 2);
             if (Number(round.matchround_actual) === 1) {
                 opt.selected = true;
                 roundIndex = index;

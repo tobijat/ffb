@@ -15,6 +15,10 @@ Route::get('/start', [StartController::class, 'data']);
 Route::middleware([ResolveFfbUser::class])->group(function () {
     Route::get('/lineup', [LineupController::class, 'show']);
     Route::post('/lineup', [LineupController::class, 'store']);
+    Route::get('/lineup/options', [LineupController::class, 'options']);
+    Route::get('/lineup/matchround', [LineupController::class, 'matchround']);
+    Route::get('/lineup/teams/{teamId}/players', [LineupController::class, 'teamPlayers'])
+        ->whereNumber('teamId');
 
     Route::get('/dashboard', [DashboardController::class, 'show']);
     Route::post('/game/select', [DashboardController::class, 'selectGame']);

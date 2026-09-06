@@ -3,11 +3,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Top / Flop Teams — SoccerSportsfan</title>
+    <title>Aufstellung — SoccerSportsfan</title>
     <link rel="stylesheet" href="css/start.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/modal.css?v=5">
     <link rel="stylesheet" href="css/myteam.css?v=6">
+    <link rel="stylesheet" href="css/lineup.css?v=2">
 </head>
 <body class="dash-body">
     @php
@@ -39,37 +40,15 @@
         </div>
     </header>
 
-    <main class="dash-main myteam-layout">
-        <section class="panel myteam-pitch" aria-label="Top und Flop Teams">
-            <div class="myteam-info">
-                <p class="myteam-round" id="round-meta">Lade Spielrunden…</p>
-                <div class="myteam-stats">
-                    <div class="myteam-stat myteam-stat-score">
-                        <img
-                            src="{{ $legacyBase }}images/ffb/symbols/symbol_score.png"
-                            alt=""
-                            width="28"
-                            height="28"
-                        >
-                        <div>
-                            <span class="label">Punkte</span>
-                            <strong id="team-score">–</strong>
-                        </div>
-                    </div>
-                    <p class="myteam-user" id="selected-team"></p>
-                    <div class="myteam-stat myteam-stat-credits">
-                        <img
-                            src="{{ $legacyBase }}images/ffb/symbols/symbol_credits.png"
-                            alt=""
-                            width="28"
-                            height="28"
-                        >
-                        <div>
-                            <span class="label">Credits</span>
-                            <strong id="team-price">–</strong>
-                        </div>
-                    </div>
+    <main class="dash-main lineup-layout">
+        <section class="panel myteam-pitch" aria-label="Aufstellung">
+            <div class="lineup-info">
+                <div class="lineup-info-main">
+                    <p class="lineup-round" id="round-meta">Lade Spielrunde…</p>
+                    <div class="lineup-actions" id="lineup-actions"></div>
+                    <div class="lineup-messages" id="lineup-messages"></div>
                 </div>
+                <div class="lineup-credits" id="lineup-credits" hidden></div>
             </div>
 
             <div
@@ -79,34 +58,27 @@
             >
                 <div class="field-line field-g"><div id="line-g" class="line-players"></div></div>
                 <div class="field-line field-d"><div id="line-d" class="line-players"></div></div>
-                <div class="field-line field-m"><div id="line-m" class="line-players"><p class="muted">Lade Team…</p></div></div>
+                <div class="field-line field-m"><div id="line-m" class="line-players"><p class="muted">Lade…</p></div></div>
                 <div class="field-line field-s"><div id="line-s" class="line-players"></div></div>
             </div>
             <p class="hint" id="pitch-message" hidden></p>
         </section>
 
         <aside class="myteam-side">
-            <div class="panel">
-                <label class="round-label" for="matchround_selection">Spielrunde</label>
-                <select id="matchround_selection" class="ffb-select" disabled>
-                    <option>Lade Spielrunden…</option>
-                </select>
-
-                <label class="round-label" for="team_selection">Team</label>
-                <select id="team_selection" class="ffb-select" disabled>
-                    <option value="top">Top-Team der Runde</option>
-                    <option value="flop">Flop-Team der Runde</option>
-                </select>
+            <div class="panel" id="matchlist-panel">
+                <div id="matchlist">
+                    <p class="muted">Lade Spiele…</p>
+                </div>
             </div>
 
-            <div class="panel" id="matchlist-panel">
-                <div class="myteam-tabs" id="side-tabs" hidden>
-                    <button type="button" class="myteam-tab" data-side-tab="matches">Spiele anzeigen</button>
-                    <button type="button" class="myteam-tab is-active" data-side-tab="stats">Statistiken anzeigen</button>
-                </div>
-                <h2 id="side-panel-title">Statistiken</h2>
-                <div id="matchlist">
-                    <p class="muted">Lade Statistiken…</p>
+            <div class="panel" id="picker-panel">
+                <label class="round-label" for="team_selection">Mannschaft</label>
+                <select id="team_selection" class="ffb-select" disabled>
+                    <option>Lade Teams…</option>
+                </select>
+                <p class="lineup-selected-team" id="selected-team"></p>
+                <div id="playerlist" class="playerlist">
+                    <p class="muted">Mannschaft wählen…</p>
                 </div>
             </div>
         </aside>
@@ -118,11 +90,12 @@
     </footer>
 
     <script>
-        window.FFB_BESTTEAM = {
+        window.FFB_LINEUP = {
             apiBase: 'api',
             legacyBase: @json($legacyBase),
             userId: @json($user['user_id']),
             selectedGameId: @json($data['selected_game_id'] ?? 0),
+            gameOver: @json((bool) ($data['game_over'] ?? false)),
         };
         window.FFB_MODAL = {
             apiBase: 'api',
@@ -132,6 +105,6 @@
     </script>
     <script src="js/modal.js?v=5" defer></script>
     <script src="js/player-modal.js?v=4" defer></script>
-    <script src="js/bestteam.js?v=3" defer></script>
+    <script src="js/lineup.js?v=2" defer></script>
 </body>
 </html>
