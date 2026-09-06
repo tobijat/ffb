@@ -366,4 +366,90 @@ class PopupApiTest extends TestCase
             ->assertJsonPath('data.played', true)
             ->assertJsonPath('data.stats.playerstats_score', 7);
     }
+
+    public function test_player_chart_requires_auth(): void
+    {
+        $this->getJson('/api/popups/player/55/chart')->assertStatus(401);
+        $this->getJson('/api/popups/player/55/prices')->assertStatus(401);
+    }
+
+    public function test_player_chart_returns_payload(): void
+    {
+        $this->actingAsFfbUser();
+
+        $this->mock(PlayerPopupService::class, function ($mock) {
+            $mock->shouldReceive('chart')->once()->with(55, 26)->andReturn([
+                'ok' => true,
+                'data' => [
+                    'game_id' => 26,
+                    'player' => ['playerteam_id' => 55, 'player_name' => 'Max'],
+                    'rounds' => [
+                        [
+                            'matchround_id' => 1,
+                            'matchround_title' => 'R1',
+                            'played' => true,
+                            'score' => 5,
+                            'minutes' => 90,
+                            'goals' => 1,
+                            'assists' => 0,
+                            'cards' => 'n',
+                        ],
+                    ],
+                ],
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->getJson('/api/popups/player/55/chart?game_id=26')
+            ->assertOk()
+            ->assertJsonPath('data.game_id', 26)
+            ->assertJsonPath('data.rounds.0.score', 5);
+    }
+
+    public function test_player_chart_requires_game_id(): void
+    {
+        $this->actingAsFfbUser();
+
+        $this->mock(PlayerPopupService::class, function ($mock) {
+            $mock->shouldReceive('chart')->once()->with(55, 0)->andReturn([
+                'ok' => false,
+                'status' => 422,
+                'error' => 'game_id is required',
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->getJson('/api/popups/player/55/chart')
+            ->assertStatus(422)
+            ->assertJsonPath('error', 'game_id is required');
+    }
+
+    public function test_player_prices_returns_payload(): void
+    {
+        $this->actingAsFfbUser();
+
+        $this->mock(PlayerPopupService::class, function ($mock) {
+            $mock->shouldReceive('prices')->once()->with(55, 26)->andReturn([
+                'ok' => true,
+                'data' => [
+                    'game_id' => 26,
+                    'player' => ['playerteam_id' => 55, 'player_name' => 'Max'],
+                    'points' => [
+                        [
+                            'matchround_id' => 1,
+                            'matchround_title' => 'R1',
+                            'price' => 4.5,
+                            'power' => 3.2,
+                            'av_power' => 2.1,
+                        ],
+                    ],
+                ],
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->getJson('/api/popups/player/55/prices?game_id=26')
+            ->assertOk()
+            ->assertJsonPath('data.points.0.price', 4.5);
+    }
 }

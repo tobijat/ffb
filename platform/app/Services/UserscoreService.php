@@ -116,6 +116,46 @@ class UserscoreService
     }
 
     /**
+     * Past (ended) matchrounds only — used by bestteam / Top&Flop.
+     *
+     * @return array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}
+     */
+    public function pastMatchrounds(int $userId): array
+    {
+        $gameId = $this->resolveGameId($userId);
+        if ($gameId <= 0) {
+            return ['ok' => false, 'status' => 422, 'error' => 'Kein Spiel ausgewählt.'];
+        }
+
+        $past = Matchround::query()
+            ->where('matchround_game_id', $gameId)
+            ->where('matchround_enddate', '<', now())
+            ->orderByDesc('matchround_startdate')
+            ->get();
+
+        $matchrounds = $past->map(fn (Matchround $r) => $this->formatMatchround($r))->values()->all();
+        if ($matchrounds !== []) {
+            $matchrounds[0]['matchround_actual'] = 1;
+        }
+
+        $ids = array_column($matchrounds, 'matchround_id');
+        $matchesByRound = $this->matchesForRounds($ids);
+
+        foreach ($matchrounds as &$row) {
+            $row['matches'] = $matchesByRound[(int) $row['matchround_id']] ?? [];
+        }
+        unset($row);
+
+        return [
+            'ok' => true,
+            'data' => [
+                'selected_game_id' => $gameId,
+                'matchrounds' => $matchrounds,
+            ],
+        ];
+    }
+
+    /**
      * @return array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}
      */
     public function overall(int $userId, string $sortFlag = '', string $sortDir = 'desc'): array

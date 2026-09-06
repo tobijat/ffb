@@ -8,6 +8,7 @@
     const config = window.FFB_MODAL || {};
     const apiBase = (config.apiBase || 'api').replace(/\/$/, '');
     const legacyBase = config.legacyBase || '/';
+    const selectedGameId = Number(config.selectedGameId) || 0;
     const MAX_ROUNDS = 15;
     let lastPlayerData = null;
 
@@ -296,15 +297,7 @@
         );
     }
 
-    function renderPlayerChartBody(player, mode) {
-        const chartUrl =
-            legacyBase +
-            'ffb/player/getPlayerInfoImg.img?playerteam_id=' +
-            encodeURIComponent(player.playerteam_id) +
-            (mode === 'price' ? '&type=dynamic' : '') +
-            '&rnr=' +
-            Math.floor(Math.random() * 11);
-
+    function renderPlayerChartShell(mode, playerName) {
         let caption;
         if (mode === 'price') {
             caption =
@@ -328,15 +321,393 @@
 
         return (
             '<div class="ffb-player-chart">' +
-            '<img src="' +
-            escapeHtml(chartUrl) +
-            '" alt="Spielerchart: ' +
-            escapeHtml(player.player_name) +
-            '">' +
+            '<canvas class="ffb-player-chart-canvas" width="480" height="160" aria-label="Spielerchart: ' +
+            escapeHtml(playerName) +
+            '"></canvas>' +
             caption +
-            '<p class="ffb-player-chart-note">Hinweis: Chart kommt noch vom Legacy-Endpunkt und braucht ggf. Legacy-Login.</p>' +
             '</div>'
         );
+    }
+
+    function loadSymbol(name) {
+        return new Promise(function (resolve) {
+            const img = new Image();
+            img.onload = function () {
+                resolve(img);
+            };
+            img.onerror = function () {
+                resolve(null);
+            };
+            img.src = symbolUrl(name);
+        });
+    }
+
+    function drawGraphicChart(canvas, rounds) {
+        const count = rounds.length;
+        const scoreDelimiter = 30;
+        const baseline = 100;
+        const height = 151;
+        const width = Math.max(400, count * 20);
+        const colLen = count > 0 ? Math.round(width / count) : 1;
+
+        canvas.width = width + 1;
+        canvas.height = height;
+        canvas.style.width = '100%';
+        canvas.style.maxWidth = width + 'px';
+        canvas.style.height = 'auto';
+
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ccffcc';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const colors = {
+            darkGreen: '#236e23',
+            yellow: '#f0f014',
+            red: '#f00000',
+            gray: '#e6e1e1',
+            darkGray: '#646464',
+            orange: '#ff8000',
+            blue: '#1919e1',
+            black: '#000000',
+        };
+
+        Promise.all([loadSymbol('stats_goal.gif'), loadSymbol('stats_assist.gif')]).then(
+            function (imgs) {
+                const goalImg = imgs[0];
+                const assistImg = imgs[1];
+                let prevMinutesY = null;
+
+                for (let index = 0; index < count; index++) {
+                    const elem = rounds[index];
+                    const x0 = index * colLen;
+                    const x1 = (index + 1) * colLen;
+
+                    ctx.strokeStyle = colors.darkGray;
+                    ctx.setLineDash([2, 2]);
+                    ctx.beginPath();
+                    ctx.moveTo(x0, 0);
+                    ctx.lineTo(x0, height);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    if (elem.cards === 'y') {
+                        ctx.fillStyle = colors.yellow;
+                        ctx.fillRect(x0 + 1, 1, colLen - 2, height - 2);
+                    } else if (elem.cards === 'r' || elem.cards === 'yr') {
+                        ctx.fillStyle = colors.red;
+                        ctx.fillRect(x0 + 1, 1, colLen - 2, height - 2);
+                    }
+
+                    if (elem.played) {
+                        const normalized = Math.round((Number(elem.score) || 0) / (scoreDelimiter / 100));
+                        let upDownStart = baseline;
+                        let upDownEnd = baseline - normalized;
+                        if (normalized < 0) {
+                            upDownStart = 101;
+                            upDownEnd = 102 + -1 * normalized;
+                            ctx.fillStyle = colors.orange;
+                        } else {
+                            ctx.fillStyle = colors.darkGreen;
+                        }
+                        const top = Math.min(upDownStart, upDownEnd);
+                        const bottom = Math.max(upDownStart, upDownEnd);
+                        ctx.fillRect(x0 + 1, top, colLen - 2, Math.max(1, bottom - top));
+
+                        let statsW = Math.min(15, colLen);
+                        const goals = Number(elem.goals) || 0;
+                        if (goalImg && goals > 0) {
+                            for (let g = 1; g <= goals; g++) {
+                                ctx.drawImage(
+                                    goalImg,
+                                    x0 + 2,
+                                    upDownStart - 2 - g * 12,
+                                    statsW,
+                                    Math.round(statsW)
+                                );
+                            }
+                        }
+                        const assists = Number(elem.assists) || 0;
+                        if (assistImg && assists > 0) {
+                            for (let a = 1; a <= assists; a++) {
+                                ctx.drawImage(
+                                    assistImg,
+                                    x0 + 2,
+                                    upDownStart - 5 + a * 12,
+                                    statsW,
+                                    Math.round(statsW * (42 / 38))
+                                );
+                            }
+                        }
+
+                        ctx.fillStyle = colors.black;
+                        ctx.font = '12px sans-serif';
+                        ctx.fillText(String(elem.score), x0 + colLen / 2 - 4, upDownEnd - 2);
+
+                        const minutesNorm = Math.round(((Number(elem.minutes) || 0) / 1.2 / 100) * baseline);
+                        const minutesY = baseline - minutesNorm;
+                        ctx.fillStyle = colors.blue;
+                        ctx.fillText(String(elem.minutes), x0 + colLen / 2 - 4, minutesY + 10);
+
+                        if (prevMinutesY != null) {
+                            ctx.strokeStyle = colors.black;
+                            ctx.beginPath();
+                            ctx.moveTo(x0 - colLen / 2, prevMinutesY);
+                            ctx.lineTo(x0 + colLen / 2, minutesY);
+                            ctx.stroke();
+                        }
+                        prevMinutesY = minutesY;
+                    } else {
+                        ctx.fillStyle = colors.gray;
+                        ctx.fillRect(x0 + 1, 1, colLen - 2, height - 2);
+                        prevMinutesY = baseline;
+                    }
+                }
+
+                ctx.strokeStyle = colors.darkGray;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(width, 0);
+                ctx.moveTo(0, height - 1);
+                ctx.lineTo(width, height - 1);
+                ctx.moveTo(0, 101);
+                ctx.lineTo(width, 101);
+                ctx.stroke();
+
+                ctx.setLineDash([2, 2]);
+                ctx.beginPath();
+                ctx.moveTo(width, 0);
+                ctx.lineTo(width, height);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = colors.darkGray;
+                ctx.font = '10px sans-serif';
+                ctx.fillText('90min', 2, 24);
+                ctx.fillStyle = colors.blue;
+                ctx.font = '16px sans-serif';
+                ctx.fillText('+', width - 12, baseline - 4);
+                ctx.fillText('-', width - 12, baseline + 14);
+            }
+        );
+    }
+
+    /** Natural cubic spline Y samples (port of legacy KUBSPLINE). */
+    function kubSplineY(xy, distance) {
+        const n = xy.length;
+        if (n < 2) {
+            return xy.map(function (p) {
+                return p[1];
+            });
+        }
+        if (n === 2) {
+            const out = [];
+            for (let j = 0; j <= distance; j++) {
+                const t = j / distance;
+                out.push(xy[0][1] * (1 - t) + xy[1][1] * t);
+            }
+            return out;
+        }
+
+        const rs = [];
+        for (let i = 1; i < n - 1; i++) {
+            rs[i] =
+                3 *
+                ((xy[i + 1][1] - xy[i][1]) / (xy[i + 1][0] - xy[i][0]) -
+                    (xy[i][1] - xy[i - 1][1]) / (xy[i][0] - xy[i - 1][0]));
+        }
+
+        const dim = n - 2;
+        const A = [];
+        for (let i = 1; i <= dim; i++) {
+            A[i] = [];
+            for (let j = 0; j <= dim; j++) {
+                A[i][j] = 0;
+            }
+            const mi = i;
+            A[i][i - 1] = xy[mi][0] - xy[mi - 1][0];
+            A[i][i] = 2 * (xy[mi + 1][0] - xy[mi - 1][0]);
+            A[i][i + 1] = xy[mi + 1][0] - xy[mi][0];
+        }
+
+        for (let i = 1; i <= dim; i++) {
+            for (let j = i; j <= dim; j++) {
+                for (let k = 1; k < i; k++) {
+                    A[i][j] -= A[i][k] * A[k][j];
+                }
+            }
+            for (let j = i + 1; j <= dim; j++) {
+                for (let k = 1; k < i; k++) {
+                    A[j][i] -= A[j][k] * A[k][i];
+                }
+                if (A[i][i] !== 0) {
+                    A[j][i] /= A[i][i];
+                }
+            }
+        }
+
+        const Z = [];
+        Z[1] = rs[1];
+        for (let i = 2; i <= dim; i++) {
+            Z[i] = rs[i] - A[i][i - 1] * Z[i - 1];
+        }
+
+        const B = [];
+        B[dim] = dim > 0 && A[dim][dim] !== 0 ? Z[dim] / A[dim][dim] : 0;
+        for (let i = dim - 1; i >= 1; i--) {
+            let tmp = Z[i];
+            for (let j = i + 1; j <= dim; j++) {
+                tmp -= A[i][j] * B[j];
+            }
+            B[i] = A[i][i] !== 0 ? tmp / A[i][i] : 0;
+        }
+        B[0] = 0;
+        B[dim + 1] = 0;
+
+        const C = [];
+        const AA = [];
+        for (let i = 0; i <= dim; i++) {
+            const dx = xy[i + 1][0] - xy[i][0];
+            C[i] =
+                (xy[i + 1][1] - xy[i][1]) / dx -
+                ((B[i + 1] - B[i]) * dx) / 3.0 -
+                B[i] * dx;
+            AA[i] = (B[i + 1] - B[i]) / (3.0 * dx);
+        }
+
+        const Y = [];
+        for (let i = 0; i < n - 1; i++) {
+            for (let j = i * distance; j <= (i + 1) * distance - 1; j++) {
+                const dx = j - xy[i][0];
+                Y.push(AA[i] * Math.pow(dx, 3) + B[i] * Math.pow(dx, 2) + C[i] * dx + xy[i][1]);
+            }
+        }
+        Y.push(xy[n - 1][1]);
+        return Y;
+    }
+
+    function drawPriceChart(canvas, points) {
+        const count = points.length;
+        const scoreDelimiter = 22;
+        const baseline = 100;
+        const imgLength = 400;
+        const imgHeight = 121;
+        const imgZeroLine = 101;
+        const extraLen = 40;
+        const colLen = count > 1 ? Math.round(imgLength / (count - 1)) : imgLength;
+
+        canvas.width = imgLength + extraLen;
+        canvas.height = imgHeight + 24;
+        canvas.style.width = '100%';
+        canvas.style.maxWidth = canvas.width + 'px';
+        canvas.style.height = 'auto';
+
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ccffcc';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        let sumPrice = 0;
+        let sumPower = 0;
+        const xyPrice = [];
+        const xyPower = [];
+
+        for (let index = 0; index < count; index++) {
+            const elem = points[index];
+            const avNorm = Math.round(Number(elem.av_power) / (scoreDelimiter / 100));
+            ctx.fillStyle = 'rgba(175, 240, 240, 0.55)';
+            ctx.fillRect(index * colLen - colLen + 1, baseline - avNorm, colLen - 2, avNorm);
+
+            ctx.strokeStyle = '#646464';
+            ctx.setLineDash([2, 2]);
+            ctx.beginPath();
+            ctx.moveTo(index * colLen, 0);
+            ctx.lineTo(index * colLen, imgZeroLine);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            sumPrice += Number(elem.price) || 0;
+            sumPower += Number(elem.power) || 0;
+
+            const priceNorm = Math.round(Number(elem.price) / (scoreDelimiter / 100));
+            const powerNorm = Math.round(Number(elem.power) / (scoreDelimiter / 100));
+            xyPrice.push([colLen * index, priceNorm]);
+            xyPower.push([colLen * index, powerNorm]);
+
+            const marginBlack = index % 2 === 0 ? -10 : 2;
+            const marginRed = index % 2 === 0 ? 2 : -10;
+            ctx.font = '10px sans-serif';
+            ctx.fillStyle = '#000';
+            ctx.fillText(
+                Number(elem.price).toFixed(1),
+                index * colLen + 2,
+                baseline - priceNorm + marginBlack + 8
+            );
+            ctx.fillStyle = '#d20000';
+            ctx.fillText(
+                Number(elem.power).toFixed(1),
+                index * colLen + 2,
+                baseline - powerNorm + marginRed + 8
+            );
+        }
+
+        if (count > 1) {
+            const yPrice = kubSplineY(xyPrice, colLen);
+            const yPower = kubSplineY(xyPower, colLen);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#000';
+            ctx.beginPath();
+            for (let i = 0; i < yPrice.length; i++) {
+                const y = baseline - yPrice[i];
+                if (i === 0) {
+                    ctx.moveTo(i, y);
+                } else {
+                    ctx.lineTo(i, y);
+                }
+            }
+            ctx.stroke();
+
+            ctx.strokeStyle = '#d20000';
+            ctx.beginPath();
+            for (let i = 0; i < yPower.length; i++) {
+                const y = baseline - yPower[i];
+                if (i === 0) {
+                    ctx.moveTo(i, y);
+                } else {
+                    ctx.lineTo(i, y);
+                }
+            }
+            ctx.stroke();
+            ctx.lineWidth = 1;
+
+            const avPriceY = Math.round(baseline - sumPrice / count / (scoreDelimiter / 100));
+            const avPowerY = Math.round(baseline - sumPower / count / (scoreDelimiter / 100));
+            for (let i = 0; i < imgLength; i += 10) {
+                ctx.strokeStyle = '#000';
+                ctx.beginPath();
+                ctx.moveTo(i, avPriceY);
+                ctx.lineTo(i + 2, avPriceY);
+                ctx.stroke();
+                ctx.strokeStyle = '#d20000';
+                ctx.beginPath();
+                ctx.moveTo(i, avPowerY);
+                ctx.lineTo(i + 2, avPowerY);
+                ctx.stroke();
+            }
+        }
+
+        ctx.strokeStyle = '#646464';
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(imgLength + 40, 0);
+        ctx.moveTo(0, imgHeight - 1);
+        ctx.lineTo(imgLength + 40, imgHeight - 1);
+        ctx.moveTo(0, imgZeroLine);
+        ctx.lineTo(Math.round(imgLength + colLen / 2), imgZeroLine);
+        ctx.stroke();
+
+        ctx.fillStyle = '#1919e1';
+        ctx.font = '16px sans-serif';
+        ctx.fillText('+', imgLength + 10, baseline - 2);
+        ctx.fillText('-', imgLength + 10, baseline + 14);
     }
 
     function statsLine(symbol, label, amount, points, title) {
@@ -538,31 +909,71 @@
         const tab = (opts && opts.tab) || 'info';
         const showAll = !!(opts && (opts.showAll || opts.show_all || opts['show-all']));
 
+        waitingUi();
+
         if (
-            (tab === 'graphic' || tab === 'price') &&
-            lastPlayerData &&
-            Number(lastPlayerData.player.playerteam_id) === Number(playerteamId)
+            !lastPlayerData ||
+            Number(lastPlayerData.player.playerteam_id) !== Number(playerteamId)
         ) {
-            setModal(
-                renderPlayerHead(lastPlayerData.player),
-                renderPlayerTabs(playerteamId, lastPlayerData.pricemode, tab),
-                renderPlayerChartBody(lastPlayerData.player, tab)
+            const json = await fetchJson(
+                apiBase + '/popups/player/' + encodeURIComponent(playerteamId)
             );
-            return;
+            lastPlayerData = json.data;
         }
 
-        waitingUi();
-        const json = await fetchJson(apiBase + '/popups/player/' + encodeURIComponent(playerteamId));
-        lastPlayerData = json.data;
         const data = lastPlayerData;
         const activeTab = tab === 'price' || tab === 'graphic' ? tab : 'info';
 
+        if (activeTab === 'graphic') {
+            if (selectedGameId <= 0) {
+                throw new Error('game_id is required');
+            }
+            const chartJson = await fetchJson(
+                apiBase +
+                    '/popups/player/' +
+                    encodeURIComponent(playerteamId) +
+                    '/chart?game_id=' +
+                    encodeURIComponent(selectedGameId)
+            );
+            setModal(
+                renderPlayerHead(data.player),
+                renderPlayerTabs(playerteamId, data.pricemode, 'graphic'),
+                renderPlayerChartShell('graphic', data.player.player_name)
+            );
+            const canvas = document.querySelector('.ffb-player-chart-canvas');
+            if (canvas) {
+                drawGraphicChart(canvas, chartJson.data.rounds || []);
+            }
+            return;
+        }
+
+        if (activeTab === 'price') {
+            if (selectedGameId <= 0) {
+                throw new Error('game_id is required');
+            }
+            const priceJson = await fetchJson(
+                apiBase +
+                    '/popups/player/' +
+                    encodeURIComponent(playerteamId) +
+                    '/prices?game_id=' +
+                    encodeURIComponent(selectedGameId)
+            );
+            setModal(
+                renderPlayerHead(data.player),
+                renderPlayerTabs(playerteamId, data.pricemode, 'price'),
+                renderPlayerChartShell('price', data.player.player_name)
+            );
+            const canvas = document.querySelector('.ffb-player-chart-canvas');
+            if (canvas) {
+                drawPriceChart(canvas, priceJson.data.points || []);
+            }
+            return;
+        }
+
         setModal(
             renderPlayerHead(data.player),
-            renderPlayerTabs(playerteamId, data.pricemode, activeTab),
-            tab === 'graphic' || tab === 'price'
-                ? renderPlayerChartBody(data.player, tab)
-                : renderPlayerInfoBody(data, showAll)
+            renderPlayerTabs(playerteamId, data.pricemode, 'info'),
+            renderPlayerInfoBody(data, showAll)
         );
     }
 

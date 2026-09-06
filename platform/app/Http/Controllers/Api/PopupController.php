@@ -58,6 +58,22 @@ class PopupController extends Controller
         return $this->respond($result);
     }
 
+    public function playerChart(Request $request, int $playerteamId): JsonResponse
+    {
+        $gameId = (int) $request->query('game_id', 0);
+        $result = $this->players->chart($playerteamId, $gameId);
+
+        return $this->respond($result);
+    }
+
+    public function playerPrices(Request $request, int $playerteamId): JsonResponse
+    {
+        $gameId = (int) $request->query('game_id', 0);
+        $result = $this->players->prices($playerteamId, $gameId);
+
+        return $this->respond($result);
+    }
+
     /**
      * @param  array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}  $result
      */

@@ -2,15 +2,18 @@
 
 namespace App\Services;
 
+use App\Models\Game;
 use App\Models\GameOptions;
 use App\Models\Goal;
 use App\Models\MatchGame;
 use App\Models\Matchround;
+use App\Models\Playerprice;
 use App\Models\Playerstats;
 use App\Models\Playerteam;
 use App\Models\UserDetails;
 use App\Models\Userteam;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 class PlayerPopupService
 {
@@ -627,5 +630,205 @@ class PlayerPopupService
         }
 
         return (int) $value;
+    }
+
+    /**
+     * Chart series for the Grafik tab (chronological, scoped to a game/league).
+     *
+     * @return array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}
+     */
+    public function chart(int $playerteamId, int $gameId): array
+    {
+        $ctx = $this->resolvePlayerContext($playerteamId, $gameId);
+        if (! $ctx['ok']) {
+            return $ctx;
+        }
+
+        /** @var Playerteam $playerteam */
+        $playerteam = $ctx['playerteam'];
+        $ptIds = $ctx['pt_ids'];
+
+        $rounds = Matchround::query()
+            ->where('matchround_game_id', $gameId)
+            ->where('matchround_status', 1)
+            ->orderBy('matchround_startdate')
+            ->get();
+
+        $roundIds = $rounds->pluck('matchround_id')->map(fn ($id) => (int) $id)->all();
+        $statsByRound = $this->statsByRound($ptIds, $roundIds);
+
+        $series = [];
+        foreach ($rounds as $round) {
+            $roundId = (int) $round->matchround_id;
+            $stat = $statsByRound[$roundId] ?? null;
+            $series[] = [
+                'matchround_id' => $roundId,
+                'matchround_title' => (string) $round->matchround_title,
+                'played' => (bool) $stat,
+                'score' => $stat ? (int) $stat->playerstats_score : null,
+                'minutes' => $stat ? (int) $stat->playerstats_minutes : null,
+                'goals' => $stat ? (int) $stat->playerstats_goals : 0,
+                'assists' => $stat ? (int) $stat->playerstats_assists : 0,
+                'cards' => $stat ? (string) ($stat->playerstats_cards ?: 'n') : 'n',
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'data' => [
+                'game_id' => $gameId,
+                'player' => $this->playerSummary($playerteam),
+                'rounds' => $series,
+            ],
+        ];
+    }
+
+    /**
+     * Price / power series for Preisverlauf (dynamic pricing games).
+     *
+     * @return array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}
+     */
+    public function prices(int $playerteamId, int $gameId): array
+    {
+        $ctx = $this->resolvePlayerContext($playerteamId, $gameId);
+        if (! $ctx['ok']) {
+            return $ctx;
+        }
+
+        /** @var Playerteam $playerteam */
+        $playerteam = $ctx['playerteam'];
+        $ptIds = $ctx['pt_ids'];
+
+        $now = date('Y-m-d H:i:s');
+        $past = Matchround::query()
+            ->where('matchround_game_id', $gameId)
+            ->where('matchround_startdate', '<', $now)
+            ->orderBy('matchround_startdate')
+            ->get();
+        $running = Matchround::query()
+            ->where('matchround_game_id', $gameId)
+            ->where('matchround_startdate', '>', $now)
+            ->orderBy('matchround_startdate')
+            ->limit(1)
+            ->get();
+
+        /** @var Collection<int, Matchround> $allRounds */
+        $allRounds = $past->concat($running)->values();
+        if ($allRounds->isEmpty()) {
+            return [
+                'ok' => true,
+                'data' => [
+                    'game_id' => $gameId,
+                    'player' => $this->playerSummary($playerteam),
+                    'points' => [],
+                ],
+            ];
+        }
+
+        $ptNear = $this->teamForPlayerAndRound($allRounds->first(), $ptIds);
+        $lastPrice = (float) ($ptNear?->playerteam_player_price ?? $playerteam->playerteam_player_price ?? 0);
+
+        $roundIds = $allRounds->pluck('matchround_id')->map(fn ($id) => (int) $id)->all();
+        $prices = Playerprice::query()
+            ->whereIn('playerprice_matchround_id', $roundIds)
+            ->whereIn('playerprice_playerteam_id', $ptIds)
+            ->get()
+            ->groupBy(fn (Playerprice $p) => (int) $p->playerprice_matchround_id);
+
+        $points = [];
+        foreach ($allRounds as $round) {
+            $roundId = (int) $round->matchround_id;
+            $row = $prices->get($roundId)?->first();
+            if ($row) {
+                $lastPrice = (float) $row->playerprice_price;
+                $points[] = [
+                    'matchround_id' => $roundId,
+                    'matchround_title' => (string) $round->matchround_title,
+                    'price' => (float) $row->playerprice_price,
+                    'power' => (float) $row->playerprice_player_power,
+                    'av_power' => (float) $row->playerprice_av_power,
+                ];
+            } else {
+                $points[] = [
+                    'matchround_id' => $roundId,
+                    'matchround_title' => (string) $round->matchround_title,
+                    'price' => $lastPrice,
+                    'power' => 0.0,
+                    'av_power' => 0.0,
+                ];
+            }
+        }
+
+        return [
+            'ok' => true,
+            'data' => [
+                'game_id' => $gameId,
+                'player' => $this->playerSummary($playerteam),
+                'points' => $points,
+            ],
+        ];
+    }
+
+    /**
+     * @return array{ok: true, playerteam: Playerteam, game_id: int, pt_ids: list<int>}|array{ok: false, status: int, error: string}
+     */
+    private function resolvePlayerContext(int $playerteamId, int $gameId): array
+    {
+        if ($playerteamId <= 0) {
+            return ['ok' => false, 'status' => 422, 'error' => 'playerteam_id is required'];
+        }
+
+        if ($gameId <= 0) {
+            return ['ok' => false, 'status' => 422, 'error' => 'game_id is required'];
+        }
+
+        $playerteam = Playerteam::query()->with(['player', 'team'])->find($playerteamId);
+        if (! $playerteam || ! $playerteam->player || ! $playerteam->team) {
+            return ['ok' => false, 'status' => 404, 'error' => 'Player not found'];
+        }
+
+        if (! Game::query()->where('game_id', $gameId)->exists()) {
+            return ['ok' => false, 'status' => 404, 'error' => 'Game not found'];
+        }
+
+        $ptIds = Playerteam::query()
+            ->where('playerteam_player_id', $playerteam->playerteam_player_id)
+            ->orderByDesc('playerteam_id')
+            ->pluck('playerteam_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if ($ptIds === []) {
+            $ptIds = [$playerteamId];
+        }
+
+        return [
+            'ok' => true,
+            'playerteam' => $playerteam,
+            'game_id' => $gameId,
+            'pt_ids' => $ptIds,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function playerSummary(Playerteam $playerteam): array
+    {
+        $teamId = (int) $playerteam->playerteam_team_id;
+        $hasPicture = (bool) $playerteam->playerteam_player_picture;
+
+        return [
+            'playerteam_id' => (int) $playerteam->playerteam_id,
+            'player_fname' => (string) $playerteam->player->player_fname,
+            'player_lname' => (string) $playerteam->player->player_lname,
+            'player_name' => trim($playerteam->player->player_fname.' '.$playerteam->player->player_lname),
+            'player_nationality' => (string) ($playerteam->player->player_nationality ?: ''),
+            'player_team_name' => (string) $playerteam->team->team_name,
+            'player_team_nationality' => (string) ($playerteam->team->team_nationality ?: ''),
+            'player_picture_url' => $hasPicture
+                ? '/images/ffb/players/'.$teamId.'/'.$playerteam->playerteam_id.'.jpg'
+                : '/images/ffb/players/image_na.gif',
+        ];
     }
 }
