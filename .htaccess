@@ -29,6 +29,53 @@ RewriteRule ^platform$ /platform/public/ [R=307,L]
 RewriteCond %{REQUEST_URI} !^/platform/public
 RewriteRule ^platform/(.*)$ /platform/public/$1 [R=307,L]
 
+# ---------------------------------------------------------------------------
+# Legacy player UI → platform (admin + *.xml stay on index.php for now)
+# ---------------------------------------------------------------------------
+RewriteRule ^/?$ /platform/public/ [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^users/?$ /platform/public/ [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^users/login(?:/.*)?$ /platform/public/ [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^users/logout(?:/.*)?$ /platform/public/logout [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^users/registration/activate-email(?:/.*)?$ /platform/public/registration/activate-email [R=301,L,QSA]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^users/registration/activate(?:/.*)?$ /platform/public/registration/activate [R=301,L,QSA]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^users/registration(?:/.*)?$ /platform/public/registration [R=301,L,QSA]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^users/accountDetails(?:/.*)?$ /platform/public/profile [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^users/account(?:/.*)?$ /platform/public/profile?tab=account [R=301,L,QSA]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^users/help(?:/.*)?$ /platform/public/help [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^users/reference(?:/.*)?$ /platform/public/reference [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^users/mailservice/cancel(?:/.*)?$ /platform/public/mailservice/cancel [R=301,L,QSA]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^ffb/?$ /platform/public/ [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^ffb/(lineup|myteam|bestteam|userscore)(?:/.*)?$ /platform/public/$1 [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^ffb/ /platform/public/ [R=301,L]
+
 # Changes /index.php?module=users&class=login&event=getUser&presenter=html to /users/login/getUser.html
 RewriteRule ^xd_receiver.htm(.*) - [L]
 RewriteRule ^google7dab302111c988ed.html(.*) - [L]
