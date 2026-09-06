@@ -11,6 +11,11 @@ class FfbAuth
 {
     public const SESSION_USER_ID = 'ffb_user_id';
 
+    public function __construct(
+        private readonly LegacyPhpSession $legacySession,
+    ) {
+    }
+
     public function userId(?Request $request = null): int
     {
         if ($request !== null && $request->hasSession()) {
@@ -32,6 +37,7 @@ class FfbAuth
 
     public function logout(Request $request): void
     {
+        $this->legacySession->forget();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
     }
