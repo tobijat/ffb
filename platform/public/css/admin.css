@@ -315,6 +315,33 @@
     background: #f7fff7;
 }
 
+.admin-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    align-items: flex-end;
+    margin: 0 0 12px;
+}
+
+.admin-filter-bar .admin-field {
+    margin: 0;
+    min-width: 12rem;
+}
+
+.admin-pagination {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 12px;
+    font-size: 10pt;
+}
+
+.admin-pagination a {
+    color: var(--ink);
+    text-decoration: underline;
+}
+
 .admin-league-picker {
     display: flex;
     flex-wrap: wrap;

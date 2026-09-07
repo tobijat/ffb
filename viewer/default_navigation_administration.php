@@ -5,7 +5,7 @@ array('symbol'=>'nav_admin_start.png','name'=>'admin start','link'=>'administrat
 array('symbol'=>'nav_team.png','name'=>'team','link'=>'platform/admin/teams'),
 array('symbol'=>'nav_matchround.png','name'=>'matchround','link'=>'platform/admin/matchrounds'),
 array('symbol'=>'nav_match.png','name'=>'match','link'=>'platform/admin/matches'),
-array('symbol'=>'nav_player.png','name'=>'player','link'=>'administration/player'),
+array('symbol'=>'nav_player.png','name'=>'player','link'=>'platform/admin/players'),
 array('symbol'=>'nav_coach.png','name'=>'ManPlayerTs','link'=>'administration/playertoteam'),
 array('symbol'=>'nav_coach.png','name'=>'AutoPlayerTsWF','link'=>'administration/tmTeamParser'),
 array('symbol'=>'nav_coach.png','name'=>'AutoPlayerTsFOE','link'=>'administration/foeTeamParser'),
