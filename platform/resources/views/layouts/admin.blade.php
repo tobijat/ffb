@@ -6,7 +6,7 @@
     <title>@yield('title', 'Admin Center') — SoccerSportsfan</title>
     <link rel="stylesheet" href="{{ url('css/start.css') }}">
     <link rel="stylesheet" href="{{ url('css/dashboard.css') }}?v=4">
-    <link rel="stylesheet" href="{{ url('css/admin.css') }}?v=2">
+    <link rel="stylesheet" href="{{ url('css/admin.css') }}?v=5">
     @stack('head')
 </head>
 <body class="dash-body">
@@ -26,7 +26,12 @@
 
     <header class="dash-top">
         <div class="dash-top-main">
-            @include('partials.brand')
+            @include('partials.brand', [
+                'brandHref' => '/platform/admin',
+                'brandTitle' => 'Admin Center',
+                'brandLabel' => 'AdminCenter',
+                'brandIcon' => 'images/admin/navigation/nav_admin_start.png',
+            ])
             <nav class="dash-nav" aria-label="Admin-Navigation">
                 @foreach ($nav as $item)
                     @php
