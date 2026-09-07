@@ -1,3 +1,88 @@
+.admin-actions-flush {
+    padding-left: 0;
+}
+
+.admin-fieldset {
+    border: 1px solid #7aaa7a;
+    background: var(--panel-light, #ccffcc);
+    margin: 0 0 10px;
+    padding: 8px 10px 10px;
+}
+
+.admin-fieldset legend {
+    font-size: 10pt;
+    font-weight: bold;
+    padding: 0 4px;
+}
+
+.admin-league-form {
+    max-width: none;
+}
+
+.admin-symbol-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.admin-symbol-preview {
+    border: 1px solid #7aaa7a;
+    background: #fff;
+    object-fit: contain;
+}
+
+.admin-field-stack {
+    display: grid;
+    gap: 4px;
+    grid-template-columns: 1fr;
+    flex: 1 1 16rem;
+}
+
+.admin-field-stack label {
+    font-size: 10pt;
+}
+
+.admin-option-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+    gap: 8px;
+}
+
+.admin-option-field {
+    display: grid;
+    gap: 2px;
+}
+
+.admin-option-field label {
+    font-size: 8pt;
+    margin: 0;
+}
+
+.admin-option-field input {
+    width: 100%;
+    border: 1px solid #666;
+    background: #fff;
+    color: var(--ink);
+    padding: 4px 6px;
+    font-family: var(--font-body);
+    font-size: 10pt;
+    box-sizing: border-box;
+}
+
+.admin-league-list-body {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.admin-league-list-icon {
+    flex: 0 0 auto;
+    object-fit: contain;
+    border: 1px solid #7aaa7a;
+    background: #fff;
+}
+
 .admin-layout {
     display: grid;
     gap: 10px;
