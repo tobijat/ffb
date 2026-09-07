@@ -25,6 +25,8 @@ if (! $isXml) {
         $redirectTo = '/platform/public/admin/news';
     } elseif (preg_match('#^/administration/matchround/?$#', $uriPath)) {
         $redirectTo = '/platform/public/admin/matchrounds';
+    } elseif (preg_match('#^/administration/match/?$#', $uriPath)) {
+        $redirectTo = '/platform/public/admin/matches';
     } elseif (preg_match('#^/users/?$#', $uriPath) || preg_match('#^/users/login(?:/.*)?$#', $uriPath)) {
         $redirectTo = '/platform/public/';
     } elseif (preg_match('#^/users/logout(?:/.*)?$#', $uriPath)) {
