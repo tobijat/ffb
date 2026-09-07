@@ -146,6 +146,12 @@ class FFB_Controller {
             }
 
         } else {
+            // Legacy player start lived at users/__start; that module is gone (platform owns /).
+            // Unknown/missing routes used to fall through here and spam the error log (e.g. /favicon.ico).
+            if ($this->module === self::DEFAULTMODULE && $this->class === self::DEFAULTCLASS) {
+                header('Location: /platform/', true, 302);
+                exit();
+            }
             $this->fail("Could not find: $classFile");
         }
     }

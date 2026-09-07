@@ -99,6 +99,7 @@ RewriteRule ^classes/ - [L]
 RewriteRule ^parserfiles/ - [L]
 RewriteRule ^resource/ - [L]
 RewriteRule ^robots.txt - [L]
+RewriteRule ^favicon\.ico$ /platform/public/favicon.ico [L]
 
 # Local dev: map localhost to ffb subdomain
 RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-d
@@ -131,6 +132,7 @@ RewriteRule ^classes/ - [L]
 RewriteRule ^parserfiles/ - [L]
 RewriteRule ^resource/ - [L]
 RewriteRule ^robots.txt - [L]
+RewriteRule ^favicon\.ico$ /platform/public/favicon.ico [L]
 RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-d
 RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-f
 RewriteCond %{HTTP_HOST} !^www\.(sportsfan\.at|sportsfan\.local)$ [NC]
@@ -147,6 +149,7 @@ RewriteRule ^include/ - [L]
 RewriteRule ^parserfiles/ - [L]
 RewriteRule ^resource/ - [L]
 RewriteRule ^robots.txt - [L]
+RewriteRule ^favicon\.ico$ /platform/public/favicon.ico [L]
 RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-d
 RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-f
 RewriteCond %{HTTP_HOST} !^www\.(sportsfan\.at|sportsfan\.local)$ [NC]
