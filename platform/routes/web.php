@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountPageController;
 use App\Http\Controllers\Admin\AdminCenterController;
 use App\Http\Controllers\Admin\AdminLeagueController;
+use App\Http\Controllers\Admin\AdminMatchController;
 use App\Http\Controllers\Admin\AdminMatchroundController;
 use App\Http\Controllers\Admin\AdminNewsController;
 use App\Http\Controllers\Auth\LoginController;
@@ -69,6 +70,12 @@ Route::middleware('ffb.admin')->group(function () {
     Route::get('/admin/matchrounds/{matchround}/edit', [AdminMatchroundController::class, 'edit'])->name('admin.matchrounds.edit');
     Route::put('/admin/matchrounds/{matchround}', [AdminMatchroundController::class, 'update'])->name('admin.matchrounds.update');
     Route::delete('/admin/matchrounds/{matchround}', [AdminMatchroundController::class, 'destroy'])->name('admin.matchrounds.destroy');
+
+    Route::get('/admin/matches', [AdminMatchController::class, 'show'])->name('admin.matches');
+    Route::post('/admin/matches', [AdminMatchController::class, 'store'])->name('admin.matches.store');
+    Route::get('/admin/matches/{match}/edit', [AdminMatchController::class, 'edit'])->name('admin.matches.edit');
+    Route::put('/admin/matches/{match}', [AdminMatchController::class, 'update'])->name('admin.matches.update');
+    Route::delete('/admin/matches/{match}', [AdminMatchController::class, 'destroy'])->name('admin.matches.destroy');
 
     Route::get('/admin/news', [AdminNewsController::class, 'show'])->name('admin.news');
     Route::post('/admin/news', [AdminNewsController::class, 'store'])->name('admin.news.store');

@@ -128,6 +128,13 @@ class AdminCenterService
                 'image_dir' => 'images/admin/navigation/',
             ],
             [
+                'symbol' => 'nav_match.png',
+                'name' => 'Spiele',
+                'link' => '/platform/admin/matches',
+                'style' => 'big',
+                'image_dir' => 'images/admin/navigation/',
+            ],
+            [
                 'symbol' => 'nav_news.png',
                 'name' => 'News',
                 'link' => '/platform/admin/news',
