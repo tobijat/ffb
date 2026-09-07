@@ -114,6 +114,13 @@ class AdminCenterService
     {
         return [
             [
+                'symbol' => 'nav_config.png',
+                'name' => 'Ligen',
+                'link' => '/platform/admin/leagues',
+                'style' => 'big',
+                'image_dir' => 'images/admin/navigation/',
+            ],
+            [
                 'symbol' => 'nav_matchround.png',
                 'name' => 'Spielrunden',
                 'link' => '/platform/admin/matchrounds',

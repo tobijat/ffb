@@ -14,6 +14,16 @@ class Game extends Model
 
     public $timestamps = false;
 
+    protected $fillable = [
+        'game_title',
+        'game_visible',
+        'game_archive',
+        'game_countdown',
+        'game_status',
+        'game_description',
+        'game_symbol',
+    ];
+
     public function matchrounds(): HasMany
     {
         return $this->hasMany(Matchround::class, 'matchround_game_id', 'game_id');
