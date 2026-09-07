@@ -44,6 +44,9 @@ RewriteCond %{REQUEST_URI} !\.xml$ [NC]
 RewriteRule ^administration/match/?$ /platform/public/admin/matches [R=301,L]
 
 RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^administration/team/?$ /platform/public/admin/teams [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
 RewriteRule ^users/?$ /platform/public/ [R=301,L]
 
 RewriteCond %{REQUEST_URI} !\.xml$ [NC]
