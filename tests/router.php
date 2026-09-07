@@ -118,6 +118,17 @@ if ($uriPath !== '/' && is_file($staticPath)) {
     return false;
 }
 
+if ($uriPath === '/favicon.ico') {
+    $favicon = $root.DIRECTORY_SEPARATOR.'platform'.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'favicon.ico';
+    if (is_file($favicon)) {
+        header('Content-Type: image/x-icon');
+        header('Content-Length: '.(string) filesize($favicon));
+        readfile($favicon);
+
+        return true;
+    }
+}
+
 // Ensure SERVER_NAME is set for config.php BASE_PATH constants.
 if (empty($_SERVER['SERVER_NAME'])) {
     $_SERVER['SERVER_NAME'] = $_SERVER['HTTP_HOST'] ?? '127.0.0.1';
