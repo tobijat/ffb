@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminLeagueController;
 use App\Http\Controllers\Admin\AdminMatchController;
 use App\Http\Controllers\Admin\AdminMatchroundController;
 use App\Http\Controllers\Admin\AdminNewsController;
+use App\Http\Controllers\Admin\AdminPlayerController;
 use App\Http\Controllers\Admin\AdminTeamController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BestteamPageController;
@@ -83,6 +84,12 @@ Route::middleware('ffb.admin')->group(function () {
     Route::get('/admin/teams/{team}/edit', [AdminTeamController::class, 'edit'])->name('admin.teams.edit');
     Route::put('/admin/teams/{team}', [AdminTeamController::class, 'update'])->name('admin.teams.update');
     Route::delete('/admin/teams/{team}', [AdminTeamController::class, 'destroy'])->name('admin.teams.destroy');
+
+    Route::get('/admin/players', [AdminPlayerController::class, 'show'])->name('admin.players');
+    Route::post('/admin/players', [AdminPlayerController::class, 'store'])->name('admin.players.store');
+    Route::get('/admin/players/{player}/edit', [AdminPlayerController::class, 'edit'])->name('admin.players.edit');
+    Route::put('/admin/players/{player}', [AdminPlayerController::class, 'update'])->name('admin.players.update');
+    Route::delete('/admin/players/{player}', [AdminPlayerController::class, 'destroy'])->name('admin.players.destroy');
 
     Route::get('/admin/news', [AdminNewsController::class, 'show'])->name('admin.news');
     Route::post('/admin/news', [AdminNewsController::class, 'store'])->name('admin.news.store');
