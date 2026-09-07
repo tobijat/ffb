@@ -98,10 +98,30 @@ main,
     width: 40px;
     height: 40px;
     flex: 0 0 auto;
+    object-fit: contain;
 }
 
-.brand span {
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    min-width: 0;
+}
+
+.brand-name {
     white-space: nowrap;
+}
+
+.brand-league {
+    font-family: var(--font-body);
+    font-size: 8pt;
+    font-weight: normal;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 14rem;
 }
 
 .brand:hover {

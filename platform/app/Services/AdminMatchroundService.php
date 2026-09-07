@@ -39,7 +39,7 @@ class AdminMatchroundService
      */
     public function pagePayload(int $userId, int $selectedGameId, ?array $form = null, string $mode = 'create'): array
     {
-        $shell = $this->adminCenter->pagePayload($userId);
+        $shell = $this->adminCenter->shellPayload($userId);
         $games = $this->gameOptions();
         $selectedGameId = $this->resolveSelectedGameId($selectedGameId, $games);
         $selectedTitle = null;
@@ -58,6 +58,7 @@ class AdminMatchroundService
         return [
             'user' => $shell['user'],
             'navigation' => $shell['navigation'],
+            'selected_game' => $shell['selected_game'],
             'games' => $games,
             'selected_game_id' => $selectedGameId,
             'selected_game_title' => $selectedTitle,

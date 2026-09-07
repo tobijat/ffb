@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Admin Center') — SoccerSportsfan</title>
-    <link rel="stylesheet" href="{{ url('css/start.css') }}">
+    <link rel="stylesheet" href="{{ url('css/start.css') }}?v=10">
     <link rel="stylesheet" href="{{ url('css/dashboard.css') }}?v=4">
     <link rel="stylesheet" href="{{ url('css/admin.css') }}?v=5">
     @stack('head')
@@ -31,6 +31,7 @@
                 'brandTitle' => 'Admin Center',
                 'brandLabel' => 'AdminCenter',
                 'brandIcon' => 'images/admin/navigation/nav_admin_start.png',
+                'brandGame' => $data['selected_game'] ?? null,
             ])
             <nav class="dash-nav" aria-label="Admin-Navigation">
                 @foreach ($nav as $item)
