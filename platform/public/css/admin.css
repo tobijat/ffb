@@ -7,6 +7,112 @@
     padding: 8px 10px 12px;
 }
 
+.admin-game-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+.admin-game-tile-form {
+    margin: 0;
+    display: block;
+}
+
+.admin-game-tile {
+    width: 100%;
+    min-height: 100%;
+    align-content: start;
+}
+
+.admin-game-tile:disabled {
+    cursor: default;
+}
+
+.admin-game-tile-title {
+    display: block;
+    line-height: 1.2;
+}
+
+.admin-game-flags {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    justify-content: center;
+}
+
+.admin-game-flag {
+    margin: 0;
+    padding: 1px 5px;
+    border: 1px solid #7aaa7a;
+    background: #fff;
+    color: var(--ink, #000);
+    font-family: var(--font-body);
+    font-size: 7.5pt;
+    font-weight: normal;
+    line-height: 1.3;
+}
+
+.admin-game-tile.is-selected .admin-game-flag {
+    border-color: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+.admin-game-flag-ok {
+    border-color: #2f7a2f;
+    color: #1f5a1f;
+}
+
+.admin-game-flag-warn {
+    border-color: #a67c00;
+    color: #6b5000;
+}
+
+.admin-game-flag-off {
+    border-color: #888;
+    color: #555;
+    background: #f0f0f0;
+}
+
+.admin-game-flag-muted {
+    border-color: #aaa;
+    color: #666;
+}
+
+.admin-game-tile.is-selected .admin-game-flag-ok,
+.admin-game-tile.is-selected .admin-game-flag-warn,
+.admin-game-tile.is-selected .admin-game-flag-off,
+.admin-game-tile.is-selected .admin-game-flag-muted {
+    border-color: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+.admin-league-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin: 8px 0 12px;
+}
+
+.admin-league-picker label {
+    font-size: 10pt;
+    font-weight: bold;
+    margin: 0;
+}
+
+.admin-league-picker select {
+    min-width: 16rem;
+    border: 1px solid #666;
+    background: #fff;
+    color: var(--ink);
+    padding: 4px 6px;
+    font-family: var(--font-body);
+    font-size: 10pt;
+}
+
 .admin-form {
     display: grid;
     gap: 8px;
@@ -31,6 +137,7 @@
 }
 
 .admin-field input[type="text"],
+.admin-field input[type="datetime-local"],
 .admin-field select,
 .admin-field textarea {
     width: 100%;
@@ -103,6 +210,12 @@
     font-size: 10pt;
 }
 
+.admin-matchround-dates {
+    font-size: 9pt;
+    margin-bottom: 4px;
+    line-height: 1.35;
+}
+
 .admin-list-actions {
     display: flex;
     gap: 6px;
@@ -133,5 +246,10 @@
 
     .admin-list-item {
         flex-direction: column;
+    }
+
+    .admin-league-picker select {
+        min-width: 0;
+        width: 100%;
     }
 }

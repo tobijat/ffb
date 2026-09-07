@@ -43,11 +43,53 @@ class AdminCenterTest extends TestCase
                 ],
                 'navigation' => [
                     [
+                        'symbol' => 'nav_matchround.png',
+                        'name' => 'Spielrunden',
+                        'link' => '/platform/admin/matchrounds',
+                        'style' => 'big',
+                        'image_dir' => 'images/admin/navigation/',
+                    ],
+                    [
                         'symbol' => 'nav_news.png',
                         'name' => 'News',
                         'link' => '/platform/admin/news',
                         'style' => 'big',
                         'image_dir' => 'images/admin/navigation/',
+                    ],
+                ],
+                'selected_game_id' => 26,
+                'games' => [
+                    [
+                        'game_id' => 26,
+                        'game_title' => 'Testliga',
+                        'game_symbol' => 'symbol_game_na.png',
+                        'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                        'game_status' => 1,
+                        'game_archive' => 0,
+                        'game_visible' => 1,
+                        'game_countdown' => 0,
+                        'flags' => [
+                            ['label' => 'aktiv', 'tone' => 'ok'],
+                            ['label' => 'aktuell', 'tone' => 'ok'],
+                            ['label' => 'sichtbar', 'tone' => 'ok'],
+                            ['label' => 'Countdown aus', 'tone' => 'muted'],
+                        ],
+                    ],
+                    [
+                        'game_id' => 10,
+                        'game_title' => 'Alte Liga',
+                        'game_symbol' => 'symbol_game_na.png',
+                        'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                        'game_status' => 0,
+                        'game_archive' => 1,
+                        'game_visible' => 0,
+                        'game_countdown' => 0,
+                        'flags' => [
+                            ['label' => 'inaktiv', 'tone' => 'off'],
+                            ['label' => 'archiviert', 'tone' => 'warn'],
+                            ['label' => 'unsichtbar', 'tone' => 'off'],
+                            ['label' => 'Countdown aus', 'tone' => 'muted'],
+                        ],
                     ],
                 ],
             ]);
@@ -58,10 +100,39 @@ class AdminCenterTest extends TestCase
             ->assertOk()
             ->assertSee('Admin Center', false)
             ->assertSee('css/admin.css', false)
+            ->assertSee('Spielrunden', false)
             ->assertSee('News', false)
+            ->assertSee('Testliga', false)
+            ->assertSee('Alte Liga', false)
+            ->assertSee('aktiv', false)
+            ->assertSee('archiviert', false)
+            ->assertSee('unsichtbar', false)
+            ->assertSee('href="/platform/admin/matchrounds"', false)
             ->assertSee('href="/platform/admin/news"', false)
+            ->assertSee('class="brand" href="/platform/admin"', false)
+            ->assertSee('AdminCenter', false)
             ->assertSee('Soccer Sportsfan', false)
-            ->assertDontSee('href="/platform/admin"', false);
+            ->assertSee('href="/platform/"', false);
+    }
+
+    public function test_admin_center_selects_league(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminCenterService::class, function ($mock) {
+            $mock->shouldReceive('selectGame')->once()->with(26)->andReturn([
+                'ok' => true,
+                'message' => 'Liga „Testliga“ ausgewählt.',
+                'game_id' => 26,
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->post('/admin/games/26/select')
+            ->assertRedirect(route('admin.center'))
+            ->assertSessionHas('admin_message', 'Liga „Testliga“ ausgewählt.');
     }
 
     public function test_user_card_shows_admin_center_link_when_flag_set(): void

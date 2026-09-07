@@ -1,0 +1,156 @@
+@extends('layouts.admin')
+
+@section('title', 'Spielrunden')
+
+@section('content')
+    @php
+        $form = $data['form'];
+        $mode = $data['mode'];
+        $items = $data['items'];
+        $games = $data['games'];
+        $selectedGameId = (int) $data['selected_game_id'];
+        $selectedGameTitle = $data['selected_game_title'];
+        $flashErrors = $errors ?: (session('admin_errors') ?: []);
+    @endphp
+
+    <section class="panel admin-main" aria-labelledby="admin-matchrounds-title">
+        <div class="section-head">
+            <h2 id="admin-matchrounds-title">Spielrunden</h2>
+        </div>
+
+        <form class="admin-league-picker" method="get" action="{{ route('admin.matchrounds') }}">
+            <label for="game_id">Liga</label>
+            <select id="game_id" name="game_id" onchange="this.form.submit()">
+                <option value="">— Liga wählen —</option>
+                @foreach ($games as $game)
+                    <option value="{{ $game['game_id'] }}" @selected($selectedGameId === (int) $game['game_id'])>
+                        {{ $game['game_title'] }}@if ($game['game_archive']) (Archiv)@endif
+                    </option>
+                @endforeach
+            </select>
+            <noscript>
+                <button type="submit" class="admin-submit">Anzeigen</button>
+            </noscript>
+        </form>
+
+        @if (!empty($flashErrors))
+            <div class="account-flash account-flash-error" role="alert">
+                <strong>Es sind Fehler aufgetreten:</strong>
+                <ul>
+                    @foreach ($flashErrors as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        @if ($answer)
+            <div class="account-flash account-flash-ok" role="status">
+                {{ $answer }}
+            </div>
+        @endif
+
+        @if ($selectedGameId <= 0)
+            <p class="hint">Wähle oben eine Liga, um deren Spielrunden zu verwalten.</p>
+        @else
+            <p class="hint">Liga: <strong>{{ $selectedGameTitle }}</strong></p>
+
+            <form
+                class="admin-form"
+                method="post"
+                action="{{ $mode === 'update' ? route('admin.matchrounds.update', ['matchround' => $form['matchround_id']]) : route('admin.matchrounds.store') }}"
+                accept-charset="UTF-8"
+            >
+                @csrf
+                @if ($mode === 'update')
+                    @method('PUT')
+                @endif
+                <input type="hidden" name="matchround_game_id" value="{{ $selectedGameId }}">
+
+                <div class="admin-field">
+                    <label for="matchround_title">* Titel</label>
+                    <input id="matchround_title" type="text" name="matchround_title" value="{{ $form['matchround_title'] }}" maxlength="255" required>
+                </div>
+
+                <div class="admin-field">
+                    <label for="matchround_startdate">* Start</label>
+                    <input
+                        id="matchround_startdate"
+                        type="datetime-local"
+                        name="matchround_startdate"
+                        value="{{ $form['matchround_startdate'] }}"
+                        step="3600"
+                        required
+                    >
+                </div>
+
+                <div class="admin-field">
+                    <label for="matchround_enddate">* Ende</label>
+                    <input
+                        id="matchround_enddate"
+                        type="datetime-local"
+                        name="matchround_enddate"
+                        value="{{ $form['matchround_enddate'] }}"
+                        step="3600"
+                        required
+                    >
+                </div>
+
+                <div class="admin-field">
+                    <label for="matchround_status">Status</label>
+                    <select id="matchround_status" name="matchround_status">
+                        <option value="1" @selected((int) $form['matchround_status'] === 1)>aktiv</option>
+                        <option value="0" @selected((int) $form['matchround_status'] === 0)>inaktiv</option>
+                    </select>
+                </div>
+
+                <div class="admin-actions">
+                    @if ($mode === 'update')
+                        <button type="submit" class="admin-submit">Speichern</button>
+                        <a class="admin-cancel" href="{{ route('admin.matchrounds', ['game_id' => $selectedGameId]) }}">Abbrechen</a>
+                    @else
+                        <button type="submit" class="admin-submit">Hinzufügen</button>
+                    @endif
+                </div>
+            </form>
+        @endif
+    </section>
+
+    @if ($selectedGameId > 0)
+        <section class="panel admin-main" aria-labelledby="admin-matchrounds-list-title">
+            <div class="section-head">
+                <h2 id="admin-matchrounds-list-title">Vorhandene Spielrunden</h2>
+            </div>
+
+            @forelse ($items as $item)
+                <article class="admin-list-item">
+                    <div class="admin-list-body">
+                        <div class="admin-matchround-dates">
+                            <div><strong>von:</strong> {{ $item['matchround_startdate'] }}</div>
+                            <div><strong>bis:</strong> {{ $item['matchround_enddate'] }}</div>
+                        </div>
+                        <h3 class="admin-list-title">
+                            {{ $item['matchround_title'] }}
+                            <span class="muted">— {{ $item['matchround_status'] ? 'aktiv' : 'inaktiv' }}</span>
+                        </h3>
+                    </div>
+                    <div class="admin-list-actions">
+                        <a class="admin-icon-btn" href="{{ route('admin.matchrounds.edit', ['matchround' => $item['matchround_id']]) }}" title="Bearbeiten">
+                            <img src="{{ $legacyBase }}images/ffb/symbols/edit.png" alt="Bearbeiten" width="16" height="16">
+                        </a>
+                        <form method="post" action="{{ route('admin.matchrounds.destroy', ['matchround' => $item['matchround_id']]) }}" onsubmit="return confirm('Diese Spielrunde wirklich löschen?');">
+                            @csrf
+                            @method('DELETE')
+                            <input type="hidden" name="game_id" value="{{ $selectedGameId }}">
+                            <button type="submit" class="admin-icon-btn" title="Löschen">
+                                <img src="{{ $legacyBase }}images/ffb/symbols/delete.png" alt="Löschen" width="16" height="16">
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            @empty
+                <p class="muted">Noch keine Spielrunden für diese Liga.</p>
+            @endforelse
+        </section>
+    @endif
+@endsection
