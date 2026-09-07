@@ -26,13 +26,14 @@ class AdminNewsService
      */
     public function pagePayload(int $userId, ?array $form = null, string $mode = 'create'): array
     {
-        $shell = $this->adminCenter->pagePayload($userId);
+        $shell = $this->adminCenter->shellPayload($userId);
         $items = $this->listItems();
         $form = $form ?? $this->emptyForm();
 
         return [
             'user' => $shell['user'],
             'navigation' => $shell['navigation'],
+            'selected_game' => $shell['selected_game'],
             'items' => $items,
             'games' => $this->gameOptions((int) ($form['news_game_id'] ?? 0)),
             'form' => $form,

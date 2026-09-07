@@ -58,6 +58,11 @@ class AdminCenterTest extends TestCase
                     ],
                 ],
                 'selected_game_id' => 26,
+                'selected_game' => [
+                    'game_id' => 26,
+                    'game_title' => 'Testliga',
+                    'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                ],
                 'games' => [
                     [
                         'game_id' => 26,
@@ -111,6 +116,8 @@ class AdminCenterTest extends TestCase
             ->assertSee('href="/platform/admin/news"', false)
             ->assertSee('class="brand" href="/platform/admin"', false)
             ->assertSee('AdminCenter', false)
+            ->assertSee('Testliga', false)
+            ->assertSee('symbol_game_na.png', false)
             ->assertSee('Soccer Sportsfan', false)
             ->assertSee('href="/platform/"', false);
     }

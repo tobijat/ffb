@@ -11,18 +11,21 @@ class AdminCenterService
     public function __construct(
         private readonly FfbAdminAccess $admins,
         private readonly LegacyPhpSession $legacySession,
+        private readonly GameBrand $gameBrand,
     ) {
     }
 
     /**
+     * Shared chrome for all admin pages (no full league grid).
+     *
      * @return array{
      *     user: array<string, mixed>,
      *     navigation: list<array{symbol: string, name: string, link: string, style: string, image_dir: string}>,
-     *     games: list<array<string, mixed>>,
-     *     selected_game_id: int
+     *     selected_game_id: int,
+     *     selected_game: array{game_id: int, game_title: string, symbol_url: string}|null
      * }
      */
-    public function pagePayload(int $userId): array
+    public function shellPayload(int $userId): array
     {
         $webUser = WebUser::query()->with('details')->find($userId);
         $photo = (string) ($webUser?->details?->user_details_photo ?: 'profile_na.png');
@@ -36,8 +39,25 @@ class AdminCenterService
                 'is_ffb_admin' => $this->admins->isAdmin($userId),
             ],
             'navigation' => $this->navigation(),
-            'games' => $this->games(),
             'selected_game_id' => $selectedGameId,
+            'selected_game' => $this->gameBrand->forGameId($selectedGameId),
+        ];
+    }
+
+    /**
+     * @return array{
+     *     user: array<string, mixed>,
+     *     navigation: list<array{symbol: string, name: string, link: string, style: string, image_dir: string}>,
+     *     games: list<array<string, mixed>>,
+     *     selected_game_id: int,
+     *     selected_game: array{game_id: int, game_title: string, symbol_url: string}|null
+     * }
+     */
+    public function pagePayload(int $userId): array
+    {
+        return [
+            ...$this->shellPayload($userId),
+            'games' => $this->games(),
         ];
     }
 
