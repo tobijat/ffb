@@ -193,6 +193,128 @@
     align-items: center;
 }
 
+.admin-team-ids {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 4px 0 0;
+    font-size: 9pt;
+}
+
+.admin-team-ids a {
+    color: var(--ink);
+    text-decoration: underline;
+}
+
+.admin-icon-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(4.8rem, 1fr));
+    gap: 6px;
+    max-height: 16rem;
+    overflow: auto;
+    padding: 6px;
+    margin: 0 0 10px;
+    border: 1px solid #7aaa7a;
+    background: #fff;
+}
+
+.admin-icon-option {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: center;
+    justify-content: center;
+    min-height: 3.6rem;
+    padding: 4px;
+    border: 1px solid transparent;
+    background: #f7fff7;
+    cursor: pointer;
+    font-size: 8pt;
+    text-align: center;
+    word-break: break-all;
+}
+
+.admin-icon-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.admin-icon-option.is-selected,
+.admin-icon-option:has(input:checked) {
+    border-color: #2a6b2a;
+    background: #e4ffe4;
+    box-shadow: inset 0 0 0 1px #2a6b2a;
+}
+
+.admin-icon-option img {
+    display: block;
+    object-fit: contain;
+    background: #fff;
+}
+
+.admin-icon-none {
+    font-weight: bold;
+}
+
+.admin-icon-upload {
+    margin-top: 4px;
+}
+
+.admin-symbol-current {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 18px;
+    align-items: center;
+    margin: 0 0 10px;
+    padding: 8px;
+    border: 1px solid #7aaa7a;
+    background: #fff;
+}
+
+.admin-symbol-preview-pair {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.admin-symbol-slot {
+    display: grid;
+    gap: 4px;
+    justify-items: center;
+    min-width: 5.5rem;
+}
+
+.admin-symbol-slot-label {
+    font-size: 8pt;
+    font-weight: bold;
+}
+
+.admin-symbol-flag,
+.admin-symbol-shirt {
+    display: block;
+    object-fit: contain;
+    background: #f7fff7;
+    border: 1px solid #cfe0cf;
+}
+
+.admin-symbol-current-meta {
+    display: grid;
+    gap: 4px;
+    align-content: start;
+}
+
+.admin-icon-chooser {
+    margin: 0 0 10px;
+}
+
+.admin-shirt-upload {
+    margin: 0 0 10px;
+    padding: 8px;
+    border: 1px dashed #7aaa7a;
+    background: #f7fff7;
+}
+
 .admin-league-picker {
     display: flex;
     flex-wrap: wrap;

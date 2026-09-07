@@ -2,7 +2,7 @@
 $nav_array = array(
 array('symbol'=>'nav_start.png','name'=>'ffb start','link'=>'platform/'),
 array('symbol'=>'nav_admin_start.png','name'=>'admin start','link'=>'administration/start'),
-array('symbol'=>'nav_team.png','name'=>'team','link'=>'administration/team'),
+array('symbol'=>'nav_team.png','name'=>'team','link'=>'platform/admin/teams'),
 array('symbol'=>'nav_matchround.png','name'=>'matchround','link'=>'platform/admin/matchrounds'),
 array('symbol'=>'nav_match.png','name'=>'match','link'=>'platform/admin/matches'),
 array('symbol'=>'nav_player.png','name'=>'player','link'=>'administration/player'),
