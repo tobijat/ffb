@@ -14,6 +14,20 @@ class MatchGame extends Model
 
     public $timestamps = false;
 
+    protected $fillable = [
+        'match_round',
+        'match_hometeam_id',
+        'match_guestteam_id',
+        'match_homescore',
+        'match_guestscore',
+        'match_homescore_penalty',
+        'match_guestscore_penalty',
+        'match_date',
+        'match_minutes',
+        'match_status',
+        'match_url',
+    ];
+
     public function homeTeam(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'match_hometeam_id', 'team_id');

@@ -29,6 +29,7 @@ class ReferencePageController extends Controller
                     'user_id' => (int) $webUser->user_id,
                     'user_nickname' => (string) $webUser->user_nickname,
                     'photo_url' => '/images/ffb/profiles/photo/'.$photo,
+                    'is_ffb_admin' => app(\App\Services\FfbAdminAccess::class)->isAdmin((int) $webUser->user_id),
                 ];
             }
         }

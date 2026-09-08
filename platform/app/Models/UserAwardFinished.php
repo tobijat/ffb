@@ -13,6 +13,12 @@ class UserAwardFinished extends Model
 
     public $timestamps = false;
 
+    protected $fillable = [
+        'user_award_finished_user_id',
+        'user_award_finished_award_defines_id',
+        'user_award_finished_date',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(WebUser::class, 'user_award_finished_user_id', 'user_id');

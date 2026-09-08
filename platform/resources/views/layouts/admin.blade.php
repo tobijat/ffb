@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@yield('title', 'Admin Center') — SoccerSportsfan</title>
+    <link rel="stylesheet" href="{{ url('css/start.css') }}?v=10">
+    <link rel="stylesheet" href="{{ url('css/dashboard.css') }}?v=6">
+    <link rel="stylesheet" href="{{ url('css/admin.css') }}?v=47">
+    @stack('head')
+</head>
+<body class="dash-body">
+    @php
+        $user = $data['user'];
+        $nav = $data['navigation'];
+        $normalizeAdminPath = static function (string $path): string {
+            $parsed = parse_url($path, PHP_URL_PATH);
+            $path = '/'.ltrim(is_string($parsed) && $parsed !== '' ? $parsed : $path, '/');
+            $path = (string) preg_replace('#^/platform/public#', '', $path);
+            $path = (string) preg_replace('#^/platform#', '', $path);
+
+            return $path === '' ? '/' : $path;
+        };
+        $currentAdminPath = $normalizeAdminPath('/'.ltrim(request()->path(), '/'));
+    @endphp
+
+    <header class="dash-top admin-top">
+        @include('partials.brand', [
+            'brandHref' => '/platform/admin',
+            'brandTitle' => 'Admin Center',
+            'brandLabel' => 'AdminCenter',
+            'brandIcon' => 'images/admin/navigation/nav_admin_start.png',
+            'brandGame' => $data['selected_game'] ?? null,
+        ])
+
+        <nav class="dash-nav admin-nav" aria-label="Admin-Navigation">
+            @foreach ($nav as $item)
+                @php
+                    $itemPath = rtrim($normalizeAdminPath($item['link']), '/');
+                    $current = rtrim($currentAdminPath, '/');
+                    $isActive = $current === $itemPath
+                        || str_starts_with($current.'/', $itemPath.'/');
+                    $imageDir = $item['image_dir'] ?? 'images/ffb/navigation/';
+                @endphp
+                <a class="nav-big{{ $isActive ? ' is-active' : '' }}" href="{{ $item['link'] }}" title="{{ $item['name'] }}">
+                    <img src="{{ $legacyBase }}{{ $imageDir }}{{ $item['symbol'] }}" alt="" width="28" height="28" loading="lazy">
+                    <span>{{ $item['name'] }}</span>
+                </a>
+            @endforeach
+        </nav>
+
+        @include('partials.user-card', ['adminShell' => true])
+    </header>
+
+    <main class="dash-main admin-layout">
+        @yield('content')
+    </main>
+
+    @include('partials.footer')
+    @stack('scripts')
+</body>
+</html>

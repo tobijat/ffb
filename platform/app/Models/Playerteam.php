@@ -14,6 +14,16 @@ class Playerteam extends Model
 
     public $timestamps = false;
 
+    protected $fillable = [
+        'playerteam_player_id',
+        'playerteam_team_id',
+        'playerteam_player_picture',
+        'playerteam_status',
+        'playerteam_player_price',
+        'playerteam_player_position',
+        'playerteam_date_transfer',
+    ];
+
     public function player(): BelongsTo
     {
         return $this->belongsTo(Player::class, 'playerteam_player_id', 'player_id');

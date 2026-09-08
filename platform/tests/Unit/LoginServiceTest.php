@@ -21,21 +21,13 @@ class LoginServiceTest extends TestCase
     {
         $this->assertSame(
             (string) config('ffb.home_path'),
-            $this->service()->resolveDestination('', false)
-        );
-    }
-
-    public function test_resolve_destination_forces_admin_path(): void
-    {
-        $this->assertSame(
-            '/administration/start',
-            $this->service()->resolveDestination('/ffb/lineup', true)
+            $this->service()->resolveDestination('')
         );
     }
 
     public function test_resolve_destination_allows_safe_paths(): void
     {
-        $this->assertSame('/ffb/lineup', $this->service()->resolveDestination('/ffb/lineup', false));
+        $this->assertSame('/ffb/lineup', $this->service()->resolveDestination('/ffb/lineup'));
     }
 
     public function test_resolve_destination_rejects_open_redirects(): void
@@ -43,8 +35,8 @@ class LoginServiceTest extends TestCase
         $home = (string) config('ffb.home_path');
         $service = $this->service();
 
-        $this->assertSame($home, $service->resolveDestination('https://evil.example/', false));
-        $this->assertSame($home, $service->resolveDestination('//evil.example/', false));
-        $this->assertSame($home, $service->resolveDestination('ffb/lineup', false));
+        $this->assertSame($home, $service->resolveDestination('https://evil.example/'));
+        $this->assertSame($home, $service->resolveDestination('//evil.example/'));
+        $this->assertSame($home, $service->resolveDestination('ffb/lineup'));
     }
 }
