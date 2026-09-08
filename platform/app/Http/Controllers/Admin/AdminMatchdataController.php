@@ -4,17 +4,17 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AdminCenterService;
-use App\Services\AdminMatchpointsService;
+use App\Services\AdminMatchdataService;
 use App\Services\FfbAuth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class AdminMatchpointsController extends Controller
+class AdminMatchdataController extends Controller
 {
     public function __construct(
         private readonly FfbAuth $auth,
-        private readonly AdminMatchpointsService $matchpoints,
+        private readonly AdminMatchdataService $matchdata,
         private readonly AdminCenterService $adminCenter,
     ) {
     }
@@ -27,8 +27,8 @@ class AdminMatchpointsController extends Controller
             $this->adminCenter->selectGame((int) $request->input('game_id'));
         }
 
-        return view('admin.matchpoints', [
-            'data' => $this->matchpoints->pagePayload($userId),
+        return view('admin.matchdata', [
+            'data' => $this->matchdata->pagePayload($userId),
             'legacyBase' => '/',
         ]);
     }
@@ -39,7 +39,7 @@ class AdminMatchpointsController extends Controller
 
         return response()->json([
             'ok' => true,
-            'rounds' => $this->matchpoints->rounds($userId),
+            'rounds' => $this->matchdata->rounds($userId),
         ]);
     }
 
@@ -47,7 +47,7 @@ class AdminMatchpointsController extends Controller
     {
         return response()->json([
             'ok' => true,
-            'matches' => $this->matchpoints->matchesForRound($round),
+            'matches' => $this->matchdata->matchesForRound($round),
         ]);
     }
 
@@ -55,7 +55,7 @@ class AdminMatchpointsController extends Controller
     {
         return response()->json([
             'ok' => true,
-            'teams' => $this->matchpoints->mostWanted($round),
+            'teams' => $this->matchdata->mostWanted($round),
         ]);
     }
 
@@ -66,14 +66,14 @@ class AdminMatchpointsController extends Controller
 
         return response()->json([
             'ok' => true,
-            'players' => $this->matchpoints->playersForTeam($userId, $team, $match, $allPlayers),
-            'pointsmode' => $this->matchpoints->pointsMode($userId),
+            'players' => $this->matchdata->playersForTeam($userId, $team, $match, $allPlayers),
+            'pointsmode' => $this->matchdata->pointsMode($userId),
         ]);
     }
 
     public function setResult(Request $request, int $match): JsonResponse
     {
-        $result = $this->matchpoints->setMatchResult($match, $request->all());
+        $result = $this->matchdata->setMatchResult($match, $request->all());
 
         return response()->json([
             'ok' => $result['ok'],
@@ -84,7 +84,7 @@ class AdminMatchpointsController extends Controller
 
     public function savePlayer(Request $request, int $match, int $playerteam): JsonResponse
     {
-        $result = $this->matchpoints->savePlayerStats($match, $playerteam, $request->all());
+        $result = $this->matchdata->savePlayerStats($match, $playerteam, $request->all());
 
         return response()->json([
             'ok' => $result['ok'],

@@ -13,7 +13,7 @@ use App\Models\Team;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
-class AdminMatchpointsService
+class AdminMatchdataService
 {
     private ?GameOptions $optionsCache = null;
 

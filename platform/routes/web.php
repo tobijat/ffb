@@ -5,8 +5,8 @@ use App\Http\Controllers\Admin\AdminAwardsController;
 use App\Http\Controllers\Admin\AdminCenterController;
 use App\Http\Controllers\Admin\AdminDbCleanupController;
 use App\Http\Controllers\Admin\AdminMailserviceController;
-use App\Http\Controllers\Admin\AdminMatchpointsConfigController;
-use App\Http\Controllers\Admin\AdminMatchpointsController;
+use App\Http\Controllers\Admin\AdminMatchdataController;
+use App\Http\Controllers\Admin\AdminScoreController;
 use App\Http\Controllers\Admin\AdminLeagueController;
 use App\Http\Controllers\Admin\AdminMatchController;
 use App\Http\Controllers\Admin\AdminMatchroundController;
@@ -50,6 +50,9 @@ Route::post('/password/reset/{user}', [RegistrationPageController::class, 'updat
     ->name('password.reset.update');
 
 Route::get('/mailservice/cancel', [MailUnsubscribeController::class, 'cancel'])->name('mailservice.cancel');
+
+Route::redirect('/admin/matchpoints/config', '/admin/score', 301);
+Route::redirect('/admin/matchpoints', '/admin/matchdata', 301);
 
 Route::get('/userscore', [UserscorePageController::class, 'show'])->name('userscore');
 Route::get('/myteam', [MyteamPageController::class, 'show'])->name('myteam');
@@ -107,17 +110,17 @@ Route::middleware('ffb.admin')->group(function () {
 
     Route::get('/admin/db-cleanup', [AdminDbCleanupController::class, 'show'])->name('admin.dbCleanup');
 
-    Route::get('/admin/matchpoints', [AdminMatchpointsController::class, 'show'])->name('admin.matchpoints');
-    Route::get('/admin/matchpoints/rounds', [AdminMatchpointsController::class, 'rounds'])->name('admin.matchpoints.rounds');
-    Route::get('/admin/matchpoints/rounds/{round}/matches', [AdminMatchpointsController::class, 'matches'])->name('admin.matchpoints.matches');
-    Route::get('/admin/matchpoints/rounds/{round}/most-wanted', [AdminMatchpointsController::class, 'mostWanted'])->name('admin.matchpoints.mostWanted');
-    Route::get('/admin/matchpoints/matches/{match}/teams/{team}/players', [AdminMatchpointsController::class, 'players'])->name('admin.matchpoints.players');
-    Route::post('/admin/matchpoints/matches/{match}/result', [AdminMatchpointsController::class, 'setResult'])->name('admin.matchpoints.setResult');
-    Route::post('/admin/matchpoints/matches/{match}/players/{playerteam}', [AdminMatchpointsController::class, 'savePlayer'])->name('admin.matchpoints.savePlayer');
+    Route::get('/admin/matchdata', [AdminMatchdataController::class, 'show'])->name('admin.matchdata');
+    Route::get('/admin/matchdata/rounds', [AdminMatchdataController::class, 'rounds'])->name('admin.matchdata.rounds');
+    Route::get('/admin/matchdata/rounds/{round}/matches', [AdminMatchdataController::class, 'matches'])->name('admin.matchdata.matches');
+    Route::get('/admin/matchdata/rounds/{round}/most-wanted', [AdminMatchdataController::class, 'mostWanted'])->name('admin.matchdata.mostWanted');
+    Route::get('/admin/matchdata/matches/{match}/teams/{team}/players', [AdminMatchdataController::class, 'players'])->name('admin.matchdata.players');
+    Route::post('/admin/matchdata/matches/{match}/result', [AdminMatchdataController::class, 'setResult'])->name('admin.matchdata.setResult');
+    Route::post('/admin/matchdata/matches/{match}/players/{playerteam}', [AdminMatchdataController::class, 'savePlayer'])->name('admin.matchdata.savePlayer');
 
-    Route::get('/admin/matchpoints/config', [AdminMatchpointsConfigController::class, 'show'])->name('admin.matchpointsConfig');
-    Route::post('/admin/matchpoints/config/userteam-scores', [AdminMatchpointsConfigController::class, 'setUserteamScores'])->name('admin.matchpointsConfig.setUserteamScores');
-    Route::post('/admin/matchpoints/config/user-scores', [AdminMatchpointsConfigController::class, 'setUserScores'])->name('admin.matchpointsConfig.setUserScores');
+    Route::get('/admin/score', [AdminScoreController::class, 'show'])->name('admin.score');
+    Route::post('/admin/score/userteam-scores', [AdminScoreController::class, 'setUserteamScores'])->name('admin.score.setUserteamScores');
+    Route::post('/admin/score/user-scores', [AdminScoreController::class, 'setUserScores'])->name('admin.score.setUserScores');
 
     Route::get('/admin/mailservice', [AdminMailserviceController::class, 'show'])->name('admin.mailservice');
     Route::get('/admin/mailservice/matchrounds', [AdminMailserviceController::class, 'matchrounds'])->name('admin.mailservice.matchrounds');

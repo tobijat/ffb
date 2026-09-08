@@ -2,37 +2,37 @@
 
 namespace Tests\Feature;
 
-use App\Services\AdminMatchpointsConfigService;
+use App\Services\AdminScoreService;
 use App\Services\FfbAdminAccess;
 use App\Services\FfbAuth;
 use Tests\TestCase;
 
-class AdminMatchpointsConfigTest extends TestCase
+class AdminScoreTest extends TestCase
 {
-    public function test_matchpoints_config_redirects_guests(): void
+    public function test_score_redirects_guests(): void
     {
-        $this->get('/admin/matchpoints/config')
-            ->assertRedirect(route('start', ['destination' => '/platform/admin/matchpoints/config']));
+        $this->get('/admin/score')
+            ->assertRedirect(route('start', ['destination' => '/platform/admin/score']));
     }
 
-    public function test_matchpoints_config_redirects_non_admins(): void
+    public function test_score_redirects_non_admins(): void
     {
         $this->mock(FfbAdminAccess::class, function ($mock) {
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->get('/admin/matchpoints/config')
+            ->get('/admin/score')
             ->assertRedirect(route('start'));
     }
 
-    public function test_matchpoints_config_page_renders(): void
+    public function test_score_page_renders(): void
     {
         $this->mock(FfbAdminAccess::class, function ($mock) {
             $mock->shouldReceive('isAdmin')->andReturn(true);
         });
 
-        $this->mock(AdminMatchpointsConfigService::class, function ($mock) {
+        $this->mock(AdminScoreService::class, function ($mock) {
             $mock->shouldReceive('pagePayload')->once()->with(544)->andReturn([
                 'user' => [
                     'user_id' => 544,
@@ -43,8 +43,8 @@ class AdminMatchpointsConfigTest extends TestCase
                 'navigation' => [
                     [
                         'symbol' => 'nav_results.png',
-                        'name' => 'UserScore',
-                        'link' => '/platform/admin/matchpoints/config',
+                        'name' => 'Score',
+                        'link' => '/platform/admin/score',
                         'style' => 'big',
                         'image_dir' => 'images/admin/navigation/',
                     ],
@@ -59,7 +59,7 @@ class AdminMatchpointsConfigTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->get('/admin/matchpoints/config')
+            ->get('/admin/score')
             ->assertOk()
             ->assertSee('UserScore Settings', false)
             ->assertSee('Set Userteam Score', false)
@@ -74,7 +74,7 @@ class AdminMatchpointsConfigTest extends TestCase
             $mock->shouldReceive('isAdmin')->andReturn(true);
         });
 
-        $this->mock(AdminMatchpointsConfigService::class, function ($mock) {
+        $this->mock(AdminScoreService::class, function ($mock) {
             $mock->shouldReceive('setUserteamScores')->once()->with(544)->andReturn([
                 'ok' => true,
                 'message' => 'Userteam-Scores erfolgreich aktualisiert (inkl. WC-Punkte für beendete Runden).',
@@ -83,8 +83,8 @@ class AdminMatchpointsConfigTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->post('/admin/matchpoints/config/userteam-scores')
-            ->assertRedirect(route('admin.matchpointsConfig'))
+            ->post('/admin/score/userteam-scores')
+            ->assertRedirect(route('admin.score'))
             ->assertSessionHas('admin_message')
             ->assertSessionHas('admin_details', ['userteam_id: 11 score: 42']);
     }
@@ -95,7 +95,7 @@ class AdminMatchpointsConfigTest extends TestCase
             $mock->shouldReceive('isAdmin')->andReturn(true);
         });
 
-        $this->mock(AdminMatchpointsConfigService::class, function ($mock) {
+        $this->mock(AdminScoreService::class, function ($mock) {
             $mock->shouldReceive('setUserScores')->once()->with(544)->andReturn([
                 'ok' => true,
                 'message' => 'User-Scores erfolgreich aktualisiert.',
@@ -104,8 +104,8 @@ class AdminMatchpointsConfigTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->post('/admin/matchpoints/config/user-scores')
-            ->assertRedirect(route('admin.matchpointsConfig'))
+            ->post('/admin/score/user-scores')
+            ->assertRedirect(route('admin.score'))
             ->assertSessionHas('admin_message', 'User-Scores erfolgreich aktualisiert.')
             ->assertSessionHas('admin_details', ['user_id: 9 score: 100']);
     }
@@ -116,7 +116,7 @@ class AdminMatchpointsConfigTest extends TestCase
             $mock->shouldReceive('isAdmin')->andReturn(true);
         });
 
-        $this->mock(AdminMatchpointsConfigService::class, function ($mock) {
+        $this->mock(AdminScoreService::class, function ($mock) {
             $mock->shouldReceive('setUserteamScores')->once()->with(544)->andReturn([
                 'ok' => false,
                 'errors' => ['Bitte zuerst eine Liga auswählen.'],
@@ -124,8 +124,8 @@ class AdminMatchpointsConfigTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->post('/admin/matchpoints/config/userteam-scores')
-            ->assertRedirect(route('admin.matchpointsConfig'))
+            ->post('/admin/score/userteam-scores')
+            ->assertRedirect(route('admin.score'))
             ->assertSessionHas('admin_errors', ['Bitte zuerst eine Liga auswählen.']);
     }
 }

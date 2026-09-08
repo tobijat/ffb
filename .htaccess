@@ -53,10 +53,10 @@ RewriteCond %{REQUEST_URI} !\.xml$ [NC]
 RewriteRule ^administration/playertoteam/?$ /platform/public/admin/squad [R=301,L]
 
 RewriteCond %{REQUEST_URI} !\.xml$ [NC]
-RewriteRule ^administration/matchpoints/config(?:\.html)?/?$ /platform/public/admin/matchpoints/config [R=301,L]
+RewriteRule ^administration/matchpoints/config(?:\.html)?/?$ /platform/public/admin/score [R=301,L]
 
 RewriteCond %{REQUEST_URI} !\.xml$ [NC]
-RewriteRule ^administration/matchpoints/?$ /platform/public/admin/matchpoints [R=301,L]
+RewriteRule ^administration/matchpoints/?$ /platform/public/admin/matchdata [R=301,L]
 
 RewriteCond %{REQUEST_URI} !\.xml$ [NC]
 RewriteRule ^administration/mailservice/?$ /platform/public/admin/mailservice [R=301,L]

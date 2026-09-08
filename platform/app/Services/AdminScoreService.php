@@ -9,7 +9,7 @@ use App\Models\Userscore;
 use App\Models\Userteam;
 use Illuminate\Support\Facades\DB;
 
-class AdminMatchpointsConfigService
+class AdminScoreService
 {
     public function __construct(
         private readonly AdminCenterService $adminCenter,

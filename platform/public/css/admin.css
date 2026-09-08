@@ -967,7 +967,7 @@
     cursor: not-allowed;
 }
 
-.admin-matchpoints-details {
+.admin-score-details {
     margin: 0.5rem 0 0;
     padding-left: 1.25rem;
     max-height: 18rem;
@@ -1471,7 +1471,7 @@
     }
 }
 
-/* Matchpoints (player points) */
+/* Matchdata (player points / Spieldaten) */
 .admin-mp-select-row {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

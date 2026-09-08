@@ -34,9 +34,9 @@ if (! $isXml) {
     } elseif (preg_match('#^/administration/playertoteam/?$#', $uriPath)) {
         $redirectTo = '/platform/public/admin/squad';
     } elseif (preg_match('#^/administration/matchpoints/config(?:\.html)?/?$#', $uriPath)) {
-        $redirectTo = '/platform/public/admin/matchpoints/config';
+        $redirectTo = '/platform/public/admin/score';
     } elseif (preg_match('#^/administration/matchpoints/?$#', $uriPath)) {
-        $redirectTo = '/platform/public/admin/matchpoints';
+        $redirectTo = '/platform/public/admin/matchdata';
     } elseif (preg_match('#^/administration/mailservice/?$#', $uriPath)) {
         $redirectTo = '/platform/public/admin/mailservice';
     } elseif (preg_match('#^/administration/awards/?$#', $uriPath)) {

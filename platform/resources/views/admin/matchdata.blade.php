@@ -1,9 +1,9 @@
 @extends('layouts.admin')
 
-@section('title', 'Spielerpunkte')
+@section('title', 'Spieldaten')
 
 @push('scripts')
-    <script src="{{ url('js/admin-matchpoints.js') }}?v=4" defer></script>
+    <script src="{{ url('js/admin-matchdata.js') }}?v=1" defer></script>
 @endpush
 
 @section('content')
@@ -15,19 +15,19 @@
 
     <section
         class="panel admin-main admin-mp"
-        aria-labelledby="admin-matchpoints-title"
-        data-rounds-url="{{ route('admin.matchpoints.rounds') }}"
-        data-matches-url-template="{{ url('/admin/matchpoints/rounds') }}/__ID__/matches"
-        data-players-url-template="{{ url('/admin/matchpoints/matches') }}/__MATCH__/teams/__TEAM__/players"
-        data-result-url-template="{{ url('/admin/matchpoints/matches') }}/__ID__/result"
-        data-save-player-url-template="{{ url('/admin/matchpoints/matches') }}/__MATCH__/players/__PT__"
+        aria-labelledby="admin-matchdata-title"
+        data-rounds-url="{{ route('admin.matchdata.rounds') }}"
+        data-matches-url-template="{{ url('/admin/matchdata/rounds') }}/__ID__/matches"
+        data-players-url-template="{{ url('/admin/matchdata/matches') }}/__MATCH__/teams/__TEAM__/players"
+        data-result-url-template="{{ url('/admin/matchdata/matches') }}/__ID__/result"
+        data-save-player-url-template="{{ url('/admin/matchdata/matches') }}/__MATCH__/players/__PT__"
         data-csrf="{{ csrf_token() }}"
         data-images-base="{{ $legacyBase }}images/ffb/"
         data-pointsmode="{{ $pointsmode }}"
         data-has-game="{{ $selectedGameId > 0 ? '1' : '0' }}"
     >
         <div class="section-head">
-            <h2 id="admin-matchpoints-title">Spielerpunkte</h2>
+            <h2 id="admin-matchdata-title">Spieldaten</h2>
         </div>
 
         <div class="admin-mp-select-row">
