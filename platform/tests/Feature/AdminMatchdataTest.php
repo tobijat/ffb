@@ -70,6 +70,7 @@ class AdminMatchdataTest extends TestCase
             ->assertOk()
             ->assertSee('Spieldaten')
             ->assertSee('Liga')
+            ->assertSee('Spieldaten laden')
             ->assertSee('Änderungen speichern (0)');
     }
 
@@ -96,6 +97,58 @@ class AdminMatchdataTest extends TestCase
             ->assertOk()
             ->assertJsonPath('ok', true)
             ->assertJsonPath('rounds.0.matchround_id', 3);
+    }
+
+    public function test_scrape_json(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminMatchdataService::class, function ($mock) {
+            $mock->shouldReceive('scrapeMatchData')
+                ->once()
+                ->with(7, 9, 'https://www.weltfussball.at/spielbericht/example/', null, null, false)
+                ->andReturn([
+                    'ok' => true,
+                    'message' => '2 Spieler zugeordnet.',
+                    'url' => 'https://www.weltfussball.at/spielbericht/example/',
+                    'match_minutes' => 90,
+                    'result' => [
+                        'homescore' => 1,
+                        'guestscore' => 0,
+                        'homescore_penalty' => -1,
+                        'guestscore_penalty' => -1,
+                    ],
+                    'players' => [
+                        '11' => [
+                            'minutes' => 90,
+                            'goals' => '12',
+                            'assists' => 0,
+                            'cards' => 'n',
+                            'owngoals' => '0',
+                            'penaltieslost' => 0,
+                            'penaltiessaved' => 0,
+                            'penaltyshootout_save' => 0,
+                            'penaltyshootout_lost' => 0,
+                            'penaltyshootout_hit' => 0,
+                            'minute_in' => 0,
+                            'minute_out' => 0,
+                        ],
+                    ],
+                    'unmatched' => ['Unknown Player'],
+                    'matched' => 1,
+                ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 7])
+            ->postJson('/admin/matchdata/matches/9/scrape', [
+                'url' => 'https://www.weltfussball.at/spielbericht/example/',
+            ])
+            ->assertOk()
+            ->assertJsonPath('ok', true)
+            ->assertJsonPath('players.11.minutes', 90)
+            ->assertJsonPath('unmatched.0', 'Unknown Player');
     }
 
     public function test_save_player_json(): void

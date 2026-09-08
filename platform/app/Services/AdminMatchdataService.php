@@ -2,16 +2,19 @@
 
 namespace App\Services;
 
+use App\Exceptions\CloudflareChallengeException;
 use App\Models\GameOptions;
 use App\Models\Goal;
 use App\Models\MatchGame;
 use App\Models\Matchround;
+use App\Models\Playerfid;
 use App\Models\Playerstats;
 use App\Models\Playerteam;
 use App\Models\Psgoal;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class AdminMatchdataService
 {
@@ -19,6 +22,8 @@ class AdminMatchdataService
 
     public function __construct(
         private readonly AdminCenterService $adminCenter,
+        private readonly WeltfussballMatchScraper $weltfussball,
+        private readonly WeltfussballProxyService $wfProxy,
     ) {}
 
     /**
@@ -104,6 +109,8 @@ class AdminMatchdataService
                     'match_guestscore' => (int) $item->match_guestscore,
                     'match_homescore_penalty' => (int) $item->match_homescore_penalty,
                     'match_guestscore_penalty' => (int) $item->match_guestscore_penalty,
+                    'match_url' => (string) ($item->match_url ?? ''),
+                    'match_minutes' => (int) ($item->match_minutes ?: 90) === 120 ? 120 : 90,
                 ];
             })
             ->values()
@@ -190,6 +197,10 @@ class AdminMatchdataService
             ->get()
             ->groupBy('playerstats_playerteam_id');
 
+        $wfNames = Playerfid::query()
+            ->whereIn('playerfid_playerteam_id', $playerteamIds)
+            ->pluck('playerfid_name_wf', 'playerfid_playerteam_id');
+
         $goalMinutes = $pm === 'new'
             ? $this->goalMinutesByPlayerteam($matchId, $playerteamIds)
             : [];
@@ -198,6 +209,7 @@ class AdminMatchdataService
         foreach ($playerteams as $playerteam) {
             $playerteamId = (int) $playerteam->playerteam_id;
             $player = $playerteam->player;
+            $wfName = trim((string) ($wfNames[$playerteamId] ?? ''));
 
             $row = [
                 'player_id' => (int) ($player?->player_id ?? 0),
@@ -205,6 +217,9 @@ class AdminMatchdataService
                 'player_lname' => (string) ($player?->player_lname ?? ''),
                 'playerteam_id' => $playerteamId,
                 'playerteam_player_position' => (string) ($playerteam->playerteam_player_position ?: ''),
+                'player_name_fid_wf' => $wfName !== '' && $wfName !== '0'
+                    ? $wfName
+                    : trim(($player?->player_lname ?? '').' '.($player?->player_fname ?? '')),
             ];
 
             /** @var Playerstats|null $stat */
@@ -249,6 +264,218 @@ class AdminMatchdataService
     }
 
     /**
+     * Fetch and map a Weltfussball spielbericht onto the selected match squads.
+     *
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     url?: string,
+     *     match_minutes?: int,
+     *     result?: array{
+     *         homescore: int,
+     *         guestscore: int,
+     *         homescore_penalty: int,
+     *         guestscore_penalty: int
+     *     },
+     *     players?: array<string, array<string, int|string>>,
+     *     unmatched?: list<string>,
+     *     matched?: int
+     * }
+     */
+    public function scrapeMatchData(
+        int $userId,
+        int $matchId,
+        string $url,
+        ?string $cookies = null,
+        ?string $html = null,
+        bool $useCachedHtml = false,
+    ): array {
+        $url = trim($url);
+        if ($matchId <= 0) {
+            return ['ok' => false, 'errors' => ['Kein Spiel gewählt.']];
+        }
+        if ($url === '') {
+            return ['ok' => false, 'errors' => ['Bitte eine URL angeben.']];
+        }
+        if (! preg_match('#^https?://#i', $url)) {
+            return ['ok' => false, 'errors' => ['URL muss mit http:// oder https:// beginnen.']];
+        }
+
+        $match = MatchGame::query()->find($matchId);
+        if (! $match) {
+            return ['ok' => false, 'errors' => ['Spiel nicht gefunden.']];
+        }
+
+        try {
+            if (is_string($html) && trim($html) !== '') {
+                $parsed = $this->weltfussball->parse($html);
+            } elseif ($useCachedHtml) {
+                $cached = $this->wfProxy->cachedMatchHtml($url);
+                if ($cached === null) {
+                    return [
+                        'ok' => false,
+                        'challenge' => true,
+                        'proxy_url' => $this->wfProxy->proxyUrl($url),
+                        'url' => $url,
+                        'errors' => ['Kein Spielbericht im Frame-Cache. Bitte Challenge lösen oder Seite im Frame neu laden.'],
+                    ];
+                }
+                $parsed = $this->weltfussball->parse($cached);
+            } else {
+                $parsed = $this->weltfussball->fetchAndParse($url, $cookies);
+            }
+        } catch (CloudflareChallengeException $e) {
+            $target = $e->targetUrl !== '' ? $e->targetUrl : $url;
+
+            return [
+                'ok' => false,
+                'challenge' => true,
+                'proxy_url' => $this->wfProxy->proxyUrl($target),
+                'url' => $target,
+                'errors' => [$e->getMessage()],
+            ];
+        } catch (Throwable $e) {
+            return ['ok' => false, 'errors' => [$e->getMessage()]];
+        }
+
+        $pm = $this->pointsMode($userId);
+        $homeDb = $this->playersForTeam($userId, (int) $match->match_hometeam_id, $matchId);
+        $guestDb = $this->playersForTeam($userId, (int) $match->match_guestteam_id, $matchId);
+
+        [$homeMapped, $homeUnmatched, $homeScore, $homePs] = $this->mapScrapedSide($parsed['home'], $homeDb, $pm);
+        [$guestMapped, $guestUnmatched, $guestScore, $guestPs] = $this->mapScrapedSide($parsed['guest'], $guestDb, $pm);
+
+        // Own goals count for the opponent.
+        $homeOwn = $this->sumScrapedOwngoals($parsed['home']);
+        $guestOwn = $this->sumScrapedOwngoals($parsed['guest']);
+
+        $players = $homeMapped + $guestMapped;
+        $unmatched = array_values(array_unique(array_merge($homeUnmatched, $guestUnmatched)));
+
+        return [
+            'ok' => true,
+            'message' => count($players) === 1
+                ? '1 Spieler zugeordnet.'
+                : count($players).' Spieler zugeordnet.',
+            'url' => $url,
+            'match_minutes' => (int) $parsed['match_minutes'],
+            'result' => [
+                'homescore' => $homeScore + $guestOwn,
+                'guestscore' => $guestScore + $homeOwn,
+                'homescore_penalty' => $homePs > 0 || $guestPs > 0 ? $homePs : -1,
+                'guestscore_penalty' => $homePs > 0 || $guestPs > 0 ? $guestPs : -1,
+            ],
+            'players' => $players,
+            'unmatched' => $unmatched,
+            'matched' => count($players),
+        ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $scraped
+     * @param  list<array<string, mixed>>  $dbPlayers
+     * @return array{0: array<string, array<string, int|string>>, 1: list<string>, 2: int, 3: int}
+     */
+    private function mapScrapedSide(array $scraped, array $dbPlayers, string $pm): array
+    {
+        $mapped = [];
+        $unmatched = [];
+        $goals = 0;
+        $psHits = 0;
+        $usedPt = [];
+
+        foreach ($scraped as $sp) {
+            $name = trim((string) ($sp['player_name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+
+            $goals += (int) ($sp['player_num_goals'] ?? 0);
+            $psHits += (int) ($sp['player_penalties_hit'] ?? 0);
+
+            $ptId = $this->findMatchingPlayerteamId($name, $dbPlayers, $usedPt);
+            if ($ptId === null) {
+                $unmatched[] = $name;
+                continue;
+            }
+            $usedPt[$ptId] = true;
+
+            $cards = strtoupper((string) ($sp['player_cards'] ?? '0'));
+            $card = match ($cards) {
+                'Y' => 'y',
+                'YR' => 'yr',
+                'R' => 'r',
+                default => 'n',
+            };
+
+            $goalValue = $pm === 'new'
+                ? (string) (($sp['player_goal'] ?? '0') === '0' ? '0' : $sp['player_goal'])
+                : (int) ($sp['player_num_goals'] ?? 0);
+            $owngoalValue = $pm === 'new'
+                ? (string) (($sp['player_owngoal'] ?? '0') === '0' ? '0' : $sp['player_owngoal'])
+                : (int) ($sp['player_num_owngoals'] ?? 0);
+
+            $mapped[(string) $ptId] = [
+                'minutes' => (int) ($sp['player_minutes'] ?? 0),
+                'minute_in' => (int) ($sp['player_change_in'] ?? 0),
+                'minute_out' => (int) ($sp['player_change_out'] ?? 0),
+                'goals' => $goalValue,
+                'owngoals' => $owngoalValue,
+                'assists' => (int) ($sp['player_num_assists'] ?? 0),
+                'cards' => $card,
+                'penaltieslost' => 0,
+                'penaltiessaved' => 0,
+                'penaltyshootout_save' => 0,
+                'penaltyshootout_lost' => (int) ($sp['player_penalties_fail'] ?? 0),
+                'penaltyshootout_hit' => (int) ($sp['player_penalties_hit'] ?? 0),
+            ];
+        }
+
+        return [$mapped, $unmatched, $goals, $psHits];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $dbPlayers
+     * @param  array<int, true>  $usedPt
+     */
+    private function findMatchingPlayerteamId(string $scrapedName, array $dbPlayers, array $usedPt): ?int
+    {
+        $needle = mb_strtolower(trim($scrapedName));
+        foreach ($dbPlayers as $db) {
+            $ptId = (int) ($db['playerteam_id'] ?? 0);
+            if ($ptId <= 0 || isset($usedPt[$ptId])) {
+                continue;
+            }
+            $candidates = array_filter([
+                (string) ($db['player_name_fid_wf'] ?? ''),
+                trim(($db['player_fname'] ?? '').' '.($db['player_lname'] ?? '')),
+                trim(($db['player_lname'] ?? '').' '.($db['player_fname'] ?? '')),
+            ]);
+            foreach ($candidates as $candidate) {
+                if ($candidate !== '' && mb_strtolower($candidate) === $needle) {
+                    return $ptId;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $scraped
+     */
+    private function sumScrapedOwngoals(array $scraped): int
+    {
+        $sum = 0;
+        foreach ($scraped as $sp) {
+            $sum += (int) ($sp['player_num_owngoals'] ?? 0);
+        }
+
+        return $sum;
+    }
+
+    /**
      * Store the result of a match and re-apply the result dependent score parts.
      *
      * @param  array{
@@ -281,16 +508,20 @@ class AdminMatchdataService
         $minutes = trim((string) ($input['minutes'] ?? ''));
         $url = trim((string) ($input['url'] ?? ''));
 
-        DB::transaction(function () use ($match, $matchId, $pm, $homescore, $guestscore, $homescorePenalty, $guestscorePenalty, $minutes, $url) {
+        if ($minutes !== '' && ! in_array((int) $minutes, [90, 120], true)) {
+            return ['ok' => false, 'errors' => ['Spielzeit muss 90 oder 120 Minuten sein.']];
+        }
+
+        DB::transaction(function () use ($match, $matchId, $pm, $homescore, $guestscore, $homescorePenalty, $guestscorePenalty, $minutes, $url, $input) {
             $match->match_homescore = $homescore;
             $match->match_guestscore = $guestscore;
-            if ($minutes !== '') {
-                $match->match_minutes = (int) $minutes;
-            }
             $match->match_homescore_penalty = $homescorePenalty;
             $match->match_guestscore_penalty = $guestscorePenalty;
-            if ($url !== '') {
+            if (array_key_exists('url', $input)) {
                 $match->match_url = $url;
+            }
+            if ($minutes !== '') {
+                $match->match_minutes = (int) $minutes;
             }
 
             $homeTeamId = (int) $match->match_hometeam_id;
