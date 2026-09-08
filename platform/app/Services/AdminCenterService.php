@@ -177,6 +177,13 @@ class AdminCenterService
                 'image_dir' => 'images/admin/navigation/',
             ],
             [
+                'symbol' => 'nav_award.png',
+                'name' => 'Awards',
+                'link' => '/platform/admin/awards',
+                'style' => 'big',
+                'image_dir' => 'images/admin/navigation/',
+            ],
+            [
                 'symbol' => 'nav_news.png',
                 'name' => 'News',
                 'link' => '/platform/admin/news',

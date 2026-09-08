@@ -59,6 +59,9 @@ RewriteCond %{REQUEST_URI} !\.xml$ [NC]
 RewriteRule ^administration/mailservice/?$ /platform/public/admin/mailservice [R=301,L]
 
 RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^administration/awards/?$ /platform/public/admin/awards [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
 RewriteRule ^users/?$ /platform/public/ [R=301,L]
 
 RewriteCond %{REQUEST_URI} !\.xml$ [NC]

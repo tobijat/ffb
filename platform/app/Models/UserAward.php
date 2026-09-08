@@ -13,6 +13,13 @@ class UserAward extends Model
 
     public $timestamps = false;
 
+    protected $fillable = [
+        'user_award_name',
+        'user_award_image',
+        'user_award_description',
+        'user_award_sortflag',
+    ];
+
     public function defines(): HasMany
     {
         return $this->hasMany(UserAwardDefines::class, 'user_award_defines_award_id', 'user_award_id');

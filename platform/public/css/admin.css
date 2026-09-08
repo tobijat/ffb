@@ -1137,6 +1137,98 @@
     cursor: pointer;
 }
 
+.admin-awards-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
+    gap: 12px;
+}
+
+.admin-awards-left,
+.admin-awards-right {
+    background: var(--panel-light, #ccffcc);
+    border: 1px solid #7aaa7a;
+    padding: 10px;
+    min-width: 0;
+}
+
+.admin-awards-hr {
+    border: 0;
+    border-top: 1px solid #7aaa7a;
+    margin: 12px 0;
+}
+
+.admin-awards-select,
+.admin-awards-right input[type="text"],
+.admin-awards-left input[type="text"],
+.admin-awards-left textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #666;
+    background: #fff;
+    padding: 4px 6px;
+    font-family: var(--font-body);
+    font-size: 10pt;
+}
+
+.admin-awards-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    gap: 6px 8px;
+    margin-bottom: 6px;
+}
+
+.admin-awards-existing {
+    border-top: 1px dashed #7aaa7a;
+    padding-top: 8px;
+    margin-top: 8px;
+}
+
+.admin-awards-define-actions {
+    flex-wrap: wrap;
+}
+
+.admin-awards-thumb {
+    display: block;
+    margin-bottom: 6px;
+    background: #fff;
+    border: 1px solid #666;
+}
+
+.admin-awards-mini {
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.admin-awards-output {
+    margin-top: 10px;
+    font-size: 9.5pt;
+}
+
+.admin-awards-winners-head,
+.admin-awards-winners-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.admin-awards-winners-head {
+    font-weight: bold;
+}
+
+.admin-awards-flash {
+    margin-top: 8px;
+    min-height: 1rem;
+}
+
+@media (max-width: 900px) {
+    .admin-awards-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 900px) {
     .admin-ms-grid,
     .admin-ms-left {
