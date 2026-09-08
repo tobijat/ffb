@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountPageController;
 use App\Http\Controllers\Admin\AdminCenterController;
+use App\Http\Controllers\Admin\AdminDbCleanupController;
 use App\Http\Controllers\Admin\AdminLeagueController;
 use App\Http\Controllers\Admin\AdminMatchController;
 use App\Http\Controllers\Admin\AdminMatchroundController;
@@ -99,6 +100,8 @@ Route::middleware('ffb.admin')->group(function () {
     Route::post('/admin/squad/batch-update', [AdminSquadController::class, 'batchUpdate'])->name('admin.squad.batchUpdate');
     Route::put('/admin/squad/{playerteam}', [AdminSquadController::class, 'update'])->name('admin.squad.update');
     Route::delete('/admin/squad/{playerteam}', [AdminSquadController::class, 'destroy'])->name('admin.squad.destroy');
+
+    Route::get('/admin/db-cleanup', [AdminDbCleanupController::class, 'show'])->name('admin.dbCleanup');
 
     Route::get('/admin/news', [AdminNewsController::class, 'show'])->name('admin.news');
     Route::post('/admin/news', [AdminNewsController::class, 'store'])->name('admin.news.store');

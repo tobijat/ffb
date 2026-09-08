@@ -7,6 +7,7 @@ array('symbol'=>'nav_matchround.png','name'=>'matchround','link'=>'platform/admi
 array('symbol'=>'nav_match.png','name'=>'match','link'=>'platform/admin/matches'),
 array('symbol'=>'nav_player.png','name'=>'player','link'=>'platform/admin/players'),
 array('symbol'=>'nav_coach.png','name'=>'ManPlayerTs','link'=>'platform/admin/squad'),
+array('symbol'=>'nav_config.png','name'=>'DB Cleanup','link'=>'platform/admin/db-cleanup'),
 array('symbol'=>'nav_coach.png','name'=>'AutoPlayerTsWF','link'=>'administration/tmTeamParser'),
 array('symbol'=>'nav_coach.png','name'=>'AutoPlayerTsFOE','link'=>'administration/foeTeamParser'),
 array('symbol'=>'nav_score.png','name'=>'ManPoints','link'=>'administration/matchpoints'),
