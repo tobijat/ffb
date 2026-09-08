@@ -31,6 +31,8 @@ if (! $isXml) {
         $redirectTo = '/platform/public/admin/teams';
     } elseif (preg_match('#^/administration/player/?$#', $uriPath)) {
         $redirectTo = '/platform/public/admin/players';
+    } elseif (preg_match('#^/administration/playertoteam/?$#', $uriPath)) {
+        $redirectTo = '/platform/public/admin/squad';
     } elseif (preg_match('#^/users/?$#', $uriPath) || preg_match('#^/users/login(?:/.*)?$#', $uriPath)) {
         $redirectTo = '/platform/public/';
     } elseif (preg_match('#^/users/logout(?:/.*)?$#', $uriPath)) {
