@@ -26,6 +26,7 @@
 /storage/*.key
 /storage/pail
 /vendor
+/deploy
 AGENTS.md
 CLAUDE.md
 composer.lock
