@@ -10,7 +10,7 @@ array('symbol'=>'nav_coach.png','name'=>'ManPlayerTs','link'=>'platform/admin/sq
 array('symbol'=>'nav_config.png','name'=>'Datenbank','link'=>'platform/admin/db-cleanup'),
 array('symbol'=>'nav_coach.png','name'=>'AutoPlayerTsWF','link'=>'administration/tmTeamParser'),
 array('symbol'=>'nav_coach.png','name'=>'AutoPlayerTsFOE','link'=>'administration/foeTeamParser'),
-array('symbol'=>'nav_score.png','name'=>'ManPoints','link'=>'administration/matchpoints'),
+array('symbol'=>'nav_score.png','name'=>'Punkte','link'=>'platform/admin/matchpoints'),
 array('symbol'=>'nav_score.png','name'=>'AutoPoints','link'=>'administration/fifa_playermanagement'),
 array('symbol'=>'nav_results.png','name'=>'Score','link'=>'platform/admin/matchpoints/config'),
 array('symbol'=>'nav_prices.png','name'=>'PlayerPrice','link'=>'administration/playerprice2014/playerprice2014.html'),

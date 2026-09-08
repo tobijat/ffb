@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminCenterController;
 use App\Http\Controllers\Admin\AdminDbCleanupController;
 use App\Http\Controllers\Admin\AdminMailserviceController;
 use App\Http\Controllers\Admin\AdminMatchpointsConfigController;
+use App\Http\Controllers\Admin\AdminMatchpointsController;
 use App\Http\Controllers\Admin\AdminLeagueController;
 use App\Http\Controllers\Admin\AdminMatchController;
 use App\Http\Controllers\Admin\AdminMatchroundController;
@@ -105,6 +106,14 @@ Route::middleware('ffb.admin')->group(function () {
     Route::delete('/admin/squad/{playerteam}', [AdminSquadController::class, 'destroy'])->name('admin.squad.destroy');
 
     Route::get('/admin/db-cleanup', [AdminDbCleanupController::class, 'show'])->name('admin.dbCleanup');
+
+    Route::get('/admin/matchpoints', [AdminMatchpointsController::class, 'show'])->name('admin.matchpoints');
+    Route::get('/admin/matchpoints/rounds', [AdminMatchpointsController::class, 'rounds'])->name('admin.matchpoints.rounds');
+    Route::get('/admin/matchpoints/rounds/{round}/matches', [AdminMatchpointsController::class, 'matches'])->name('admin.matchpoints.matches');
+    Route::get('/admin/matchpoints/rounds/{round}/most-wanted', [AdminMatchpointsController::class, 'mostWanted'])->name('admin.matchpoints.mostWanted');
+    Route::get('/admin/matchpoints/matches/{match}/teams/{team}/players', [AdminMatchpointsController::class, 'players'])->name('admin.matchpoints.players');
+    Route::post('/admin/matchpoints/matches/{match}/result', [AdminMatchpointsController::class, 'setResult'])->name('admin.matchpoints.setResult');
+    Route::post('/admin/matchpoints/matches/{match}/players/{playerteam}', [AdminMatchpointsController::class, 'savePlayer'])->name('admin.matchpoints.savePlayer');
 
     Route::get('/admin/matchpoints/config', [AdminMatchpointsConfigController::class, 'show'])->name('admin.matchpointsConfig');
     Route::post('/admin/matchpoints/config/userteam-scores', [AdminMatchpointsConfigController::class, 'setUserteamScores'])->name('admin.matchpointsConfig.setUserteamScores');
