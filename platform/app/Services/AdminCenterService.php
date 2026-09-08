@@ -164,6 +164,13 @@ class AdminCenterService
             ],
             [
                 'symbol' => 'nav_results.png',
+                'name' => 'Punkte',
+                'link' => '/platform/admin/matchpoints',
+                'style' => 'big',
+                'image_dir' => 'images/admin/navigation/',
+            ],
+            [
+                'symbol' => 'nav_config.png',
                 'name' => 'Score',
                 'link' => '/platform/admin/matchpoints/config',
                 'style' => 'big',

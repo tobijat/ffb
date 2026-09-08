@@ -35,6 +35,8 @@ if (! $isXml) {
         $redirectTo = '/platform/public/admin/squad';
     } elseif (preg_match('#^/administration/matchpoints/config(?:\.html)?/?$#', $uriPath)) {
         $redirectTo = '/platform/public/admin/matchpoints/config';
+    } elseif (preg_match('#^/administration/matchpoints/?$#', $uriPath)) {
+        $redirectTo = '/platform/public/admin/matchpoints';
     } elseif (preg_match('#^/administration/mailservice/?$#', $uriPath)) {
         $redirectTo = '/platform/public/admin/mailservice';
     } elseif (preg_match('#^/administration/awards/?$#', $uriPath)) {
