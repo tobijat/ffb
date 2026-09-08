@@ -961,6 +961,19 @@
     color: var(--link-hover, #fff);
 }
 
+.admin-submit:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.admin-matchpoints-details {
+    margin: 0.5rem 0 0;
+    padding-left: 1.25rem;
+    max-height: 18rem;
+    overflow: auto;
+    font-size: 9.5pt;
+}
+
 .admin-cancel {
     font-size: 10pt;
     color: var(--ink);
