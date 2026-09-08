@@ -1,47 +1,28 @@
-# Local credential / config files (use the matching *.example stubs)
-/area_config_ffb.xml
-/area_config_soccer.xml
-/old_area_config_ffb.xml
-/classes/propel/build.properties
-/classes/propel/runtime-conf.xml
-/classes/propel_old/build.properties
-/classes/propel_old/runtime-conf.xml
-/classes/propel_old/build/conf/ffb-conf.php
-/classes/propel_old_old/build.properties
-/classes/propel_old_old/runtime-conf.xml
-/classes/propel_old_old/build/conf/ffb-conf.php
-
-# Logs and runtime
-/logs/
 *.log
-/propel.log
-
-# PHPUnit / contract-test tooling (keep app vendor/ untouched)
-/tests/vendor/
-/tests/.phpunit.cache/
-/tests/.ffb_test_user_id
-/tests/.ffb_test_fixture.json
-/composer.phar
-
-# Laravel platform (also covered by platform/.gitignore)
-/platform/vendor/
-/platform/node_modules/
-/platform/.env
-
-# OS / editor
 .DS_Store
-Thumbs.db
-*.swp
-*~
-.idea/
-.vscode/
-*.sublime-*
-
-# Env / secrets — commit .env.example only
 .env
-.env.*
-!.env.example
-!platform/.env.example
-*.pem
-*.key
-credentials.json
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+/.codex
+/.cursor/
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+/legacy/
+/node_modules
+/public/build
+/public/fonts-manifest.dev.json
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+_ide_helper.php
+Homestead.json
+Homestead.yaml
+Thumbs.db
