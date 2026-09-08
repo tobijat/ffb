@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AdminMatchController;
 use App\Http\Controllers\Admin\AdminMatchroundController;
 use App\Http\Controllers\Admin\AdminNewsController;
 use App\Http\Controllers\Admin\AdminPlayerController;
+use App\Http\Controllers\Admin\AdminSquadController;
 use App\Http\Controllers\Admin\AdminTeamController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BestteamPageController;
@@ -86,10 +87,18 @@ Route::middleware('ffb.admin')->group(function () {
     Route::delete('/admin/teams/{team}', [AdminTeamController::class, 'destroy'])->name('admin.teams.destroy');
 
     Route::get('/admin/players', [AdminPlayerController::class, 'show'])->name('admin.players');
+    Route::get('/admin/players/search', [AdminPlayerController::class, 'search'])->name('admin.players.search');
     Route::post('/admin/players', [AdminPlayerController::class, 'store'])->name('admin.players.store');
+    Route::post('/admin/players/batch-update', [AdminPlayerController::class, 'batchUpdate'])->name('admin.players.batchUpdate');
     Route::get('/admin/players/{player}/edit', [AdminPlayerController::class, 'edit'])->name('admin.players.edit');
     Route::put('/admin/players/{player}', [AdminPlayerController::class, 'update'])->name('admin.players.update');
     Route::delete('/admin/players/{player}', [AdminPlayerController::class, 'destroy'])->name('admin.players.destroy');
+
+    Route::get('/admin/squad', [AdminSquadController::class, 'show'])->name('admin.squad');
+    Route::post('/admin/squad', [AdminSquadController::class, 'store'])->name('admin.squad.store');
+    Route::post('/admin/squad/batch-update', [AdminSquadController::class, 'batchUpdate'])->name('admin.squad.batchUpdate');
+    Route::put('/admin/squad/{playerteam}', [AdminSquadController::class, 'update'])->name('admin.squad.update');
+    Route::delete('/admin/squad/{playerteam}', [AdminSquadController::class, 'destroy'])->name('admin.squad.destroy');
 
     Route::get('/admin/news', [AdminNewsController::class, 'show'])->name('admin.news');
     Route::post('/admin/news', [AdminNewsController::class, 'store'])->name('admin.news.store');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\AdminPlayerService;
 use App\Services\FfbAuth;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -24,24 +25,25 @@ class AdminPlayerController extends Controller
 
         return $this->render(
             $userId,
-            $request,
             null,
             'create',
             is_array($errors) ? $errors : [],
         );
     }
 
-    public function edit(Request $request, int $player): View|RedirectResponse
+    public function search(Request $request): JsonResponse
     {
-        $userId = $this->auth->userId($request);
-        $form = $this->players->formForEdit($player);
-        if ($form === null) {
-            return redirect()
-                ->route('admin.players', $this->filterQuery($request))
-                ->with('admin_errors', ['Spieler nicht gefunden.']);
-        }
+        return response()->json($this->players->search([
+            'q' => $request->query('q', ''),
+            'nationality' => $request->query('nationality', ''),
+            'page' => $request->query('page', 1),
+            'exclude_team_id' => $request->query('exclude_team_id', 0),
+        ]));
+    }
 
-        return $this->render($userId, $request, $form, 'update');
+    public function edit(Request $request, int $player): RedirectResponse
+    {
+        return redirect()->route('admin.players');
     }
 
     public function store(Request $request): View|RedirectResponse
@@ -51,13 +53,12 @@ class AdminPlayerController extends Controller
 
         if ($result['ok']) {
             return redirect()
-                ->route('admin.players', $this->filterQuery($request))
+                ->route('admin.players')
                 ->with('admin_message', $result['message']);
         }
 
         return $this->render(
             $userId,
-            $request,
             $result['form'] ?? null,
             'create',
             $result['errors'] ?? [],
@@ -71,24 +72,35 @@ class AdminPlayerController extends Controller
 
         if ($result['ok']) {
             return redirect()
-                ->route('admin.players', $this->filterQuery($request))
+                ->route('admin.players')
                 ->with('admin_message', $result['message']);
         }
 
         return $this->render(
             $userId,
-            $request,
             $result['form'] ?? null,
             'update',
             $result['errors'] ?? [],
         );
     }
 
+    public function batchUpdate(Request $request): RedirectResponse
+    {
+        $result = $this->players->batchUpdate($request->all());
+        $redirect = redirect()->route('admin.players');
+
+        if ($result['ok']) {
+            return $redirect->with('admin_message', $result['message']);
+        }
+
+        return $redirect->with('admin_errors', $result['errors'] ?? ['Speichern fehlgeschlagen.']);
+    }
+
     public function destroy(Request $request, int $player): RedirectResponse
     {
         $result = $this->players->delete($player);
 
-        $redirect = redirect()->route('admin.players', $this->filterQuery($request));
+        $redirect = redirect()->route('admin.players');
 
         if ($result['ok']) {
             return $redirect->with('admin_message', $result['message']);
@@ -103,44 +115,15 @@ class AdminPlayerController extends Controller
      */
     private function render(
         int $userId,
-        Request $request,
         ?array $form = null,
         string $mode = 'create',
         array $errors = [],
     ): View {
         return view('admin.players', [
-            'data' => $this->players->pagePayload(
-                $userId,
-                $form,
-                $mode,
-                $this->filterQuery($request),
-            ),
+            'data' => $this->players->pagePayload($userId, $form, $mode),
             'errors' => $errors,
             'answer' => session('admin_message'),
             'legacyBase' => '/',
         ]);
-    }
-
-    /**
-     * @return array{q?: string, nationality?: string, page?: int}
-     */
-    private function filterQuery(Request $request): array
-    {
-        $query = [];
-        $q = trim((string) $request->query('q', $request->input('q', '')));
-        $nationality = trim((string) $request->query('nationality', $request->input('nationality', '')));
-        $page = (int) $request->query('page', 0);
-
-        if ($q !== '') {
-            $query['q'] = $q;
-        }
-        if ($nationality !== '') {
-            $query['nationality'] = $nationality;
-        }
-        if ($page > 1) {
-            $query['page'] = $page;
-        }
-
-        return $query;
     }
 }

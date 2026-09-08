@@ -149,6 +149,13 @@ class AdminCenterService
                 'image_dir' => 'images/admin/navigation/',
             ],
             [
+                'symbol' => 'nav_coach.png',
+                'name' => 'Kader',
+                'link' => '/platform/admin/squad',
+                'style' => 'big',
+                'image_dir' => 'images/admin/navigation/',
+            ],
+            [
                 'symbol' => 'nav_news.png',
                 'name' => 'News',
                 'link' => '/platform/admin/news',
