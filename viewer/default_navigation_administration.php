@@ -16,7 +16,7 @@ array('symbol'=>'nav_results.png','name'=>'Score','link'=>'platform/admin/matchp
 array('symbol'=>'nav_prices.png','name'=>'PlayerPrice','link'=>'administration/playerprice2014/playerprice2014.html'),
 array('symbol'=>'nav_news.png','name'=>'news','link'=>'platform/admin/news'),
 array('symbol'=>'nav_mail.png','name'=>'Mail','link'=>'platform/admin/mailservice'),
-array('symbol'=>'nav_award.png','name'=>'awards','link'=>'administration/awards'),
+array('symbol'=>'nav_award.png','name'=>'Awards','link'=>'platform/admin/awards'),
 array('symbol'=>'nav_logout.png','name'=>'logout','link'=>'platform/logout')
 );
 ?>

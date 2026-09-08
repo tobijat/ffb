@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountPageController;
+use App\Http\Controllers\Admin\AdminAwardsController;
 use App\Http\Controllers\Admin\AdminCenterController;
 use App\Http\Controllers\Admin\AdminDbCleanupController;
 use App\Http\Controllers\Admin\AdminMailserviceController;
@@ -114,6 +115,17 @@ Route::middleware('ffb.admin')->group(function () {
     Route::get('/admin/mailservice/users', [AdminMailserviceController::class, 'users'])->name('admin.mailservice.users');
     Route::get('/admin/mailservice/mails/{mail}', [AdminMailserviceController::class, 'mail'])->name('admin.mailservice.mail');
     Route::post('/admin/mailservice/send', [AdminMailserviceController::class, 'send'])->name('admin.mailservice.send');
+
+    Route::get('/admin/awards', [AdminAwardsController::class, 'show'])->name('admin.awards');
+    Route::post('/admin/awards/groups', [AdminAwardsController::class, 'createGroup'])->name('admin.awards.createGroup');
+    Route::get('/admin/awards/groups/{group}', [AdminAwardsController::class, 'group'])->name('admin.awards.group');
+    Route::post('/admin/awards/groups/update', [AdminAwardsController::class, 'updateGroup'])->name('admin.awards.updateGroup');
+    Route::post('/admin/awards/defines', [AdminAwardsController::class, 'createDefine'])->name('admin.awards.createDefine');
+    Route::post('/admin/awards/defines/update', [AdminAwardsController::class, 'updateDefine'])->name('admin.awards.updateDefine');
+    Route::get('/admin/awards/defines/{define}/finished', [AdminAwardsController::class, 'finished'])->name('admin.awards.finished');
+    Route::post('/admin/awards/defines/{define}/calculate', [AdminAwardsController::class, 'calculateDefine'])->name('admin.awards.calculateDefine');
+    Route::post('/admin/awards/calculate-all', [AdminAwardsController::class, 'calculateAll'])->name('admin.awards.calculateAll');
+    Route::delete('/admin/awards/finished/{finished}', [AdminAwardsController::class, 'deleteFinished'])->name('admin.awards.deleteFinished');
 
     Route::get('/admin/news', [AdminNewsController::class, 'show'])->name('admin.news');
     Route::post('/admin/news', [AdminNewsController::class, 'store'])->name('admin.news.store');
