@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountPageController;
 use App\Http\Controllers\Admin\AdminCenterController;
 use App\Http\Controllers\Admin\AdminDbCleanupController;
+use App\Http\Controllers\Admin\AdminMatchpointsConfigController;
 use App\Http\Controllers\Admin\AdminLeagueController;
 use App\Http\Controllers\Admin\AdminMatchController;
 use App\Http\Controllers\Admin\AdminMatchroundController;
@@ -102,6 +103,10 @@ Route::middleware('ffb.admin')->group(function () {
     Route::delete('/admin/squad/{playerteam}', [AdminSquadController::class, 'destroy'])->name('admin.squad.destroy');
 
     Route::get('/admin/db-cleanup', [AdminDbCleanupController::class, 'show'])->name('admin.dbCleanup');
+
+    Route::get('/admin/matchpoints/config', [AdminMatchpointsConfigController::class, 'show'])->name('admin.matchpointsConfig');
+    Route::post('/admin/matchpoints/config/userteam-scores', [AdminMatchpointsConfigController::class, 'setUserteamScores'])->name('admin.matchpointsConfig.setUserteamScores');
+    Route::post('/admin/matchpoints/config/user-scores', [AdminMatchpointsConfigController::class, 'setUserScores'])->name('admin.matchpointsConfig.setUserScores');
 
     Route::get('/admin/news', [AdminNewsController::class, 'show'])->name('admin.news');
     Route::post('/admin/news', [AdminNewsController::class, 'store'])->name('admin.news.store');

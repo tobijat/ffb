@@ -10,7 +10,7 @@ array('symbol'=>'nav_matchround.png','name'=>'matchround','link'=>'platform/admi
 array('symbol'=>'nav_match.png','name'=>'match','link'=>'platform/admin/matches'),
 array('symbol'=>'nav_results.png','name'=>'player points','link'=>'administration/matchpoints'),
 array('symbol'=>'nav_results.png','name'=>'PM','link'=>'administration/fifa_playermanagement'),
-array('symbol'=>'nav_config.png','name'=>'configuration','link'=>'administration/matchpoints/config.html'),
+array('symbol'=>'nav_config.png','name'=>'configuration','link'=>'platform/admin/matchpoints/config'),
 array('symbol'=>'nav_mail.png','name'=>'mailservice','link'=>'administration/mailservice'),
 array('symbol'=>'nav_news.png','name'=>'news','link'=>'platform/admin/news'),
 array('symbol'=>'nav_award.png','name'=>'awards','link'=>'administration/awards'),

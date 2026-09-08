@@ -163,6 +163,13 @@ class AdminCenterService
                 'image_dir' => 'images/admin/navigation/',
             ],
             [
+                'symbol' => 'nav_results.png',
+                'name' => 'UserScore',
+                'link' => '/platform/admin/matchpoints/config',
+                'style' => 'big',
+                'image_dir' => 'images/admin/navigation/',
+            ],
+            [
                 'symbol' => 'nav_news.png',
                 'name' => 'News',
                 'link' => '/platform/admin/news',
