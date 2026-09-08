@@ -328,8 +328,25 @@
     min-width: 12rem;
 }
 
-.admin-filter-bar .admin-squad-toggle {
-    margin-bottom: 2px;
+.admin-db-cleanup-group {
+    display: block;
+    margin-top: 10px;
+}
+
+.admin-db-cleanup-group .admin-squad-table-wrap {
+    margin-top: 8px;
+}
+
+.admin-db-cleanup-group .admin-squad-table td,
+.admin-db-cleanup-group .admin-squad-table th {
+    padding: 4px 6px;
+    font-size: 9pt;
+}
+
+.admin-db-cleanup-group tr.is-inactive td,
+.admin-db-cleanup-player-table tr.is-inactive td {
+    background: #f3f3f3;
+    opacity: 0.85;
 }
 
 .admin-pagination {
