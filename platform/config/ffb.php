@@ -106,4 +106,15 @@ return [
         'site_key' => env('FFB_RECAPTCHA_PUBLICKEY', env('RECAPTCHA_SITE_KEY', '')),
         'secret_key' => env('FFB_RECAPTCHA_PRIVATEKEY', env('RECAPTCHA_SECRET_KEY', '')),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin / bulk mailservice (port of legacy FFB_Mail + area_config)
+    |--------------------------------------------------------------------------
+    */
+    'mail' => [
+        'subject_prefix' => env('FFB_MAIL_SUBJECT_PREFIX', 'SoccerSportsfan - '),
+        'greez' => env('FFB_MAIL_GREEZ', 'Dein SoccerSportsfan-Team'),
+        'url' => env('FFB_MAIL_URL', env('APP_URL', 'http://localhost')),
+    ],
 ];
