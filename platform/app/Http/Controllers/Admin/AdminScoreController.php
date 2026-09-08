@@ -3,17 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\AdminMatchpointsConfigService;
+use App\Services\AdminScoreService;
 use App\Services\FfbAuth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class AdminMatchpointsConfigController extends Controller
+class AdminScoreController extends Controller
 {
     public function __construct(
         private readonly FfbAuth $auth,
-        private readonly AdminMatchpointsConfigService $matchpoints,
+        private readonly AdminScoreService $score,
     ) {
     }
 
@@ -25,7 +25,7 @@ class AdminMatchpointsConfigController extends Controller
     public function setUserteamScores(Request $request): RedirectResponse
     {
         $userId = $this->auth->userId($request);
-        $result = $this->matchpoints->setUserteamScores($userId);
+        $result = $this->score->setUserteamScores($userId);
 
         return $this->redirectFromResult($result);
     }
@@ -33,7 +33,7 @@ class AdminMatchpointsConfigController extends Controller
     public function setUserScores(Request $request): RedirectResponse
     {
         $userId = $this->auth->userId($request);
-        $result = $this->matchpoints->setUserScores($userId);
+        $result = $this->score->setUserScores($userId);
 
         return $this->redirectFromResult($result);
     }
@@ -43,7 +43,7 @@ class AdminMatchpointsConfigController extends Controller
      */
     private function redirectFromResult(array $result): RedirectResponse
     {
-        $redirect = redirect()->route('admin.matchpointsConfig');
+        $redirect = redirect()->route('admin.score');
 
         if (! ($result['ok'] ?? false)) {
             return $redirect->with('admin_errors', $result['errors'] ?? ['Unbekannter Fehler.']);
@@ -59,8 +59,8 @@ class AdminMatchpointsConfigController extends Controller
         $userId = $this->auth->userId($request);
         $errors = session('admin_errors');
 
-        return view('admin.matchpoints-config', [
-            'data' => $this->matchpoints->pagePayload($userId),
+        return view('admin.score', [
+            'data' => $this->score->pagePayload($userId),
             'errors' => is_array($errors) ? $errors : [],
             'answer' => session('admin_message'),
             'details' => session('admin_details') ?: [],

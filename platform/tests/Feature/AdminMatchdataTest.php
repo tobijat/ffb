@@ -2,37 +2,37 @@
 
 namespace Tests\Feature;
 
-use App\Services\AdminMatchpointsService;
+use App\Services\AdminMatchdataService;
 use App\Services\FfbAdminAccess;
 use App\Services\FfbAuth;
 use Tests\TestCase;
 
-class AdminMatchpointsTest extends TestCase
+class AdminMatchdataTest extends TestCase
 {
-    public function test_matchpoints_redirects_guests(): void
+    public function test_matchdata_redirects_guests(): void
     {
-        $this->get('/admin/matchpoints')
-            ->assertRedirect(route('start', ['destination' => '/platform/admin/matchpoints']));
+        $this->get('/admin/matchdata')
+            ->assertRedirect(route('start', ['destination' => '/platform/admin/matchdata']));
     }
 
-    public function test_matchpoints_redirects_non_admins(): void
+    public function test_matchdata_redirects_non_admins(): void
     {
         $this->mock(FfbAdminAccess::class, function ($mock) {
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->get('/admin/matchpoints')
+            ->get('/admin/matchdata')
             ->assertRedirect(route('start'));
     }
 
-    public function test_matchpoints_page_renders(): void
+    public function test_matchdata_page_renders(): void
     {
         $this->mock(FfbAdminAccess::class, function ($mock) {
             $mock->shouldReceive('isAdmin')->andReturn(true);
         });
 
-        $this->mock(AdminMatchpointsService::class, function ($mock) {
+        $this->mock(AdminMatchdataService::class, function ($mock) {
             $mock->shouldReceive('pagePayload')->once()->with(7)->andReturn([
                 'user' => [
                     'user_id' => 7,
@@ -41,9 +41,9 @@ class AdminMatchpointsTest extends TestCase
                 ],
                 'navigation' => [
                     [
-                        'symbol' => 'nav_results.png',
-                        'name' => 'Punkte',
-                        'link' => '/platform/admin/matchpoints',
+                        'symbol' => 'nav_score.png',
+                        'name' => 'Spieldaten',
+                        'link' => '/platform/admin/matchdata',
                         'style' => 'big',
                         'image_dir' => 'images/admin/navigation/',
                     ],
@@ -66,9 +66,9 @@ class AdminMatchpointsTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 7])
-            ->get('/admin/matchpoints')
+            ->get('/admin/matchdata')
             ->assertOk()
-            ->assertSee('Spielerpunkte')
+            ->assertSee('Spieldaten')
             ->assertSee('Liga')
             ->assertSee('Änderungen speichern (0)');
     }
@@ -79,7 +79,7 @@ class AdminMatchpointsTest extends TestCase
             $mock->shouldReceive('isAdmin')->andReturn(true);
         });
 
-        $this->mock(AdminMatchpointsService::class, function ($mock) {
+        $this->mock(AdminMatchdataService::class, function ($mock) {
             $mock->shouldReceive('rounds')->once()->with(7)->andReturn([
                 [
                     'matchround_id' => 3,
@@ -92,7 +92,7 @@ class AdminMatchpointsTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 7])
-            ->getJson('/admin/matchpoints/rounds')
+            ->getJson('/admin/matchdata/rounds')
             ->assertOk()
             ->assertJsonPath('ok', true)
             ->assertJsonPath('rounds.0.matchround_id', 3);
@@ -104,7 +104,7 @@ class AdminMatchpointsTest extends TestCase
             $mock->shouldReceive('isAdmin')->andReturn(true);
         });
 
-        $this->mock(AdminMatchpointsService::class, function ($mock) {
+        $this->mock(AdminMatchdataService::class, function ($mock) {
             $mock->shouldReceive('savePlayerStats')->once()->with(9, 11, \Mockery::type('array'))->andReturn([
                 'ok' => true,
                 'message' => 'Existing Playerstats successfully updated!',
@@ -112,7 +112,7 @@ class AdminMatchpointsTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 7])
-            ->postJson('/admin/matchpoints/matches/9/players/11', [
+            ->postJson('/admin/matchdata/matches/9/players/11', [
                 'minutes' => 90,
                 'goals' => '12',
                 'assists' => 1,
