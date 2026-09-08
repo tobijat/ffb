@@ -1,9 +1,0 @@
-<?xml version='1.0' standalone='yes'?>
-<CONFIGURATION>
-	<mail_return_address>noreply@example.com</mail_return_address>
-	<mail_reply_address>noreply@example.com</mail_reply_address>
-	<mail_from_address>Example App&lt;noreply@example.com&gt;</mail_from_address>
-	<mail_greez>Your Team</mail_greez>
-	<mail_subject_prefix>Example - </mail_subject_prefix>
-	<area_prefix>ffb</area_prefix>
-</CONFIGURATION>
