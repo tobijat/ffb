@@ -13,7 +13,8 @@
             <h2 id="admin-mailservice-title">Mailservice</h2>
         </div>
         <p class="hint">
-            Empfänger nach Liga / Spielrunde, Userstatus (inkl. ohne Aufstellung) und Mailservice-Opt-in filtern,
+            Empfänger nach Liga / Spielrunde, Userstatus (inkl. ohne Aufstellung bei gewählter Liga)
+            und Mailservice-Opt-in filtern,
             Adressliste zusammenstellen und INFO-, REMINDER- oder FORCE-Mails versenden.
             Platzhalter: <code>{*nickname*}</code>
         </p>

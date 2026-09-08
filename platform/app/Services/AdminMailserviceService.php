@@ -144,24 +144,28 @@ class AdminMailserviceService
     }
 
     /**
-     * Users with no ffb_userteam in the given scope (matchround, game, or globally).
+     * Users who selected the given game (profile) but have no ffb_userteam in scope.
+     * With no game selected: users with no lineup anywhere.
      *
      * @param  \Illuminate\Database\Eloquent\Builder<\App\Models\WebUser>  $query
      */
     private function applyNoLineupFilter($query, int $gameId, int $matchroundId): void
     {
-        if ($matchroundId > 0) {
-            $query->whereNotExists(function ($sub) use ($matchroundId): void {
-                $sub->selectRaw('1')
-                    ->from('ffb_userteam')
-                    ->whereColumn('ffb_userteam.userteam_user_id', 'web_user.user_id')
-                    ->where('ffb_userteam.userteam_matchround_id', $matchroundId);
-            });
-
-            return;
-        }
-
         if ($gameId > 0) {
+            $query->join('web_user_details', 'web_user.user_id', '=', 'web_user_details.user_id')
+                ->where('web_user_details.user_details_ffb_selected_game', $gameId);
+
+            if ($matchroundId > 0) {
+                $query->whereNotExists(function ($sub) use ($matchroundId): void {
+                    $sub->selectRaw('1')
+                        ->from('ffb_userteam')
+                        ->whereColumn('ffb_userteam.userteam_user_id', 'web_user.user_id')
+                        ->where('ffb_userteam.userteam_matchround_id', $matchroundId);
+                });
+
+                return;
+            }
+
             $query->whereNotExists(function ($sub) use ($gameId): void {
                 $sub->selectRaw('1')
                     ->from('ffb_userteam')
