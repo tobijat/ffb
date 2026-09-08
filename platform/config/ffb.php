@@ -106,4 +106,44 @@ return [
         'site_key' => env('FFB_RECAPTCHA_PUBLICKEY', env('RECAPTCHA_SITE_KEY', '')),
         'secret_key' => env('FFB_RECAPTCHA_PRIVATEKEY', env('RECAPTCHA_SECRET_KEY', '')),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin / bulk mailservice (port of legacy FFB_Mail + area_config)
+    |--------------------------------------------------------------------------
+    */
+    'mail' => [
+        'subject_prefix' => env('FFB_MAIL_SUBJECT_PREFIX', 'SoccerSportsfan - '),
+        'greez' => env('FFB_MAIL_GREEZ', 'Dein SoccerSportsfan-Team'),
+        'url' => env('FFB_MAIL_URL', env('APP_URL', 'http://localhost')),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Elo ratings (admin playerprice)
+    |--------------------------------------------------------------------------
+    */
+    'elo' => [
+        'url' => env('FFB_ELO_URL', 'http://www.eloratings.net/world.html'),
+        'team_map_url' => env('FFB_ELO_TEAM_MAP_URL', 'http://soccer.sportsfan.at/parserfiles/teams/teams.csv'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Outbound HTTP (scrapers / Elo)
+    |--------------------------------------------------------------------------
+    |
+    | Windows PHP often lacks a CA bundle (cURL error 60). Leave verify off in
+    | local/testing, or set FFB_HTTP_VERIFY_SSL=false explicitly.
+    |
+    */
+    'http' => [
+        'verify_ssl' => filter_var(
+            env(
+                'FFB_HTTP_VERIFY_SSL',
+                ! in_array(env('APP_ENV', 'production'), ['local', 'testing'], true)
+            ),
+            FILTER_VALIDATE_BOOLEAN
+        ),
+    ],
 ];

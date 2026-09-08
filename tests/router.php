@@ -21,6 +21,28 @@ $isXml = str_ends_with(strtolower($uriPath), '.xml');
 if (! $isXml) {
     if ($uriPath === '/' || $uriPath === '') {
         $redirectTo = '/platform/public/';
+    } elseif (preg_match('#^/administration/news/?$#', $uriPath)) {
+        $redirectTo = '/platform/public/admin/news';
+    } elseif (preg_match('#^/administration/matchround/?$#', $uriPath)) {
+        $redirectTo = '/platform/public/admin/matchrounds';
+    } elseif (preg_match('#^/administration/match/?$#', $uriPath)) {
+        $redirectTo = '/platform/public/admin/matches';
+    } elseif (preg_match('#^/administration/team/?$#', $uriPath)) {
+        $redirectTo = '/platform/public/admin/teams';
+    } elseif (preg_match('#^/administration/player/?$#', $uriPath)) {
+        $redirectTo = '/platform/public/admin/players';
+    } elseif (preg_match('#^/administration/playertoteam/?$#', $uriPath)) {
+        $redirectTo = '/platform/public/admin/squad';
+    } elseif (preg_match('#^/administration/matchpoints/config(?:\.html)?/?$#', $uriPath)) {
+        $redirectTo = '/platform/public/admin/score';
+    } elseif (preg_match('#^/administration/matchpoints/?$#', $uriPath)) {
+        $redirectTo = '/platform/public/admin/matchdata';
+    } elseif (preg_match('#^/administration/playerprice2014(?:/.*)?$#', $uriPath)) {
+        $redirectTo = '/platform/public/admin/playerprice';
+    } elseif (preg_match('#^/administration/mailservice/?$#', $uriPath)) {
+        $redirectTo = '/platform/public/admin/mailservice';
+    } elseif (preg_match('#^/administration/awards/?$#', $uriPath)) {
+        $redirectTo = '/platform/public/admin/awards';
     } elseif (preg_match('#^/users/?$#', $uriPath) || preg_match('#^/users/login(?:/.*)?$#', $uriPath)) {
         $redirectTo = '/platform/public/';
     } elseif (preg_match('#^/users/logout(?:/.*)?$#', $uriPath)) {
@@ -108,6 +130,17 @@ if (preg_match('#^/platform(?:/public)?(/.*)?$#', $uriPath, $m)) {
 $staticPath = $root.$uriPath;
 if ($uriPath !== '/' && is_file($staticPath)) {
     return false;
+}
+
+if ($uriPath === '/favicon.ico') {
+    $favicon = $root.DIRECTORY_SEPARATOR.'platform'.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'favicon.ico';
+    if (is_file($favicon)) {
+        header('Content-Type: image/x-icon');
+        header('Content-Length: '.(string) filesize($favicon));
+        readfile($favicon);
+
+        return true;
+    }
 }
 
 // Ensure SERVER_NAME is set for config.php BASE_PATH constants.

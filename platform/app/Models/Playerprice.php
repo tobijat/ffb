@@ -13,6 +13,14 @@ class Playerprice extends Model
 
     public $timestamps = false;
 
+    protected $fillable = [
+        'playerprice_playerteam_id',
+        'playerprice_matchround_id',
+        'playerprice_price',
+        'playerprice_player_power',
+        'playerprice_av_power',
+    ];
+
     public function playerteam(): BelongsTo
     {
         return $this->belongsTo(Playerteam::class, 'playerprice_playerteam_id', 'playerteam_id');

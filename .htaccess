@@ -30,9 +30,42 @@ RewriteCond %{REQUEST_URI} !^/platform/public
 RewriteRule ^platform/(.*)$ /platform/public/$1 [R=307,L]
 
 # ---------------------------------------------------------------------------
-# Legacy player UI → platform (admin + *.xml stay on index.php for now)
+# Legacy player UI → platform (admin HTML pages migrate gradually; *.xml stay on index.php)
 # ---------------------------------------------------------------------------
 RewriteRule ^/?$ /platform/public/ [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^administration/news/?$ /platform/public/admin/news [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^administration/matchround/?$ /platform/public/admin/matchrounds [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^administration/match/?$ /platform/public/admin/matches [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^administration/team/?$ /platform/public/admin/teams [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^administration/player/?$ /platform/public/admin/players [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^administration/playertoteam/?$ /platform/public/admin/squad [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^administration/matchpoints/config(?:\.html)?/?$ /platform/public/admin/score [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^administration/matchpoints/?$ /platform/public/admin/matchdata [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^administration/playerprice2014(?:/.*)?$ /platform/public/admin/playerprice [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^administration/mailservice/?$ /platform/public/admin/mailservice [R=301,L]
+
+RewriteCond %{REQUEST_URI} !\.xml$ [NC]
+RewriteRule ^administration/awards/?$ /platform/public/admin/awards [R=301,L]
 
 RewriteCond %{REQUEST_URI} !\.xml$ [NC]
 RewriteRule ^users/?$ /platform/public/ [R=301,L]
@@ -87,6 +120,7 @@ RewriteRule ^classes/ - [L]
 RewriteRule ^parserfiles/ - [L]
 RewriteRule ^resource/ - [L]
 RewriteRule ^robots.txt - [L]
+RewriteRule ^favicon\.ico$ /platform/public/favicon.ico [L]
 
 # Local dev: map localhost to ffb subdomain
 RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-d
@@ -119,6 +153,7 @@ RewriteRule ^classes/ - [L]
 RewriteRule ^parserfiles/ - [L]
 RewriteRule ^resource/ - [L]
 RewriteRule ^robots.txt - [L]
+RewriteRule ^favicon\.ico$ /platform/public/favicon.ico [L]
 RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-d
 RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-f
 RewriteCond %{HTTP_HOST} !^www\.(sportsfan\.at|sportsfan\.local)$ [NC]
@@ -135,6 +170,7 @@ RewriteRule ^include/ - [L]
 RewriteRule ^parserfiles/ - [L]
 RewriteRule ^resource/ - [L]
 RewriteRule ^robots.txt - [L]
+RewriteRule ^favicon\.ico$ /platform/public/favicon.ico [L]
 RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-d
 RewriteCond %{HTTP_HOST}/%{REQUEST_FILENAME} !-f
 RewriteCond %{HTTP_HOST} !^www\.(sportsfan\.at|sportsfan\.local)$ [NC]

@@ -79,16 +79,12 @@ class LoginService
         return [
             'ok' => true,
             'user_id' => (int) $user->user_id,
-            'destination' => $this->resolveDestination($destination, $isAdmin),
+            'destination' => $this->resolveDestination($destination),
         ];
     }
 
-    public function resolveDestination(string $destination, bool $isAdmin): string
+    public function resolveDestination(string $destination): string
     {
-        if ($isAdmin) {
-            return '/administration/start';
-        }
-
         $path = $this->safePath($destination);
         if ($path !== null) {
             return $path;
