@@ -117,4 +117,14 @@ return [
         'greez' => env('FFB_MAIL_GREEZ', 'Dein SoccerSportsfan-Team'),
         'url' => env('FFB_MAIL_URL', env('APP_URL', 'http://localhost')),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Elo ratings (admin playerprice)
+    |--------------------------------------------------------------------------
+    */
+    'elo' => [
+        'url' => env('FFB_ELO_URL', 'http://www.eloratings.net/world.html'),
+        'team_map_url' => env('FFB_ELO_TEAM_MAP_URL', 'http://soccer.sportsfan.at/parserfiles/teams/teams.csv'),
+    ],
 ];

@@ -37,6 +37,8 @@ if (! $isXml) {
         $redirectTo = '/platform/public/admin/score';
     } elseif (preg_match('#^/administration/matchpoints/?$#', $uriPath)) {
         $redirectTo = '/platform/public/admin/matchdata';
+    } elseif (preg_match('#^/administration/playerprice2014(?:/.*)?$#', $uriPath)) {
+        $redirectTo = '/platform/public/admin/playerprice';
     } elseif (preg_match('#^/administration/mailservice/?$#', $uriPath)) {
         $redirectTo = '/platform/public/admin/mailservice';
     } elseif (preg_match('#^/administration/awards/?$#', $uriPath)) {

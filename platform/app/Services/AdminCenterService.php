@@ -177,6 +177,13 @@ class AdminCenterService
                 'image_dir' => 'images/admin/navigation/',
             ],
             [
+                'symbol' => 'nav_prices.png',
+                'name' => 'Preis',
+                'link' => '/platform/admin/playerprice',
+                'style' => 'big',
+                'image_dir' => 'images/admin/navigation/',
+            ],
+            [
                 'symbol' => 'nav_mail.png',
                 'name' => 'Mail',
                 'link' => '/platform/admin/mailservice',

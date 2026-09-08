@@ -975,6 +975,11 @@
     font-size: 9.5pt;
 }
 
+.admin-playerprice-warn {
+    border-color: #c08040;
+    background: #fff6e8;
+}
+
 .admin-ms-answers {
     margin-top: 0.75rem;
 }
