@@ -122,7 +122,7 @@ class AdminCenterService
             ],
             [
                 'symbol' => 'nav_matchround.png',
-                'name' => 'Spielrunden',
+                'name' => 'Runden',
                 'link' => '/platform/admin/matchrounds',
                 'style' => 'big',
                 'image_dir' => 'images/admin/navigation/',
@@ -157,15 +157,22 @@ class AdminCenterService
             ],
             [
                 'symbol' => 'nav_config.png',
-                'name' => 'DB Cleanup',
+                'name' => 'Datenbank',
                 'link' => '/platform/admin/db-cleanup',
                 'style' => 'big',
                 'image_dir' => 'images/admin/navigation/',
             ],
             [
                 'symbol' => 'nav_results.png',
-                'name' => 'UserScore',
+                'name' => 'Score',
                 'link' => '/platform/admin/matchpoints/config',
+                'style' => 'big',
+                'image_dir' => 'images/admin/navigation/',
+            ],
+            [
+                'symbol' => 'nav_mail.png',
+                'name' => 'Mail',
+                'link' => '/platform/admin/mailservice',
                 'style' => 'big',
                 'image_dir' => 'images/admin/navigation/',
             ],

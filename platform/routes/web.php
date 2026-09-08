@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountPageController;
 use App\Http\Controllers\Admin\AdminCenterController;
 use App\Http\Controllers\Admin\AdminDbCleanupController;
+use App\Http\Controllers\Admin\AdminMailserviceController;
 use App\Http\Controllers\Admin\AdminMatchpointsConfigController;
 use App\Http\Controllers\Admin\AdminLeagueController;
 use App\Http\Controllers\Admin\AdminMatchController;
@@ -107,6 +108,12 @@ Route::middleware('ffb.admin')->group(function () {
     Route::get('/admin/matchpoints/config', [AdminMatchpointsConfigController::class, 'show'])->name('admin.matchpointsConfig');
     Route::post('/admin/matchpoints/config/userteam-scores', [AdminMatchpointsConfigController::class, 'setUserteamScores'])->name('admin.matchpointsConfig.setUserteamScores');
     Route::post('/admin/matchpoints/config/user-scores', [AdminMatchpointsConfigController::class, 'setUserScores'])->name('admin.matchpointsConfig.setUserScores');
+
+    Route::get('/admin/mailservice', [AdminMailserviceController::class, 'show'])->name('admin.mailservice');
+    Route::get('/admin/mailservice/matchrounds', [AdminMailserviceController::class, 'matchrounds'])->name('admin.mailservice.matchrounds');
+    Route::get('/admin/mailservice/users', [AdminMailserviceController::class, 'users'])->name('admin.mailservice.users');
+    Route::get('/admin/mailservice/mails/{mail}', [AdminMailserviceController::class, 'mail'])->name('admin.mailservice.mail');
+    Route::post('/admin/mailservice/send', [AdminMailserviceController::class, 'send'])->name('admin.mailservice.send');
 
     Route::get('/admin/news', [AdminNewsController::class, 'show'])->name('admin.news');
     Route::post('/admin/news', [AdminNewsController::class, 'store'])->name('admin.news.store');

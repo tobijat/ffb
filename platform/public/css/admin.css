@@ -1,7 +1,3 @@
-.admin-actions-flush {
-    padding-left: 0;
-}
-
 .admin-fieldset {
     border: 1px solid #7aaa7a;
     background: var(--panel-light, #ccffcc);
@@ -946,6 +942,11 @@
     padding-left: calc(10rem + 8px);
 }
 
+.admin-actions.admin-actions-flush {
+    padding-left: 0;
+    justify-content: flex-start;
+}
+
 .admin-submit {
     border: 1px solid #008000;
     background: var(--panel, #99cc99);
@@ -972,6 +973,197 @@
     max-height: 18rem;
     overflow: auto;
     font-size: 9.5pt;
+}
+
+.admin-ms-answers {
+    margin-top: 0.75rem;
+}
+
+.admin-ms-grid {
+    display: grid;
+    grid-template-columns: minmax(320px, 2fr) minmax(0, 3fr);
+    gap: 12px;
+    align-items: stretch;
+}
+
+.admin-ms-left,
+.admin-ms-right {
+    background: var(--panel-light, #ccffcc);
+    border: 1px solid #7aaa7a;
+    padding: 8px;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.admin-ms-left {
+    display: grid;
+    grid-template-columns: minmax(11rem, 0.95fr) minmax(0, 1.05fr);
+    gap: 10px;
+}
+
+.admin-ms-filters {
+    min-width: 0;
+}
+
+.admin-ms-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 8px;
+}
+
+.admin-ms-filter label {
+    font-size: 9pt;
+    margin: 0;
+}
+
+.admin-ms-filter select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    border: 1px solid #666;
+    background: #fff;
+    color: var(--ink);
+    padding: 4px 6px;
+    font-family: var(--font-body);
+    font-size: 10pt;
+}
+
+.admin-ms-userlist {
+    border: 1px solid #000;
+    height: 450px;
+    overflow: auto;
+    padding: 4px;
+    background: #fff;
+    font-size: 9.5pt;
+    min-width: 0;
+}
+
+.admin-ms-address {
+    min-height: 2.5rem;
+    margin-bottom: 6px;
+    font-size: 9.5pt;
+}
+
+.admin-ms-compose-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+    margin-bottom: 6px;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.admin-ms-compose-row input[type="text"] {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #666;
+    background: #fff;
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 10pt;
+    padding: 4px 6px;
+}
+
+.admin-ms-compose-row select {
+    flex: 0 0 7.5rem;
+    width: 7.5rem;
+    max-width: 40%;
+    box-sizing: border-box;
+    border: 1px solid #666;
+    background: #fff;
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 10pt;
+    padding: 4px 6px;
+}
+
+.admin-ms-right textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    min-height: 280px;
+    resize: vertical;
+    border: 1px solid #666;
+    background: #fff;
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 10pt;
+    padding: 4px 6px;
+}
+
+.admin-ms-send-wrap {
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.admin-ms-history {
+    display: grid;
+    gap: 2px;
+    font-size: 9.5pt;
+}
+
+.admin-ms-history-head,
+.admin-ms-history-row {
+    display: grid;
+    grid-template-columns: 15% 35% 20% 12% 10%;
+    gap: 4px;
+    align-items: center;
+}
+
+.admin-ms-history-head {
+    font-weight: bold;
+}
+
+.admin-ms-history-row:hover {
+    background: var(--panel-light, #ccffcc);
+}
+
+.admin-ms-history-row span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.admin-ms-load {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+}
+
+@media (max-width: 900px) {
+    .admin-ms-grid,
+    .admin-ms-left {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-ms-compose-row {
+        flex-wrap: wrap;
+    }
+
+    .admin-ms-compose-row select {
+        flex: 1 1 7.5rem;
+        max-width: 100%;
+    }
+
+    .admin-ms-userlist {
+        height: 260px;
+    }
+
+    .admin-ms-history-head,
+    .admin-ms-history-row {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-ms-history-row span {
+        white-space: normal;
+    }
 }
 
 .admin-cancel {
