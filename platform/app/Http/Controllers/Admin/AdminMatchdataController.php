@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Services\AdminCenterService;
 use App\Services\AdminMatchdataService;
 use App\Services\FfbAuth;
+use App\Services\WeltfussballProxyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class AdminMatchdataController extends Controller
 {
@@ -16,6 +18,7 @@ class AdminMatchdataController extends Controller
         private readonly FfbAuth $auth,
         private readonly AdminMatchdataService $matchdata,
         private readonly AdminCenterService $adminCenter,
+        private readonly WeltfussballProxyService $wfProxy,
     ) {
     }
 
@@ -91,5 +94,24 @@ class AdminMatchdataController extends Controller
             'message' => $result['message'] ?? null,
             'errors' => $result['errors'] ?? [],
         ], ($result['ok'] ?? false) ? 200 : 422);
+    }
+
+    public function scrape(Request $request, int $match): JsonResponse
+    {
+        $userId = $this->auth->userId($request);
+        $url = (string) $request->input('url', '');
+        $cookies = $request->filled('cookies') ? (string) $request->input('cookies') : null;
+        $html = $request->filled('html') ? (string) $request->input('html') : null;
+        $useCachedHtml = $request->boolean('use_cached_html');
+        $result = $this->matchdata->scrapeMatchData($userId, $match, $url, $cookies, $html, $useCachedHtml);
+
+        $status = ($result['ok'] ?? false) || ($result['challenge'] ?? false) ? 200 : 422;
+
+        return response()->json($result, $status);
+    }
+
+    public function wfProxy(Request $request): SymfonyResponse
+    {
+        return $this->wfProxy->handleBrowserRequest($request);
     }
 }

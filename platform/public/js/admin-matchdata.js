@@ -7,6 +7,8 @@
     const playersTpl = root.dataset.playersUrlTemplate || '';
     const resultTpl = root.dataset.resultUrlTemplate || '';
     const savePlayerTpl = root.dataset.savePlayerUrlTemplate || '';
+    const scrapeTpl = root.dataset.scrapeUrlTemplate || '';
+    const wfProxyUrl = root.dataset.wfProxyUrl || '';
     const csrf = root.dataset.csrf || '';
     const imagesBase = root.dataset.imagesBase || '/images/ffb/';
     const symbols = imagesBase + 'symbols/';
@@ -30,6 +32,13 @@
     const guestScore = document.getElementById('admin-mp-guestscore');
     const homePenalty = document.getElementById('admin-mp-homepenalty');
     const guestPenalty = document.getElementById('admin-mp-guestpenalty');
+    const penaltyEnable = document.getElementById('admin-mp-penalty-enable');
+    const penaltyRow = document.getElementById('admin-mp-penalty-row');
+    const matchMinutesSelect = document.getElementById('admin-mp-match-minutes');
+    const matchUrlInput = document.getElementById('admin-mp-url');
+    const scrapeBtn = document.getElementById('admin-mp-scrape');
+    const scrapeHint = document.getElementById('admin-mp-scrape-hint');
+    const cfFrame = document.getElementById('admin-mp-cf-frame');
     const saveBtn = document.getElementById('admin-mp-save');
     const dirtyHint = document.getElementById('admin-mp-dirty-hint');
 
@@ -37,6 +46,9 @@
     let currentMatchId = 0;
     let displayLock = 0;
     let matchesCache = [];
+    let scrapeInFlight = false;
+    let waitingForFrame = false;
+    let framePollTimer = null;
     const players = { Home: [], Guest: [] };
     const initials = { Home: [], Guest: [] };
     let resultInitial = null;
@@ -119,6 +131,8 @@
             guestscore: String(guestScore.value),
             homescore_penalty: String(homePenalty.value),
             guestscore_penalty: String(guestPenalty.value),
+            minutes: String(matchMinutesSelect ? matchMinutesSelect.value : '90'),
+            url: String(matchUrlInput ? matchUrlInput.value.trim() : ''),
         };
     }
 
@@ -128,8 +142,69 @@
 
     function resultEqual(a, b) {
         if (!a || !b) return false;
-        return ['homescore', 'guestscore', 'homescore_penalty', 'guestscore_penalty']
+        return ['homescore', 'guestscore', 'homescore_penalty', 'guestscore_penalty', 'minutes', 'url']
             .every((key) => String(a[key] ?? '') === String(b[key] ?? ''));
+    }
+
+    function currentMatchMinutes() {
+        const value = Number(matchMinutesSelect ? matchMinutesSelect.value : 90);
+        return value === 120 ? 120 : 90;
+    }
+
+    function setMatchMinutes(value) {
+        if (!matchMinutesSelect) return;
+        const minutes = Number(value) === 120 ? 120 : 90;
+        matchMinutesSelect.value = String(minutes);
+    }
+
+    function hasStoredPenalty(homePs, guestPs) {
+        return Number(homePs) >= 0 || Number(guestPs) >= 0;
+    }
+
+    function setPenaltyUi(enabled, homePs, guestPs) {
+        const show = !!enabled;
+        if (penaltyEnable) penaltyEnable.checked = show;
+        if (penaltyRow) penaltyRow.hidden = !show;
+        const homeVal = Number(homePs);
+        const guestVal = Number(guestPs);
+        fillScoreSelect(
+            homePenalty,
+            Number.isFinite(homeVal) ? homeVal : -1,
+            99,
+            -1
+        );
+        fillScoreSelect(
+            guestPenalty,
+            Number.isFinite(guestVal) ? guestVal : -1,
+            99,
+            -1
+        );
+    }
+
+    function recalculatePlayerMinutesForMatchLength(newLength) {
+        const oldLength = newLength === 120 ? 90 : 120;
+        ['Home', 'Guest'].forEach((side) => {
+            players[side].forEach((_, index) => {
+                const minuteIn = Number(readField(side, index, 'minute_in') || 0);
+                const minuteOut = Number(readField(side, index, 'minute_out') || 0);
+                if (minuteIn <= 0 && minuteOut <= 0 && Number(readField(side, index, 'minutes') || 0) <= 0) {
+                    return;
+                }
+                let nextOut = minuteOut;
+                if (minuteOut === oldLength) {
+                    nextOut = newLength;
+                    writeField(side, index, 'minute_out', String(nextOut));
+                }
+                const nextIn = minuteIn > 0 ? minuteIn : 1;
+                if (minuteIn <= 0) {
+                    writeField(side, index, 'minute_in', String(nextIn));
+                }
+                if (nextOut >= nextIn) {
+                    writeField(side, index, 'minutes', String(nextOut - nextIn + 1));
+                }
+                syncPlayerRow(side, index);
+            });
+        });
     }
 
     function clearMatchUi() {
@@ -145,6 +220,14 @@
         guestSection.hidden = true;
         homePlayers.innerHTML = '';
         guestPlayers.innerHTML = '';
+        if (matchUrlInput) matchUrlInput.value = '';
+        if (scrapeBtn) scrapeBtn.disabled = true;
+        if (scrapeHint) {
+            scrapeHint.hidden = true;
+            scrapeHint.textContent = '';
+        }
+        setPenaltyUi(false, -1, -1);
+        resetFrameUi();
         refreshSavebar();
     }
 
@@ -309,6 +392,252 @@
         });
     }
 
+    function findPlayerIndexByPt(side, playerteamId) {
+        const id = String(playerteamId);
+        return players[side].findIndex((p) => String(p.playerteam_id) === id);
+    }
+
+    function applyScrapedPlayer(side, index, stats) {
+        const fields = [
+            'minutes', 'minute_in', 'minute_out', 'goals', 'owngoals', 'assists',
+            'penaltieslost', 'penaltiessaved',
+            'penaltyshootout_save', 'penaltyshootout_lost', 'penaltyshootout_hit',
+        ];
+        fields.forEach((name) => {
+            if (stats[name] === undefined || stats[name] === null) return;
+            writeField(side, index, name, String(stats[name]));
+        });
+        if (stats.cards) {
+            applyCardsUi(side, index, String(stats.cards));
+        }
+        syncPlayerRow(side, index);
+    }
+
+    function applyScrapePayload(data) {
+        if (data.url && matchUrlInput) {
+            matchUrlInput.value = data.url;
+        }
+        if (data.match_minutes) {
+            setMatchMinutes(data.match_minutes);
+        }
+        if (data.result) {
+            const r = data.result;
+            if (homeScore.querySelector(`option[value="${r.homescore}"]`)) homeScore.value = String(r.homescore);
+            if (guestScore.querySelector(`option[value="${r.guestscore}"]`)) guestScore.value = String(r.guestscore);
+            setPenaltyUi(
+                hasStoredPenalty(r.homescore_penalty, r.guestscore_penalty),
+                r.homescore_penalty,
+                r.guestscore_penalty
+            );
+        }
+
+        const mapped = data.players || {};
+        Object.keys(mapped).forEach((ptId) => {
+            let side = null;
+            let index = findPlayerIndexByPt('Home', ptId);
+            if (index >= 0) side = 'Home';
+            else {
+                index = findPlayerIndexByPt('Guest', ptId);
+                if (index >= 0) side = 'Guest';
+            }
+            if (!side) return;
+            applyScrapedPlayer(side, index, mapped[ptId]);
+        });
+
+        refreshSavebar();
+
+        if (scrapeHint) {
+            const unmatched = data.unmatched || [];
+            const parts = [];
+            if (data.message) parts.push(data.message);
+            if (unmatched.length === 1) parts.push('Nicht zugeordnet: ' + unmatched[0]);
+            else if (unmatched.length > 1) {
+                parts.push('Nicht zugeordnet (' + unmatched.length + '): ' + unmatched.slice(0, 8).join(', ')
+                    + (unmatched.length > 8 ? '…' : ''));
+            }
+            scrapeHint.textContent = parts.join(' · ');
+            scrapeHint.hidden = parts.length === 0;
+        }
+    }
+
+    function readFrameHtml() {
+        try {
+            if (!cfFrame || !cfFrame.contentDocument || !cfFrame.contentDocument.documentElement) {
+                return '';
+            }
+            return cfFrame.contentDocument.documentElement.outerHTML || '';
+        } catch (err) {
+            return '';
+        }
+    }
+
+    function frameHtmlLooksReady(html) {
+        return !!html && (
+            html.indexOf('hs-lineup--starter') !== -1
+            || html.indexOf('data-template="lineup-graphical"') !== -1
+            || (html.indexOf('event playing lineup none_home') !== -1 && html.indexOf('event playing lineup none_away') !== -1)
+        );
+    }
+
+    function frameHtmlLooksChallenge(html) {
+        if (!html || frameHtmlLooksReady(html)) return false;
+        return html.indexOf('Just a moment') !== -1
+            || html.indexOf('cf-browser-verification') !== -1
+            || html.indexOf('challenge-platform') !== -1
+            || html.indexOf('Attention Required') !== -1;
+    }
+
+    function setFrameVisible(visible) {
+        if (!cfFrame) return;
+        cfFrame.classList.toggle('is-hidden', !visible);
+        cfFrame.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    }
+
+    function stopFramePoll() {
+        if (framePollTimer) {
+            clearInterval(framePollTimer);
+            framePollTimer = null;
+        }
+    }
+
+    function resetFrameUi() {
+        waitingForFrame = false;
+        stopFramePoll();
+        setFrameVisible(false);
+        if (cfFrame) cfFrame.removeAttribute('src');
+    }
+
+    function proxyUrlFor(targetUrl) {
+        if (!wfProxyUrl) return '';
+        return wfProxyUrl + '?u=' + encodeURIComponent(targetUrl);
+    }
+
+    function ingestFrameHtml(html, autoParse) {
+        if (!html) return;
+        if (frameHtmlLooksChallenge(html)) {
+            setFrameVisible(true);
+            if (scrapeHint) {
+                scrapeHint.hidden = false;
+                scrapeHint.textContent = 'Cloudflare-Challenge im Frame – bitte lösen, danach wird automatisch weitergemacht.';
+            }
+            return;
+        }
+        if (frameHtmlLooksReady(html)) {
+            waitingForFrame = false;
+            stopFramePoll();
+            setFrameVisible(false);
+            if (scrapeHint) {
+                scrapeHint.hidden = false;
+                scrapeHint.textContent = 'Spielbericht geladen – werte Daten aus…';
+            }
+            if (autoParse) {
+                scrapeExternal({ html: html, fromFrame: true });
+            }
+        }
+    }
+
+    function startHiddenFrameLoad(targetUrl, message) {
+        const proxyUrl = targetUrl.indexOf(wfProxyUrl) === 0 ? targetUrl : proxyUrlFor(targetUrl);
+        if (!cfFrame || !proxyUrl) {
+            if (scrapeHint) {
+                scrapeHint.hidden = false;
+                scrapeHint.textContent = message || 'Proxy-URL fehlt.';
+            }
+            return;
+        }
+        waitingForFrame = true;
+        setFrameVisible(false);
+        if (scrapeHint) {
+            scrapeHint.hidden = false;
+            scrapeHint.textContent = message || 'Seite wird geladen…';
+        }
+        const current = cfFrame.getAttribute('src') || '';
+        if (current !== proxyUrl) {
+            cfFrame.src = proxyUrl;
+        }
+        stopFramePoll();
+        framePollTimer = setInterval(() => {
+            if (!waitingForFrame) {
+                stopFramePoll();
+                return;
+            }
+            const html = readFrameHtml();
+            if (html) ingestFrameHtml(html, true);
+        }, 1200);
+    }
+
+    async function scrapeExternal(options) {
+        const fromFrame = !!(options && (options.useCachedHtml || options.fromFrame || options.html));
+        let html = (options && options.html) || '';
+        if (fromFrame && !frameHtmlLooksReady(html)) {
+            html = readFrameHtml() || html;
+        }
+        if (!currentMatchId) {
+            alert('Bitte zuerst ein Spiel wählen.');
+            return;
+        }
+        const url = matchUrlInput ? matchUrlInput.value.trim() : '';
+        if (!url) {
+            alert('Bitte eine URL angeben.');
+            return;
+        }
+        if (scrapeInFlight) return;
+        scrapeInFlight = true;
+        scrapeBtn.disabled = true;
+        if (scrapeHint) {
+            scrapeHint.hidden = false;
+            scrapeHint.textContent = fromFrame
+                ? 'HTML wird geparst…'
+                : 'Spieldaten werden geladen…';
+        }
+        try {
+            const payload = { url };
+            if (frameHtmlLooksReady(html)) {
+                payload.html = html;
+            } else if (fromFrame) {
+                payload.use_cached_html = true;
+            }
+
+            const headers = {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrf,
+                'X-XSRF-TOKEN': xsrfToken(),
+            };
+            const response = await fetch(scrapeTpl.replace('__ID__', String(currentMatchId)), {
+                method: 'POST',
+                headers,
+                credentials: 'same-origin',
+                body: JSON.stringify(payload),
+            });
+            const data = await response.json().catch(() => ({}));
+
+            if (data.challenge && data.proxy_url) {
+                startHiddenFrameLoad(data.proxy_url, (data.errors && data.errors[0]) || data.message);
+                return;
+            }
+            if (!response.ok || data.ok === false) {
+                const msg = (data.errors && data.errors[0]) || data.message || 'Laden fehlgeschlagen.';
+                throw new Error(msg);
+            }
+
+            waitingForFrame = false;
+            stopFramePoll();
+            applyScrapePayload(data);
+        } catch (err) {
+            if (scrapeHint) {
+                scrapeHint.hidden = false;
+                scrapeHint.textContent = err.message || 'Laden fehlgeschlagen.';
+            } else {
+                alert(err.message || 'Laden fehlgeschlagen.');
+            }
+        } finally {
+            scrapeInFlight = false;
+            scrapeBtn.disabled = !currentMatchId;
+        }
+    }
+
     function undoPlayerRow(side, index) {
         const initial = initials[side][index];
         if (!initial) return;
@@ -387,8 +716,19 @@
         guestHeading.textContent = guestLabel;
         fillScoreSelect(homeScore, match.match_homescore, 49, 0);
         fillScoreSelect(guestScore, match.match_guestscore, 49, 0);
-        fillScoreSelect(homePenalty, match.match_homescore_penalty, 99, -1);
-        fillScoreSelect(guestPenalty, match.match_guestscore_penalty, 99, -1);
+        setPenaltyUi(
+            hasStoredPenalty(match.match_homescore_penalty, match.match_guestscore_penalty),
+            match.match_homescore_penalty,
+            match.match_guestscore_penalty
+        );
+        setMatchMinutes(match.match_minutes || 90);
+        if (matchUrlInput) matchUrlInput.value = match.match_url || '';
+        if (scrapeBtn) scrapeBtn.disabled = false;
+        if (scrapeHint) {
+            scrapeHint.hidden = true;
+            scrapeHint.textContent = '';
+        }
+        resetFrameUi();
         resultInitial = readResultValues();
 
         resultEl.hidden = false;
@@ -549,6 +889,48 @@
 
     [homeScore, guestScore, homePenalty, guestPenalty].forEach((el) => {
         el.addEventListener('change', refreshSavebar);
+    });
+    if (penaltyEnable) {
+        penaltyEnable.addEventListener('change', () => {
+            if (penaltyEnable.checked) {
+                const homeVal = Number(homePenalty.value);
+                const guestVal = Number(guestPenalty.value);
+                setPenaltyUi(
+                    true,
+                    Number.isFinite(homeVal) ? homeVal : -1,
+                    Number.isFinite(guestVal) ? guestVal : -1
+                );
+            } else {
+                setPenaltyUi(false, -1, -1);
+            }
+            refreshSavebar();
+        });
+    }
+    if (matchMinutesSelect) {
+        matchMinutesSelect.addEventListener('change', () => {
+            recalculatePlayerMinutesForMatchLength(currentMatchMinutes());
+            refreshSavebar();
+        });
+    }
+    if (matchUrlInput) {
+        matchUrlInput.addEventListener('input', refreshSavebar);
+        matchUrlInput.addEventListener('change', refreshSavebar);
+    }
+    if (scrapeBtn) scrapeBtn.addEventListener('click', () => scrapeExternal());
+
+    window.addEventListener('message', (event) => {
+        if (!waitingForFrame || !event.data || event.data.type !== 'ffb-wf-proxy') return;
+        if (event.origin !== window.location.origin) return;
+        const html = event.data.html || readFrameHtml();
+        if (html) {
+            ingestFrameHtml(html, !!event.data.ready);
+        } else if (event.data.challenge) {
+            setFrameVisible(true);
+            if (scrapeHint) {
+                scrapeHint.hidden = false;
+                scrapeHint.textContent = 'Cloudflare-Challenge im Frame – bitte lösen.';
+            }
+        }
     });
 
     saveBtn.addEventListener('click', saveAll);

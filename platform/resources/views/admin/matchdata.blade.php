@@ -3,7 +3,7 @@
 @section('title', 'Spieldaten')
 
 @push('scripts')
-    <script src="{{ url('js/admin-matchdata.js') }}?v=1" defer></script>
+    <script src="{{ url('js/admin-matchdata.js') }}?v=14" defer></script>
 @endpush
 
 @section('content')
@@ -21,6 +21,8 @@
         data-players-url-template="{{ url('/admin/matchdata/matches') }}/__MATCH__/teams/__TEAM__/players"
         data-result-url-template="{{ url('/admin/matchdata/matches') }}/__ID__/result"
         data-save-player-url-template="{{ url('/admin/matchdata/matches') }}/__MATCH__/players/__PT__"
+        data-scrape-url-template="{{ url('/admin/matchdata/matches') }}/__ID__/scrape"
+        data-wf-proxy-url="{{ url('/admin/matchdata/wf-proxy') }}"
         data-csrf="{{ csrf_token() }}"
         data-images-base="{{ $legacyBase }}images/ffb/"
         data-pointsmode="{{ $pointsmode }}"
@@ -63,26 +65,35 @@
         @endif
 
         <div class="admin-mp-result" id="admin-mp-result" hidden>
-            <div class="admin-mp-result-row">
-                <div class="admin-mp-result-teams">
-                    <div class="admin-mp-result-side">
-                        <span class="admin-mp-result-name" id="admin-mp-home-name">Heim</span>
-                        <select id="admin-mp-homescore" aria-label="Heimtore"></select>
+            <div class="admin-mp-result-row admin-mp-result-main">
+                <div class="admin-mp-result-main-left">
+                    <div class="admin-mp-result-teams">
+                        <div class="admin-mp-result-side">
+                            <span class="admin-mp-result-name" id="admin-mp-home-name">Heim</span>
+                            <select id="admin-mp-homescore" aria-label="Heimtore"></select>
+                        </div>
+                        <span class="admin-mp-result-sep">:</span>
+                        <div class="admin-mp-result-side">
+                            <select id="admin-mp-guestscore" aria-label="Gasttore"></select>
+                            <span class="admin-mp-result-name" id="admin-mp-guest-name">Gast</span>
+                        </div>
                     </div>
-                    <span class="admin-mp-result-sep">:</span>
-                    <div class="admin-mp-result-side">
-                        <select id="admin-mp-guestscore" aria-label="Gasttore"></select>
-                        <span class="admin-mp-result-name" id="admin-mp-guest-name">Gast</span>
-                    </div>
+                    <select id="admin-mp-match-minutes" class="admin-mp-select admin-mp-minutes-select" aria-label="Spieldauer" title="Spielzeit">
+                        <option value="90">90 min</option>
+                        <option value="120">120 min</option>
+                    </select>
                 </div>
                 <div class="admin-actions admin-actions-flush admin-mp-savebar">
                     <button type="button" id="admin-mp-save" class="admin-submit" disabled>Änderungen speichern (0)</button>
                     <span class="muted" id="admin-mp-dirty-hint">Noch keine Änderungen</span>
                 </div>
             </div>
-            <div class="admin-mp-result-row admin-mp-result-penalty">
-                <span class="admin-mp-result-label">Elfmeterschießen</span>
-                <div class="admin-mp-result-teams">
+            <div class="admin-mp-result-row admin-mp-result-penalty-row">
+                <label class="admin-mp-penalty-check" for="admin-mp-penalty-enable">
+                    <input type="checkbox" id="admin-mp-penalty-enable">
+                    Elfmeterschießen
+                </label>
+                <div class="admin-mp-result-teams" id="admin-mp-penalty-row" hidden>
                     <div class="admin-mp-result-side">
                         <span class="admin-mp-result-name admin-mp-result-name-muted" id="admin-mp-home-name-ps">Heim</span>
                         <select id="admin-mp-homepenalty" aria-label="Heim Elfmeterschießen"></select>
@@ -94,6 +105,27 @@
                     </div>
                 </div>
             </div>
+            <div class="admin-mp-result-row admin-mp-result-url">
+                <label class="admin-mp-result-label" for="admin-mp-url">Externe Seite</label>
+                <div class="admin-mp-url-row">
+                    <input
+                        type="url"
+                        id="admin-mp-url"
+                        class="admin-mp-url-input"
+                        placeholder="https://www.weltfussball.at/spielbericht/…"
+                        autocomplete="off"
+                    >
+                    <button type="button" id="admin-mp-scrape" class="admin-submit" disabled>Spieldaten laden</button>
+                </div>
+            </div>
+            <iframe
+                id="admin-mp-cf-frame"
+                class="admin-mp-cf-frame is-hidden"
+                title="Weltfussball Loader"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                aria-hidden="true"
+            ></iframe>
+            <p class="hint admin-mp-scrape-hint" id="admin-mp-scrape-hint" hidden></p>
         </div>
 
         <div class="admin-mp-legend" id="admin-mp-legend" hidden>

@@ -127,4 +127,23 @@ return [
         'url' => env('FFB_ELO_URL', 'http://www.eloratings.net/world.html'),
         'team_map_url' => env('FFB_ELO_TEAM_MAP_URL', 'http://soccer.sportsfan.at/parserfiles/teams/teams.csv'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Outbound HTTP (scrapers / Elo)
+    |--------------------------------------------------------------------------
+    |
+    | Windows PHP often lacks a CA bundle (cURL error 60). Leave verify off in
+    | local/testing, or set FFB_HTTP_VERIFY_SSL=false explicitly.
+    |
+    */
+    'http' => [
+        'verify_ssl' => filter_var(
+            env(
+                'FFB_HTTP_VERIFY_SSL',
+                ! in_array(env('APP_ENV', 'production'), ['local', 'testing'], true)
+            ),
+            FILTER_VALIDATE_BOOLEAN
+        ),
+    ],
 ];

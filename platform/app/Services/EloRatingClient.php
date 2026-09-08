@@ -184,7 +184,12 @@ class EloRatingClient
 
     private function fetch(string $url): string
     {
-        $response = Http::timeout(60)->get($url);
+        $request = Http::timeout(60);
+        if (! config('ffb.http.verify_ssl', true)) {
+            $request = $request->withOptions(['verify' => false]);
+        }
+
+        $response = $request->get($url);
         if (! $response->successful()) {
             throw new RuntimeException('Failed to fetch '.$url.' (HTTP '.$response->status().')');
         }
