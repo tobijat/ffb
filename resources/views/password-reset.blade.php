@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Passwort zurücksetzen — SoccerSportsfan</title>
-    <link rel="stylesheet" href="{{ rtrim(config('ffb.home_path'), '/') }}/css/start.css">
-    <link rel="stylesheet" href="{{ rtrim(config('ffb.home_path'), '/') }}/css/dashboard.css">
-    <link rel="stylesheet" href="{{ rtrim(config('ffb.home_path'), '/') }}/css/account.css?v=2">
+    <link rel="stylesheet" href="{{ rtrim(config('ffb.home_path'), '/') }}/css/start.css?v=13">
+    <link rel="stylesheet" href="{{ rtrim(config('ffb.home_path'), '/') }}/css/dashboard.css?v=10">
+    <link rel="stylesheet" href="{{ rtrim(config('ffb.home_path'), '/') }}/css/account.css?v=4">
 </head>
 <body class="dash-body">
     @php $nav = $data['navigation']; @endphp

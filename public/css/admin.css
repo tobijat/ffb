@@ -958,8 +958,8 @@
 }
 
 .admin-submit:hover {
-    background: var(--link-hover-bg, #008000);
-    color: var(--link-hover, #fff);
+    background: var(--btn-hover-bg, #008000);
+    color: var(--btn-hover-color, #fff);
 }
 
 .admin-submit:disabled {
@@ -1455,8 +1455,8 @@
 
 .dash-nav a.is-active {
     font-weight: bold;
-    background: var(--link-hover-bg, #008000);
-    color: var(--link-hover, #fff);
+    background: var(--panel, #99cc99);
+    color: var(--ink, #000);
 }
 
 @media (max-width: 640px) {

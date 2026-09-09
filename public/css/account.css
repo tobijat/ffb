@@ -24,8 +24,8 @@
 }
 
 .account-tab:hover {
-    color: var(--link-hover, #fff);
-    background: var(--link-hover-bg, #008000);
+    color: var(--link-hover, #000);
+    background: var(--link-hover-bg, #b8e0b8);
 }
 
 .account-tab.is-active {

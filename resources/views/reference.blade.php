@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Impressum — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css">
-    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/start.css?v=13">
+    <link rel="stylesheet" href="css/dashboard.css?v=10">
     <link rel="stylesheet" href="css/help.css?v=2">
 </head>
 <body class="dash-body">

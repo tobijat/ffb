@@ -63,6 +63,7 @@
 .userscore-table th a:hover {
     background: var(--link-hover-bg);
     color: var(--link-hover);
+    text-decoration: none;
 }
 
 .userscore-table .col-rank,

@@ -4,7 +4,7 @@
             <img class="user-photo" src="{{ $user['photo_url'] }}" alt="Foto {{ $user['user_nickname'] }}" width="48" height="48">
         </a>
         <div class="user-card-text">
-            <p class="hello">Hallo <strong>{{ $user['user_nickname'] }}</strong></p>
+            <p class="hello">Hallo <a class="user-card-nickname" href="/profile" title="Profil bearbeiten"><strong>{{ $user['user_nickname'] }}</strong></a></p>
             <p class="muted">Du bist angemeldet.</p>
             @if (!empty($user['is_ffb_admin']))
                 <p class="user-card-admin">

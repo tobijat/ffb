@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Admin Center') — SoccerSportsfan</title>
-    <link rel="stylesheet" href="{{ url('css/start.css') }}?v=10">
-    <link rel="stylesheet" href="{{ url('css/dashboard.css') }}?v=6">
-    <link rel="stylesheet" href="{{ url('css/admin.css') }}?v=47">
+    <link rel="stylesheet" href="{{ url('css/start.css') }}?v=13">
+    <link rel="stylesheet" href="{{ url('css/dashboard.css') }}?v=10">
+    <link rel="stylesheet" href="{{ url('css/admin.css') }}?v=49">
     @stack('head')
 </head>
 <body class="dash-body">

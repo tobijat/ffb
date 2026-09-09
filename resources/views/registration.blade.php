@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Registrieren — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css">
-    <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/account.css?v=2">
+    <link rel="stylesheet" href="css/start.css?v=13">
+    <link rel="stylesheet" href="css/dashboard.css?v=10">
+    <link rel="stylesheet" href="css/account.css?v=4">
     <link rel="stylesheet" href="css/registration.css?v=1">
 </head>
 <body class="dash-body">
