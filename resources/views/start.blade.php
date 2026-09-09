@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SoccerSportsfan — Fantasy Football</title>
     <meta name="description" content="Fantasy Football Manager bei SoccerSportsfan. Kostenlos mitspielen.">
-    <link rel="stylesheet" href="css/start.css?v=9">
-    <link rel="stylesheet" href="css/dashboard.css?v=2">
+    <link rel="stylesheet" href="css/start.css?v=13">
+    <link rel="stylesheet" href="css/dashboard.css?v=10">
 </head>
 <body class="start-page dash-body">
     <header class="dash-top">

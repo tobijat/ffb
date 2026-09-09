@@ -31,7 +31,7 @@
 .dash-nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px 6px;
+    gap: 6px 10px;
     align-items: flex-start;
 }
 
@@ -41,13 +41,13 @@
     display: inline-flex;
     flex-direction: column;
     align-items: center;
-    gap: 1px;
-    font-size: 7.5pt;
+    gap: 2px;
+    font-size: 8pt;
     font-weight: normal;
     background: transparent;
-    min-width: 3.4rem;
-    max-width: 4.6rem;
-    padding: 2px 3px;
+    min-width: 4rem;
+    max-width: 5.5rem;
+    padding: 2px 4px;
     text-align: center;
     line-height: 1.15;
 }
@@ -55,11 +55,12 @@
 .dash-nav a:hover {
     color: var(--link-hover);
     background: var(--link-hover-bg);
+    text-decoration: none;
 }
 
 .dash-nav a img {
-    width: 28px;
-    height: 28px;
+    width: 40px;
+    height: 40px;
 }
 
 .dash-nav a span {
@@ -93,9 +94,24 @@
     flex-shrink: 0;
     line-height: 0;
     background: transparent;
+    display: inline-block;
+    border: 1px solid transparent;
+    padding: 1px;
+    text-decoration: none;
 }
 
 .user-card-photo:hover {
+    background: transparent;
+    border-color: #5a9a5a;
+}
+
+.user-card-nickname {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.user-card-nickname:hover {
+    color: inherit;
     background: transparent;
 }
 
@@ -127,6 +143,7 @@
 .user-card-logout:hover {
     color: var(--link-hover);
     background: var(--link-hover-bg);
+    text-decoration: none;
 }
 
 .user-photo {
@@ -295,8 +312,8 @@
 
 .page-btn.is-active,
 .page-btn:hover {
-    background: #008000;
-    color: #fff;
+    background: var(--link-hover-bg);
+    color: var(--link-hover);
 }
 
 .poll-title {
@@ -332,6 +349,7 @@
 .poll-vote:hover {
     background: var(--link-hover-bg);
     color: var(--link-hover);
+    text-decoration: none;
 }
 
 .result-label {

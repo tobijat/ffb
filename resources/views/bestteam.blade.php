@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Top / Flop Teams — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css">
-    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/start.css?v=13">
+    <link rel="stylesheet" href="css/dashboard.css?v=10">
     <link rel="stylesheet" href="css/modal.css?v=5">
     <link rel="stylesheet" href="css/myteam.css?v=6">
 </head>

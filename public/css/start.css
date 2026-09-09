@@ -6,8 +6,10 @@
     --ink: #000000;
     --muted: #333333;
     --link: #000000;
-    --link-hover-bg: #008000;
-    --link-hover: #ffffff;
+    --link-hover-bg: #b8e0b8;
+    --link-hover: #000000;
+    --btn-hover-bg: #008000;
+    --btn-hover-color: #ffffff;
     --danger-bg: #ff0000;
     --ok-bg: #00ff00;
     --selected: #ff0000;
@@ -44,8 +46,8 @@ a {
 }
 
 a:hover {
-    color: var(--link-hover);
-    background: var(--link-hover-bg);
+    color: var(--link);
+    background: transparent;
 }
 
 .pitch-bg {
@@ -91,6 +93,7 @@ main,
     align-items: center;
     gap: 8px;
     line-height: 1.1;
+    padding: 2px 4px;
 }
 
 .brand img {
@@ -127,6 +130,7 @@ main,
 .brand:hover {
     color: var(--link-hover);
     background: var(--link-hover-bg);
+    text-decoration: none;
 }
 
 .top-link {
@@ -294,8 +298,8 @@ main {
 
 .login-links a:hover,
 .linkish:hover {
-    color: var(--link-hover);
-    background: var(--link-hover-bg);
+    color: var(--link);
+    background: transparent;
 }
 
 .feedback {
