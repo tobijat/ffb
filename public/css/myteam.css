@@ -239,35 +239,21 @@
 }
 
 .myteam-tabs {
+    --ffb-tab-panel-bg: var(--panel);
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 4px;
     margin-bottom: 8px;
 }
 
 .myteam-tab {
-    appearance: none;
-    border: 1px solid #7aaa7a;
-    background: var(--panel-light);
-    color: var(--ink);
-    padding: 4px 6px;
-    font-family: var(--font-body);
+    justify-content: center;
     font-size: 8pt;
-    cursor: pointer;
-    text-decoration: underline;
-}
-
-.myteam-tab.is-active {
-    background: #008000;
-    color: #fff;
-    text-decoration: none;
-    font-weight: bold;
+    padding: 4px 6px;
 }
 
 .myteam-tab:disabled {
     opacity: 0.45;
     cursor: not-allowed;
-    text-decoration: none;
 }
 
 #side-panel-title {

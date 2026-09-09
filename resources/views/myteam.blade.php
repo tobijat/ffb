@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mannschaft — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css?v=13">
+    <link rel="stylesheet" href="css/start.css?v=14">
     <link rel="stylesheet" href="css/dashboard.css?v=10">
-    <link rel="stylesheet" href="css/modal.css?v=5">
-    <link rel="stylesheet" href="css/myteam.css?v=6">
+    <link rel="stylesheet" href="css/modal.css?v=6">
+    <link rel="stylesheet" href="css/myteam.css?v=7">
 </head>
 <body class="dash-body">
     @php
@@ -92,9 +92,9 @@
             </div>
 
             <div class="panel" id="matchlist-panel">
-                <div class="myteam-tabs" id="side-tabs" hidden>
-                    <button type="button" class="myteam-tab is-active" data-side-tab="matches">Spiele anzeigen</button>
-                    <button type="button" class="myteam-tab" data-side-tab="stats">Statistiken anzeigen</button>
+                <div class="myteam-tabs ffb-tabs" id="side-tabs" hidden>
+                    <button type="button" class="myteam-tab ffb-tab is-active" data-side-tab="matches">Spiele anzeigen</button>
+                    <button type="button" class="myteam-tab ffb-tab" data-side-tab="stats">Statistiken anzeigen</button>
                 </div>
                 <h2 id="side-panel-title">Spiele</h2>
                 <div id="matchlist">
@@ -121,8 +121,8 @@
             selectedGameId: @json($data['selected_game_id'] ?? 0),
         };
     </script>
-    <script src="js/modal.js?v=5" defer></script>
-    <script src="js/player-modal.js?v=4" defer></script>
+    <script src="js/modal.js?v=6" defer></script>
+    <script src="js/player-modal.js?v=5" defer></script>
     <script src="js/myteam.js?v=4" defer></script>
 </body>
 </html>

@@ -71,33 +71,17 @@
 }
 
 .ffb-modal-tabs {
-    display: flex;
-    gap: 0.75rem;
-    padding: 0.35rem 0.6rem;
-    background: #bbeebb;
+    --ffb-tab-panel-bg: #f4faf4;
+    --ffb-tab-strip-bg: #bbeebb;
+    margin: 0;
+    padding: 0.35rem 0.6rem 0;
     border-top: 1px solid #99cc99;
-}
-
-.ffb-modal-tabs a,
-.ffb-modal-tabs button {
-    background: none;
-    border: 0;
-    padding: 0;
-    color: #1a4a1a;
-    cursor: pointer;
-    font: inherit;
-    text-decoration: underline;
-}
-
-.ffb-modal-tabs .is-active {
-    font-weight: 700;
-    text-decoration: none;
 }
 
 .ffb-modal-body {
     padding: 0.5rem 0.6rem 0.75rem;
     background: #f4faf4;
-    border-top: 1px solid #2a5a2a;
+    border-top: 0;
     min-height: 4rem;
 }
 

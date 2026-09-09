@@ -19,6 +19,10 @@
     --font-title: "Kristen ITC", "Comic Sans MS", Verdana, sans-serif;
     --page-max: 1100px;
     --page-gutter: 10px;
+    --ffb-tab-border: #7aaa7a;
+    --ffb-tab-inactive-bg: #bbeebb;
+    --ffb-tab-panel-bg: var(--bg);
+    --ffb-tab-strip-bg: transparent;
 }
 
 *,
@@ -48,6 +52,79 @@ a {
 a:hover {
     color: var(--link);
     background: transparent;
+}
+
+/* Shared folder tabs (modals, account, myteam, admin) */
+.ffb-tabs,
+.ffb-modal-tabs,
+.account-tabs,
+.myteam-tabs,
+.admin-squad-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 4px;
+    margin: 0 0 10px;
+    padding: 0;
+    border-bottom: 1px solid var(--ffb-tab-border);
+    background: var(--ffb-tab-strip-bg);
+}
+
+.ffb-tab,
+.ffb-modal-tabs a,
+.ffb-modal-tabs button,
+.account-tab,
+.myteam-tab,
+.admin-squad-tab {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 -1px;
+    padding: 5px 12px;
+    border: 1px solid var(--ffb-tab-border);
+    border-radius: 4px 4px 0 0;
+    background: var(--ffb-tab-inactive-bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 10pt;
+    font-weight: normal;
+    line-height: 1.2;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.ffb-tab:hover,
+.ffb-modal-tabs a:hover,
+.ffb-modal-tabs button:hover,
+.account-tab:hover,
+.myteam-tab:hover,
+.admin-squad-tab:hover {
+    color: var(--ink);
+    background: var(--link-hover-bg);
+    text-decoration: none;
+}
+
+.ffb-tab.is-active,
+.ffb-modal-tabs .is-active,
+.account-tab.is-active,
+.myteam-tab.is-active,
+.admin-squad-tab.is-active {
+    background: var(--ffb-tab-panel-bg);
+    border-bottom-color: var(--ffb-tab-panel-bg);
+    color: var(--ink);
+    font-weight: bold;
+    text-decoration: none;
+    z-index: 1;
+}
+
+.ffb-tab.is-active:hover,
+.ffb-modal-tabs .is-active:hover,
+.account-tab.is-active:hover,
+.myteam-tab.is-active:hover,
+.admin-squad-tab.is-active:hover {
+    background: var(--ffb-tab-panel-bg);
+    color: var(--ink);
 }
 
 .pitch-bg {

@@ -426,32 +426,8 @@
 }
 
 .admin-squad-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
+    --ffb-tab-panel-bg: var(--bg);
     margin: 10px 0 0;
-}
-
-.admin-squad-tab {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 12px;
-    border: 1px solid #7aaa7a;
-    background: #fff;
-    color: var(--ink);
-    text-decoration: none;
-    font-size: 10pt;
-}
-
-.admin-squad-tab:hover {
-    background: #f7fff7;
-}
-
-.admin-squad-tab.is-active {
-    background: var(--panel, #99cc99);
-    border-color: #008000;
-    font-weight: bold;
 }
 
 .admin-squad-count {
