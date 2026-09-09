@@ -47,6 +47,7 @@
 .lineup-actions .ffb-button-disabled {
     appearance: none;
     border: 1px solid #336633;
+    border-radius: var(--radius-sm);
     background: #008000;
     color: #fff;
     font-family: var(--font-body);
@@ -90,6 +91,7 @@
     width: 7.5rem;
     background: #99cc99;
     border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
     padding: 2px 4px 4px;
     text-align: center;
     font-size: 8pt;

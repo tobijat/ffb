@@ -33,11 +33,13 @@
 
 .userscore-table-wrap {
     overflow-x: auto;
+    border-radius: var(--radius);
 }
 
 .userscore-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 10pt;
 }
 
@@ -58,12 +60,16 @@
     color: var(--ink);
     text-decoration: none;
     margin-left: 2px;
+    display: inline-block;
+    padding: 1px 3px;
+    border-radius: var(--radius-sm);
 }
 
 .userscore-table th a:hover {
     background: var(--link-hover-bg);
     color: var(--link-hover);
     text-decoration: none;
+    border-radius: var(--radius-sm);
 }
 
 .userscore-table .col-rank,
@@ -93,6 +99,16 @@
 
 .userscore-table tbody tr:not(.rank-1):not(.rank-2):not(.rank-3):hover td {
     background: #ccffcc;
+}
+
+.userscore-table tbody tr:not(.rank-1):not(.rank-2):not(.rank-3):hover td:first-child {
+    border-top-left-radius: var(--radius-sm);
+    border-bottom-left-radius: var(--radius-sm);
+}
+
+.userscore-table tbody tr:not(.rank-1):not(.rank-2):not(.rank-3):hover td:last-child {
+    border-top-right-radius: var(--radius-sm);
+    border-bottom-right-radius: var(--radius-sm);
 }
 
 .userscore-table tr.rank-1 td {

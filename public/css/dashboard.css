@@ -8,6 +8,7 @@
     padding: 8px 10px 6px;
     background: var(--panel);
     border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
     margin-top: 6px;
     display: flex;
     flex-wrap: wrap;
@@ -50,6 +51,7 @@
     padding: 2px 4px;
     text-align: center;
     line-height: 1.15;
+    border-radius: var(--radius-sm);
 }
 
 .dash-nav a:hover {
@@ -83,6 +85,7 @@
     align-items: center;
     background: var(--panel-light);
     border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
     color: var(--ink);
     padding: 6px 8px;
     margin-left: auto;
@@ -96,6 +99,7 @@
     background: transparent;
     display: inline-block;
     border: 1px solid transparent;
+    border-radius: var(--radius-sm);
     padding: 1px;
     text-decoration: none;
 }
@@ -132,6 +136,7 @@
     text-decoration: none;
     font-size: 8pt;
     background: transparent;
+    border-radius: var(--radius-sm);
 }
 
 .user-card-logout img {
@@ -151,6 +156,7 @@
     height: 48px;
     object-fit: cover;
     border: 1px solid #666;
+    border-radius: var(--radius-sm);
     background: #fff;
     flex-shrink: 0;
 }
@@ -205,6 +211,7 @@
 .games-section {
     background: var(--panel);
     border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
     padding: 8px 10px 10px;
 }
 
@@ -225,6 +232,7 @@
 .game-tile {
     appearance: none;
     border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
     background: var(--panel-light);
     color: var(--ink);
     padding: 8px 6px;
@@ -262,6 +270,7 @@
 .panel {
     background: var(--panel);
     border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
     padding: 8px 10px 10px;
 }
 
@@ -301,6 +310,7 @@
 .page-btn {
     appearance: none;
     border: 1px solid #666;
+    border-radius: var(--radius-sm);
     background: var(--panel-light);
     color: var(--ink);
     min-width: 1.6rem;
@@ -337,6 +347,7 @@
     text-align: left;
     appearance: none;
     border: 0;
+    border-radius: var(--radius-sm);
     background: transparent;
     color: var(--ink);
     padding: 4px 2px;
@@ -363,6 +374,7 @@
 .bar {
     height: 10px;
     background: #7aaa7a;
+    border-radius: var(--radius-sm);
     overflow: hidden;
 }
 

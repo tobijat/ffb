@@ -265,6 +265,7 @@
 .stats-block {
     background: #99cc99;
     border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
     padding: 4px 6px 8px;
     margin-bottom: 8px;
     font-size: 9pt;

@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Start — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css?v=14">
-    <link rel="stylesheet" href="css/dashboard.css?v=10">
+    <link rel="stylesheet" href="css/start.css?v=16">
+    <link rel="stylesheet" href="css/dashboard.css?v=11">
 </head>
 <body class="dash-body">
     @php
