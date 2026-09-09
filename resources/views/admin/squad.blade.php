@@ -201,8 +201,10 @@
 
                                                     <div class="admin-squad-name-cell">
                                                         <div class="admin-squad-name">
-                                                            @if ($item['player_flag_url'])
-                                                                <img src="{{ $item['player_flag_url'] }}" alt="" width="18" height="13" loading="lazy">
+                                                            @if (($item['player_flag_html'] ?? '') !== '')
+                                                                {!! $item['player_flag_html'] !!}
+                                                            @elseif (! empty($item['player_flag_url']))
+                                                                <img class="ffb-flag ffb-flag-img" src="{{ $item['player_flag_url'] }}" alt="" width="18" height="13" loading="lazy">
                                                             @endif
                                                             <strong>{{ $item['player_lname'] }}</strong>
                                                             <span>{{ $item['player_fname'] }}</span>
@@ -744,9 +746,11 @@
     function renderSelectedRow(entry) {
         const id = entry.player_id;
         const photoSrc = entry.picture_url || (pickLegacyBase + 'images/ffb/players/image_na.gif');
-        const flag = entry.flag_url
-            ? '<img src="' + escapeHtml(entry.flag_url) + '" alt="" width="18" height="13" loading="lazy">'
-            : '';
+        const flag = entry.flag_html
+            ? entry.flag_html
+            : (entry.flag_url
+                ? '<img class="ffb-flag ffb-flag-img" src="' + escapeHtml(entry.flag_url) + '" alt="" width="18" height="13" loading="lazy">'
+                : '');
         const tm = entry.tm_url
             ? '<a class="muted" href="' + escapeHtml(entry.tm_url) + '" target="_blank" rel="noopener noreferrer" title="Transfermarkt">TM</a>'
             : '';
@@ -815,6 +819,7 @@
             player_lname: String(item.player_lname || ''),
             picture_url: String(item.picture_url || ''),
             flag_url: String(item.flag_url || ''),
+            flag_html: String(item.flag_html || ''),
             tm_url: String(item.tm_url || ''),
             position: defaults.position,
             price: defaults.price,
@@ -892,9 +897,11 @@
         const statusAlt = item.player_status ? 'aktiv' : 'inaktiv';
         const photoSrc = item.picture_url || (legacyBase + 'images/ffb/players/image_na.gif');
         const photo = '<img class="admin-player-photo" src="' + escapeHtml(photoSrc) + '" alt="" width="40" height="40" loading="lazy">';
-        const flag = item.flag_url
-            ? '<img src="' + escapeHtml(item.flag_url) + '" alt="" width="20" height="15" loading="lazy">'
-            : '';
+        const flag = item.flag_html
+            ? item.flag_html
+            : (item.flag_url
+                ? '<img class="ffb-flag ffb-flag-img" src="' + escapeHtml(item.flag_url) + '" alt="" width="20" height="15" loading="lazy">'
+                : '');
         const nat = item.player_nationality_label
             ? '<span class="muted">' + escapeHtml(item.player_nationality_label) + '</span>'
             : '';

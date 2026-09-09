@@ -334,9 +334,14 @@
         setBody(renderProfileBody(lastProfileData));
     }
 
-    function flagUrl(code) {
+    function flagHtml(code, title) {
+        if (window.FfbFlags && typeof window.FfbFlags.html === 'function') {
+            return window.FfbFlags.html(code, title ? { title: title } : undefined);
+        }
         const flag = (code || 'na').toLowerCase();
-        return legacyBase + 'images/ffb/flags/' + flag + '.gif';
+        const src = legacyBase + 'images/ffb/flags/' + flag + '.gif';
+        const titleAttr = title ? ' title="' + escapeHtml(title) + '"' : '';
+        return '<img class="ffb-flag ffb-flag-img" src="' + src + '" alt="" width="16" height="11" loading="lazy"' + titleAttr + '>';
     }
 
     function playerLink(playerteamId, name) {
@@ -565,12 +570,7 @@
                     : '<img src="' +
                       symbolUrl('stats_ps_fail.png') +
                       '" width="16" height="16" alt="nicht getroffen" title="nicht getroffen">';
-            const flag =
-                '<img src="' +
-                flagUrl(g.psgoal_team_nationality) +
-                '" width="16" height="11" title="' +
-                escapeHtml(g.psgoal_team_name) +
-                '">';
+            const flag = flagHtml(g.psgoal_team_nationality, g.psgoal_team_name);
             const name = playerLink(g.psgoal_playerteam_id, g.psgoal_player_name);
 
             if (Number(g.psgoal_team_id) === Number(homeTeamId)) {
@@ -657,11 +657,8 @@
             '<div class="ffb-match">' +
             '<div class="ffb-match-header">' +
             '<div class="home">' +
-            '<img src="' +
-            flagUrl(match.match_hometeam_nationality) +
-            '" height="20" title="' +
-            escapeHtml(match.match_hometeam_nationality) +
-            '" alt=""> ' +
+            flagHtml(match.match_hometeam_nationality, match.match_hometeam_nationality) +
+            ' ' +
             escapeHtml(match.match_hometeam_name) +
             '</div>' +
             '<div class="result">' +
@@ -669,11 +666,9 @@
             '</div>' +
             '<div class="guest">' +
             escapeHtml(match.match_guestteam_name) +
-            ' <img src="' +
-            flagUrl(match.match_guestteam_nationality) +
-            '" height="20" title="' +
-            escapeHtml(match.match_guestteam_nationality) +
-            '" alt=""></div>' +
+            ' ' +
+            flagHtml(match.match_guestteam_nationality, match.match_guestteam_nationality) +
+            '</div>' +
             '</div>' +
             '<div class="ffb-match-meta">' +
             escapeHtml(match.match_game_title) +

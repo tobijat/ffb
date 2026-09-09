@@ -66,6 +66,8 @@ class AdminTeamTest extends TestCase
                         'has_shirt' => false,
                     ],
                 ],
+                'selected_symbol' => null,
+                'uses_icon_picker' => true,
                 'prices' => range(1, 15),
                 'items' => [
                     [
@@ -114,6 +116,65 @@ class AdminTeamTest extends TestCase
             ->assertDontSee('Wird für Flaggen', false)
             ->assertSee('transfermarkt.at', false)
             ->assertSee('Hinzufügen', false);
+    }
+
+    public function test_teams_admin_hides_manual_picker_for_mapped_nation(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminTeamService::class, function ($mock) {
+            $form = [
+                'team_id' => 7,
+                'team_name' => 'Oesterreich',
+                'team_nationality' => 'aut',
+                'team_icon_key' => '',
+                'team_price' => 5,
+                'team_status' => 1,
+                'teamfid_fid_tm' => '',
+                'teamfid_name_tm' => '',
+                'teamfid_name_wf' => '',
+                'teamfid_url_foe' => '',
+            ];
+
+            $mock->shouldReceive('formForEdit')->once()->with(7)->andReturn($form);
+            $mock->shouldReceive('pagePayload')->once()->with(544, $form, 'update')->andReturn([
+                'user' => [
+                    'user_id' => 544,
+                    'user_nickname' => 'adminuser',
+                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'is_ffb_admin' => true,
+                ],
+                'navigation' => [],
+                'selected_game' => null,
+                'icons' => [],
+                'selected_symbol' => [
+                    'key' => 'aut',
+                    'url' => null,
+                    'html' => '<span class="ffb-flag ffb-flag-svg" style="--ffb-flag:url(\'/vendor/flag-icons/flags/4x3/at.svg\')" role="img" aria-hidden="true"></span>',
+                    'label' => 'Oesterreich',
+                    'shirt_url' => null,
+                    'has_shirt' => false,
+                ],
+                'uses_icon_picker' => false,
+                'prices' => range(1, 15),
+                'items' => [],
+                'form' => $form,
+                'mode' => 'update',
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->get('/admin/teams/7/edit')
+            ->assertOk()
+            ->assertSee('Flagge wird automatisch aus dem Ländercode abgeleitet.', false)
+            ->assertSee('name="team_nationality" value="aut"', false)
+            ->assertDontSee('id="team-icon-toggle"', false)
+            ->assertDontSee('id="team-icon-picker"', false)
+            ->assertDontSee('name="team_icon_file"', false)
+            ->assertSee('id="team-shirt-upload"', false)
+            ->assertSee('hidden', false);
     }
 
     public function test_teams_store_redirects_on_success(): void

@@ -6,6 +6,7 @@ use App\Models\Playerteam;
 use App\Models\Team;
 use App\Models\Teamfid;
 use App\Models\Userteam;
+use App\Support\Flag;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
@@ -13,8 +14,7 @@ class AdminTeamService
 {
     public function __construct(
         private readonly AdminCenterService $adminCenter,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>|null  $form
@@ -24,12 +24,15 @@ class AdminTeamService
     {
         $shell = $this->adminCenter->shellPayload($userId);
         $form = $form ?? $this->emptyForm();
+        $selectedKey = (string) ($form['team_nationality'] ?? '');
 
         return [
             'user' => $shell['user'],
             'navigation' => $shell['navigation'],
             'selected_game' => $shell['selected_game'],
-            'icons' => $this->iconOptions((string) ($form['team_nationality'] ?? '')),
+            'icons' => $this->iconOptions($selectedKey),
+            'selected_symbol' => $this->selectedSymbol($selectedKey),
+            'uses_icon_picker' => ! $this->isMappedNation($selectedKey),
             'prices' => range(1, 15),
             'items' => $this->listItems(),
             'form' => $form,
@@ -212,6 +215,30 @@ class AdminTeamService
     }
 
     /**
+     * @return array{key: string, url: string|null, html: string, label: string, shirt_url: string|null, has_shirt: bool}|null
+     */
+    private function selectedSymbol(string $selectedKey): ?array
+    {
+        $selectedKey = $this->normalizeIconKey($selectedKey);
+        if ($selectedKey === '') {
+            return null;
+        }
+
+        $countries = $this->countryLabels();
+        $upper = strtoupper($selectedKey);
+        $shirtFile = $this->shirtFilename($selectedKey);
+
+        return [
+            'key' => $selectedKey,
+            'url' => $this->isMappedNation($selectedKey) ? null : Flag::imageUrl($selectedKey),
+            'html' => Flag::html($selectedKey),
+            'label' => $countries[$upper] ?? $selectedKey,
+            'shirt_url' => $shirtFile !== null ? '/images/ffb/shirts/'.$shirtFile : null,
+            'has_shirt' => $shirtFile !== null,
+        ];
+    }
+
+    /**
      * @param  array<string, string>  $countries
      * @return array{key: string, url: string, label: string, shirt_url: string|null, has_shirt: bool}
      */
@@ -223,7 +250,7 @@ class AdminTeamService
 
         return [
             'key' => $key,
-            'url' => '/images/ffb/flags/'.$key.'.gif',
+            'url' => Flag::imageUrl($key),
             'label' => $label,
             'shirt_url' => $shirtFile !== null ? '/images/ffb/shirts/'.$shirtFile : null,
             'has_shirt' => $shirtFile !== null,
@@ -253,7 +280,8 @@ class AdminTeamService
                     'team_icon_label' => $icon !== '' ? ($countries[$upper] ?? $icon) : '',
                     'team_price' => (int) $item->team_avg_price,
                     'team_status' => (int) (bool) $item->team_status,
-                    'flag_url' => $icon !== '' ? '/images/ffb/flags/'.$icon.'.gif' : null,
+                    'flag_url' => $icon !== '' ? Flag::imageUrl($icon) : null,
+                    'flag_html' => $icon !== '' ? Flag::html($icon) : '',
                     'teamfid_fid_tm' => (string) ($fid?->teamfid_fid_tm ?? ''),
                     'teamfid_name_tm' => (string) ($fid?->teamfid_name_tm ?? ''),
                     'teamfid_url_tm' => (string) ($fid?->teamfid_url_tm ?? ''),
@@ -547,6 +575,10 @@ class AdminTeamService
             return false;
         }
 
+        if ($this->isMappedNation($key)) {
+            return true;
+        }
+
         return is_file($this->flagsDir().DIRECTORY_SEPARATOR.$key.'.gif');
     }
 
@@ -597,6 +629,11 @@ class AdminTeamService
 
         /** @var array<string, string> $countries */
         return $countries;
+    }
+
+    private function isMappedNation(string $key): bool
+    {
+        return Flag::iso($key) !== null;
     }
 
     private function flagsDir(): string

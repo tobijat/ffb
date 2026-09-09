@@ -7,6 +7,7 @@ use App\Models\Playerstats;
 use App\Models\Playerteam;
 use App\Models\Team;
 use App\Models\Userteam;
+use App\Support\Flag;
 use DateTimeImmutable;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -20,8 +21,7 @@ class AdminSquadService
 
     public function __construct(
         private readonly AdminCenterService $adminCenter,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -131,12 +131,14 @@ class AdminSquadService
             $item = Playerteam::query()->with('player')->find($playerteamId);
             if (! $item) {
                 $errors[] = 'Kader-Eintrag #'.$playerteamId.' nicht gefunden.';
+
                 continue;
             }
 
             $itemTeamId = (int) $item->playerteam_team_id;
             if ($teamId > 0 && $itemTeamId !== $teamId) {
                 $errors[] = 'Kader-Eintrag #'.$playerteamId.' gehört nicht zum gewählten Team.';
+
                 continue;
             }
             if ($teamId <= 0) {
@@ -147,6 +149,7 @@ class AdminSquadService
             if ($deleteError !== null) {
                 $label = trim((string) ($item->player?->player_lname ?? '')).' #'.$playerteamId;
                 $errors[] = $label.': '.$deleteError;
+
                 continue;
             }
 
@@ -166,12 +169,14 @@ class AdminSquadService
             $item = Playerteam::query()->with('player')->find($playerteamId);
             if (! $item) {
                 $errors[] = 'Kader-Eintrag #'.$playerteamId.' nicht gefunden.';
+
                 continue;
             }
 
             $itemTeamId = (int) $item->playerteam_team_id;
             if ($teamId > 0 && $itemTeamId !== $teamId) {
                 $errors[] = 'Kader-Eintrag #'.$playerteamId.' gehört nicht zum gewählten Team.';
+
                 continue;
             }
             if ($teamId <= 0) {
@@ -186,6 +191,7 @@ class AdminSquadService
                 foreach ($rowErrors as $rowError) {
                     $errors[] = $label.': '.$rowError;
                 }
+
                 continue;
             }
 
@@ -380,6 +386,7 @@ class AdminSquadService
                 foreach ($rowErrors as $rowError) {
                     $errors[] = 'Spieler #'.$playerId.': '.$rowError;
                 }
+
                 continue;
             }
             $prepared[$playerId] = $form;
@@ -516,7 +523,8 @@ class AdminSquadService
                     'player_fname' => (string) ($player?->player_fname ?? ''),
                     'player_lname' => (string) ($player?->player_lname ?? ''),
                     'player_nationality' => $nat,
-                    'player_flag_url' => $nat !== '' ? '/images/ffb/flags/'.strtolower($nat).'.gif' : null,
+                    'player_flag_url' => $nat !== '' ? Flag::imageUrl($nat) : null,
+                    'player_flag_html' => $nat !== '' ? Flag::html($nat) : '',
                     'playerteam_status' => (int) $item->playerteam_status ? 1 : 0,
                     'playerteam_player_price' => (int) $item->playerteam_player_price,
                     'playerteam_player_position' => (string) $item->playerteam_player_position,

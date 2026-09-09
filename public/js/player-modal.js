@@ -16,8 +16,13 @@
         return legacyBase + 'images/ffb/symbols/' + name;
     }
 
-    function flagUrl(code) {
-        return legacyBase + 'images/ffb/flags/' + (code || 'na').toLowerCase() + '.gif';
+    function flagHtml(code, title) {
+        if (window.FfbFlags && typeof window.FfbFlags.html === 'function') {
+            return window.FfbFlags.html(code, title ? { title: title } : undefined);
+        }
+        const src = legacyBase + 'images/ffb/flags/' + (code || 'na').toLowerCase() + '.gif';
+        const titleAttr = title ? ' title="' + escapeHtml(title) + '"' : '';
+        return '<img class="ffb-flag ffb-flag-img" src="' + src + '" alt="" width="16" height="11" loading="lazy"' + titleAttr + '>';
     }
 
     function imgUrl(path) {
@@ -78,11 +83,7 @@
 
     function renderPlayerHead(player) {
         return (
-            '<img class="ffb-modal-head-flag" src="' +
-            flagUrl(player.player_team_nationality) +
-            '" width="16" height="11" title="' +
-            escapeHtml(player.player_team_nationality) +
-            '" alt="">' +
+            flagHtml(player.player_team_nationality, player.player_team_nationality) +
             '<div class="ffb-modal-head-title">' +
             escapeHtml(player.player_name) +
             ' — <em>' +

@@ -33,9 +33,14 @@
         return legacyBase + 'images/ffb/symbols/' + name;
     }
 
-    function flagUrl(code) {
-        const flag = (code && code !== '0' ? String(code) : 'aut').toLowerCase();
-        return legacyBase + 'images/ffb/flags/' + flag + '.gif';
+    function flagHtml(code, title) {
+        if (window.FfbFlags && typeof window.FfbFlags.html === 'function') {
+            return window.FfbFlags.html(code, title ? { title: title } : undefined);
+        }
+        const flag = (code && code !== '0' ? String(code) : 'na').toLowerCase();
+        const src = legacyBase + 'images/ffb/flags/' + flag + '.gif';
+        const titleAttr = title ? ' title="' + escapeHtml(title) + '"' : '';
+        return '<img class="ffb-flag ffb-flag-img" src="' + src + '" alt="" width="16" height="11" loading="lazy"' + titleAttr + '>';
     }
 
     function shirtUrl(code) {
@@ -232,17 +237,17 @@
             html +=
                 '<li><span class="home">' +
                 escapeHtml(match.match_hometeam_name) +
-                ' <img src="' +
-                flagUrl(match.match_hometeam_nationality) +
-                '" alt=""></span>' +
+                ' ' +
+                flagHtml(match.match_hometeam_nationality) +
+                '</span>' +
                 '<span class="score"><a class="nolink under" href="#" data-modal="match" data-id="' +
                 match.match_id +
                 '">' +
                 formatMatchScore(match) +
                 '</a></span>' +
-                '<span class="away"><img src="' +
-                flagUrl(match.match_guestteam_nationality) +
-                '" alt=""> ' +
+                '<span class="away">' +
+                flagHtml(match.match_guestteam_nationality) +
+                ' ' +
                 escapeHtml(match.match_guestteam_name) +
                 '</span></li>';
         });
@@ -289,11 +294,7 @@
             ' Credits">' +
             player.player_price +
             '</span>' +
-            '<img src="' +
-            flagUrl(nat) +
-            '" alt="" title="' +
-            escapeHtml(player.playerteam_team || '') +
-            '" width="16" height="11">' +
+            flagHtml(nat, player.playerteam_team || '') +
             '<img src="' +
             symbolUrl(statusOk ? 'status_pos.png' : 'status_hurt.png') +
             '" width="16" height="16" alt="" title="status: ' +
@@ -628,9 +629,8 @@
             return;
         }
         selectedTeamEl.innerHTML =
-            '<img src="' +
-            flagUrl(team.team_nationality) +
-            '" height="20" alt=""> <b>' +
+            flagHtml(team.team_nationality) +
+            ' <b>' +
             escapeHtml(team.team_name) +
             '</b> <img src="' +
             shirtUrl(team.team_nationality) +

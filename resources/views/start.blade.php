@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SoccerSportsfan — Fantasy Football</title>
     <meta name="description" content="Fantasy Football Manager bei SoccerSportsfan. Kostenlos mitspielen.">
-    <link rel="stylesheet" href="css/start.css?v=16">
+    <link rel="stylesheet" href="css/start.css?v=20">
     <link rel="stylesheet" href="css/dashboard.css?v=11">
 </head>
 <body class="start-page dash-body">
@@ -37,12 +37,12 @@
                                 <li>
                                     <time>{{ $result['date'] }}</time>
                                     <span class="side">
-                                        <img src="{{ $legacyBase }}images/ffb/flags/{{ $result['home_flag'] }}.gif" alt="" width="16" height="11" loading="lazy">
+                                        <x-flag :code="$result['home_flag']" />
                                         {{ $result['home_team'] }}
                                     </span>
                                     <strong class="score">{!! $result['score_html'] ?? (e($result['home_score']).':'.e($result['guest_score'])) !!}</strong>
                                     <span class="side">
-                                        <img src="{{ $legacyBase }}images/ffb/flags/{{ $result['guest_flag'] }}.gif" alt="" width="16" height="11" loading="lazy">
+                                        <x-flag :code="$result['guest_flag']" />
                                         {{ $result['guest_team'] }}
                                     </span>
                                 </li>

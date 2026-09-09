@@ -62,9 +62,14 @@
             .replace(/"/g, '&quot;');
     }
 
-    function flagUrl(code) {
-        const flag = (code && code !== '0' ? String(code) : 'aut').toLowerCase();
-        return legacyBase + 'images/ffb/flags/' + flag + '.gif';
+    function flagHtml(code, title) {
+        if (window.FfbFlags && typeof window.FfbFlags.html === 'function') {
+            return window.FfbFlags.html(code, title ? { title: title } : undefined);
+        }
+        const flag = (code && code !== '0' ? String(code) : 'na').toLowerCase();
+        const src = legacyBase + 'images/ffb/flags/' + flag + '.gif';
+        const titleAttr = title ? ' title="' + escapeHtml(title) + '"' : '';
+        return '<img class="ffb-flag ffb-flag-img" src="' + src + '" alt="" width="16" height="11" loading="lazy"' + titleAttr + '>';
     }
 
     function shirtUrl(code) {
@@ -254,23 +259,23 @@
         ul.className = 'match-list';
         matches.forEach(function (match) {
             const li = document.createElement('li');
-            const homeFlag = flagUrl(match.match_hometeam_nationality);
-            const guestFlag = flagUrl(match.match_guestteam_nationality);
+            const homeFlag = flagHtml(match.match_hometeam_nationality);
+            const guestFlag = flagHtml(match.match_guestteam_nationality);
             const scoreHtml = formatMatchScore(match);
             li.innerHTML =
                 '<span class="home">' +
                 escapeHtml(match.match_hometeam_name) +
-                ' <img src="' +
+                ' ' +
                 homeFlag +
-                '" alt=""></span>' +
+                '</span>' +
                 '<span class="score"><a class="nolink under" href="#" data-modal="match" data-id="' +
                 match.match_id +
                 '" title="Klicken für Matchinfos">' +
                 scoreHtml +
                 '</a></span>' +
-                '<span class="away"><img src="' +
+                '<span class="away">' +
                 guestFlag +
-                '" alt=""> ' +
+                ' ' +
                 escapeHtml(match.match_guestteam_name) +
                 '</span>';
             ul.appendChild(li);
@@ -502,13 +507,7 @@
             Number(player.playerstats_score || 0) +
             ' Punkte</a>' +
             '<div class="meta">' +
-            '<img src="' +
-            flagUrl(nat) +
-            '" alt="' +
-            escapeHtml(player.playerteam_team || '') +
-            '" title="' +
-            escapeHtml(player.playerteam_team || '') +
-            '" width="16" height="11">' +
+            flagHtml(nat, player.playerteam_team || '') +
             '<img src="' +
             status.src +
             '" alt="" title="' +

@@ -9,15 +9,10 @@
         $items = $data['items'];
         $icons = $data['icons'];
         $prices = $data['prices'];
+        $selectedSymbol = $data['selected_symbol'] ?? null;
+        $usesIconPicker = (bool) ($data['uses_icon_picker'] ?? true);
         $flashErrors = $errors ?: (session('admin_errors') ?: []);
         $selectedIcon = (string) $form['team_nationality'];
-        $selectedMeta = null;
-        foreach ($icons as $icon) {
-            if ($icon['key'] === $selectedIcon) {
-                $selectedMeta = $icon;
-                break;
-            }
-        }
     @endphp
 
     <section class="panel admin-main" aria-labelledby="admin-teams-title">
@@ -53,6 +48,9 @@
             @if ($mode === 'update')
                 @method('PUT')
             @endif
+            @if (!$usesIconPicker)
+                <input type="hidden" name="team_nationality" value="{{ $selectedIcon }}">
+            @endif
 
             <div class="admin-field">
                 <label for="team_name">* Teamname</label>
@@ -85,33 +83,29 @@
                     <div class="admin-symbol-preview-pair">
                         <div class="admin-symbol-slot" data-role="flag-slot">
                             <span class="admin-symbol-slot-label">Flagge / Logo</span>
-                            <img
-                                id="team-symbol-flag"
-                                class="admin-symbol-flag"
-                                src="{{ $selectedMeta['url'] ?? '' }}"
-                                alt=""
-                                width="40"
-                                height="30"
-                                @if (!$selectedMeta) hidden @endif
-                            >
-                            <span id="team-symbol-flag-empty" class="muted" @if ($selectedMeta) hidden @endif>keins</span>
+                            <span id="team-symbol-flag-html" @if (!$selectedSymbol) hidden @endif>
+                                @if ($selectedSymbol)
+                                    {!! $selectedSymbol['html'] !!}
+                                @endif
+                            </span>
+                            <span id="team-symbol-flag-empty" class="muted" @if ($selectedSymbol) hidden @endif>keins</span>
                         </div>
                         <div class="admin-symbol-slot" data-role="shirt-slot">
                             <span class="admin-symbol-slot-label">Trikot</span>
                             <img
                                 id="team-symbol-shirt"
                                 class="admin-symbol-shirt"
-                                src="{{ $selectedMeta['shirt_url'] ?? '' }}"
+                                src="{{ $selectedSymbol['shirt_url'] ?? '' }}"
                                 alt=""
                                 height="40"
-                                @if (!($selectedMeta['has_shirt'] ?? false)) hidden @endif
+                                @if (!($selectedSymbol['has_shirt'] ?? false)) hidden @endif
                             >
                             <span
                                 id="team-symbol-shirt-empty"
                                 class="muted"
-                                @if (($selectedMeta['has_shirt'] ?? false)) hidden @endif
+                                @if (($selectedSymbol['has_shirt'] ?? false)) hidden @endif
                             >
-                                @if ($selectedMeta)
+                                @if ($selectedSymbol)
                                     Kein Trikot vorhanden
                                 @else
                                     —
@@ -120,18 +114,26 @@
                         </div>
                     </div>
                     <div class="admin-symbol-current-meta">
-                        <strong id="team-symbol-key">{{ $selectedMeta['key'] ?? 'Kein Symbol gewählt' }}</strong>
-                        <span id="team-symbol-label" class="muted">{{ $selectedMeta['label'] ?? '' }}</span>
-                        <button type="button" class="admin-cancel" id="team-icon-toggle">
-                            {{ $selectedIcon !== '' ? 'Symbol ändern' : 'Symbol wählen' }}
-                        </button>
+                        <strong id="team-symbol-key">{{ $selectedSymbol['key'] ?? 'Kein Symbol gewählt' }}</strong>
+                        <span id="team-symbol-label" class="muted">{{ $selectedSymbol['label'] ?? '' }}</span>
+                        @if ($usesIconPicker)
+                            <button type="button" class="admin-cancel" id="team-icon-toggle">
+                                {{ $selectedIcon !== '' ? 'Symbol ändern' : 'Symbol wählen' }}
+                            </button>
+                        @else
+                            <span class="muted">Flagge wird automatisch aus dem Ländercode abgeleitet.</span>
+                        @endif
                     </div>
                 </div>
 
                 <div
                     class="admin-shirt-upload"
                     id="team-shirt-upload"
-                    @if (!$selectedMeta || ($selectedMeta['has_shirt'] ?? false)) hidden @endif
+                    @if (
+                        !$usesIconPicker
+                        || !$selectedSymbol
+                        || ($selectedSymbol['has_shirt'] ?? false)
+                    ) hidden @endif
                 >
                     <div class="admin-field admin-field-stack">
                         <label for="team_shirt_file">Trikot hochladen</label>
@@ -140,46 +142,51 @@
                     </div>
                 </div>
 
-                <div class="admin-icon-chooser" id="team-icon-chooser" hidden>
-                    <div class="admin-field">
-                        <label for="team_icon_filter">Suchen</label>
-                        <input id="team_icon_filter" type="search" value="" placeholder="z. B. aut, rapid, wernberg" autocomplete="off">
-                    </div>
+                @if ($usesIconPicker)
+                    <div class="admin-icon-chooser" id="team-icon-chooser" hidden>
+                        <div class="admin-field">
+                            <label for="team_icon_filter">Suchen</label>
+                            <input id="team_icon_filter" type="search" value="" placeholder="z. B. aut, rapid, wernberg" autocomplete="off">
+                        </div>
 
-                    <div class="admin-icon-picker" id="team-icon-picker" role="radiogroup" aria-label="Team-Symbol">
-                        <label class="admin-icon-option @if ($selectedIcon === '') is-selected @endif">
-                            <input type="radio" name="team_nationality" value="" @checked($selectedIcon === '')>
-                            <span class="admin-icon-none">keins</span>
-                        </label>
-                        @foreach ($icons as $icon)
-                            <label
-                                class="admin-icon-option @if ($selectedIcon === $icon['key']) is-selected @endif"
-                                data-icon-key="{{ $icon['key'] }}"
-                                data-icon-label="{{ $icon['label'] }}"
-                                data-icon-url="{{ $icon['url'] }}"
-                                data-shirt-url="{{ $icon['shirt_url'] ?? '' }}"
-                                data-has-shirt="{{ !empty($icon['has_shirt']) ? '1' : '0' }}"
-                                title="{{ $icon['label'] }} ({{ $icon['key'] }})"
-                            >
-                                <input type="radio" name="team_nationality" value="{{ $icon['key'] }}" @checked($selectedIcon === $icon['key'])>
-                                <img src="{{ $icon['url'] }}" alt="" width="28" height="21" loading="lazy">
-                                <span>{{ $icon['key'] }}</span>
+                        <div class="admin-icon-picker" id="team-icon-picker" role="radiogroup" aria-label="Team-Symbol">
+                            <label class="admin-icon-option @if ($selectedIcon === '') is-selected @endif">
+                                <input type="radio" name="team_nationality" value="" @checked($selectedIcon === '')>
+                                <span class="admin-icon-none">keins</span>
                             </label>
-                        @endforeach
+                            @foreach ($icons as $icon)
+                                <label
+                                    class="admin-icon-option @if ($selectedIcon === $icon['key']) is-selected @endif"
+                                    data-icon-key="{{ $icon['key'] }}"
+                                    data-icon-label="{{ $icon['label'] }}"
+                                    data-icon-url="{{ $icon['url'] }}"
+                                    data-icon-html="{{ $icon['key'] !== '' ? \App\Support\Flag::html($icon['key']) : '' }}"
+                                    data-shirt-url="{{ $icon['shirt_url'] ?? '' }}"
+                                    data-has-shirt="{{ !empty($icon['has_shirt']) ? '1' : '0' }}"
+                                    title="{{ $icon['label'] }} ({{ $icon['key'] }})"
+                                >
+                                    <input type="radio" name="team_nationality" value="{{ $icon['key'] }}" @checked($selectedIcon === $icon['key'])>
+                                    <img src="{{ $icon['url'] }}" alt="" width="28" height="21" loading="lazy">
+                                    <span>{{ $icon['key'] }}</span>
+                                </label>
+                            @endforeach
+                        </div>
                     </div>
-                </div>
+                @endif
 
-                <div class="admin-symbol-row admin-icon-upload">
-                    <div class="admin-field admin-field-stack">
-                        <label for="team_icon_key">Neues Symbol — Dateiname</label>
-                        <input id="team_icon_key" type="text" name="team_icon_key" value="{{ $form['team_icon_key'] }}" maxlength="64" placeholder="z. B. sturm-graz">
+                @if ($usesIconPicker)
+                    <div class="admin-symbol-row admin-icon-upload">
+                        <div class="admin-field admin-field-stack">
+                            <label for="team_icon_key">Neues Symbol — Dateiname</label>
+                            <input id="team_icon_key" type="text" name="team_icon_key" value="{{ $form['team_icon_key'] }}" maxlength="64" placeholder="z. B. sturm-graz">
+                        </div>
+                        <div class="admin-field admin-field-stack">
+                            <label for="team_icon_file">Bild hochladen</label>
+                            <input id="team_icon_file" type="file" name="team_icon_file" accept="image/png,image/jpeg,image/gif,image/webp">
+                            <p class="hint">PNG/JPEG/GIF/WebP, max. 2 MB. Wird als <code>{name}.gif</code> gespeichert und ausgewählt.</p>
+                        </div>
                     </div>
-                    <div class="admin-field admin-field-stack">
-                        <label for="team_icon_file">Bild hochladen</label>
-                        <input id="team_icon_file" type="file" name="team_icon_file" accept="image/png,image/jpeg,image/gif,image/webp">
-                        <p class="hint">PNG/JPEG/GIF/WebP, max. 2 MB. Wird als <code>{name}.gif</code> gespeichert und ausgewählt.</p>
-                    </div>
-                </div>
+                @endif
             </fieldset>
 
             <fieldset class="admin-fieldset">
@@ -233,8 +240,10 @@
                             height="16"
                             loading="lazy"
                         >
-                        @if ($item['flag_url'])
-                            <img src="{{ $item['flag_url'] }}" alt="" width="20" height="15" loading="lazy">
+                        @if (($item['flag_html'] ?? '') !== '')
+                            {!! $item['flag_html'] !!}
+                        @elseif (! empty($item['flag_url']))
+                            <img class="ffb-flag ffb-flag-img" src="{{ $item['flag_url'] }}" alt="" width="20" height="15" loading="lazy">
                         @endif
                         <span class="muted">#{{ $item['team_id'] }}</span>
                         <span class="muted">Preis {{ $item['team_price'] }}</span>
@@ -289,7 +298,7 @@
     const chooser = document.getElementById('team-icon-chooser');
     const toggle = document.getElementById('team-icon-toggle');
     const filter = document.getElementById('team_icon_filter');
-    const flagImg = document.getElementById('team-symbol-flag');
+    const flagHtml = document.getElementById('team-symbol-flag-html');
     const flagEmpty = document.getElementById('team-symbol-flag-empty');
     const shirtImg = document.getElementById('team-symbol-shirt');
     const shirtEmpty = document.getElementById('team-symbol-shirt-empty');
@@ -297,25 +306,25 @@
     const labelEl = document.getElementById('team-symbol-label');
     const shirtUpload = document.getElementById('team-shirt-upload');
     const shirtHint = shirtUpload ? shirtUpload.querySelector('.hint') : null;
-    if (!picker || !chooser || !toggle) return;
+    if (!picker || !chooser || !toggle || !flagHtml) return;
 
     function setPreview(option) {
         const key = option ? (option.getAttribute('data-icon-key') || '') : '';
         const label = option ? (option.getAttribute('data-icon-label') || '') : '';
-        const url = option ? (option.getAttribute('data-icon-url') || '') : '';
+        const html = option ? (option.getAttribute('data-icon-html') || '') : '';
         const shirtUrl = option ? (option.getAttribute('data-shirt-url') || '') : '';
         const hasShirt = option ? option.getAttribute('data-has-shirt') === '1' : false;
 
-        if (key && url) {
-            flagImg.src = url;
-            flagImg.hidden = false;
+        if (key && html) {
+            flagHtml.innerHTML = html;
+            flagHtml.hidden = false;
             flagEmpty.hidden = true;
             keyEl.textContent = key;
             labelEl.textContent = label && label !== key ? label : '';
             toggle.textContent = 'Symbol ändern';
         } else {
-            flagImg.removeAttribute('src');
-            flagImg.hidden = true;
+            flagHtml.innerHTML = '';
+            flagHtml.hidden = true;
             flagEmpty.hidden = false;
             keyEl.textContent = 'Kein Symbol gewählt';
             labelEl.textContent = '';

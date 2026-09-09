@@ -228,6 +228,7 @@
             player_foreign_id: String(item.player_foreign_id || ''),
             picture_url: String(item.picture_url || ''),
             flag_url: String(item.flag_url || ''),
+            flag_html: String(item.flag_html || ''),
             tm_url: String(item.tm_url || ''),
         };
     }
@@ -318,9 +319,11 @@
         const dirty = !pendingDelete && edits.has(id);
         const statusActive = String(values.player_status) === '1';
         const photoSrc = initial.picture_url || (legacyBase + 'images/ffb/players/image_na.gif');
-        const flag = initial.flag_url
-            ? '<img src="' + escapeHtml(initial.flag_url) + '" alt="" width="18" height="13" loading="lazy">'
-            : '';
+        const flag = initial.flag_html
+            ? initial.flag_html
+            : (initial.flag_url
+                ? '<img class="ffb-flag ffb-flag-img" src="' + escapeHtml(initial.flag_url) + '" alt="" width="18" height="13" loading="lazy">'
+                : '');
         const tm = initial.tm_url
             ? '<a class="muted" href="' + escapeHtml(initial.tm_url) + '" target="_blank" rel="noopener noreferrer" title="Transfermarkt">TM</a>'
             : '';
