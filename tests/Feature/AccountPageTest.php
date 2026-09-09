@@ -228,7 +228,7 @@ class AccountPageTest extends TestCase
             ->assertOk()
             ->assertSee('Benutzername', false)
             ->assertSee('tester@example.com', false)
-            ->assertSee('account-tab is-active', false);
+            ->assertSee('account-tab ffb-tab is-active', false);
     }
 
     public function test_profile_update_shows_success(): void

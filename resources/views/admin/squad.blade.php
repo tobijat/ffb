@@ -77,15 +77,15 @@
         @if ($selectedTeamId <= 0)
             <p class="hint">Wähle oben ein Team, um dessen Kader zu verwalten.</p>
         @else
-            <nav class="admin-squad-tabs" aria-label="Kader-Bereiche">
+            <nav class="admin-squad-tabs ffb-tabs" aria-label="Kader-Bereiche">
                 <a
-                    class="admin-squad-tab{{ $tab === 'roster' ? ' is-active' : '' }}"
+                    class="admin-squad-tab ffb-tab{{ $tab === 'roster' ? ' is-active' : '' }}"
                     href="{{ route('admin.squad', $rosterQuery) }}"
                 >
                     Bestand <span class="admin-squad-count" id="squad-tab-roster-count">{{ count($items) }}</span>
                 </a>
                 <a
-                    class="admin-squad-tab{{ $tab === 'add' ? ' is-active' : '' }}"
+                    class="admin-squad-tab ffb-tab{{ $tab === 'add' ? ' is-active' : '' }}"
                     href="{{ route('admin.squad', $addQuery) }}"
                 >
                     Spieler hinzufügen

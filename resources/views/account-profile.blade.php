@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Profil — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css?v=13">
+    <link rel="stylesheet" href="css/start.css?v=14">
     <link rel="stylesheet" href="css/dashboard.css?v=10">
-    <link rel="stylesheet" href="css/account.css?v=4">
+    <link rel="stylesheet" href="css/account.css?v=5">
 </head>
 <body class="dash-body">
     @php
@@ -43,15 +43,15 @@
                 <h2 id="profile-hub-title">Profil</h2>
             </div>
 
-            <div class="account-tabs" role="tablist" aria-label="Profilbereiche">
+            <div class="account-tabs ffb-tabs" role="tablist" aria-label="Profilbereiche">
                 <a
-                    class="account-tab {{ $activeTab === 'profile' ? 'is-active' : '' }}"
+                    class="account-tab ffb-tab {{ $activeTab === 'profile' ? 'is-active' : '' }}"
                     href="/profile"
                     role="tab"
                     aria-selected="{{ $activeTab === 'profile' ? 'true' : 'false' }}"
                 >Profildetails</a>
                 <a
-                    class="account-tab {{ $activeTab === 'account' ? 'is-active' : '' }}"
+                    class="account-tab ffb-tab {{ $activeTab === 'account' ? 'is-active' : '' }}"
                     href="/profile?tab=account"
                     role="tab"
                     aria-selected="{{ $activeTab === 'account' ? 'true' : 'false' }}"

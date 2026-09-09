@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Rangliste — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css?v=13">
+    <link rel="stylesheet" href="css/start.css?v=14">
     <link rel="stylesheet" href="css/dashboard.css?v=10">
     <link rel="stylesheet" href="css/userscore.css?v=8">
-    <link rel="stylesheet" href="css/modal.css?v=5">
+    <link rel="stylesheet" href="css/modal.css?v=6">
 </head>
 <body class="dash-body">
     @php
@@ -79,8 +79,8 @@
             selectedGameId: @json($data['selected_game_id'] ?? 0),
         };
     </script>
-    <script src="js/modal.js?v=5" defer></script>
-    <script src="js/player-modal.js?v=4" defer></script>
+    <script src="js/modal.js?v=6" defer></script>
+    <script src="js/player-modal.js?v=5" defer></script>
     <script src="js/userscore.js?v=8" defer></script>
 </body>
 </html>

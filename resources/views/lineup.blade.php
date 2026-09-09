@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Aufstellung — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css?v=13">
+    <link rel="stylesheet" href="css/start.css?v=14">
     <link rel="stylesheet" href="css/dashboard.css?v=10">
-    <link rel="stylesheet" href="css/modal.css?v=5">
-    <link rel="stylesheet" href="css/myteam.css?v=6">
+    <link rel="stylesheet" href="css/modal.css?v=6">
+    <link rel="stylesheet" href="css/myteam.css?v=7">
     <link rel="stylesheet" href="css/lineup.css?v=2">
 </head>
 <body class="dash-body">
@@ -93,8 +93,8 @@
             selectedGameId: @json($data['selected_game_id'] ?? 0),
         };
     </script>
-    <script src="js/modal.js?v=5" defer></script>
-    <script src="js/player-modal.js?v=4" defer></script>
+    <script src="js/modal.js?v=6" defer></script>
+    <script src="js/player-modal.js?v=5" defer></script>
     <script src="js/lineup.js?v=2" defer></script>
 </body>
 </html>

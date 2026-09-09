@@ -130,8 +130,8 @@
 
     function renderProfileTabs(userId, active) {
         return (
-            '<button type="button" class="' + (active === 'profile' ? 'is-active' : '') + '" data-ffb-profile-tab="profile" data-id="' + userId + '">Profil</button>' +
-            '<button type="button" class="' + (active === 'awards' ? 'is-active' : '') + '" data-ffb-profile-tab="awards" data-id="' + userId + '">Auszeichnungen</button>'
+            '<button type="button" class="ffb-tab' + (active === 'profile' ? ' is-active' : '') + '" data-ffb-profile-tab="profile" data-id="' + userId + '">Profil</button>' +
+            '<button type="button" class="ffb-tab' + (active === 'awards' ? ' is-active' : '') + '" data-ffb-profile-tab="awards" data-id="' + userId + '">Auszeichnungen</button>'
         );
     }
 

@@ -94,20 +94,20 @@
 
     function renderPlayerTabs(playerteamId, pricemode, active) {
         let html =
-            '<button type="button" class="' +
-            (active === 'info' ? 'is-active' : '') +
+            '<button type="button" class="ffb-tab' +
+            (active === 'info' ? ' is-active' : '') +
             '" data-ffb-player-tab="info" data-id="' +
             playerteamId +
             '">Info</button>' +
-            '<button type="button" class="' +
-            (active === 'graphic' ? 'is-active' : '') +
+            '<button type="button" class="ffb-tab' +
+            (active === 'graphic' ? ' is-active' : '') +
             '" data-ffb-player-tab="graphic" data-id="' +
             playerteamId +
             '">Grafik</button>';
         if (pricemode === 'dynamic') {
             html +=
-                '<button type="button" class="' +
-                (active === 'price' ? 'is-active' : '') +
+                '<button type="button" class="ffb-tab' +
+                (active === 'price' ? ' is-active' : '') +
                 '" data-ffb-player-tab="price" data-id="' +
                 playerteamId +
                 '">Preisverlauf</button>';
