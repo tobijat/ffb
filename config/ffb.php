@@ -93,22 +93,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Google reCAPTCHA v2
-    |--------------------------------------------------------------------------
-    |
-    | Enable explicitly with FFB_RECAPTCHA_ENABLED=true plus site/secret keys.
-    | Leave disabled on localhost (Mailpit/log mailer). Legacy reCAPTCHA v1
-    | keys will not work — create v2 "I'm not a robot" checkbox keys.
-    |
-    */
-    'recaptcha' => [
-        'enabled' => filter_var(env('FFB_RECAPTCHA_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
-        'site_key' => env('FFB_RECAPTCHA_PUBLICKEY', env('RECAPTCHA_SITE_KEY', '')),
-        'secret_key' => env('FFB_RECAPTCHA_PRIVATEKEY', env('RECAPTCHA_SECRET_KEY', '')),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Admin / bulk mailservice (port of legacy FFB_Mail + area_config)
     |--------------------------------------------------------------------------
     */

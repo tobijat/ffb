@@ -30,8 +30,6 @@ class RegistrationPageTest extends TestCase
                     'navigation' => [
                         ['symbol' => 'nav_user.png', 'name' => 'Registrieren', 'link' => '/registration', 'style' => 'big'],
                     ],
-                    'recaptcha_enabled' => false,
-                    'recaptcha_site_key' => '',
                     'tos_url' => '/resource/Registrierung.pdf',
                 ],
             ]);
@@ -87,8 +85,6 @@ class RegistrationPageTest extends TestCase
                     'countries' => [],
                     'birth_years' => [],
                     'navigation' => [],
-                    'recaptcha_enabled' => false,
-                    'recaptcha_site_key' => '',
                     'tos_url' => '/resource/Registrierung.pdf',
                 ],
             ]);

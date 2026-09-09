@@ -8,9 +8,6 @@
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/account.css?v=2">
     <link rel="stylesheet" href="css/registration.css?v=1">
-    @if (!empty($data['recaptcha_enabled']))
-        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    @endif
 </head>
 <body class="dash-body">
     @php
@@ -138,12 +135,6 @@
                         <span>* Ich habe die <a href="{{ $tosUrl }}" target="_blank" rel="noopener">Bedingungen</a> akzeptiert</span>
                     </label>
                 </div>
-
-                @if (!empty($data['recaptcha_enabled']))
-                    <div class="account-field account-field-check" data-help="user_code">
-                        <div class="g-recaptcha" data-sitekey="{{ $data['recaptcha_site_key'] }}"></div>
-                    </div>
-                @endif
 
                 <div class="account-actions">
                     <button type="submit" class="btn" name="users_registration_insert" value="1">Registrieren</button>
