@@ -19,6 +19,8 @@
     --font-title: "Kristen ITC", "Comic Sans MS", Verdana, sans-serif;
     --page-max: 1100px;
     --page-gutter: 10px;
+    --radius: 6px;
+    --radius-sm: 4px;
     --ffb-tab-border: #7aaa7a;
     --ffb-tab-inactive-bg: #bbeebb;
     --ffb-tab-panel-bg: var(--bg);
@@ -52,6 +54,73 @@ a {
 a:hover {
     color: var(--link);
     background: transparent;
+}
+
+/* Shared table shells + row hover rounding */
+.userscore-table-wrap,
+.admin-squad-table-wrap,
+.ffb-player-tables,
+.help-points-wrap {
+    border-radius: var(--radius);
+}
+
+.userscore-table,
+.ffb-profile-table,
+.ffb-player-rounds,
+table.help-points,
+.admin-squad-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.userscore-table thead tr:first-child th:first-child,
+.ffb-profile-table tr:first-child th:first-child,
+.ffb-player-rounds tr:first-child th:first-child,
+table.help-points tr:first-child th:first-child,
+.admin-squad-table thead tr:first-child th:first-child {
+    border-top-left-radius: var(--radius);
+}
+
+.userscore-table thead tr:first-child th:last-child,
+.ffb-profile-table tr:first-child th:last-child,
+.ffb-player-rounds tr:first-child th:last-child,
+table.help-points tr:first-child th:last-child,
+.admin-squad-table thead tr:first-child th:last-child {
+    border-top-right-radius: var(--radius);
+}
+
+.userscore-table tbody tr:last-child td:first-child,
+.ffb-profile-table tbody tr:last-child td:first-child,
+.ffb-player-rounds tbody tr:last-child td:first-child,
+table.help-points tbody tr:last-child td:first-child,
+.admin-squad-table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: var(--radius);
+}
+
+.userscore-table tbody tr:last-child td:last-child,
+.ffb-profile-table tbody tr:last-child td:last-child,
+.ffb-player-rounds tbody tr:last-child td:last-child,
+table.help-points tbody tr:last-child td:last-child,
+.admin-squad-table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: var(--radius);
+}
+
+.userscore-table tbody tr:hover td:first-child,
+.ffb-profile-table tbody tr:hover td:first-child,
+.ffb-player-rounds tbody tr:hover td:first-child,
+table.help-points tbody tr:hover td:first-child,
+.admin-squad-table tbody tr:hover td:first-child {
+    border-top-left-radius: var(--radius-sm);
+    border-bottom-left-radius: var(--radius-sm);
+}
+
+.userscore-table tbody tr:hover td:last-child,
+.ffb-profile-table tbody tr:hover td:last-child,
+.ffb-player-rounds tbody tr:hover td:last-child,
+table.help-points tbody tr:hover td:last-child,
+.admin-squad-table tbody tr:hover td:last-child {
+    border-top-right-radius: var(--radius-sm);
+    border-bottom-right-radius: var(--radius-sm);
 }
 
 /* Shared folder tabs (modals, account, myteam, admin) */
@@ -156,6 +225,7 @@ main,
     padding: 8px 10px;
     background: var(--panel);
     border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
     margin-top: 6px;
 }
 
@@ -171,6 +241,7 @@ main,
     gap: 8px;
     line-height: 1.1;
     padding: 2px 4px;
+    border-radius: var(--radius-sm);
 }
 
 .brand img {
@@ -241,6 +312,7 @@ main {
 .hero-copy {
     background: var(--panel);
     border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
     padding: 12px;
 }
 
@@ -307,6 +379,7 @@ main {
 .login-panel {
     background: var(--panel);
     border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
     padding: 10px;
     color: var(--ink);
 }
@@ -386,6 +459,7 @@ main {
     width: 90%;
     margin-left: auto;
     margin-right: auto;
+    border-radius: var(--radius-sm);
 }
 
 .feedback-error {
@@ -410,6 +484,7 @@ main {
 .stats {
     background: var(--panel);
     border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
     padding: 10px;
 }
 

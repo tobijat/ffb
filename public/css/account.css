@@ -86,6 +86,7 @@
     margin: 8px 0;
     padding: 8px 10px;
     border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
     font-size: 10pt;
     line-height: 1.35;
 }
@@ -109,6 +110,7 @@
     padding: 8px;
     background: var(--panel-light);
     border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
     font-size: 9pt;
     line-height: 1.4;
     min-height: 5rem;
@@ -134,6 +136,7 @@
     height: 55px;
     object-fit: cover;
     border: 1px solid #666;
+    border-radius: var(--radius-sm);
     background: #fff;
 }
 

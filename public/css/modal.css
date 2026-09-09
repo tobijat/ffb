@@ -28,9 +28,11 @@
     margin: 0 auto;
     background: linear-gradient(180deg, #e8f5e8 0%, #d4ebd4 100%);
     border: 1px solid #2a5a2a;
+    border-radius: var(--radius);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
     font-size: 10pt;
     color: #1a2e1a;
+    overflow: hidden;
 }
 
 .ffb-modal-head {
@@ -46,6 +48,7 @@
     height: 40px;
     object-fit: cover;
     flex-shrink: 0;
+    border-radius: var(--radius-sm);
 }
 
 .ffb-modal-head-title {
@@ -107,6 +110,7 @@
 .ffb-profile-photo {
     width: 100px;
     border: 1px solid #c00;
+    border-radius: var(--radius-sm);
     display: block;
 }
 
@@ -123,6 +127,7 @@
     align-items: center;
     padding: 0.15rem 0.25rem;
     text-align: left;
+    border-radius: var(--radius-sm);
 }
 
 .ffb-profile-row:hover {
@@ -162,9 +167,12 @@
 
 .ffb-profile-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: var(--radius);
     font-size: 8pt;
     text-align: center;
+    overflow: hidden;
 }
 
 .ffb-profile-table th,
@@ -175,6 +183,20 @@
 
 .ffb-profile-table th {
     background: #bbeebb;
+}
+
+.ffb-profile-table tbody tr:hover td:not(.rank-1):not(.rank-2):not(.rank-3) {
+    background: #ccffcc;
+}
+
+.ffb-profile-table tbody tr:hover td:first-child {
+    border-top-left-radius: var(--radius-sm);
+    border-bottom-left-radius: var(--radius-sm);
+}
+
+.ffb-profile-table tbody tr:hover td:last-child {
+    border-top-right-radius: var(--radius-sm);
+    border-bottom-right-radius: var(--radius-sm);
 }
 
 .ffb-profile-table td.liga {
@@ -217,6 +239,7 @@
     background: #bbeebb;
     margin: 0.15rem 0;
     padding: 0.2rem 0.25rem;
+    border-radius: var(--radius-sm);
 }
 
 .ffb-awards-header {
@@ -443,6 +466,7 @@
 .ffb-player-tables {
     margin-top: 0.75rem;
     overflow-x: auto;
+    border-radius: var(--radius);
 }
 
 .ffb-player-rounds {
