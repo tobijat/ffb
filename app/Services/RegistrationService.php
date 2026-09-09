@@ -16,7 +16,6 @@ class RegistrationService
 {
     public function __construct(
         private readonly FfbPassword $passwords,
-        private readonly RecaptchaService $recaptcha,
     ) {
     }
 
@@ -32,8 +31,6 @@ class RegistrationService
                 'countries' => config('countries', []),
                 'birth_years' => $this->birthYears(),
                 'navigation' => HelpService::guestNavigation(),
-                'recaptcha_enabled' => $this->recaptcha->enabled(),
-                'recaptcha_site_key' => $this->recaptcha->siteKey(),
                 'tos_url' => (string) config('ffb.registration_tos_url'),
             ],
         ];
@@ -55,7 +52,7 @@ class RegistrationService
     public function register(array $input, Request $request): array
     {
         $form = $this->formFromInput($input);
-        $errors = $this->validate($input, $request);
+        $errors = $this->validate($input);
 
         if ($errors !== []) {
             return [
@@ -264,7 +261,7 @@ class RegistrationService
      * @param  array<string, mixed>  $input
      * @return list<string>
      */
-    public function validate(array $input, Request $request): array
+    public function validate(array $input): array
     {
         $errors = [];
 
@@ -280,7 +277,6 @@ class RegistrationService
             || $passwordVal === ''
             || $email === ''
             || $emailVal === ''
-            || ($this->recaptcha->enabled() && trim((string) ($input['g-recaptcha-response'] ?? '')) === '')
         ) {
             $errors[] = 'Du musst alle Felder ausfüllen, die mit einem * markiert sind!';
 
@@ -331,13 +327,6 @@ class RegistrationService
 
         if (WebUser::query()->where('user_email', $email)->exists()) {
             $errors[] = 'Diese Email-Adresse existiert bereits!';
-        }
-
-        if (! $this->recaptcha->verify(
-            isset($input['g-recaptcha-response']) ? (string) $input['g-recaptcha-response'] : null,
-            $request->ip(),
-        )) {
-            $errors[] = 'Der Captcha-Code ist nicht gültig!';
         }
 
         return $errors;
