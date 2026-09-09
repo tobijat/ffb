@@ -7,14 +7,14 @@ use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\Playerstats;
 use App\Models\Team;
+use App\Support\Flag;
 use DateTimeImmutable;
 
 class AdminMatchService
 {
     public function __construct(
         private readonly AdminCenterService $adminCenter,
-    ) {
-    }
+    ) {}
 
     public function defaultGameId(int $userId): int
     {
@@ -301,8 +301,8 @@ class AdminMatchService
             ->get()
             ->map(function (MatchGame $item) {
                 $date = strtotime((string) $item->match_date) ?: 0;
-                $homeNat = strtolower((string) ($item->homeTeam?->team_nationality ?? ''));
-                $guestNat = strtolower((string) ($item->guestTeam?->team_nationality ?? ''));
+                $homeNat = (string) ($item->homeTeam?->team_nationality ?? '');
+                $guestNat = (string) ($item->guestTeam?->team_nationality ?? '');
                 $status = trim((string) ($item->match_status ?? ''));
 
                 return [
@@ -311,8 +311,10 @@ class AdminMatchService
                     'match_round_title' => (string) ($item->matchround?->matchround_title ?? ''),
                     'home_name' => (string) ($item->homeTeam?->team_name ?? ''),
                     'guest_name' => (string) ($item->guestTeam?->team_name ?? ''),
-                    'home_flag_url' => $homeNat !== '' ? '/images/ffb/flags/'.$homeNat.'.gif' : null,
-                    'guest_flag_url' => $guestNat !== '' ? '/images/ffb/flags/'.$guestNat.'.gif' : null,
+                    'home_flag_html' => $homeNat !== '' ? Flag::html($homeNat) : '',
+                    'guest_flag_html' => $guestNat !== '' ? Flag::html($guestNat) : '',
+                    'home_flag_url' => $homeNat !== '' ? Flag::imageUrl($homeNat) : null,
+                    'guest_flag_url' => $guestNat !== '' ? Flag::imageUrl($guestNat) : null,
                     'match_status' => $status,
                     'status_ok' => $status === '',
                 ];

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Player;
 use App\Models\Playerteam;
 use App\Models\Userteam;
+use App\Support\Flag;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class AdminPlayerService
@@ -13,8 +14,7 @@ class AdminPlayerService
 
     public function __construct(
         private readonly AdminCenterService $adminCenter,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>|null  $form
@@ -189,6 +189,7 @@ class AdminPlayerService
             $item = Player::query()->find($playerId);
             if (! $item) {
                 $errors[] = 'Spieler #'.$playerId.' nicht gefunden.';
+
                 continue;
             }
 
@@ -196,6 +197,7 @@ class AdminPlayerService
             if ($blocker !== null) {
                 $label = trim((string) $item->player_lname).' #'.$playerId;
                 $errors[] = $label.': '.$blocker;
+
                 continue;
             }
 
@@ -215,6 +217,7 @@ class AdminPlayerService
             $item = Player::query()->find($playerId);
             if (! $item) {
                 $errors[] = 'Spieler #'.$playerId.' nicht gefunden.';
+
                 continue;
             }
 
@@ -225,6 +228,7 @@ class AdminPlayerService
                 foreach ($rowErrors as $rowError) {
                     $errors[] = $label.': '.$rowError;
                 }
+
                 continue;
             }
 
@@ -392,7 +396,8 @@ class AdminPlayerService
                     'player_foreign_id' => (string) ($item->player_foreign_id ?? ''),
                     'tm_url' => $this->transfermarktUrl((string) ($item->player_foreign_id ?? '')),
                     'picture_url' => null,
-                    'flag_url' => $nat !== '' ? '/images/ffb/flags/'.strtolower($nat).'.gif' : null,
+                    'flag_url' => $nat !== '' ? Flag::imageUrl($nat) : null,
+                    'flag_html' => $nat !== '' ? Flag::html($nat) : '',
                 ];
             });
     }

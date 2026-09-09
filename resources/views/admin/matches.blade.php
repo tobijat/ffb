@@ -150,16 +150,20 @@
                         </div>
                         <h3 class="admin-list-title admin-match-teams">
                             <span class="admin-match-team">
-                                @if ($item['home_flag_url'])
-                                    <img src="{{ $item['home_flag_url'] }}" alt="" width="20" height="15" loading="lazy">
+                                @if (($item['home_flag_html'] ?? '') !== '')
+                                    {!! $item['home_flag_html'] !!}
+                                @elseif (! empty($item['home_flag_url']))
+                                    <img class="ffb-flag ffb-flag-img" src="{{ $item['home_flag_url'] }}" alt="" width="20" height="15" loading="lazy">
                                 @endif
                                 {{ $item['home_name'] }}
                             </span>
                             <span class="muted">:</span>
                             <span class="admin-match-team">
                                 {{ $item['guest_name'] }}
-                                @if ($item['guest_flag_url'])
-                                    <img src="{{ $item['guest_flag_url'] }}" alt="" width="20" height="15" loading="lazy">
+                                @if (($item['guest_flag_html'] ?? '') !== '')
+                                    {!! $item['guest_flag_html'] !!}
+                                @elseif (! empty($item['guest_flag_url']))
+                                    <img class="ffb-flag ffb-flag-img" src="{{ $item['guest_flag_url'] }}" alt="" width="20" height="15" loading="lazy">
                                 @endif
                             </span>
                         </h3>

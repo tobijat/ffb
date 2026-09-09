@@ -196,8 +196,26 @@ table.help-points tbody tr:hover td:last-child,
     color: var(--ink);
 }
 
-.pitch-bg {
-    display: none;
+.ffb-flag {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+.ffb-flag-img {
+    width: 16px;
+    height: 11px;
+    object-fit: cover;
+}
+
+.ffb-flag-svg {
+    width: 16px;
+    height: 12px;
+    background-image: var(--ffb-flag);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
 }
 
 .topbar,

@@ -458,7 +458,8 @@
     color: inherit;
 }
 
-.ffb-modal-head-flag {
+.ffb-modal-head-flag,
+.ffb-modal-head .ffb-flag {
     flex-shrink: 0;
     margin-right: 0.15rem;
 }
