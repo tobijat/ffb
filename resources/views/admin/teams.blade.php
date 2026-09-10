@@ -129,16 +129,12 @@
                 <div
                     class="admin-shirt-upload"
                     id="team-shirt-upload"
-                    @if (
-                        !$usesIconPicker
-                        || !$selectedSymbol
-                        || ($selectedSymbol['has_shirt'] ?? false)
-                    ) hidden @endif
+                    @if (! $selectedSymbol) hidden @endif
                 >
                     <div class="admin-field admin-field-stack">
                         <label for="team_shirt_file">Trikot hochladen</label>
                         <input id="team_shirt_file" type="file" name="team_shirt_file" accept="image/png,image/jpeg,image/gif,image/webp">
-                        <p class="hint">PNG/JPEG/GIF/WebP, max. 2 MB. Wird als <code>shirt_{{ strtoupper($selectedIcon ?: 'KEY') }}.png</code> gespeichert.</p>
+                        <p class="hint">PNG/JPEG/GIF/WebP, max. 2 MB. Wird als <code>{{ $selectedSymbol['shirt_path_hint'] ?? ('shirts/<team_id>/'.($selectedIcon ?: 'key').'.png') }}</code> gespeichert.</p>
                     </div>
                 </div>
 
@@ -306,14 +302,24 @@
     const labelEl = document.getElementById('team-symbol-label');
     const shirtUpload = document.getElementById('team-shirt-upload');
     const shirtHint = shirtUpload ? shirtUpload.querySelector('.hint') : null;
+    const teamId = @json((string) ($form['team_id'] ?? ''));
+    const existingTeamShirtUrl = @json($selectedSymbol['shirt_url'] ?? '');
     if (!picker || !chooser || !toggle || !flagHtml) return;
+
+    function shirtPathHint(key) {
+        const nat = key || 'key';
+        if (teamId) {
+            return 'shirts/' + teamId + '/' + nat + '.png';
+        }
+        return 'shirts/<team_id>/' + nat + '.png';
+    }
 
     function setPreview(option) {
         const key = option ? (option.getAttribute('data-icon-key') || '') : '';
         const label = option ? (option.getAttribute('data-icon-label') || '') : '';
         const html = option ? (option.getAttribute('data-icon-html') || '') : '';
-        const shirtUrl = option ? (option.getAttribute('data-shirt-url') || '') : '';
-        const hasShirt = option ? option.getAttribute('data-has-shirt') === '1' : false;
+        const shirtUrl = existingTeamShirtUrl || '';
+        const hasShirt = !!shirtUrl;
 
         if (key && html) {
             flagHtml.innerHTML = html;
@@ -343,13 +349,13 @@
         }
 
         if (shirtUpload) {
-            if (key && !hasShirt) {
+            if (key) {
                 shirtUpload.hidden = false;
                 if (shirtHint) {
                     shirtHint.innerHTML =
-                        'PNG/JPEG/GIF/WebP, max. 2 MB. Wird als <code>shirt_' +
-                        key.toUpperCase() +
-                        '.png</code> gespeichert.';
+                        'PNG/JPEG/GIF/WebP, max. 2 MB. Wird als <code>' +
+                        shirtPathHint(key) +
+                        '</code> gespeichert.';
                 }
             } else {
                 shirtUpload.hidden = true;
