@@ -16,8 +16,7 @@ class AccountService
     public function __construct(
         private readonly FfbPassword $passwords,
         private readonly FfbAuth $auth,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}
@@ -269,7 +268,7 @@ class AccountService
         $details->user_details_phone = trim((string) ($input['user_details_phone'] ?? ''));
         $details->user_details_website = $website;
         $details->user_details_ffb_favourite_team = (int) ($input['user_details_ffb_favourite_team'] ?? 0);
-        // Do not touch own_team / own_player / selected_game (legacy POST often wiped these).
+        // Do not touch own_team / own_player / selected_league (legacy POST often wiped these).
         $details->user_details_last_update = date('Y-m-d H:i:s');
 
         $this->applyMailPermission(

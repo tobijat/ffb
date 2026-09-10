@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Game;
-use App\Models\GameOptions;
+use App\Models\League;
+use App\Models\LeagueOptions;
 use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\Playerprice;
@@ -35,13 +35,13 @@ class LineupService
 
         $details = $user->details;
         $photo = (string) ($details?->user_details_photo ?: 'profile_na.png');
-        $gameId = (int) ($details?->user_details_ffb_selected_game ?? 0);
+        $leagueId = (int) ($details?->user_details_ffb_selected_league ?? 0);
 
-        if ($gameId <= 0) {
+        if ($leagueId <= 0) {
             return ['ok' => false, 'status' => 422, 'error' => 'Kein Spiel ausgewählt.'];
         }
 
-        $game = Game::query()->find($gameId);
+        $league = League::query()->find($leagueId);
 
         return [
             'ok' => true,
@@ -53,8 +53,8 @@ class LineupService
                     'is_admin' => (bool) ($user->user_admin ?? false),
                     'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
                 ],
-                'selected_game_id' => $gameId,
-                'game_over' => $game ? (int) ($game->game_archive ?? 0) !== 0 : false,
+                'selected_league_id' => $leagueId,
+                'game_over' => $league ? (int) ($league->league_archive ?? 0) !== 0 : false,
                 'navigation' => app(DashboardService::class)->navigation(),
             ],
         ];
@@ -65,12 +65,12 @@ class LineupService
      */
     public function options(int $userId): array
     {
-        $gameId = $this->selectedGameId($userId);
-        if ($gameId <= 0) {
+        $leagueId = $this->selectedLeagueId($userId);
+        if ($leagueId <= 0) {
             return ['ok' => false, 'status' => 422, 'error' => 'Kein Spiel ausgewählt.'];
         }
 
-        $options = GameOptions::query()->where('options_game_id', $gameId)->first();
+        $options = LeagueOptions::query()->where('options_league_id', $leagueId)->first();
         if (! $options) {
             return ['ok' => false, 'status' => 404, 'error' => 'Keine Lineup-Optionen gefunden.'];
         }
@@ -89,7 +89,7 @@ class LineupService
                 'lineup_max_d' => (int) $options->options_lineup_max_d,
                 'lineup_max_m' => (int) $options->options_lineup_max_m,
                 'lineup_max_s' => (int) $options->options_lineup_max_s,
-                'game_pricemode' => (string) ($options->options_game_pricemode ?: 'constant'),
+                'game_pricemode' => (string) ($options->options_league_pricemode ?: 'constant'),
             ],
         ];
     }
@@ -101,16 +101,16 @@ class LineupService
      */
     public function matchroundAndTeams(int $userId): array
     {
-        $gameId = $this->selectedGameId($userId);
-        if ($gameId <= 0) {
+        $leagueId = $this->selectedLeagueId($userId);
+        if ($leagueId <= 0) {
             return ['ok' => false, 'status' => 422, 'error' => 'Kein Spiel ausgewählt.'];
         }
 
-        $game = Game::query()->find($gameId);
-        $gameOver = $game ? (int) ($game->game_archive ?? 0) !== 0 : false;
+        $league = League::query()->find($leagueId);
+        $gameOver = $league ? (int) ($league->league_archive ?? 0) !== 0 : false;
 
         $round = Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->where('matchround_startdate', '>', now())
             ->orderBy('matchround_startdate')
             ->first();
@@ -205,15 +205,15 @@ class LineupService
         }
 
         $matchround = Matchround::query()->find($matchroundId);
-        $leagueId = (int) ($matchround?->matchround_game_id ?? 0);
+        $leagueId = (int) ($matchround?->matchround_league_id ?? 0);
         if ($leagueId <= 0) {
-            $leagueId = $this->selectedGameId($userId);
+            $leagueId = $this->selectedLeagueId($userId);
         }
 
         $options = $leagueId > 0
-            ? GameOptions::query()->where('options_game_id', $leagueId)->first()
+            ? LeagueOptions::query()->where('options_league_id', $leagueId)->first()
             : null;
-        $priceMode = (string) ($options?->options_game_pricemode ?: 'constant');
+        $priceMode = (string) ($options?->options_league_pricemode ?: 'constant');
 
         $playerteams = Playerteam::query()
             ->with(['player', 'team'])
@@ -409,12 +409,12 @@ class LineupService
             return $this->fail(409, 'Die Deadline für diese Spielrunde ist bereits vorüber! Deine Aufstellung wurde nicht gespeichert!');
         }
 
-        $options = GameOptions::query()
-            ->where('options_game_id', $matchround->matchround_game_id)
+        $options = LeagueOptions::query()
+            ->where('options_league_id', $matchround->matchround_league_id)
             ->first();
 
-        $priceMode = $options?->options_game_pricemode ?: 'constant';
-        $leagueId = (int) $matchround->matchround_game_id;
+        $priceMode = $options?->options_league_pricemode ?: 'constant';
+        $leagueId = (int) $matchround->matchround_league_id;
         $playerteams = Playerteam::query()
             ->with(['player', 'team'])
             ->whereIn('playerteam_id', $ids)
@@ -463,11 +463,11 @@ class LineupService
             $userteam->save();
             $userteam->syncSlots($ids);
 
-            $gameId = $this->resolveGameId($userId, (int) $matchround->matchround_game_id);
+            $leagueId = $this->resolveLeagueId($userId, (int) $matchround->matchround_league_id);
             Userscore::query()->firstOrCreate(
                 [
                     'userscore_user_id' => $userId,
-                    'userscore_game_id' => $gameId,
+                    'userscore_league_id' => $leagueId,
                 ],
                 [
                     'userscore_total' => 0,
@@ -533,7 +533,7 @@ class LineupService
         Collection $playerteams,
         Collection $dynamicPrices,
         string $priceMode,
-        ?GameOptions $options,
+        ?LeagueOptions $options,
     ): ?string {
         $maxPlayers = (int) ($options?->options_lineup_max_players ?: 11);
         if (count($ids) !== $maxPlayers) {
@@ -618,18 +618,18 @@ class LineupService
         return round($sum, 1);
     }
 
-    private function selectedGameId(int $userId): int
+    private function selectedLeagueId(int $userId): int
     {
         $details = UserDetails::query()->find($userId);
 
-        return (int) ($details?->user_details_ffb_selected_game ?? 0);
+        return (int) ($details?->user_details_ffb_selected_league ?? 0);
     }
 
-    private function resolveGameId(int $userId, int $fallbackGameId): int
+    private function resolveLeagueId(int $userId, int $fallbackLeagueId): int
     {
-        $selected = $this->selectedGameId($userId);
+        $selected = $this->selectedLeagueId($userId);
 
-        return $selected > 0 ? $selected : $fallbackGameId;
+        return $selected > 0 ? $selected : $fallbackLeagueId;
     }
 
     /**
@@ -650,11 +650,11 @@ class LineupService
             return 'constant';
         }
 
-        $options = GameOptions::query()
-            ->where('options_game_id', $matchround->matchround_game_id)
+        $options = LeagueOptions::query()
+            ->where('options_league_id', $matchround->matchround_league_id)
             ->first();
 
-        return $options?->options_game_pricemode ?: 'constant';
+        return $options?->options_league_pricemode ?: 'constant';
     }
 
     /**

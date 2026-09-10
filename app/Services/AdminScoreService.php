@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\GameOptions;
+use App\Models\LeagueOptions;
 use App\Models\Matchround;
 use App\Models\Playerstats;
 use App\Models\Userscore;
@@ -13,8 +13,7 @@ class AdminScoreService
 {
     public function __construct(
         private readonly AdminCenterService $adminCenter,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -26,8 +25,8 @@ class AdminScoreService
         return [
             'user' => $shell['user'],
             'navigation' => $shell['navigation'],
-            'selected_game_id' => $shell['selected_game_id'],
-            'selected_game' => $shell['selected_game'],
+            'selected_league_id' => $shell['selected_league_id'],
+            'selected_league' => $shell['selected_league'],
         ];
     }
 
@@ -39,13 +38,13 @@ class AdminScoreService
      */
     public function setUserteamScores(int $userId): array
     {
-        $gameId = $this->adminCenter->selectedGameId($userId);
-        if ($gameId <= 0) {
+        $leagueId = $this->adminCenter->selectedLeagueId($userId);
+        if ($leagueId <= 0) {
             return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga auswählen.']];
         }
 
         $matchroundIds = Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->pluck('matchround_id')
             ->map(fn ($id) => (int) $id)
             ->all();
@@ -83,7 +82,7 @@ class AdminScoreService
             }
         });
 
-        $this->setWcPointsForGame($gameId);
+        $this->setWcPointsForGame($leagueId);
 
         return [
             'ok' => true,
@@ -99,13 +98,13 @@ class AdminScoreService
      */
     public function setUserScores(int $userId): array
     {
-        $gameId = $this->adminCenter->selectedGameId($userId);
-        if ($gameId <= 0) {
+        $leagueId = $this->adminCenter->selectedLeagueId($userId);
+        if ($leagueId <= 0) {
             return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga auswählen.']];
         }
 
         $matchroundIds = Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->pluck('matchround_id')
             ->map(fn ($id) => (int) $id)
             ->all();
@@ -126,7 +125,7 @@ class AdminScoreService
 
         $details = [];
 
-        DB::transaction(function () use ($totals, $gameId, &$details) {
+        DB::transaction(function () use ($totals, $leagueId, &$details) {
             foreach ($totals as $row) {
                 $uid = (int) $row->userteam_user_id;
                 $total = (int) $row->total_score;
@@ -134,7 +133,7 @@ class AdminScoreService
 
                 $userscore = Userscore::query()
                     ->where('userscore_user_id', $uid)
-                    ->where('userscore_game_id', $gameId)
+                    ->where('userscore_league_id', $leagueId)
                     ->first();
 
                 if ($userscore) {
@@ -146,7 +145,7 @@ class AdminScoreService
                 } else {
                     Userscore::query()->create([
                         'userscore_user_id' => $uid,
-                        'userscore_game_id' => $gameId,
+                        'userscore_league_id' => $leagueId,
                         'userscore_total' => $total,
                         'userscore_wc_points' => $wc,
                     ]);
@@ -166,15 +165,15 @@ class AdminScoreService
     /**
      * Assign WC points on finished matchrounds (enddate in the past), matching legacy ranking.
      */
-    private function setWcPointsForGame(int $gameId): void
+    private function setWcPointsForGame(int $leagueId): void
     {
-        $options = GameOptions::query()->where('options_game_id', $gameId)->first()
-            ?? GameOptions::query()->where('options_game_id', 0)->first();
+        $options = LeagueOptions::query()->where('options_league_id', $leagueId)->first()
+            ?? LeagueOptions::query()->where('options_league_id', 0)->first();
 
-        // Legacy: explode comma-separated options_game_wcpoints (index = rank - 1).
+        // Legacy: explode comma-separated options_league_wcpoints (index = rank - 1).
         $wcPoints = array_map(
             static fn (string $v): int => (int) trim($v),
-            explode(',', (string) ($options?->options_game_wcpoints ?? ''))
+            explode(',', (string) ($options?->options_league_wcpoints ?? ''))
         );
         if ($wcPoints === []) {
             return;
@@ -182,7 +181,7 @@ class AdminScoreService
 
         $now = date('Y-m-d H:i:s');
         $matchrounds = Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->where('matchround_enddate', '<', $now)
             ->orderBy('matchround_id')
             ->get();

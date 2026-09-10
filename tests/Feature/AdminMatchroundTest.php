@@ -33,7 +33,7 @@ class AdminMatchroundTest extends TestCase
         });
 
         $this->mock(AdminMatchroundService::class, function ($mock) {
-            $mock->shouldReceive('defaultGameId')->once()->with(544)->andReturn(0);
+            $mock->shouldReceive('defaultLeagueId')->once()->with(544)->andReturn(0);
             $mock->shouldReceive('pagePayload')->once()->with(544, 0, null, 'create')->andReturn([
                 'user' => [
                     'user_id' => 544,
@@ -50,15 +50,15 @@ class AdminMatchroundTest extends TestCase
                         'image_dir' => 'images/admin/navigation/',
                     ],
                 ],
-                'games' => [
-                    ['game_id' => 26, 'game_title' => 'Testliga', 'game_archive' => 0],
+                'leagues' => [
+                    ['league_id' => 26, 'league_title' => 'Testliga', 'league_archive' => 0],
                 ],
-                'selected_game_id' => 0,
-                'selected_game_title' => null,
+                'selected_league_id' => 0,
+                'selected_league_title' => null,
                 'items' => [],
                 'form' => [
                     'matchround_id' => '',
-                    'matchround_game_id' => 0,
+                    'matchround_league_id' => 0,
                     'matchround_title' => '',
                     'matchround_status' => 1,
                     'matchround_startdate' => '',
@@ -84,7 +84,7 @@ class AdminMatchroundTest extends TestCase
         });
 
         $this->mock(AdminMatchroundService::class, function ($mock) {
-            $mock->shouldReceive('defaultGameId')->once()->with(544)->andReturn(26);
+            $mock->shouldReceive('defaultLeagueId')->once()->with(544)->andReturn(26);
             $mock->shouldReceive('pagePayload')->once()->with(544, 26, null, 'create')->andReturn([
                 'user' => [
                     'user_id' => 544,
@@ -93,15 +93,15 @@ class AdminMatchroundTest extends TestCase
                     'is_ffb_admin' => true,
                 ],
                 'navigation' => [],
-                'games' => [
-                    ['game_id' => 26, 'game_title' => 'Testliga', 'game_archive' => 0],
+                'leagues' => [
+                    ['league_id' => 26, 'league_title' => 'Testliga', 'league_archive' => 0],
                 ],
-                'selected_game_id' => 26,
-                'selected_game_title' => 'Testliga',
+                'selected_league_id' => 26,
+                'selected_league_title' => 'Testliga',
                 'items' => [],
                 'form' => [
                     'matchround_id' => '',
-                    'matchround_game_id' => 26,
+                    'matchround_league_id' => 26,
                     'matchround_title' => '',
                     'matchround_status' => 1,
                     'matchround_startdate' => '',
@@ -134,11 +134,11 @@ class AdminMatchroundTest extends TestCase
                     'is_ffb_admin' => true,
                 ],
                 'navigation' => [],
-                'games' => [
-                    ['game_id' => 26, 'game_title' => 'Testliga', 'game_archive' => 0],
+                'leagues' => [
+                    ['league_id' => 26, 'league_title' => 'Testliga', 'league_archive' => 0],
                 ],
-                'selected_game_id' => 26,
-                'selected_game_title' => 'Testliga',
+                'selected_league_id' => 26,
+                'selected_league_title' => 'Testliga',
                 'items' => [
                     [
                         'matchround_id' => 12,
@@ -150,7 +150,7 @@ class AdminMatchroundTest extends TestCase
                 ],
                 'form' => [
                     'matchround_id' => '',
-                    'matchround_game_id' => 26,
+                    'matchround_league_id' => 26,
                     'matchround_title' => '',
                     'matchround_status' => 1,
                     'matchround_startdate' => '',
@@ -161,7 +161,7 @@ class AdminMatchroundTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->get('/admin/matchrounds?game_id=26')
+            ->get('/admin/matchrounds?league_id=26')
             ->assertOk()
             ->assertSee('Testliga', false)
             ->assertSee('Runde 1', false)
@@ -178,7 +178,7 @@ class AdminMatchroundTest extends TestCase
 
         $nextForm = [
             'matchround_id' => '',
-            'matchround_game_id' => 26,
+            'matchround_league_id' => 26,
             'matchround_title' => 'Runde 3',
             'matchround_status' => 1,
             'matchround_startdate' => '2026-09-07T22:00',
@@ -189,20 +189,20 @@ class AdminMatchroundTest extends TestCase
             $mock->shouldReceive('create')->once()->andReturn([
                 'ok' => true,
                 'message' => 'Spielrunde erfolgreich hinzugefügt.',
-                'game_id' => 26,
+                'league_id' => 26,
                 'next_form' => $nextForm,
             ]);
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->post('/admin/matchrounds', [
-                'matchround_game_id' => 26,
+                'matchround_league_id' => 26,
                 'matchround_title' => 'Runde 2',
                 'matchround_status' => 1,
                 'matchround_startdate' => '2026-09-01T18:00',
                 'matchround_enddate' => '2026-09-07T22:00',
             ])
-            ->assertRedirect(route('admin.matchrounds', ['game_id' => 26]))
+            ->assertRedirect(route('admin.matchrounds', ['league_id' => 26]))
             ->assertSessionHas('admin_message', 'Spielrunde erfolgreich hinzugefügt.')
             ->assertSessionHas('admin_matchround_prefill', $nextForm);
     }
@@ -217,13 +217,13 @@ class AdminMatchroundTest extends TestCase
             $mock->shouldReceive('delete')->once()->with(12)->andReturn([
                 'ok' => true,
                 'message' => 'Spielrunde erfolgreich gelöscht.',
-                'game_id' => 26,
+                'league_id' => 26,
             ]);
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->delete('/admin/matchrounds/12', ['game_id' => 26])
-            ->assertRedirect(route('admin.matchrounds', ['game_id' => 26]))
+            ->delete('/admin/matchrounds/12', ['league_id' => 26])
+            ->assertRedirect(route('admin.matchrounds', ['league_id' => 26]))
             ->assertSessionHas('admin_message', 'Spielrunde erfolgreich gelöscht.');
     }
 }

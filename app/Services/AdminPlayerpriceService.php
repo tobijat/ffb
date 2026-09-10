@@ -29,14 +29,14 @@ class AdminPlayerpriceService
     public function pagePayload(int $userId): array
     {
         $shell = $this->adminCenter->shellPayload($userId);
-        $gameId = (int) ($shell['selected_game_id'] ?? 0);
+        $leagueId = (int) ($shell['selected_league_id'] ?? 0);
 
         return [
             'user' => $shell['user'],
             'navigation' => $shell['navigation'],
-            'selected_game_id' => $gameId,
-            'selected_game' => $shell['selected_game'],
-            'matchrounds' => $gameId > 0 ? $this->matchrounds($gameId) : [],
+            'selected_league_id' => $leagueId,
+            'selected_league' => $shell['selected_league'],
+            'matchrounds' => $leagueId > 0 ? $this->matchrounds($leagueId) : [],
             'price_margins' => $this->priceMargins(),
             'price_options' => range(1, 19),
         ];
@@ -48,8 +48,8 @@ class AdminPlayerpriceService
      */
     public function calculatePlayerPricesForMatchround(int $userId, array $input): array
     {
-        $gameId = $this->adminCenter->selectedGameId($userId);
-        if ($gameId <= 0) {
+        $leagueId = $this->adminCenter->selectedLeagueId($userId);
+        if ($leagueId <= 0) {
             return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga auswählen.']];
         }
 
@@ -64,7 +64,7 @@ class AdminPlayerpriceService
         if ($priceMargin <= 0) {
             return ['ok' => false, 'errors' => ['Please select Price Margin!']];
         }
-        if (! $this->matchroundBelongsToGame($matchroundId, $gameId)) {
+        if (! $this->matchroundBelongsToLeague($matchroundId, $leagueId)) {
             return ['ok' => false, 'errors' => ['Ungültige Spielrunde für die aktive Liga.']];
         }
 
@@ -72,7 +72,7 @@ class AdminPlayerpriceService
             $details = [];
             $teamList = $this->teamIdsForMatchround($matchroundId);
             foreach ($teamList as $teamId) {
-                $margins = $this->calculatePlayerPriceMarginsForTeam($teamId, $priceMargin, $gameId);
+                $margins = $this->calculatePlayerPriceMarginsForTeam($teamId, $priceMargin, $leagueId);
                 array_push($details, ...$this->updatePlayerPrices($margins, $matchroundId));
             }
 
@@ -90,10 +90,10 @@ class AdminPlayerpriceService
      * @param  array<string, mixed>  $input
      * @return array{ok: bool, message?: string, errors?: list<string>, details?: list<string>}
      */
-    public function calculateEloTeamPricesForGame(int $userId, array $input): array
+    public function calculateEloTeamPricesForLeague(int $userId, array $input): array
     {
-        $gameId = $this->adminCenter->selectedGameId($userId);
-        if ($gameId <= 0) {
+        $leagueId = $this->adminCenter->selectedLeagueId($userId);
+        if ($leagueId <= 0) {
             return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga auswählen.']];
         }
 
@@ -111,11 +111,11 @@ class AdminPlayerpriceService
         }
 
         try {
-            $teamList = $this->teamIdsForGame($gameId);
+            $teamList = $this->teamIdsForGame($leagueId);
             $teamPrices = $this->getTeamPrices($teamList, $maxPrice, $minPrice);
             $details = [];
             foreach ($teamPrices as $teamId => $teamPrice) {
-                $details[] = $this->updateBasePriceForTeamAndPlayers((int) $teamId, (float) $teamPrice, $gameId);
+                $details[] = $this->updateBasePriceForTeamAndPlayers((int) $teamId, (float) $teamPrice, $leagueId);
             }
 
             return [
@@ -134,8 +134,8 @@ class AdminPlayerpriceService
      */
     public function calculateEloTeamPricesForMatchround(int $userId, array $input): array
     {
-        $gameId = $this->adminCenter->selectedGameId($userId);
-        if ($gameId <= 0) {
+        $leagueId = $this->adminCenter->selectedLeagueId($userId);
+        if ($leagueId <= 0) {
             return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga auswählen.']];
         }
 
@@ -155,7 +155,7 @@ class AdminPlayerpriceService
         if ($maxPrice < $minPrice) {
             return ['ok' => false, 'errors' => ['Max price needs to be greater than min price!']];
         }
-        if (! $this->matchroundBelongsToGame($matchroundId, $gameId)) {
+        if (! $this->matchroundBelongsToLeague($matchroundId, $leagueId)) {
             return ['ok' => false, 'errors' => ['Ungültige Spielrunde für die aktive Liga.']];
         }
 
@@ -164,7 +164,7 @@ class AdminPlayerpriceService
             $teamPrices = $this->getTeamPrices($teamList, $maxPrice, $minPrice);
             $details = [];
             foreach ($teamPrices as $teamId => $teamPrice) {
-                $details[] = $this->updateBasePriceForTeamAndPlayers((int) $teamId, (float) $teamPrice, $gameId);
+                $details[] = $this->updateBasePriceForTeamAndPlayers((int) $teamId, (float) $teamPrice, $leagueId);
             }
 
             return [
@@ -180,10 +180,10 @@ class AdminPlayerpriceService
     /**
      * @return list<array{matchround_id: int, matchround_title: string}>
      */
-    private function matchrounds(int $gameId): array
+    private function matchrounds(int $leagueId): array
     {
         return Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->orderBy('matchround_startdate')
             ->get(['matchround_id', 'matchround_title'])
             ->map(static fn (Matchround $r): array => [
@@ -206,11 +206,11 @@ class AdminPlayerpriceService
         return $margins;
     }
 
-    private function matchroundBelongsToGame(int $matchroundId, int $gameId): bool
+    private function matchroundBelongsToLeague(int $matchroundId, int $leagueId): bool
     {
         return Matchround::query()
             ->where('matchround_id', $matchroundId)
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->exists();
     }
 
@@ -235,11 +235,11 @@ class AdminPlayerpriceService
     /**
      * @return list<int>
      */
-    private function teamIdsForGame(int $gameId): array
+    private function teamIdsForGame(int $leagueId): array
     {
         $matches = MatchGame::query()
             ->join('ffb_matchround', 'ffb_match.match_round', '=', 'ffb_matchround.matchround_id')
-            ->where('ffb_matchround.matchround_game_id', $gameId)
+            ->where('ffb_matchround.matchround_league_id', $leagueId)
             ->get(['ffb_match.match_hometeam_id', 'ffb_match.match_guestteam_id']);
 
         $ids = [];

@@ -20,7 +20,7 @@ class StartPageTest extends TestCase
                     'matchrounds_played' => 3,
                 ],
                 'leagues' => [
-                    ['game_id' => 1, 'game_title' => 'Testliga'],
+                    ['league_id' => 1, 'league_title' => 'Testliga'],
                 ],
                 'results' => [
                     [

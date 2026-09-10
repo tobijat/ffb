@@ -20,8 +20,8 @@ class UserDetails extends Model
         return $this->belongsTo(WebUser::class, 'user_id', 'user_id');
     }
 
-    public function selectedGame(): BelongsTo
+    public function selectedLeague(): BelongsTo
     {
-        return $this->belongsTo(Game::class, 'user_details_ffb_selected_game', 'game_id');
+        return $this->belongsTo(League::class, 'user_details_ffb_selected_league', 'league_id');
     }
 }

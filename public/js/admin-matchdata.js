@@ -874,7 +874,7 @@
         const id = leagueSelect.value;
         if (!id) return;
         const url = new URL(window.location.href);
-        url.searchParams.set('game_id', id);
+        url.searchParams.set('league_id', id);
         window.location.href = url.toString();
     });
 

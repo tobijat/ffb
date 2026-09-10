@@ -57,22 +57,22 @@ class AdminCenterTest extends TestCase
                         'image_dir' => 'images/admin/navigation/',
                     ],
                 ],
-                'selected_game_id' => 26,
-                'selected_game' => [
-                    'game_id' => 26,
-                    'game_title' => 'Testliga',
+                'selected_league_id' => 26,
+                'selected_league' => [
+                    'league_id' => 26,
+                    'league_title' => 'Testliga',
                     'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
                 ],
-                'games' => [
+                'leagues' => [
                     [
-                        'game_id' => 26,
-                        'game_title' => 'Testliga',
-                        'game_symbol' => 'symbol_game_na.png',
+                        'league_id' => 26,
+                        'league_title' => 'Testliga',
+                        'league_symbol' => 'symbol_game_na.png',
                         'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
-                        'game_status' => 1,
-                        'game_archive' => 0,
-                        'game_visible' => 1,
-                        'game_countdown' => 0,
+                        'league_status' => 1,
+                        'league_archive' => 0,
+                        'league_visible' => 1,
+                        'league_countdown' => 0,
                         'flags' => [
                             ['label' => 'aktiv', 'tone' => 'ok'],
                             ['label' => 'aktuell', 'tone' => 'ok'],
@@ -81,14 +81,14 @@ class AdminCenterTest extends TestCase
                         ],
                     ],
                     [
-                        'game_id' => 10,
-                        'game_title' => 'Alte Liga',
-                        'game_symbol' => 'symbol_game_na.png',
+                        'league_id' => 10,
+                        'league_title' => 'Alte Liga',
+                        'league_symbol' => 'symbol_game_na.png',
                         'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
-                        'game_status' => 0,
-                        'game_archive' => 1,
-                        'game_visible' => 0,
-                        'game_countdown' => 0,
+                        'league_status' => 0,
+                        'league_archive' => 1,
+                        'league_visible' => 0,
+                        'league_countdown' => 0,
                         'flags' => [
                             ['label' => 'inaktiv', 'tone' => 'off'],
                             ['label' => 'archiviert', 'tone' => 'warn'],
@@ -129,15 +129,15 @@ class AdminCenterTest extends TestCase
         });
 
         $this->mock(AdminCenterService::class, function ($mock) {
-            $mock->shouldReceive('selectGame')->once()->with(26)->andReturn([
+            $mock->shouldReceive('selectLeague')->once()->with(26)->andReturn([
                 'ok' => true,
                 'message' => 'Liga „Testliga“ ausgewählt.',
-                'game_id' => 26,
+                'league_id' => 26,
             ]);
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->post('/admin/games/26/select')
+            ->post('/admin/leagues/26/select')
             ->assertRedirect(route('admin.center'))
             ->assertSessionHas('admin_message', 'Liga „Testliga“ ausgewählt.');
     }
@@ -156,8 +156,8 @@ class AdminCenterTest extends TestCase
                     'update_profile_nag' => false,
                     'is_ffb_admin' => true,
                 ],
-                'selected_game_id' => 26,
-                'games' => [],
+                'selected_league_id' => 26,
+                'leagues' => [],
                 'archive' => false,
                 'news' => ['items' => [], 'page' => 1, 'pages' => 0],
                 'polls' => ['text' => null, 'select' => null],
@@ -186,8 +186,8 @@ class AdminCenterTest extends TestCase
                     'update_profile_nag' => false,
                     'is_ffb_admin' => false,
                 ],
-                'selected_game_id' => 26,
-                'games' => [],
+                'selected_league_id' => 26,
+                'leagues' => [],
                 'archive' => false,
                 'news' => ['items' => [], 'page' => 1, 'pages' => 0],
                 'polls' => ['text' => null, 'select' => null],

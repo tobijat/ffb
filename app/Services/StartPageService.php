@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Game;
+use App\Models\League;
 use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\Userteam;
@@ -52,20 +52,20 @@ class StartPageService
     }
 
     /**
-     * @return list<array{game_id: int, game_title: string}>
+     * @return list<array{league_id: int, league_title: string}>
      */
     private function leagues(): array
     {
-        return Game::query()
-            ->where('game_visible', 1)
-            ->where('game_archive', 0)
-            ->where('game_countdown', 1)
-            ->where('game_status', 1)
-            ->orderBy('game_title')
-            ->get(['game_id', 'game_title'])
-            ->map(fn (Game $game) => [
-                'game_id' => (int) $game->game_id,
-                'game_title' => (string) $game->game_title,
+        return League::query()
+            ->where('league_visible', 1)
+            ->where('league_archive', 0)
+            ->where('league_countdown', 1)
+            ->where('league_status', 1)
+            ->orderBy('league_title')
+            ->get(['league_id', 'league_title'])
+            ->map(fn (League $league) => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => (string) $league->league_title,
             ])
             ->values()
             ->all();

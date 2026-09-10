@@ -26,8 +26,8 @@ class DashboardApiTest extends TestCase
 
         $payload = [
             'user' => ['user_id' => 544, 'user_nickname' => 'tester'],
-            'selected_game_id' => 26,
-            'games' => [],
+            'selected_league_id' => 26,
+            'leagues' => [],
             'archive' => false,
             'news' => ['items' => [], 'page' => 1, 'pages' => 0],
             'polls' => ['text' => null, 'select' => null],
@@ -63,16 +63,16 @@ class DashboardApiTest extends TestCase
                     'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
                     'update_profile_nag' => false,
                 ],
-                'selected_game_id' => 26,
-                'games' => [
+                'selected_league_id' => 26,
+                'leagues' => [
                     [
-                        'game_id' => 26,
-                        'game_title' => 'Testliga',
-                        'game_symbol' => 'x.png',
-                        'game_archive' => 0,
-                        'game_visible' => 1,
-                        'game_countdown' => 1,
-                        'game_status' => 1,
+                        'league_id' => 26,
+                        'league_title' => 'Testliga',
+                        'league_symbol' => 'x.png',
+                        'league_archive' => 0,
+                        'league_visible' => 1,
+                        'league_countdown' => 1,
+                        'league_status' => 1,
                         'symbol_url' => '/images/ffb/symbols/x.png',
                     ],
                 ],
@@ -105,6 +105,7 @@ class DashboardApiTest extends TestCase
             ->assertSee('tester', false)
             ->assertSee('Testliga', false)
             ->assertSee('Hallo News', false)
+            ->assertSee('data-league-id="26"', false)
             ->assertSee('SoccerSportsfan', false)
             ->assertSee('nav_start.png', false)
             ->assertSee('user-card-logout', false)
@@ -112,5 +113,32 @@ class DashboardApiTest extends TestCase
             ->assertDontSee('>Start</span>', false)
             ->assertDontSee('>Account</span>', false)
             ->assertDontSee('>Profil</span>', false);
+    }
+
+    public function test_select_league_persists_selection(): void
+    {
+        $user = new WebUser;
+        $user->user_id = 544;
+        $user->user_status = 'active';
+        $user->user_nickname = 'tester';
+
+        $this->mock(FfbUserResolver::class, function ($mock) use ($user) {
+            $mock->shouldReceive('findActive')->with(544)->andReturn($user);
+        });
+
+        $this->mock(DashboardService::class, function ($mock) {
+            $mock->shouldReceive('selectLeague')->once()->with(544, 26)->andReturn([
+                'ok' => true,
+                'selected_league_id' => 26,
+                'league_title' => 'Testliga',
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->postJson('/api/league/select', ['league_id' => 26])
+            ->assertOk()
+            ->assertJsonPath('status', 200)
+            ->assertJsonPath('data.selected_league_id', 26)
+            ->assertJsonPath('data.league_title', 'Testliga');
     }
 }

@@ -14,8 +14,7 @@ class AdminLeagueController extends Controller
     public function __construct(
         private readonly FfbAuth $auth,
         private readonly AdminLeagueService $leagues,
-    ) {
-    }
+    ) {}
 
     public function show(Request $request): View
     {
@@ -30,10 +29,10 @@ class AdminLeagueController extends Controller
         );
     }
 
-    public function edit(Request $request, int $game): View|RedirectResponse
+    public function edit(Request $request, int $league): View|RedirectResponse
     {
         $userId = $this->auth->userId($request);
-        $form = $this->leagues->formForEdit($game);
+        $form = $this->leagues->formForEdit($league);
         if ($form === null) {
             return redirect()
                 ->route('admin.leagues')
@@ -48,7 +47,7 @@ class AdminLeagueController extends Controller
         $userId = $this->auth->userId($request);
         $result = $this->leagues->create(
             $request->all(),
-            $request->file('game_symbol_file'),
+            $request->file('league_symbol_file'),
         );
 
         if ($result['ok']) {
@@ -65,13 +64,13 @@ class AdminLeagueController extends Controller
         );
     }
 
-    public function update(Request $request, int $game): View|RedirectResponse
+    public function update(Request $request, int $league): View|RedirectResponse
     {
         $userId = $this->auth->userId($request);
         $result = $this->leagues->update(
-            $game,
+            $league,
             $request->all(),
-            $request->file('game_symbol_file'),
+            $request->file('league_symbol_file'),
         );
 
         if ($result['ok']) {
@@ -88,9 +87,9 @@ class AdminLeagueController extends Controller
         );
     }
 
-    public function destroy(Request $request, int $game): RedirectResponse
+    public function destroy(Request $request, int $league): RedirectResponse
     {
-        $result = $this->leagues->delete($game);
+        $result = $this->leagues->delete($league);
 
         if ($result['ok']) {
             return redirect()

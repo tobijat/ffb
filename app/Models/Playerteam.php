@@ -47,7 +47,7 @@ class Playerteam extends Model
 
     public function league(): BelongsTo
     {
-        return $this->belongsTo(Game::class, 'playerteam_league_id', 'game_id');
+        return $this->belongsTo(League::class, 'playerteam_league_id', 'league_id');
     }
 
     public function prices(): HasMany

@@ -14,8 +14,7 @@ class AdminCenterController extends Controller
     public function __construct(
         private readonly FfbAuth $auth,
         private readonly AdminCenterService $adminCenter,
-    ) {
-    }
+    ) {}
 
     public function show(Request $request): View
     {
@@ -29,9 +28,9 @@ class AdminCenterController extends Controller
         ]);
     }
 
-    public function selectGame(Request $request, int $game): RedirectResponse
+    public function selectLeague(Request $request, int $league): RedirectResponse
     {
-        $result = $this->adminCenter->selectGame($game);
+        $result = $this->adminCenter->selectLeague($league);
 
         if ($result['ok']) {
             return redirect()

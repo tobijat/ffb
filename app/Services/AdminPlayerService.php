@@ -28,7 +28,7 @@ class AdminPlayerService
         return [
             'user' => $shell['user'],
             'navigation' => $shell['navigation'],
-            'selected_game' => $shell['selected_game'],
+            'selected_league' => $shell['selected_league'],
             'countries' => $this->countryOptions(),
             'form' => $form ?? $this->emptyForm(),
             'mode' => $mode === 'update' ? 'update' : 'create',

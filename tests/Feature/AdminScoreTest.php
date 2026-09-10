@@ -49,10 +49,10 @@ class AdminScoreTest extends TestCase
                         'image_dir' => 'images/admin/navigation/',
                     ],
                 ],
-                'selected_game_id' => 7,
-                'selected_game' => [
-                    'game_id' => 7,
-                    'game_title' => 'Bundesliga Test',
+                'selected_league_id' => 7,
+                'selected_league' => [
+                    'league_id' => 7,
+                    'league_title' => 'Bundesliga Test',
                     'symbol_url' => '/images/ffb/games/na.png',
                 ],
             ]);

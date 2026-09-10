@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        $selectedGame = $data['selected_game'] ?? null;
+        $selectedLeague = $data['selected_league'] ?? null;
         $flashErrors = $errors ?: (session('admin_errors') ?: []);
         $flashDetails = is_array($details ?? null) ? $details : [];
     @endphp
@@ -17,8 +17,8 @@
             Berechnet Userteam- und User-Scores für die im Admin-Center ausgewählte Liga
             (entspricht dem Legacy-Menü „UserScore / configuration“).
         </p>
-        @if ($selectedGame)
-            <p class="muted">Aktive Liga: {{ $selectedGame['game_title'] }}</p>
+        @if ($selectedLeague)
+            <p class="muted">Aktive Liga: {{ $selectedLeague['league_title'] }}</p>
         @else
             <p class="hint">Bitte zuerst unter <a href="{{ url('/admin') }}">Ligen</a> eine Liga auswählen.</p>
         @endif
@@ -60,7 +60,7 @@
         <form class="admin-form" method="post" action="{{ route('admin.score.setUserteamScores') }}" accept-charset="UTF-8">
             @csrf
             <div class="admin-actions admin-actions-flush">
-                <button type="submit" class="admin-submit" name="set_userteamscores_submit" value="1" @disabled(! $selectedGame)>
+                <button type="submit" class="admin-submit" name="set_userteamscores_submit" value="1" @disabled(! $selectedLeague)>
                     Set Userteam Score
                 </button>
             </div>
@@ -79,7 +79,7 @@
         <form class="admin-form" method="post" action="{{ route('admin.score.setUserScores') }}" accept-charset="UTF-8">
             @csrf
             <div class="admin-actions admin-actions-flush">
-                <button type="submit" class="admin-submit" name="set_userscores_submit" value="1" @disabled(! $selectedGame)>
+                <button type="submit" class="admin-submit" name="set_userscores_submit" value="1" @disabled(! $selectedLeague)>
                     Set User Score
                 </button>
             </div>

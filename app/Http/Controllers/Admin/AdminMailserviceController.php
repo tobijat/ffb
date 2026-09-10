@@ -14,8 +14,7 @@ class AdminMailserviceController extends Controller
     public function __construct(
         private readonly FfbAuth $auth,
         private readonly AdminMailserviceService $mailservice,
-    ) {
-    }
+    ) {}
 
     public function show(Request $request): View
     {
@@ -31,8 +30,8 @@ class AdminMailserviceController extends Controller
 
     public function matchrounds(Request $request): JsonResponse
     {
-        $gameId = (int) $request->input('game_id', 0);
-        $items = $this->mailservice->matchroundsForGame($gameId);
+        $leagueId = (int) $request->input('league_id', 0);
+        $items = $this->mailservice->matchroundsForGame($leagueId);
 
         return response()->json([
             'numResults' => count($items),
@@ -43,7 +42,7 @@ class AdminMailserviceController extends Controller
     public function users(Request $request): JsonResponse
     {
         $items = $this->mailservice->users([
-            'game_id' => $request->input('game_id', 0),
+            'league_id' => $request->input('league_id', 0),
             'matchround_id' => $request->input('matchround_id', 0),
             'mailservice' => $request->input('mailservice', ''),
             'userstatus' => $request->input('userstatus', ''),

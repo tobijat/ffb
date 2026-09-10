@@ -246,7 +246,7 @@ class LineupApiTest extends TestCase
                         'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
                         'is_admin' => false,
                     ],
-                    'selected_game_id' => 26,
+                    'selected_league_id' => 26,
                     'game_over' => false,
                     'navigation' => [
                         ['symbol' => 'nav_team.png', 'name' => 'Aufstellung', 'link' => '/lineup', 'style' => 'big'],

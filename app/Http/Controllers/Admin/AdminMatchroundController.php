@@ -14,22 +14,21 @@ class AdminMatchroundController extends Controller
     public function __construct(
         private readonly FfbAuth $auth,
         private readonly AdminMatchroundService $matchrounds,
-    ) {
-    }
+    ) {}
 
     public function show(Request $request): View
     {
         $userId = $this->auth->userId($request);
-        $gameId = (int) $request->query('game_id', 0);
-        if ($gameId <= 0) {
-            $gameId = $this->matchrounds->defaultGameId($userId);
+        $leagueId = (int) $request->query('league_id', 0);
+        if ($leagueId <= 0) {
+            $leagueId = $this->matchrounds->defaultLeagueId($userId);
         }
         $errors = session('admin_errors');
         $prefill = session('admin_matchround_prefill');
 
         return $this->render(
             $userId,
-            $gameId,
+            $leagueId,
             is_array($prefill) ? $prefill : null,
             'create',
             is_array($errors) ? $errors : [],
@@ -46,18 +45,18 @@ class AdminMatchroundController extends Controller
                 ->with('admin_errors', ['Spielrunde nicht gefunden.']);
         }
 
-        return $this->render($userId, $edit['game_id'], $edit['form'], 'update');
+        return $this->render($userId, $edit['league_id'], $edit['form'], 'update');
     }
 
     public function store(Request $request): View|RedirectResponse
     {
         $userId = $this->auth->userId($request);
         $result = $this->matchrounds->create($request->all());
-        $gameId = (int) ($result['game_id'] ?? $request->input('matchround_game_id', 0));
+        $leagueId = (int) ($result['league_id'] ?? $request->input('matchround_league_id', 0));
 
         if ($result['ok']) {
             $redirect = redirect()
-                ->route('admin.matchrounds', ['game_id' => $gameId])
+                ->route('admin.matchrounds', ['league_id' => $leagueId])
                 ->with('admin_message', $result['message']);
 
             if (! empty($result['next_form']) && is_array($result['next_form'])) {
@@ -69,7 +68,7 @@ class AdminMatchroundController extends Controller
 
         return $this->render(
             $userId,
-            $gameId,
+            $leagueId,
             $result['form'] ?? null,
             'create',
             $result['errors'] ?? [],
@@ -80,17 +79,17 @@ class AdminMatchroundController extends Controller
     {
         $userId = $this->auth->userId($request);
         $result = $this->matchrounds->update($matchround, $request->all());
-        $gameId = (int) ($result['game_id'] ?? $request->input('matchround_game_id', 0));
+        $leagueId = (int) ($result['league_id'] ?? $request->input('matchround_league_id', 0));
 
         if ($result['ok']) {
             return redirect()
-                ->route('admin.matchrounds', ['game_id' => $gameId])
+                ->route('admin.matchrounds', ['league_id' => $leagueId])
                 ->with('admin_message', $result['message']);
         }
 
         return $this->render(
             $userId,
-            $gameId,
+            $leagueId,
             $result['form'] ?? null,
             'update',
             $result['errors'] ?? [],
@@ -100,11 +99,11 @@ class AdminMatchroundController extends Controller
     public function destroy(Request $request, int $matchround): RedirectResponse
     {
         $result = $this->matchrounds->delete($matchround);
-        $gameId = (int) ($result['game_id'] ?? $request->input('game_id', 0));
+        $leagueId = (int) ($result['league_id'] ?? $request->input('league_id', 0));
 
         $redirect = redirect()->route(
             'admin.matchrounds',
-            $gameId > 0 ? ['game_id' => $gameId] : [],
+            $leagueId > 0 ? ['league_id' => $leagueId] : [],
         );
 
         if ($result['ok']) {
@@ -120,13 +119,13 @@ class AdminMatchroundController extends Controller
      */
     private function render(
         int $userId,
-        int $gameId,
+        int $leagueId,
         ?array $form = null,
         string $mode = 'create',
         array $errors = [],
     ): View {
         return view('admin.matchrounds', [
-            'data' => $this->matchrounds->pagePayload($userId, $gameId, $form, $mode),
+            'data' => $this->matchrounds->pagePayload($userId, $leagueId, $form, $mode),
             'errors' => $errors,
             'answer' => session('admin_message'),
             'legacyBase' => '/',

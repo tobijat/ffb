@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Game;
+use App\Models\League;
 use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\Playerstats;
@@ -16,24 +16,24 @@ class AdminMatchService
         private readonly AdminCenterService $adminCenter,
     ) {}
 
-    public function defaultGameId(int $userId): int
+    public function defaultLeagueId(int $userId): int
     {
-        return $this->adminCenter->selectedGameId($userId);
+        return $this->adminCenter->selectedLeagueId($userId);
     }
 
     /**
      * @param  array<string, mixed>|null  $form
      * @return array<string, mixed>
      */
-    public function pagePayload(int $userId, int $selectedGameId, ?array $form = null, string $mode = 'create'): array
+    public function pagePayload(int $userId, int $selectedLeagueId, ?array $form = null, string $mode = 'create'): array
     {
         $shell = $this->adminCenter->shellPayload($userId);
-        $games = $this->gameOptions();
-        $selectedGameId = $this->resolveSelectedGameId($selectedGameId, $games);
+        $leagues = $this->leagueOptions();
+        $selectedLeagueId = $this->resolveSelectedLeagueId($selectedLeagueId, $leagues);
         $selectedTitle = null;
-        foreach ($games as $game) {
-            if ($game['game_id'] === $selectedGameId) {
-                $selectedTitle = $game['game_title'];
+        foreach ($leagues as $league) {
+            if ($league['league_id'] === $selectedLeagueId) {
+                $selectedTitle = $league['league_title'];
                 break;
             }
         }
@@ -43,13 +43,13 @@ class AdminMatchService
         return [
             'user' => $shell['user'],
             'navigation' => $shell['navigation'],
-            'selected_game' => $shell['selected_game'],
-            'games' => $games,
-            'selected_game_id' => $selectedGameId,
-            'selected_game_title' => $selectedTitle,
-            'matchrounds' => $selectedGameId > 0 ? $this->matchroundOptions($selectedGameId) : [],
-            'teams' => $selectedGameId > 0 ? $this->teamOptions() : [],
-            'items' => $selectedGameId > 0 ? $this->listItems($selectedGameId) : [],
+            'selected_league' => $shell['selected_league'],
+            'leagues' => $leagues,
+            'selected_league_id' => $selectedLeagueId,
+            'selected_league_title' => $selectedTitle,
+            'matchrounds' => $selectedLeagueId > 0 ? $this->matchroundOptions($selectedLeagueId) : [],
+            'teams' => $selectedLeagueId > 0 ? $this->teamOptions() : [],
+            'items' => $selectedLeagueId > 0 ? $this->listItems($selectedLeagueId) : [],
             'form' => $form,
             'mode' => $mode === 'update' ? 'update' : 'create',
         ];
@@ -71,7 +71,7 @@ class AdminMatchService
     }
 
     /**
-     * @return array{form: array<string, mixed>, game_id: int}|null
+     * @return array{form: array<string, mixed>, league_id: int}|null
      */
     public function formForEdit(int $matchId): ?array
     {
@@ -83,7 +83,7 @@ class AdminMatchService
         $date = strtotime((string) $item->match_date);
 
         return [
-            'game_id' => (int) ($item->matchround?->matchround_game_id ?? 0),
+            'league_id' => (int) ($item->matchround?->matchround_league_id ?? 0),
             'form' => [
                 'match_id' => (int) $item->match_id,
                 'match_round' => (int) $item->match_round,
@@ -97,15 +97,15 @@ class AdminMatchService
 
     /**
      * @param  array<string, mixed>  $input
-     * @return array{ok: bool, message?: string, errors?: list<string>, form?: array<string, mixed>, game_id?: int, next_form?: array<string, mixed>}
+     * @return array{ok: bool, message?: string, errors?: list<string>, form?: array<string, mixed>, league_id?: int, next_form?: array<string, mixed>}
      */
     public function create(array $input): array
     {
         $form = $this->normalizeInput($input);
-        $gameId = $this->gameIdForRound((int) ($form['match_round'] ?: 0));
+        $leagueId = $this->leagueIdForRound((int) ($form['match_round'] ?: 0));
         $errors = $this->validate($form, true);
         if ($errors !== []) {
-            return ['ok' => false, 'errors' => $errors, 'form' => $form, 'game_id' => $gameId];
+            return ['ok' => false, 'errors' => $errors, 'form' => $form, 'league_id' => $leagueId];
         }
 
         MatchGame::query()->create([
@@ -125,7 +125,7 @@ class AdminMatchService
         return [
             'ok' => true,
             'message' => 'Spiel erfolgreich hinzugefügt.',
-            'game_id' => $gameId,
+            'league_id' => $leagueId,
             'next_form' => [
                 'match_id' => '',
                 'match_round' => $form['match_round'],
@@ -139,7 +139,7 @@ class AdminMatchService
 
     /**
      * @param  array<string, mixed>  $input
-     * @return array{ok: bool, message?: string, errors?: list<string>, form?: array<string, mixed>, game_id?: int}
+     * @return array{ok: bool, message?: string, errors?: list<string>, form?: array<string, mixed>, league_id?: int}
      */
     public function update(int $matchId, array $input): array
     {
@@ -149,16 +149,16 @@ class AdminMatchService
                 'ok' => false,
                 'errors' => ['Spiel nicht gefunden.'],
                 'form' => $this->normalizeInput($input + ['match_id' => $matchId]),
-                'game_id' => 0,
+                'league_id' => 0,
             ];
         }
 
         $form = $this->normalizeInput($input + ['match_id' => $matchId]);
-        $gameId = $this->gameIdForRound((int) ($form['match_round'] ?: 0))
-            ?: (int) ($item->matchround?->matchround_game_id ?? 0);
+        $leagueId = $this->leagueIdForRound((int) ($form['match_round'] ?: 0))
+            ?: (int) ($item->matchround?->matchround_league_id ?? 0);
         $errors = $this->validate($form, false);
         if ($errors !== []) {
-            return ['ok' => false, 'errors' => $errors, 'form' => $form, 'game_id' => $gameId];
+            return ['ok' => false, 'errors' => $errors, 'form' => $form, 'league_id' => $leagueId];
         }
 
         $item->match_round = (int) $form['match_round'];
@@ -171,12 +171,12 @@ class AdminMatchService
         return [
             'ok' => true,
             'message' => 'Spiel erfolgreich aktualisiert.',
-            'game_id' => $gameId,
+            'league_id' => $leagueId,
         ];
     }
 
     /**
-     * @return array{ok: bool, message?: string, errors?: list<string>, game_id?: int}
+     * @return array{ok: bool, message?: string, errors?: list<string>, league_id?: int}
      */
     public function delete(int $matchId): array
     {
@@ -185,13 +185,13 @@ class AdminMatchService
             return ['ok' => false, 'errors' => ['Spiel nicht gefunden! Falsche ID oder Seite neu geladen?']];
         }
 
-        $gameId = (int) ($item->matchround?->matchround_game_id ?? 0);
+        $leagueId = (int) ($item->matchround?->matchround_league_id ?? 0);
 
         if (Playerstats::query()->where('playerstats_match_id', $matchId)->exists()) {
             return [
                 'ok' => false,
                 'errors' => ['Löschen nicht möglich: Es gibt zugehörige Spielerstatistiken.'],
-                'game_id' => $gameId,
+                'league_id' => $leagueId,
             ];
         }
 
@@ -200,53 +200,53 @@ class AdminMatchService
         return [
             'ok' => true,
             'message' => 'Spiel erfolgreich gelöscht.',
-            'game_id' => $gameId,
+            'league_id' => $leagueId,
         ];
     }
 
     /**
-     * @return list<array{game_id: int, game_title: string, game_archive: int}>
+     * @return list<array{league_id: int, league_title: string, league_archive: int}>
      */
-    private function gameOptions(): array
+    private function leagueOptions(): array
     {
-        return Game::query()
-            ->orderBy('game_archive')
-            ->orderBy('game_title')
-            ->get(['game_id', 'game_title', 'game_archive'])
-            ->map(fn (Game $game) => [
-                'game_id' => (int) $game->game_id,
-                'game_title' => (string) $game->game_title,
-                'game_archive' => (int) (bool) $game->game_archive,
+        return League::query()
+            ->orderBy('league_archive')
+            ->orderBy('league_title')
+            ->get(['league_id', 'league_title', 'league_archive'])
+            ->map(fn (League $league) => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => (string) $league->league_title,
+                'league_archive' => (int) (bool) $league->league_archive,
             ])
             ->values()
             ->all();
     }
 
     /**
-     * @param  list<array{game_id: int, game_title: string, game_archive: int}>  $games
+     * @param  list<array{league_id: int, league_title: string, league_archive: int}>  $leagues
      */
-    private function resolveSelectedGameId(int $selectedGameId, array $games): int
+    private function resolveSelectedLeagueId(int $selectedLeagueId, array $leagues): int
     {
-        if ($selectedGameId <= 0) {
+        if ($selectedLeagueId <= 0) {
             return 0;
         }
 
-        foreach ($games as $game) {
-            if ($game['game_id'] === $selectedGameId) {
-                return $selectedGameId;
+        foreach ($leagues as $league) {
+            if ($league['league_id'] === $selectedLeagueId) {
+                return $selectedLeagueId;
             }
         }
 
-        return Game::query()->whereKey($selectedGameId)->exists() ? $selectedGameId : 0;
+        return League::query()->whereKey($selectedLeagueId)->exists() ? $selectedLeagueId : 0;
     }
 
     /**
      * @return list<array{matchround_id: int, matchround_title: string}>
      */
-    private function matchroundOptions(int $gameId): array
+    private function matchroundOptions(int $leagueId): array
     {
         return Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->orderByDesc('matchround_startdate')
             ->get(['matchround_id', 'matchround_title'])
             ->map(fn (Matchround $round) => [
@@ -282,10 +282,10 @@ class AdminMatchService
     /**
      * @return list<array<string, mixed>>
      */
-    private function listItems(int $gameId): array
+    private function listItems(int $leagueId): array
     {
         $roundIds = Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->pluck('matchround_id')
             ->all();
 
@@ -398,13 +398,13 @@ class AdminMatchService
         return $errors;
     }
 
-    private function gameIdForRound(int $matchroundId): int
+    private function leagueIdForRound(int $matchroundId): int
     {
         if ($matchroundId <= 0) {
             return 0;
         }
 
-        return (int) (Matchround::query()->whereKey($matchroundId)->value('matchround_game_id') ?? 0);
+        return (int) (Matchround::query()->whereKey($matchroundId)->value('matchround_league_id') ?? 0);
     }
 
     private function nullableInt(mixed $value): ?int

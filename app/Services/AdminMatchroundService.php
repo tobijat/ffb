@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Game;
+use App\Models\League;
 use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\Playerstats;
@@ -13,15 +13,14 @@ class AdminMatchroundService
 {
     public function __construct(
         private readonly AdminCenterService $adminCenter,
-    ) {
-    }
+    ) {}
 
     /**
-     * League already chosen elsewhere (legacy admin session, else player selected game).
+     * League already chosen elsewhere (legacy admin session, else player selected league).
      */
-    public function defaultGameId(int $userId): int
+    public function defaultLeagueId(int $userId): int
     {
-        return $this->adminCenter->selectedGameId($userId);
+        return $this->adminCenter->selectedLeagueId($userId);
     }
 
     /**
@@ -29,40 +28,40 @@ class AdminMatchroundService
      * @return array{
      *     user: array<string, mixed>,
      *     navigation: list<array<string, mixed>>,
-     *     games: list<array{game_id: int, game_title: string, game_archive: int}>,
-     *     selected_game_id: int,
-     *     selected_game_title: string|null,
+     *     leagues: list<array{league_id: int, league_title: string, league_archive: int}>,
+     *     selected_league_id: int,
+     *     selected_league_title: string|null,
      *     items: list<array<string, mixed>>,
      *     form: array<string, mixed>,
      *     mode: string
      * }
      */
-    public function pagePayload(int $userId, int $selectedGameId, ?array $form = null, string $mode = 'create'): array
+    public function pagePayload(int $userId, int $selectedLeagueId, ?array $form = null, string $mode = 'create'): array
     {
         $shell = $this->adminCenter->shellPayload($userId);
-        $games = $this->gameOptions();
-        $selectedGameId = $this->resolveSelectedGameId($selectedGameId, $games);
+        $leagues = $this->leagueOptions();
+        $selectedLeagueId = $this->resolveSelectedLeagueId($selectedLeagueId, $leagues);
         $selectedTitle = null;
-        foreach ($games as $game) {
-            if ($game['game_id'] === $selectedGameId) {
-                $selectedTitle = $game['game_title'];
+        foreach ($leagues as $league) {
+            if ($league['league_id'] === $selectedLeagueId) {
+                $selectedTitle = $league['league_title'];
                 break;
             }
         }
 
-        $form = $form ?? $this->emptyForm($selectedGameId);
-        $form['matchround_game_id'] = $selectedGameId > 0
-            ? $selectedGameId
-            : (int) ($form['matchround_game_id'] ?? 0);
+        $form = $form ?? $this->emptyForm($selectedLeagueId);
+        $form['matchround_league_id'] = $selectedLeagueId > 0
+            ? $selectedLeagueId
+            : (int) ($form['matchround_league_id'] ?? 0);
 
         return [
             'user' => $shell['user'],
             'navigation' => $shell['navigation'],
-            'selected_game' => $shell['selected_game'],
-            'games' => $games,
-            'selected_game_id' => $selectedGameId,
-            'selected_game_title' => $selectedTitle,
-            'items' => $selectedGameId > 0 ? $this->listItems($selectedGameId) : [],
+            'selected_league' => $shell['selected_league'],
+            'leagues' => $leagues,
+            'selected_league_id' => $selectedLeagueId,
+            'selected_league_title' => $selectedTitle,
+            'items' => $selectedLeagueId > 0 ? $this->listItems($selectedLeagueId) : [],
             'form' => $form,
             'mode' => $mode === 'update' ? 'update' : 'create',
         ];
@@ -71,11 +70,11 @@ class AdminMatchroundService
     /**
      * @return array<string, mixed>
      */
-    public function emptyForm(int $gameId = 0): array
+    public function emptyForm(int $leagueId = 0): array
     {
         return [
             'matchround_id' => '',
-            'matchround_game_id' => $gameId,
+            'matchround_league_id' => $leagueId,
             'matchround_title' => '',
             'matchround_status' => 1,
             'matchround_startdate' => '',
@@ -84,7 +83,7 @@ class AdminMatchroundService
     }
 
     /**
-     * @return array{form: array<string, mixed>, game_id: int}|null
+     * @return array{form: array<string, mixed>, league_id: int}|null
      */
     public function formForEdit(int $matchroundId): ?array
     {
@@ -94,10 +93,10 @@ class AdminMatchroundService
         }
 
         return [
-            'game_id' => (int) $item->matchround_game_id,
+            'league_id' => (int) $item->matchround_league_id,
             'form' => [
                 'matchround_id' => (int) $item->matchround_id,
-                'matchround_game_id' => (int) $item->matchround_game_id,
+                'matchround_league_id' => (int) $item->matchround_league_id,
                 'matchround_title' => (string) $item->matchround_title,
                 'matchround_status' => (int) $item->matchround_status,
                 'matchround_startdate' => $this->toDatetimeLocalValue((string) $item->matchround_startdate),
@@ -108,14 +107,14 @@ class AdminMatchroundService
 
     /**
      * @param  array<string, mixed>  $input
-     * @return array{ok: bool, message?: string, errors?: list<string>, form?: array<string, mixed>, game_id?: int, next_form?: array<string, mixed>}
+     * @return array{ok: bool, message?: string, errors?: list<string>, form?: array<string, mixed>, league_id?: int, next_form?: array<string, mixed>}
      */
     public function create(array $input): array
     {
         $form = $this->normalizeInput($input);
         $errors = $this->validate($form, true);
         if ($errors !== []) {
-            return ['ok' => false, 'errors' => $errors, 'form' => $form, 'game_id' => (int) $form['matchround_game_id']];
+            return ['ok' => false, 'errors' => $errors, 'form' => $form, 'league_id' => (int) $form['matchround_league_id']];
         }
 
         $startDb = $this->toDbDateTime((string) $form['matchround_startdate']);
@@ -124,7 +123,7 @@ class AdminMatchroundService
         Matchround::query()->create([
             'matchround_title' => $form['matchround_title'],
             'matchround_status' => (int) $form['matchround_status'],
-            'matchround_game_id' => (int) $form['matchround_game_id'],
+            'matchround_league_id' => (int) $form['matchround_league_id'],
             'matchround_startdate' => $startDb,
             'matchround_enddate' => $endDb,
             'matchround_credits' => 0,
@@ -134,14 +133,14 @@ class AdminMatchroundService
         return [
             'ok' => true,
             'message' => 'Spielrunde erfolgreich hinzugefügt.',
-            'game_id' => (int) $form['matchround_game_id'],
+            'league_id' => (int) $form['matchround_league_id'],
             'next_form' => $this->nextFormAfterCreate($form, $startDb, $endDb),
         ];
     }
 
     /**
      * @param  array<string, mixed>  $input
-     * @return array{ok: bool, message?: string, errors?: list<string>, form?: array<string, mixed>, game_id?: int}
+     * @return array{ok: bool, message?: string, errors?: list<string>, form?: array<string, mixed>, league_id?: int}
      */
     public function update(int $matchroundId, array $input): array
     {
@@ -151,17 +150,17 @@ class AdminMatchroundService
                 'ok' => false,
                 'errors' => ['Spielrunde nicht gefunden.'],
                 'form' => $this->normalizeInput($input + ['matchround_id' => $matchroundId]),
-                'game_id' => (int) ($input['matchround_game_id'] ?? 0),
+                'league_id' => (int) ($input['matchround_league_id'] ?? 0),
             ];
         }
 
         $form = $this->normalizeInput($input + [
             'matchround_id' => $matchroundId,
-            'matchround_game_id' => (int) $item->matchround_game_id,
+            'matchround_league_id' => (int) $item->matchround_league_id,
         ]);
         $errors = $this->validate($form, false);
         if ($errors !== []) {
-            return ['ok' => false, 'errors' => $errors, 'form' => $form, 'game_id' => (int) $form['matchround_game_id']];
+            return ['ok' => false, 'errors' => $errors, 'form' => $form, 'league_id' => (int) $form['matchround_league_id']];
         }
 
         $item->matchround_title = $form['matchround_title'];
@@ -173,12 +172,12 @@ class AdminMatchroundService
         return [
             'ok' => true,
             'message' => 'Spielrunde erfolgreich aktualisiert.',
-            'game_id' => (int) $item->matchround_game_id,
+            'league_id' => (int) $item->matchround_league_id,
         ];
     }
 
     /**
-     * @return array{ok: bool, message?: string, errors?: list<string>, game_id?: int}
+     * @return array{ok: bool, message?: string, errors?: list<string>, league_id?: int}
      */
     public function delete(int $matchroundId): array
     {
@@ -190,13 +189,13 @@ class AdminMatchroundService
             ];
         }
 
-        $gameId = (int) $item->matchround_game_id;
+        $leagueId = (int) $item->matchround_league_id;
 
         if (Playerstats::query()->where('playerstats_matchround_id', $matchroundId)->exists()) {
             return [
                 'ok' => false,
                 'errors' => ['Löschen nicht möglich: Es gibt zugehörige Spielerstatistiken.'],
-                'game_id' => $gameId,
+                'league_id' => $leagueId,
             ];
         }
 
@@ -204,7 +203,7 @@ class AdminMatchroundService
             return [
                 'ok' => false,
                 'errors' => ['Löschen nicht möglich: Es gibt zugehörige Userteams.'],
-                'game_id' => $gameId,
+                'league_id' => $leagueId,
             ];
         }
 
@@ -212,7 +211,7 @@ class AdminMatchroundService
             return [
                 'ok' => false,
                 'errors' => ['Löschen nicht möglich: Es gibt zugehörige Spiele.'],
-                'game_id' => $gameId,
+                'league_id' => $leagueId,
             ];
         }
 
@@ -221,53 +220,53 @@ class AdminMatchroundService
         return [
             'ok' => true,
             'message' => 'Spielrunde erfolgreich gelöscht.',
-            'game_id' => $gameId,
+            'league_id' => $leagueId,
         ];
     }
 
     /**
-     * @return list<array{game_id: int, game_title: string, game_archive: int}>
+     * @return list<array{league_id: int, league_title: string, league_archive: int}>
      */
-    private function gameOptions(): array
+    private function leagueOptions(): array
     {
-        return Game::query()
-            ->orderBy('game_archive')
-            ->orderBy('game_title')
-            ->get(['game_id', 'game_title', 'game_archive'])
-            ->map(fn (Game $game) => [
-                'game_id' => (int) $game->game_id,
-                'game_title' => (string) $game->game_title,
-                'game_archive' => (int) (bool) $game->game_archive,
+        return League::query()
+            ->orderBy('league_archive')
+            ->orderBy('league_title')
+            ->get(['league_id', 'league_title', 'league_archive'])
+            ->map(fn (League $league) => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => (string) $league->league_title,
+                'league_archive' => (int) (bool) $league->league_archive,
             ])
             ->values()
             ->all();
     }
 
     /**
-     * @param  list<array{game_id: int, game_title: string, game_archive: int}>  $games
+     * @param  list<array{league_id: int, league_title: string, league_archive: int}>  $leagues
      */
-    private function resolveSelectedGameId(int $selectedGameId, array $games): int
+    private function resolveSelectedLeagueId(int $selectedLeagueId, array $leagues): int
     {
-        if ($selectedGameId <= 0) {
+        if ($selectedLeagueId <= 0) {
             return 0;
         }
 
-        foreach ($games as $game) {
-            if ($game['game_id'] === $selectedGameId) {
-                return $selectedGameId;
+        foreach ($leagues as $league) {
+            if ($league['league_id'] === $selectedLeagueId) {
+                return $selectedLeagueId;
             }
         }
 
-        return Game::query()->whereKey($selectedGameId)->exists() ? $selectedGameId : 0;
+        return League::query()->whereKey($selectedLeagueId)->exists() ? $selectedLeagueId : 0;
     }
 
     /**
      * @return list<array<string, mixed>>
      */
-    private function listItems(int $gameId): array
+    private function listItems(int $leagueId): array
     {
         return Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->orderByDesc('matchround_startdate')
             ->orderByDesc('matchround_id')
             ->get()
@@ -295,7 +294,7 @@ class AdminMatchroundService
     {
         return [
             'matchround_id' => (string) ($input['matchround_id'] ?? ''),
-            'matchround_game_id' => (int) ($input['matchround_game_id'] ?? 0),
+            'matchround_league_id' => (int) ($input['matchround_league_id'] ?? 0),
             'matchround_title' => trim((string) ($input['matchround_title'] ?? '')),
             'matchround_status' => (int) ($input['matchround_status'] ?? 1) === 0 ? 0 : 1,
             'matchround_startdate' => $this->normalizeDatetimeLocal((string) ($input['matchround_startdate'] ?? '')),
@@ -311,7 +310,7 @@ class AdminMatchroundService
     {
         $errors = [];
 
-        if ((int) $form['matchround_game_id'] <= 0) {
+        if ((int) $form['matchround_league_id'] <= 0) {
             $errors[] = 'Bitte zuerst eine Liga auswählen.';
         }
 
@@ -342,9 +341,9 @@ class AdminMatchroundService
             $errors[] = 'Das Startdatum darf nicht nach dem Enddatum liegen.';
         }
 
-        if ($isCreate && $errors === [] && $start !== null && $end !== null && (int) $form['matchround_game_id'] > 0) {
+        if ($isCreate && $errors === [] && $start !== null && $end !== null && (int) $form['matchround_league_id'] > 0) {
             $exists = Matchround::query()
-                ->where('matchround_game_id', (int) $form['matchround_game_id'])
+                ->where('matchround_league_id', (int) $form['matchround_league_id'])
                 ->where('matchround_startdate', $this->toDbDateTime((string) $form['matchround_startdate']))
                 ->where('matchround_enddate', $this->toDbDateTime((string) $form['matchround_enddate']))
                 ->exists();
@@ -370,7 +369,7 @@ class AdminMatchroundService
 
         return [
             'matchround_id' => '',
-            'matchround_game_id' => (int) $form['matchround_game_id'],
+            'matchround_league_id' => (int) $form['matchround_league_id'],
             'matchround_title' => $this->bumpTitle((string) $form['matchround_title']),
             'matchround_status' => (int) $form['matchround_status'],
             'matchround_startdate' => $nextStart->format('Y-m-d\TH:00'),

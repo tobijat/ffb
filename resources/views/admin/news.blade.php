@@ -7,7 +7,7 @@
         $form = $data['form'];
         $mode = $data['mode'];
         $items = $data['items'];
-        $games = $data['games'];
+        $leagues = $data['leagues'];
         $flashErrors = $errors ?: (session('admin_errors') ?: []);
     @endphp
 
@@ -45,11 +45,11 @@
             @endif
 
             <div class="admin-field">
-                <label for="news_game_id">* Spiel</label>
-                <select id="news_game_id" name="news_game_id">
-                    @foreach ($games as $game)
-                        <option value="{{ $game['game_id'] }}" @selected((int) $form['news_game_id'] === (int) $game['game_id'])>
-                            {{ $game['game_title'] }}
+                <label for="news_league_id">* Liga</label>
+                <select id="news_league_id" name="news_league_id">
+                    @foreach ($leagues as $league)
+                        <option value="{{ $league['league_id'] }}" @selected((int) $form['news_league_id'] === (int) $league['league_id'])>
+                            {{ $league['league_title'] }}
                         </option>
                     @endforeach
                 </select>

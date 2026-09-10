@@ -14,22 +14,21 @@ class AdminMatchController extends Controller
     public function __construct(
         private readonly FfbAuth $auth,
         private readonly AdminMatchService $matches,
-    ) {
-    }
+    ) {}
 
     public function show(Request $request): View
     {
         $userId = $this->auth->userId($request);
-        $gameId = (int) $request->query('game_id', 0);
-        if ($gameId <= 0) {
-            $gameId = $this->matches->defaultGameId($userId);
+        $leagueId = (int) $request->query('league_id', 0);
+        if ($leagueId <= 0) {
+            $leagueId = $this->matches->defaultLeagueId($userId);
         }
         $errors = session('admin_errors');
         $prefill = session('admin_match_prefill');
 
         return $this->render(
             $userId,
-            $gameId,
+            $leagueId,
             is_array($prefill) ? $prefill : null,
             'create',
             is_array($errors) ? $errors : [],
@@ -46,18 +45,18 @@ class AdminMatchController extends Controller
                 ->with('admin_errors', ['Spiel nicht gefunden.']);
         }
 
-        return $this->render($userId, $edit['game_id'], $edit['form'], 'update');
+        return $this->render($userId, $edit['league_id'], $edit['form'], 'update');
     }
 
     public function store(Request $request): View|RedirectResponse
     {
         $userId = $this->auth->userId($request);
         $result = $this->matches->create($request->all());
-        $gameId = (int) ($result['game_id'] ?? 0);
+        $leagueId = (int) ($result['league_id'] ?? 0);
 
         if ($result['ok']) {
             $redirect = redirect()
-                ->route('admin.matches', $gameId > 0 ? ['game_id' => $gameId] : [])
+                ->route('admin.matches', $leagueId > 0 ? ['league_id' => $leagueId] : [])
                 ->with('admin_message', $result['message']);
 
             if (! empty($result['next_form']) && is_array($result['next_form'])) {
@@ -69,7 +68,7 @@ class AdminMatchController extends Controller
 
         return $this->render(
             $userId,
-            $gameId,
+            $leagueId,
             $result['form'] ?? null,
             'create',
             $result['errors'] ?? [],
@@ -80,17 +79,17 @@ class AdminMatchController extends Controller
     {
         $userId = $this->auth->userId($request);
         $result = $this->matches->update($match, $request->all());
-        $gameId = (int) ($result['game_id'] ?? 0);
+        $leagueId = (int) ($result['league_id'] ?? 0);
 
         if ($result['ok']) {
             return redirect()
-                ->route('admin.matches', $gameId > 0 ? ['game_id' => $gameId] : [])
+                ->route('admin.matches', $leagueId > 0 ? ['league_id' => $leagueId] : [])
                 ->with('admin_message', $result['message']);
         }
 
         return $this->render(
             $userId,
-            $gameId,
+            $leagueId,
             $result['form'] ?? null,
             'update',
             $result['errors'] ?? [],
@@ -100,11 +99,11 @@ class AdminMatchController extends Controller
     public function destroy(Request $request, int $match): RedirectResponse
     {
         $result = $this->matches->delete($match);
-        $gameId = (int) ($result['game_id'] ?? $request->input('game_id', 0));
+        $leagueId = (int) ($result['league_id'] ?? $request->input('league_id', 0));
 
         $redirect = redirect()->route(
             'admin.matches',
-            $gameId > 0 ? ['game_id' => $gameId] : [],
+            $leagueId > 0 ? ['league_id' => $leagueId] : [],
         );
 
         if ($result['ok']) {
@@ -120,13 +119,13 @@ class AdminMatchController extends Controller
      */
     private function render(
         int $userId,
-        int $gameId,
+        int $leagueId,
         ?array $form = null,
         string $mode = 'create',
         array $errors = [],
     ): View {
         return view('admin.matches', [
-            'data' => $this->matches->pagePayload($userId, $gameId, $form, $mode),
+            'data' => $this->matches->pagePayload($userId, $leagueId, $form, $mode),
             'errors' => $errors,
             'answer' => session('admin_message'),
             'legacyBase' => '/',

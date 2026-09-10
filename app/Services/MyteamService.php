@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\GameOptions;
+use App\Models\LeagueOptions;
 use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\Playerprice;
@@ -16,8 +16,7 @@ class MyteamService
     public function __construct(
         private readonly UserscoreService $userscores,
         private readonly LineupService $lineups,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}
@@ -31,9 +30,9 @@ class MyteamService
 
         $details = $user->details;
         $photo = (string) ($details?->user_details_photo ?: 'profile_na.png');
-        $gameId = (int) ($details?->user_details_ffb_selected_game ?? 0);
+        $leagueId = (int) ($details?->user_details_ffb_selected_league ?? 0);
 
-        if ($gameId <= 0) {
+        if ($leagueId <= 0) {
             return ['ok' => false, 'status' => 422, 'error' => 'Kein Spiel ausgewählt.'];
         }
 
@@ -47,7 +46,7 @@ class MyteamService
                     'is_admin' => (bool) ($user->user_admin ?? false),
                     'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
                 ],
-                'selected_game_id' => $gameId,
+                'selected_league_id' => $leagueId,
                 'navigation' => app(DashboardService::class)->navigation(),
             ],
         ];
@@ -277,8 +276,8 @@ class MyteamService
                     'num_matches' => $numMatches,
                     'score_per_player' => $numPlayers > 0 ? round($score / $numPlayers, 2) : 0.0,
                     'credits_per_point' => $score > 0 ? round($credits / $score, 1) : 0.0,
-                    'top_of_round' => $this->extremeOfRound($matchroundId, (int) $matchround->matchround_game_id, top: true),
-                    'flop_of_round' => $this->extremeOfRound($matchroundId, (int) $matchround->matchround_game_id, top: false),
+                    'top_of_round' => $this->extremeOfRound($matchroundId, (int) $matchround->matchround_league_id, top: true),
+                    'flop_of_round' => $this->extremeOfRound($matchroundId, (int) $matchround->matchround_league_id, top: false),
                 ],
             ],
         ];
@@ -380,10 +379,10 @@ class MyteamService
     /**
      * @return array<string, mixed>|null
      */
-    private function extremeOfRound(int $matchroundId, int $gameId, bool $top): ?array
+    private function extremeOfRound(int $matchroundId, int $leagueId, bool $top): ?array
     {
-        $options = GameOptions::query()->where('options_game_id', $gameId)->first();
-        $pointsMode = (string) ($options?->options_game_pointsmode ?: 'new');
+        $options = LeagueOptions::query()->where('options_league_id', $leagueId)->first();
+        $pointsMode = (string) ($options?->options_league_pointsmode ?: 'new');
         $hasPrices = Playerprice::query()->where('playerprice_matchround_id', $matchroundId)->exists();
         $useDynamic = $pointsMode !== 'old' && $hasPrices;
 

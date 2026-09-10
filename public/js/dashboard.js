@@ -42,12 +42,12 @@
 
     document.querySelectorAll('.game-tile').forEach((btn) => {
         btn.addEventListener('click', async () => {
-            const gameId = Number(btn.dataset.gameId);
+            const leagueId = Number(btn.dataset.leagueId);
             try {
-                await api('POST', 'game/select', { game_id: gameId });
+                await api('POST', 'league/select', { league_id: leagueId });
                 reload({ newsPage: 1, archive });
             } catch (err) {
-                alert(err.message || 'Spiel konnte nicht gewählt werden.');
+                alert(err.message || 'Liga konnte nicht gewählt werden.');
             }
         });
     });

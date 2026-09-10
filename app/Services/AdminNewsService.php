@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Game;
+use App\Models\League;
 use App\Models\News;
 use Illuminate\Support\Carbon;
 
@@ -10,8 +10,7 @@ class AdminNewsService
 {
     public function __construct(
         private readonly AdminCenterService $adminCenter,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>|null  $form
@@ -19,7 +18,7 @@ class AdminNewsService
      *     user: array<string, mixed>,
      *     navigation: list<array<string, mixed>>,
      *     items: list<array<string, mixed>>,
-     *     games: list<array{game_id: int, game_title: string}>,
+     *     leagues: list<array{league_id: int, league_title: string}>,
      *     form: array<string, mixed>,
      *     mode: string
      * }
@@ -33,9 +32,9 @@ class AdminNewsService
         return [
             'user' => $shell['user'],
             'navigation' => $shell['navigation'],
-            'selected_game' => $shell['selected_game'],
+            'selected_league' => $shell['selected_league'],
             'items' => $items,
-            'games' => $this->gameOptions((int) ($form['news_game_id'] ?? 0)),
+            'leagues' => $this->leagueOptions((int) ($form['news_league_id'] ?? 0)),
             'form' => $form,
             'mode' => $mode === 'update' ? 'update' : 'create',
         ];
@@ -48,7 +47,7 @@ class AdminNewsService
     {
         return [
             'news_id' => '',
-            'news_game_id' => 0,
+            'news_league_id' => 0,
             'news_title' => '',
             'news_text' => '',
             'news_symbol' => '',
@@ -68,7 +67,7 @@ class AdminNewsService
 
         return [
             'news_id' => (int) $item->news_id,
-            'news_game_id' => (int) $item->news_game_id,
+            'news_league_id' => (int) $item->news_league_id,
             'news_title' => (string) $item->news_title,
             'news_text' => (string) $item->news_text,
             'news_symbol' => (string) ($item->news_symbol ?? ''),
@@ -93,7 +92,7 @@ class AdminNewsService
             'news_text' => $form['news_text'],
             'news_symbol' => $form['news_symbol'],
             'news_priority' => (int) $form['news_priority'],
-            'news_game_id' => (int) $form['news_game_id'],
+            'news_league_id' => (int) $form['news_league_id'],
             'news_date' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
@@ -125,7 +124,7 @@ class AdminNewsService
         $item->news_text = $form['news_text'];
         $item->news_symbol = $form['news_symbol'];
         $item->news_priority = (int) $form['news_priority'];
-        $item->news_game_id = (int) $form['news_game_id'];
+        $item->news_league_id = (int) $form['news_league_id'];
         $item->save();
 
         return ['ok' => true, 'message' => 'News erfolgreich aktualisiert.'];
@@ -171,7 +170,7 @@ class AdminNewsService
                         ? '/images/ffb/symbols/'.$symbol
                         : null,
                     'news_priority' => (int) $item->news_priority,
-                    'news_game_id' => (int) $item->news_game_id,
+                    'news_league_id' => (int) $item->news_league_id,
                 ];
             })
             ->values()
@@ -179,32 +178,32 @@ class AdminNewsService
     }
 
     /**
-     * @return list<array{game_id: int, game_title: string}>
+     * @return list<array{league_id: int, league_title: string}>
      */
-    private function gameOptions(int $selectedGameId): array
+    private function leagueOptions(int $selectedLeagueId): array
     {
-        $games = Game::query()
-            ->where('game_visible', 1)
-            ->orderBy('game_title')
-            ->get(['game_id', 'game_title']);
+        $leagues = League::query()
+            ->where('league_visible', 1)
+            ->orderBy('league_title')
+            ->get(['league_id', 'league_title']);
 
         $options = [
-            ['game_id' => 0, 'game_title' => 'Global'],
+            ['league_id' => 0, 'league_title' => 'Global'],
         ];
 
-        foreach ($games as $game) {
+        foreach ($leagues as $league) {
             $options[] = [
-                'game_id' => (int) $game->game_id,
-                'game_title' => (string) $game->game_title,
+                'league_id' => (int) $league->league_id,
+                'league_title' => (string) $league->league_title,
             ];
         }
 
-        if ($selectedGameId > 0 && ! collect($options)->contains(fn ($g) => $g['game_id'] === $selectedGameId)) {
-            $extra = Game::query()->find($selectedGameId);
+        if ($selectedLeagueId > 0 && ! collect($options)->contains(fn ($g) => $g['league_id'] === $selectedLeagueId)) {
+            $extra = League::query()->find($selectedLeagueId);
             if ($extra) {
                 $options[] = [
-                    'game_id' => (int) $extra->game_id,
-                    'game_title' => (string) $extra->game_title,
+                    'league_id' => (int) $extra->league_id,
+                    'league_title' => (string) $extra->league_title,
                 ];
             }
         }
@@ -222,7 +221,7 @@ class AdminNewsService
 
         return [
             'news_id' => (string) ($input['news_id'] ?? ''),
-            'news_game_id' => (int) ($input['news_game_id'] ?? 0),
+            'news_league_id' => (int) ($input['news_league_id'] ?? 0),
             'news_title' => trim((string) ($input['news_title'] ?? '')),
             'news_text' => trim((string) ($input['news_text'] ?? '')),
             'news_symbol' => trim((string) ($input['news_symbol'] ?? '')),

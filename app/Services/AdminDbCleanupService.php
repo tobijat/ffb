@@ -27,7 +27,7 @@ class AdminDbCleanupService
         return [
             'user' => $shell['user'],
             'navigation' => $shell['navigation'],
-            'selected_game' => $shell['selected_game'],
+            'selected_league' => $shell['selected_league'],
             'duplicate_playerteam_groups' => $duplicateGroups,
             'duplicate_playerteam_group_count' => count($duplicateGroups),
             'duplicate_playerteam_entry_count' => array_sum(array_map(

@@ -3,19 +3,19 @@
 namespace App\Services;
 
 use App\Mail\AdminBulkMail;
-use App\Models\Game;
+use App\Models\League;
 use App\Models\Matchround;
 use App\Models\UserPermissions;
 use App\Models\WebMail;
 use App\Models\WebUser;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Mail;
 
 class AdminMailserviceService
 {
     public function __construct(
         private readonly AdminCenterService $adminCenter,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -26,23 +26,23 @@ class AdminMailserviceService
 
         return [
             ...$shell,
-            'games' => $this->activeGames(),
+            'leagues' => $this->activeGames(),
             'mails' => $this->mailHistory(),
         ];
     }
 
     /**
-     * @return list<array{game_id: int, game_title: string}>
+     * @return list<array{league_id: int, league_title: string}>
      */
     public function activeGames(): array
     {
-        return Game::query()
-            ->where('game_status', 1)
-            ->orderByDesc('game_id')
-            ->get(['game_id', 'game_title'])
-            ->map(static fn (Game $game): array => [
-                'game_id' => (int) $game->game_id,
-                'game_title' => (string) $game->game_title,
+        return League::query()
+            ->where('league_status', 1)
+            ->orderByDesc('league_id')
+            ->get(['league_id', 'league_title'])
+            ->map(static fn (League $league): array => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => (string) $league->league_title,
             ])
             ->values()
             ->all();
@@ -51,14 +51,14 @@ class AdminMailserviceService
     /**
      * @return list<array{matchround_id: int, matchround_title: string}>
      */
-    public function matchroundsForGame(int $gameId): array
+    public function matchroundsForGame(int $leagueId): array
     {
-        if ($gameId <= 0) {
+        if ($leagueId <= 0) {
             return [];
         }
 
         return Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->orderByDesc('matchround_startdate')
             ->get(['matchround_id', 'matchround_title'])
             ->map(static fn (Matchround $round): array => [
@@ -75,7 +75,7 @@ class AdminMailserviceService
      */
     public function users(array $filters): array
     {
-        $gameId = (int) ($filters['game_id'] ?? 0);
+        $leagueId = (int) ($filters['league_id'] ?? 0);
         $matchroundId = (int) ($filters['matchround_id'] ?? 0);
         $mailservice = trim((string) ($filters['mailservice'] ?? ''));
         $userstatus = trim((string) ($filters['userstatus'] ?? ''));
@@ -83,7 +83,7 @@ class AdminMailserviceService
         $query = WebUser::query()->orderBy('user_nickname');
 
         if ($userstatus === 'no_lineup') {
-            $this->applyNoLineupFilter($query, $gameId, $matchroundId);
+            $this->applyNoLineupFilter($query, $leagueId, $matchroundId);
         } else {
             if ($userstatus !== '') {
                 $query->where('user_status', $userstatus);
@@ -92,9 +92,9 @@ class AdminMailserviceService
             if ($matchroundId > 0) {
                 $query->join('ffb_userteam', 'web_user.user_id', '=', 'ffb_userteam.userteam_user_id')
                     ->where('ffb_userteam.userteam_matchround_id', $matchroundId);
-            } elseif ($gameId > 0) {
+            } elseif ($leagueId > 0) {
                 $query->join('ffb_userscore', 'web_user.user_id', '=', 'ffb_userscore.userscore_user_id')
-                    ->where('ffb_userscore.userscore_game_id', $gameId);
+                    ->where('ffb_userscore.userscore_league_id', $leagueId);
             }
         }
 
@@ -147,13 +147,13 @@ class AdminMailserviceService
      * Users who selected the given game (profile) but have no ffb_userteam in scope.
      * With no game selected: users with no lineup anywhere.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<\App\Models\WebUser>  $query
+     * @param  Builder<WebUser>  $query
      */
-    private function applyNoLineupFilter($query, int $gameId, int $matchroundId): void
+    private function applyNoLineupFilter($query, int $leagueId, int $matchroundId): void
     {
-        if ($gameId > 0) {
+        if ($leagueId > 0) {
             $query->join('web_user_details', 'web_user.user_id', '=', 'web_user_details.user_id')
-                ->where('web_user_details.user_details_ffb_selected_game', $gameId);
+                ->where('web_user_details.user_details_ffb_selected_league', $leagueId);
 
             if ($matchroundId > 0) {
                 $query->whereNotExists(function ($sub) use ($matchroundId): void {
@@ -166,12 +166,12 @@ class AdminMailserviceService
                 return;
             }
 
-            $query->whereNotExists(function ($sub) use ($gameId): void {
+            $query->whereNotExists(function ($sub) use ($leagueId): void {
                 $sub->selectRaw('1')
                     ->from('ffb_userteam')
                     ->join('ffb_matchround', 'ffb_matchround.matchround_id', '=', 'ffb_userteam.userteam_matchround_id')
                     ->whereColumn('ffb_userteam.userteam_user_id', 'web_user.user_id')
-                    ->where('ffb_matchround.matchround_game_id', $gameId);
+                    ->where('ffb_matchround.matchround_league_id', $leagueId);
             });
 
             return;

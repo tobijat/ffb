@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\WebUser;
 use App\Services\FfbAuth;
 use App\Services\FfbUserResolver;
 use App\Services\MyteamService;
-use App\Models\WebUser;
 use Tests\TestCase;
 
 class MyteamApiTest extends TestCase
@@ -38,7 +38,7 @@ class MyteamApiTest extends TestCase
             $mock->shouldReceive('matchrounds')->once()->with(544)->andReturn([
                 'ok' => true,
                 'data' => [
-                    'selected_game_id' => 26,
+                    'selected_league_id' => 26,
                     'matchrounds' => [
                         [
                             'matchround_id' => 280,
@@ -153,7 +153,7 @@ class MyteamApiTest extends TestCase
                         'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
                         'is_admin' => false,
                     ],
-                    'selected_game_id' => 26,
+                    'selected_league_id' => 26,
                     'navigation' => [
                         ['symbol' => 'nav_player.png', 'name' => 'Mannschaft', 'link' => '/myteam', 'style' => 'big'],
                     ],

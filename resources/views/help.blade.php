@@ -15,7 +15,7 @@
         $o = $data['options'];
         $wc = $data['wc_points'];
         $usingDefaults = $data['using_defaults'];
-        $pointsMode = $o['options_game_pointsmode'] ?? 'new';
+        $pointsMode = $o['options_league_pointsmode'] ?? 'new';
         $wcBestCount = max(0, count($wc) - 1);
         $wcRest = $wc[$wcBestCount] ?? 1;
     @endphp

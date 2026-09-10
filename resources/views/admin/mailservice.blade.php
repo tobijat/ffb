@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        $games = $data['games'] ?? [];
+        $leagues = $data['leagues'] ?? [];
         $mails = $data['mails'] ?? [];
     @endphp
 
@@ -37,11 +37,11 @@
             <div class="admin-ms-left">
                 <div class="admin-ms-filters">
                     <div class="admin-ms-filter">
-                        <label for="ms-search-game">Game</label>
+                        <label for="ms-search-game">League</label>
                         <select id="ms-search-game">
-                            <option value="0">select Game..</option>
-                            @foreach ($games as $game)
-                                <option value="{{ $game['game_id'] }}">{{ $game['game_title'] }}</option>
+                            <option value="0">select League..</option>
+                            @foreach ($leagues as $league)
+                                <option value="{{ $league['league_id'] }}">{{ $league['league_title'] }}</option>
                             @endforeach
                         </select>
                     </div>

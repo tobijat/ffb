@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Game;
+use App\Models\League;
 use App\Models\News;
 use App\Models\Poll;
 use App\Models\PollAnswer;
@@ -38,7 +38,7 @@ class DashboardService
         if (! $user) {
             return [
                 'user' => null,
-                'games' => [],
+                'leagues' => [],
                 'news' => ['items' => [], 'page' => 1, 'pages' => 0],
                 'polls' => ['text' => null, 'select' => null],
                 'navigation' => $this->navigation(),
@@ -46,30 +46,30 @@ class DashboardService
         }
 
         $details = $user->details;
-        $selectedGameId = (int) ($details?->user_details_ffb_selected_game ?? 0);
+        $selectedLeagueId = (int) ($details?->user_details_ffb_selected_league ?? 0);
 
         return [
             'user' => $this->userPayload($user, $details),
-            'selected_game_id' => $selectedGameId,
-            'games' => $this->games($archiveGames),
+            'selected_league_id' => $selectedLeagueId,
+            'leagues' => $this->games($archiveGames),
             'archive' => $archiveGames,
-            'news' => $this->news($selectedGameId, $newsPage),
+            'news' => $this->news($selectedLeagueId, $newsPage),
             'polls' => [
-                'text' => $this->textPoll($userId, $selectedGameId),
-                'select' => $this->selectPoll($userId, $selectedGameId),
+                'text' => $this->textPoll($userId, $selectedLeagueId),
+                'select' => $this->selectPoll($userId, $selectedLeagueId),
             ],
             'navigation' => $this->navigation(),
         ];
     }
 
     /**
-     * @return array{ok: true, selected_game_id: int, game_title: string}|array{ok: false, status: int, error: string}
+     * @return array{ok: true, selected_league_id: int, league_title: string}|array{ok: false, status: int, error: string}
      */
-    public function selectGame(int $userId, int $gameId): array
+    public function selectLeague(int $userId, int $leagueId): array
     {
-        $game = Game::query()->find($gameId);
-        if (! $game || ! $game->game_visible || ! $game->game_status) {
-            return ['ok' => false, 'status' => 422, 'error' => 'Game not available'];
+        $league = League::query()->find($leagueId);
+        if (! $league || ! $league->league_visible || ! $league->league_status) {
+            return ['ok' => false, 'status' => 422, 'error' => 'League not available'];
         }
 
         $details = UserDetails::query()->find($userId);
@@ -77,13 +77,13 @@ class DashboardService
             return ['ok' => false, 'status' => 404, 'error' => 'User details not found'];
         }
 
-        $details->user_details_ffb_selected_game = $gameId;
+        $details->user_details_ffb_selected_league = $leagueId;
         $details->save();
 
         return [
             'ok' => true,
-            'selected_game_id' => $gameId,
-            'game_title' => (string) $game->game_title,
+            'selected_league_id' => $leagueId,
+            'league_title' => (string) $league->league_title,
         ];
     }
 
@@ -176,22 +176,22 @@ class DashboardService
      */
     private function games(bool $archive): array
     {
-        return Game::query()
-            ->where('game_visible', 1)
-            ->where('game_archive', $archive ? 1 : 0)
-            ->where('game_status', 1)
+        return League::query()
+            ->where('league_visible', 1)
+            ->where('league_archive', $archive ? 1 : 0)
+            ->where('league_status', 1)
             ->whereHas('matchrounds')
-            ->orderBy('game_title')
+            ->orderBy('league_title')
             ->get()
-            ->map(fn (Game $game) => [
-                'game_id' => (int) $game->game_id,
-                'game_title' => (string) $game->game_title,
-                'game_symbol' => (string) ($game->game_symbol ?: 'symbol_game_na.png'),
-                'game_archive' => (int) (bool) $game->game_archive,
-                'game_visible' => (int) (bool) $game->game_visible,
-                'game_countdown' => (int) (bool) $game->game_countdown,
-                'game_status' => (int) (bool) $game->game_status,
-                'symbol_url' => '/images/ffb/symbols/'.($game->game_symbol ?: 'symbol_game_na.png'),
+            ->map(fn (League $league) => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => (string) $league->league_title,
+                'league_symbol' => (string) ($league->league_symbol ?: 'symbol_game_na.png'),
+                'league_archive' => (int) (bool) $league->league_archive,
+                'league_visible' => (int) (bool) $league->league_visible,
+                'league_countdown' => (int) (bool) $league->league_countdown,
+                'league_status' => (int) (bool) $league->league_status,
+                'symbol_url' => '/images/ffb/symbols/'.($league->league_symbol ?: 'symbol_game_na.png'),
             ])
             ->values()
             ->all();
@@ -200,14 +200,14 @@ class DashboardService
     /**
      * @return array{items: list<array<string, mixed>>, page: int, pages: int}
      */
-    private function news(int $selectedGameId, int $page): array
+    private function news(int $selectedLeagueId, int $page): array
     {
         $page = max(1, $page);
         $query = News::query()
-            ->where(function ($q) use ($selectedGameId) {
-                $q->where('news_game_id', 0);
-                if ($selectedGameId > 0) {
-                    $q->orWhere('news_game_id', $selectedGameId);
+            ->where(function ($q) use ($selectedLeagueId) {
+                $q->where('news_league_id', 0);
+                if ($selectedLeagueId > 0) {
+                    $q->orWhere('news_league_id', $selectedLeagueId);
                 }
             })
             ->orderByDesc('news_id');
@@ -237,7 +237,7 @@ class DashboardService
     /**
      * @return array<string, mixed>|null
      */
-    private function textPoll(int $userId, int $gameId): ?array
+    private function textPoll(int $userId, int $leagueId): ?array
     {
         $now = now()->format('Y-m-d H:i:s');
         $polls = Poll::query()
@@ -246,10 +246,10 @@ class DashboardService
             ->where('poll_visible', 1)
             ->where('poll_start', '<', $now)
             ->where('poll_end', '>', $now)
-            ->where(function ($q) use ($gameId) {
-                $q->where('poll_game_id', 0);
-                if ($gameId > 0) {
-                    $q->orWhere('poll_game_id', $gameId);
+            ->where(function ($q) use ($leagueId) {
+                $q->where('poll_league_id', 0);
+                if ($leagueId > 0) {
+                    $q->orWhere('poll_league_id', $leagueId);
                 }
             })
             ->get();
@@ -270,7 +270,7 @@ class DashboardService
     /**
      * @return array<string, mixed>|null
      */
-    private function selectPoll(int $userId, int $gameId): ?array
+    private function selectPoll(int $userId, int $leagueId): ?array
     {
         $now = now()->format('Y-m-d H:i:s');
         $poll = Poll::query()
@@ -279,10 +279,10 @@ class DashboardService
             ->where('poll_visible', 1)
             ->where('poll_start', '<', $now)
             ->where('poll_end', '>', $now)
-            ->where(function ($q) use ($gameId) {
-                $q->where('poll_game_id', 0);
-                if ($gameId > 0) {
-                    $q->orWhere('poll_game_id', $gameId);
+            ->where(function ($q) use ($leagueId) {
+                $q->where('poll_league_id', 0);
+                if ($leagueId > 0) {
+                    $q->orWhere('poll_league_id', $leagueId);
                 }
             })
             ->orderBy('poll_end')
@@ -294,10 +294,10 @@ class DashboardService
                 ->where('poll_type', 'select')
                 ->where('poll_visible', 1)
                 ->where('poll_end', '<', $now)
-                ->where(function ($q) use ($gameId) {
-                    $q->where('poll_game_id', 0);
-                    if ($gameId > 0) {
-                        $q->orWhere('poll_game_id', $gameId);
+                ->where(function ($q) use ($leagueId) {
+                    $q->where('poll_league_id', 0);
+                    if ($leagueId > 0) {
+                        $q->orWhere('poll_league_id', $leagueId);
                     }
                 })
                 ->orderByDesc('poll_end')

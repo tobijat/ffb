@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\GameOptions;
+use App\Models\LeagueOptions;
 use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\UserDetails;
@@ -18,8 +18,8 @@ class UserscoreService
      */
     public function pagePayload(int $userId): array
     {
-        $gameId = $this->resolveGameId($userId);
-        if ($gameId <= 0) {
+        $leagueId = $this->resolveLeagueId($userId);
+        if ($leagueId <= 0) {
             return ['ok' => false, 'status' => 422, 'error' => 'Kein Spiel ausgewählt.'];
         }
 
@@ -41,7 +41,7 @@ class UserscoreService
                     'update_profile_nag' => empty($details?->user_details_photo) || $details?->user_details_photo === 'profile_na.png',
                     'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
                 ],
-                'selected_game_id' => $gameId,
+                'selected_league_id' => $leagueId,
                 'navigation' => app(DashboardService::class)->navigation(),
             ],
         ];
@@ -52,21 +52,21 @@ class UserscoreService
      */
     public function matchrounds(int $userId): array
     {
-        $gameId = $this->resolveGameId($userId);
-        if ($gameId <= 0) {
+        $leagueId = $this->resolveLeagueId($userId);
+        if ($leagueId <= 0) {
             return ['ok' => false, 'status' => 422, 'error' => 'Kein Spiel ausgewählt.'];
         }
 
         $now = now();
 
         $past = Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->where('matchround_startdate', '<', $now)
             ->orderByDesc('matchround_startdate')
             ->get();
 
         $running = Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->where('matchround_startdate', '>', $now)
             ->where('matchround_status', 1)
             ->orderBy('matchround_startdate')
@@ -110,7 +110,7 @@ class UserscoreService
         return [
             'ok' => true,
             'data' => [
-                'selected_game_id' => $gameId,
+                'selected_league_id' => $leagueId,
                 'matchrounds' => $matchrounds,
             ],
         ];
@@ -123,13 +123,13 @@ class UserscoreService
      */
     public function pastMatchrounds(int $userId): array
     {
-        $gameId = $this->resolveGameId($userId);
-        if ($gameId <= 0) {
+        $leagueId = $this->resolveLeagueId($userId);
+        if ($leagueId <= 0) {
             return ['ok' => false, 'status' => 422, 'error' => 'Kein Spiel ausgewählt.'];
         }
 
         $past = Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->where('matchround_enddate', '<', now())
             ->orderByDesc('matchround_startdate')
             ->get();
@@ -150,7 +150,7 @@ class UserscoreService
         return [
             'ok' => true,
             'data' => [
-                'selected_game_id' => $gameId,
+                'selected_league_id' => $leagueId,
                 'matchrounds' => $matchrounds,
             ],
         ];
@@ -161,18 +161,18 @@ class UserscoreService
      */
     public function overall(int $userId, string $sortFlag = '', string $sortDir = 'desc'): array
     {
-        $gameId = $this->resolveGameId($userId);
-        if ($gameId <= 0) {
+        $leagueId = $this->resolveLeagueId($userId);
+        if ($leagueId <= 0) {
             return ['ok' => false, 'status' => 422, 'error' => 'Kein Spiel ausgewählt.'];
         }
 
-        $rankMode = $this->rankMode($gameId);
-        $wins = $this->matchroundWinsByNickname($gameId);
-        $participations = $this->participationsByUser($gameId);
+        $rankMode = $this->rankMode($leagueId);
+        $wins = $this->matchroundWinsByNickname($leagueId);
+        $participations = $this->participationsByUser($leagueId);
 
         $scores = Userscore::query()
             ->with(['user.details'])
-            ->where('userscore_game_id', $gameId)
+            ->where('userscore_league_id', $leagueId)
             ->get();
 
         $favFlags = $this->favouriteFlagsForUsers(
@@ -206,7 +206,7 @@ class UserscoreService
         return [
             'ok' => true,
             'data' => [
-                'selected_game_id' => $gameId,
+                'selected_league_id' => $leagueId,
                 'matchround_id' => 0,
                 'rank_mode' => $rankMode,
                 'display_mode' => $rankMode === 'wc' ? 'wc' : 'points',
@@ -221,8 +221,8 @@ class UserscoreService
      */
     public function forRound(int $userId, int $matchroundId, string $sortFlag = '', string $sortDir = 'desc'): array
     {
-        $gameId = $this->resolveGameId($userId);
-        if ($gameId <= 0) {
+        $leagueId = $this->resolveLeagueId($userId);
+        if ($leagueId <= 0) {
             return ['ok' => false, 'status' => 422, 'error' => 'Kein Spiel ausgewählt.'];
         }
 
@@ -231,13 +231,13 @@ class UserscoreService
         }
 
         $round = Matchround::query()->find($matchroundId);
-        if (! $round || (int) $round->matchround_game_id !== $gameId) {
+        if (! $round || (int) $round->matchround_league_id !== $leagueId) {
             return ['ok' => false, 'status' => 404, 'error' => 'Matchround not found'];
         }
 
-        $rankMode = $this->rankMode($gameId);
-        $wins = $this->matchroundWinsByNickname($gameId);
-        $participations = $this->participationsByUser($gameId);
+        $rankMode = $this->rankMode($leagueId);
+        $wins = $this->matchroundWinsByNickname($leagueId);
+        $participations = $this->participationsByUser($leagueId);
 
         $userteams = Userteam::query()
             ->with(['user.details'])
@@ -275,7 +275,7 @@ class UserscoreService
         return [
             'ok' => true,
             'data' => [
-                'selected_game_id' => $gameId,
+                'selected_league_id' => $leagueId,
                 'matchround_id' => $matchroundId,
                 'rank_mode' => $rankMode,
                 'display_mode' => 'points',
@@ -285,18 +285,18 @@ class UserscoreService
         ];
     }
 
-    private function resolveGameId(int $userId): int
+    private function resolveLeagueId(int $userId): int
     {
         $details = UserDetails::query()->find($userId);
 
-        return (int) ($details?->user_details_ffb_selected_game ?? 0);
+        return (int) ($details?->user_details_ffb_selected_league ?? 0);
     }
 
-    private function rankMode(int $gameId): string
+    private function rankMode(int $leagueId): string
     {
-        $mode = (string) (GameOptions::query()
-            ->where('options_game_id', $gameId)
-            ->value('options_game_rankmode') ?? 'wc');
+        $mode = (string) (LeagueOptions::query()
+            ->where('options_league_id', $leagueId)
+            ->value('options_league_rankmode') ?? 'wc');
 
         return in_array($mode, ['points', 'wc'], true) ? $mode : 'wc';
     }
@@ -304,10 +304,10 @@ class UserscoreService
     /**
      * @return array<string, int> nickname => wins
      */
-    private function matchroundWinsByNickname(int $gameId): array
+    private function matchroundWinsByNickname(int $leagueId): array
     {
         $rounds = Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->where('matchround_enddate', '<', now())
             ->pluck('matchround_id');
 
@@ -347,11 +347,11 @@ class UserscoreService
     /**
      * @return array<int, int> user_id => participation count
      */
-    private function participationsByUser(int $gameId): array
+    private function participationsByUser(int $leagueId): array
     {
         $rows = DB::table('ffb_userteam')
             ->join('ffb_matchround', 'ffb_matchround.matchround_id', '=', 'ffb_userteam.userteam_matchround_id')
-            ->where('ffb_matchround.matchround_game_id', $gameId)
+            ->where('ffb_matchround.matchround_league_id', $leagueId)
             ->where('ffb_matchround.matchround_startdate', '<', now())
             ->groupBy('ffb_userteam.userteam_user_id')
             ->selectRaw('ffb_userteam.userteam_user_id as user_id, COUNT(*) as c')

@@ -19,7 +19,7 @@ class MatchPopupService
         }
 
         $match = MatchGame::query()
-            ->with(['homeTeam', 'guestTeam', 'matchround.game'])
+            ->with(['homeTeam', 'guestTeam', 'matchround.league'])
             ->find($matchId);
 
         if (! $match || ! $match->homeTeam || ! $match->guestTeam || ! $match->matchround) {
@@ -50,7 +50,7 @@ class MatchPopupService
                         : null,
                     'match_matchround_id' => (int) $match->match_round,
                     'match_matchround_name' => (string) $match->matchround->matchround_title,
-                    'match_game_title' => (string) ($match->matchround->game?->game_title ?? ''),
+                    'match_league_title' => (string) ($match->matchround->league?->league_title ?? ''),
                 ],
                 'hometeam_players' => $this->playersForTeam($matchId, $homeTeamId),
                 'guestteam_players' => $this->playersForTeam($matchId, $guestTeamId),
@@ -168,7 +168,7 @@ class MatchPopupService
     private function previousMatches(int $matchId, int $homeTeamId, int $guestTeamId): array
     {
         $matches = MatchGame::query()
-            ->with(['homeTeam', 'guestTeam', 'matchround.game'])
+            ->with(['homeTeam', 'guestTeam', 'matchround.league'])
             ->where('match_id', '!=', $matchId)
             ->where('match_homescore', '>=', 0)
             ->where(function ($q) use ($homeTeamId, $guestTeamId) {
@@ -201,7 +201,7 @@ class MatchPopupService
                 'match_guestteam_score_penalty' => $this->nullableScore($item->match_guestscore_penalty),
                 'match_matchround_id' => (int) $item->match_round,
                 'match_matchround_name' => (string) ($item->matchround?->matchround_title ?? ''),
-                'match_game_title' => (string) ($item->matchround?->game?->game_title ?? ''),
+                'match_league_title' => (string) ($item->matchround?->league?->league_title ?? ''),
             ];
         })->all();
     }

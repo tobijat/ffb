@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\GameOptions;
+use App\Models\LeagueOptions;
 use App\Models\Matchround;
 use App\Models\Team;
 use App\Models\UserDetails;
@@ -104,41 +104,41 @@ class ProfilePopupService
     private function participations(int $userId): array
     {
         $scores = Userscore::query()
-            ->with('game')
+            ->with('league')
             ->where('userscore_user_id', $userId)
-            ->whereHas('game', fn ($q) => $q->where('game_status', 1))
-            ->orderByDesc('userscore_game_id')
+            ->whereHas('league', fn ($q) => $q->where('league_status', 1))
+            ->orderByDesc('userscore_league_id')
             ->get();
 
         $out = [];
         foreach ($scores as $score) {
-            $game = $score->game;
-            if (! $game) {
+            $league = $score->league;
+            if (! $league) {
                 continue;
             }
 
-            $gameId = (int) $game->game_id;
-            $rankMode = (string) (GameOptions::query()
-                ->where('options_game_id', $gameId)
-                ->value('options_game_rankmode') ?? 'wc');
+            $leagueId = (int) $league->league_id;
+            $rankMode = (string) (LeagueOptions::query()
+                ->where('options_league_id', $leagueId)
+                ->value('options_league_rankmode') ?? 'wc');
             if (! in_array($rankMode, ['points', 'wc'], true)) {
                 $rankMode = 'wc';
             }
 
-            $archive = (int) ($game->game_archive ?? 0) === 1;
-            [$start, $end] = $this->gameDateRange($gameId, $archive);
+            $archive = (int) ($league->league_archive ?? 0) === 1;
+            [$start, $end] = $this->gameDateRange($leagueId, $archive);
 
             $out[] = [
-                'game_id' => $gameId,
-                'game_title' => (string) $game->game_title,
-                'game_symbol' => $game->game_symbol ?: null,
-                'game_archive' => $archive,
+                'league_id' => $leagueId,
+                'league_title' => (string) $league->league_title,
+                'league_symbol' => $league->league_symbol ?: null,
+                'league_archive' => $archive,
                 'score_rm' => $rankMode,
                 'score_wc' => (int) $score->userscore_wc_points,
                 'score_points' => (int) $score->userscore_total,
                 'score_start' => $start,
                 'score_end' => $end,
-                'user_rank' => $this->calculateUserRank($userId, $gameId, $rankMode),
+                'user_rank' => $this->calculateUserRank($userId, $leagueId, $rankMode),
             ];
         }
 
@@ -148,10 +148,10 @@ class ProfilePopupService
     /**
      * @return array{0: string|null, 1: string|null}
      */
-    private function gameDateRange(int $gameId, bool $archive): array
+    private function gameDateRange(int $leagueId, bool $archive): array
     {
         $first = Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->orderBy('matchround_startdate')
             ->value('matchround_startdate');
 
@@ -166,16 +166,16 @@ class ProfilePopupService
         }
 
         $last = Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->orderByDesc('matchround_enddate')
             ->value('matchround_enddate');
 
         return [$start, $last ? date('d.m.y', strtotime((string) $last)) : null];
     }
 
-    private function calculateUserRank(int $userId, int $gameId, string $rankMode): int
+    private function calculateUserRank(int $userId, int $leagueId, string $rankMode): int
     {
-        $query = Userscore::query()->where('userscore_game_id', $gameId);
+        $query = Userscore::query()->where('userscore_league_id', $leagueId);
         if ($rankMode === 'wc') {
             $query->orderByDesc('userscore_wc_points')->orderByDesc('userscore_total');
         } else {

@@ -49,14 +49,14 @@ class AdminMailserviceTest extends TestCase
                         'image_dir' => 'images/admin/navigation/',
                     ],
                 ],
-                'selected_game_id' => 7,
-                'selected_game' => [
-                    'game_id' => 7,
-                    'game_title' => 'Bundesliga Test',
+                'selected_league_id' => 7,
+                'selected_league' => [
+                    'league_id' => 7,
+                    'league_title' => 'Bundesliga Test',
                     'symbol_url' => '/images/ffb/games/na.png',
                 ],
-                'games' => [
-                    ['game_id' => 7, 'game_title' => 'Bundesliga Test'],
+                'leagues' => [
+                    ['league_id' => 7, 'league_title' => 'Bundesliga Test'],
                 ],
                 'mails' => [
                     [
@@ -99,7 +99,7 @@ class AdminMailserviceTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->getJson('/admin/mailservice/matchrounds?game_id=7')
+            ->getJson('/admin/mailservice/matchrounds?league_id=7')
             ->assertOk()
             ->assertJson([
                 'numResults' => 1,
@@ -117,7 +117,7 @@ class AdminMailserviceTest extends TestCase
 
         $this->mock(AdminMailserviceService::class, function ($mock) {
             $mock->shouldReceive('users')->once()->with([
-                'game_id' => '7',
+                'league_id' => '7',
                 'matchround_id' => 0,
                 'mailservice' => 'info',
                 'userstatus' => 'active',
@@ -131,7 +131,7 @@ class AdminMailserviceTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->getJson('/admin/mailservice/users?game_id=7&userstatus=active&mailservice=info')
+            ->getJson('/admin/mailservice/users?league_id=7&userstatus=active&mailservice=info')
             ->assertOk()
             ->assertJsonPath('numResults', 1)
             ->assertJsonPath('users.0.user_nickname', 'player1');

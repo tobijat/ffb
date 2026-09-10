@@ -15,7 +15,7 @@ class Matchround extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'matchround_game_id',
+        'matchround_league_id',
         'matchround_title',
         'matchround_startdate',
         'matchround_enddate',
@@ -24,9 +24,9 @@ class Matchround extends Model
         'matchround_max_players_from_team',
     ];
 
-    public function game(): BelongsTo
+    public function league(): BelongsTo
     {
-        return $this->belongsTo(Game::class, 'matchround_game_id', 'game_id');
+        return $this->belongsTo(League::class, 'matchround_league_id', 'league_id');
     }
 
     public function userteams(): HasMany

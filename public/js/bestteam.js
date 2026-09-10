@@ -68,7 +68,7 @@
         return '<img class="ffb-flag ffb-flag-img" src="' + src + '" alt="" width="16" height="11" loading="lazy"' + titleAttr + '>';
     }
 
-    const selectedGameId = Number(config.selectedGameId || 0) || 0;
+    const selectedLeagueId = Number(config.selectedLeagueId || 0) || 0;
 
     function normalizeShirtNat(code) {
         return String(code || 'aut')
@@ -81,7 +81,7 @@
     function shirtUrl(teamId, nationality, gameId) {
         const tid = Number(teamId) || 0;
         const nat = normalizeShirtNat(nationality);
-        const gid = Number(gameId ?? selectedGameId) || 0;
+        const gid = Number(gameId ?? selectedLeagueId) || 0;
         if (tid <= 0 || !nat) {
             return legacyBase + 'images/ffb/shirts/shirt_BLANK.png';
         }
@@ -101,7 +101,7 @@
     }
 
     function shirtImgTag(teamId, nationality, attrs) {
-        const gid = Number(selectedGameId) || 0;
+        const gid = Number(selectedLeagueId) || 0;
         const primary = shirtUrl(teamId, nationality, gid);
         const fallback = shirtFallbackUrl(teamId, nationality);
         const blank = legacyBase + 'images/ffb/shirts/shirt_BLANK.png';

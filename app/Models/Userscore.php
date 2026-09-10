@@ -15,7 +15,7 @@ class Userscore extends Model
 
     protected $fillable = [
         'userscore_user_id',
-        'userscore_game_id',
+        'userscore_league_id',
         'userscore_total',
         'userscore_wc_points',
     ];
@@ -25,8 +25,8 @@ class Userscore extends Model
         return $this->belongsTo(WebUser::class, 'userscore_user_id', 'user_id');
     }
 
-    public function game(): BelongsTo
+    public function league(): BelongsTo
     {
-        return $this->belongsTo(Game::class, 'userscore_game_id', 'game_id');
+        return $this->belongsTo(League::class, 'userscore_league_id', 'league_id');
     }
 }

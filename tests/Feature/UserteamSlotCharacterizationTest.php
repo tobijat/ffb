@@ -133,10 +133,10 @@ class UserteamSlotCharacterizationTest extends TestCase
 
     private function seedBaseEntities(): void
     {
-        DB::table('ffb_game')->insert(['game_id' => 1, 'game_title' => 'Testliga']);
+        DB::table('ffb_league')->insert(['league_id' => 1, 'league_title' => 'Testliga']);
         DB::table('ffb_matchround')->insert([
             'matchround_id' => 1,
-            'matchround_game_id' => 1,
+            'matchround_league_id' => 1,
             'matchround_title' => 'R1',
             'matchround_startdate' => now()->addDay()->toDateTimeString(),
         ]);
@@ -181,8 +181,8 @@ class UserteamSlotCharacterizationTest extends TestCase
         $adminCenter->shouldReceive('shellPayload')->andReturn([
             'user' => ['user_id' => 1],
             'navigation' => [],
-            'selected_game' => ['game_id' => 1],
-            'selected_game_id' => 1,
+            'selected_league' => ['league_id' => 1],
+            'selected_league_id' => 1,
         ])->byDefault();
 
         return new AdminSquadService($adminCenter);

@@ -38,7 +38,7 @@ class BestteamApiTest extends TestCase
             $mock->shouldReceive('matchrounds')->once()->with(544)->andReturn([
                 'ok' => true,
                 'data' => [
-                    'selected_game_id' => 26,
+                    'selected_league_id' => 26,
                     'matchrounds' => [
                         [
                             'matchround_id' => 280,
@@ -133,7 +133,7 @@ class BestteamApiTest extends TestCase
                         'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
                         'is_admin' => false,
                     ],
-                    'selected_game_id' => 26,
+                    'selected_league_id' => 26,
                     'navigation' => [
                         ['symbol' => 'nav_topflop.png', 'name' => 'Top&Flop', 'link' => '/bestteam', 'style' => 'big'],
                     ],

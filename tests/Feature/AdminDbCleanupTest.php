@@ -49,7 +49,7 @@ class AdminDbCleanupTest extends TestCase
                         'image_dir' => 'images/admin/navigation/',
                     ],
                 ],
-                'selected_game' => null,
+                'selected_league' => null,
                 'duplicate_playerteam_groups' => [
                     [
                         'player_id' => 12,
@@ -137,7 +137,7 @@ class AdminDbCleanupTest extends TestCase
                     'is_ffb_admin' => true,
                 ],
                 'navigation' => [],
-                'selected_game' => null,
+                'selected_league' => null,
                 'duplicate_playerteam_groups' => [],
                 'duplicate_playerteam_group_count' => 0,
                 'duplicate_playerteam_entry_count' => 0,

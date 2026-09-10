@@ -50,8 +50,8 @@
             <select id="squad_league_id" name="squad_league_id" onchange="this.form.submit()">
                 <option value="">— Liga wählen —</option>
                 @foreach ($leagues as $league)
-                    <option value="{{ $league['game_id'] }}" @selected($squadLeagueId === (int) $league['game_id'])>
-                        {{ $league['game_title'] }}
+                    <option value="{{ $league['league_id'] }}" @selected($squadLeagueId === (int) $league['league_id'])>
+                        {{ $league['league_title'] }}
                     </option>
                 @endforeach
             </select>

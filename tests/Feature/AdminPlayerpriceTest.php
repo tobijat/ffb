@@ -49,10 +49,10 @@ class AdminPlayerpriceTest extends TestCase
                         'image_dir' => 'images/admin/navigation/',
                     ],
                 ],
-                'selected_game_id' => 7,
-                'selected_game' => [
-                    'game_id' => 7,
-                    'game_title' => 'Bundesliga Test',
+                'selected_league_id' => 7,
+                'selected_league' => [
+                    'league_id' => 7,
+                    'league_title' => 'Bundesliga Test',
                     'symbol_url' => '/images/ffb/games/na.png',
                 ],
                 'matchrounds' => [
@@ -68,7 +68,7 @@ class AdminPlayerpriceTest extends TestCase
             ->assertOk()
             ->assertSee('PlayerPrice Settings', false)
             ->assertSee('Dynamic PlayerPrices v2014', false)
-            ->assertSee('ELO BasePrices for Game', false)
+            ->assertSee('ELO BasePrices for League', false)
             ->assertSee('ELO BasePrices for Matchround', false)
             ->assertSee('Set Player Prices', false)
             ->assertSee('Bundesliga Test', false)
@@ -110,7 +110,7 @@ class AdminPlayerpriceTest extends TestCase
         });
 
         $this->mock(AdminPlayerpriceService::class, function ($mock) {
-            $mock->shouldReceive('calculateEloTeamPricesForGame')
+            $mock->shouldReceive('calculateEloTeamPricesForLeague')
                 ->once()
                 ->with(544, \Mockery::type('array'))
                 ->andReturn([
@@ -120,7 +120,7 @@ class AdminPlayerpriceTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->post('/admin/playerprice/game-elo-team-prices', [
+            ->post('/admin/playerprice/league-elo-team-prices', [
                 'max_price' => 10,
                 'min_price' => 3,
             ])

@@ -4,8 +4,8 @@
 
 @section('content')
     @php
-        $games = $data['games'] ?? [];
-        $selectedId = (int) ($data['selected_game_id'] ?? 0);
+        $leagues = $data['leagues'] ?? [];
+        $selectedId = (int) ($data['selected_league_id'] ?? 0);
         $flashErrors = $errors ?: [];
     @endphp
 
@@ -40,9 +40,9 @@
         </p>
 
         <div class="game-grid admin-game-grid" id="admin-game-grid">
-            @forelse ($games as $game)
-                @php $isSelected = $selectedId === (int) $game['game_id']; @endphp
-                <form method="post" action="{{ route('admin.games.select', ['game' => $game['game_id']]) }}" class="admin-game-tile-form">
+            @forelse ($leagues as $league)
+                @php $isSelected = $selectedId === (int) $league['league_id']; @endphp
+                <form method="post" action="{{ route('admin.leagues.select', ['league' => $league['league_id']]) }}" class="admin-game-tile-form">
                     @csrf
                     <button
                         type="submit"
@@ -50,10 +50,10 @@
                         @disabled($isSelected)
                         title="{{ $isSelected ? 'Aktuell ausgewählt' : 'Liga auswählen' }}"
                     >
-                        <img src="{{ $game['symbol_url'] }}" alt="" width="56" height="56" loading="lazy">
-                        <span class="admin-game-tile-title">{{ $game['game_title'] }}</span>
+                        <img src="{{ $league['symbol_url'] }}" alt="" width="56" height="56" loading="lazy">
+                        <span class="admin-game-tile-title">{{ $league['league_title'] }}</span>
                         <ul class="admin-game-flags" aria-label="Status">
-                            @foreach ($game['flags'] as $flag)
+                            @foreach ($league['flags'] as $flag)
                                 <li class="admin-game-flag admin-game-flag-{{ $flag['tone'] }}">{{ $flag['label'] }}</li>
                             @endforeach
                         </ul>

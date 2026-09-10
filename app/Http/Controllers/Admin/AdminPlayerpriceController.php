@@ -14,8 +14,7 @@ class AdminPlayerpriceController extends Controller
     public function __construct(
         private readonly FfbAuth $auth,
         private readonly AdminPlayerpriceService $playerprice,
-    ) {
-    }
+    ) {}
 
     public function show(Request $request): View
     {
@@ -33,10 +32,10 @@ class AdminPlayerpriceController extends Controller
         ]));
     }
 
-    public function setGameEloTeamPrices(Request $request): RedirectResponse
+    public function setLeagueEloTeamPrices(Request $request): RedirectResponse
     {
         $userId = $this->auth->userId($request);
-        $result = $this->playerprice->calculateEloTeamPricesForGame($userId, $request->all());
+        $result = $this->playerprice->calculateEloTeamPricesForLeague($userId, $request->all());
 
         return $this->redirectFromResult($result)->withInput($request->only([
             'max_price',
