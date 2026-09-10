@@ -26,6 +26,7 @@
 /storage/*.key
 /storage/pail
 /storage/test-results.xml
+/storage/app/playerteam-league
 /storage/framework/views/*
 !/storage/framework/views/.gitignore
 /vendor

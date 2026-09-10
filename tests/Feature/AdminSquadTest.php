@@ -34,7 +34,7 @@ class AdminSquadTest extends TestCase
         });
 
         $this->mock(AdminSquadService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544, 0)->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->with(544, 0, null)->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -51,6 +51,11 @@ class AdminSquadTest extends TestCase
                     ],
                 ],
                 'selected_game' => null,
+                'squad_league_id' => 0,
+                'leagues' => [
+                    ['game_id' => 1, 'game_title' => 'WM 2026'],
+                ],
+                'hint' => 'Position und Preis gelten pro Liga.',
                 'countries' => ['AUT' => 'Österreich'],
                 'prices' => range(1, 15),
                 'positions' => ['g' => 'Tor', 'd' => 'Abwehr', 'm' => 'Mittelfeld', 's' => 'Angriff'],
@@ -75,6 +80,7 @@ class AdminSquadTest extends TestCase
             ->get('/admin/squad')
             ->assertOk()
             ->assertSee('Kader', false)
+            ->assertSee('Liga', false)
             ->assertSee('Team wählen', false)
             ->assertSee('Wähle oben ein Team', false)
             ->assertDontSee('Kader-Liste', false);
@@ -87,7 +93,7 @@ class AdminSquadTest extends TestCase
         });
 
         $this->mock(AdminSquadService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544, 3)->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->with(544, 3, null)->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -96,6 +102,11 @@ class AdminSquadTest extends TestCase
                 ],
                 'navigation' => [],
                 'selected_game' => null,
+                'squad_league_id' => 1,
+                'leagues' => [
+                    ['game_id' => 1, 'game_title' => 'WM 2026'],
+                ],
+                'hint' => 'Position und Preis gelten pro Liga.',
                 'countries' => ['AUT' => 'Österreich'],
                 'prices' => range(1, 15),
                 'positions' => ['g' => 'Tor', 'd' => 'Abwehr', 'm' => 'Mittelfeld', 's' => 'Angriff'],
@@ -154,7 +165,7 @@ class AdminSquadTest extends TestCase
         });
 
         $this->mock(AdminSquadService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544, 3)->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->with(544, 3, null)->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -163,6 +174,11 @@ class AdminSquadTest extends TestCase
                 ],
                 'navigation' => [],
                 'selected_game' => null,
+                'squad_league_id' => 1,
+                'leagues' => [
+                    ['game_id' => 1, 'game_title' => 'WM 2026'],
+                ],
+                'hint' => 'Position und Preis gelten pro Liga.',
                 'countries' => ['AUT' => 'Österreich'],
                 'prices' => range(1, 15),
                 'positions' => ['g' => 'Tor', 'd' => 'Abwehr', 'm' => 'Mittelfeld', 's' => 'Angriff'],

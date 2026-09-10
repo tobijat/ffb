@@ -12,6 +12,7 @@ use App\Models\Playerstats;
 use App\Models\Playerteam;
 use App\Models\UserDetails;
 use App\Models\Userteam;
+use App\Support\PlayerPicture;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
@@ -138,11 +139,15 @@ class PlayerPopupService
         $played = max(0, $matchCountPlayed);
         $pastMatches = [];
         if (count($matchrounds) < 10) {
-            $pastMatches = $this->pastMatches($playerteamId, $gameId, 10 - count($matchrounds));
+            $pastMatches = $this->pastMatches(
+                $this->sameTeamPlayerteamIds($playerteam),
+                (int) $playerteam->playerteam_team_id,
+                $gameId,
+                10 - count($matchrounds),
+            );
         }
 
         $teamId = (int) $playerteam->playerteam_team_id;
-        $hasPicture = (bool) $playerteam->playerteam_player_picture;
 
         return [
             'ok' => true,
@@ -156,9 +161,10 @@ class PlayerPopupService
                     'player_team_name' => (string) $playerteam->team->team_name,
                     'player_team_nationality' => (string) ($playerteam->team->team_nationality ?: ''),
                     'player_team_id' => $teamId,
-                    'player_picture_url' => $hasPicture
-                        ? '/images/ffb/players/'.$teamId.'/'.$playerteamId.'.jpg'
-                        : '/images/ffb/players/image_na.gif',
+                    'player_picture_url' => PlayerPicture::url(
+                        $teamId,
+                        (int) $playerteam->playerteam_player_id,
+                    ),
                 ],
                 'pricemode' => $priceMode,
                 'stats' => [
@@ -200,13 +206,22 @@ class PlayerPopupService
             return ['ok' => false, 'status' => 404, 'error' => 'Player not found'];
         }
 
-        $gameId = $this->selectedGameId($viewerId);
-        $options = GameOptions::query()->where('options_game_id', $gameId)->first();
+        $matchround = Matchround::query()->find($matchroundId);
+        if (! $matchround) {
+            return ['ok' => false, 'status' => 404, 'error' => 'Matchround not found'];
+        }
+
+        $viewerGameId = $this->selectedGameId($viewerId);
+        $roundGameId = (int) $matchround->matchround_game_id;
+        $optionsGameId = $roundGameId > 0 ? $roundGameId : $viewerGameId;
+        $options = $optionsGameId > 0
+            ? GameOptions::query()->where('options_game_id', $optionsGameId)->first()
+            : null;
         $pointsMode = (string) ($options?->options_game_pointsmode ?: 'new');
         $priceMode = (string) ($options?->options_game_pricemode ?: 'constant');
 
         $teamId = (int) $playerteam->playerteam_team_id;
-        $hasPicture = (bool) $playerteam->playerteam_player_picture;
+        $sameTeamPtIds = $this->sameTeamPlayerteamIds($playerteam);
 
         $base = [
             'playerteam_id' => $playerteamId,
@@ -220,15 +235,16 @@ class PlayerPopupService
                 'player_nationality' => (string) ($playerteam->player->player_nationality ?: ''),
                 'player_team_name' => (string) $playerteam->team->team_name,
                 'player_team_nationality' => (string) ($playerteam->team->team_nationality ?: ''),
-                'player_picture_url' => $hasPicture
-                    ? '/images/ffb/players/'.$teamId.'/'.$playerteamId.'.jpg'
-                    : '/images/ffb/players/image_na.gif',
+                'player_picture_url' => PlayerPicture::url(
+                    $teamId,
+                    (int) $playerteam->playerteam_player_id,
+                ),
             ],
         ];
 
         $stat = Playerstats::query()
             ->with(['playerteam'])
-            ->where('playerstats_playerteam_id', $playerteamId)
+            ->whereIn('playerstats_playerteam_id', $sameTeamPtIds)
             ->where('playerstats_matchround_id', $matchroundId)
             ->first();
 
@@ -314,6 +330,28 @@ class PlayerPopupService
         return (int) (UserDetails::query()
             ->where('user_id', $userId)
             ->value('user_details_ffb_selected_game') ?? 0);
+    }
+
+    /**
+     * All league-scoped roster rows for the same person at the same club.
+     *
+     * @return list<int>
+     */
+    private function sameTeamPlayerteamIds(Playerteam $playerteam): array
+    {
+        $ids = Playerteam::query()
+            ->where('playerteam_player_id', $playerteam->playerteam_player_id)
+            ->where('playerteam_team_id', $playerteam->playerteam_team_id)
+            ->orderByDesc('playerteam_id')
+            ->pluck('playerteam_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if ($ids === []) {
+            return [(int) $playerteam->playerteam_id];
+        }
+
+        return $ids;
     }
 
     /**
@@ -482,26 +520,23 @@ class PlayerPopupService
     }
 
     /**
+     * Matches for the same player+team in other leagues (fills remaining slots under 10).
+     *
+     * @param  list<int>  $sameTeamPtIds
      * @return list<array<string, mixed>>
      */
-    private function pastMatches(int $playerteamId, int $gameId, int $limit): array
+    private function pastMatches(array $sameTeamPtIds, int $teamId, int $gameId, int $limit): array
     {
-        if ($limit <= 0) {
+        if ($limit <= 0 || $sameTeamPtIds === []) {
             return [];
         }
 
-        $playerteam = Playerteam::query()->with('team')->find($playerteamId);
-        if (! $playerteam) {
-            return [];
-        }
-
-        $teamId = (int) $playerteam->playerteam_team_id;
         $now = date('Y-m-d H:i:s');
 
         $stats = Playerstats::query()
             ->join('ffb_match', 'ffb_match.match_id', '=', 'ffb_playerstats.playerstats_match_id')
             ->join('ffb_matchround', 'ffb_matchround.matchround_id', '=', 'ffb_playerstats.playerstats_matchround_id')
-            ->where('playerstats_playerteam_id', $playerteamId)
+            ->whereIn('playerstats_playerteam_id', $sameTeamPtIds)
             ->where('ffb_match.match_date', '<', $now)
             ->where('ffb_match.match_homescore', '>', -1)
             ->where('ffb_matchround.matchround_game_id', '!=', $gameId)
@@ -540,7 +575,7 @@ class PlayerPopupService
                 'matchround_id' => $roundId,
                 'matchround_title' => (string) $round->matchround_title,
                 'matchround_running' => 0,
-                'matchround_num_lineups' => $this->countLineupsForRound($playerteamId, $roundId),
+                'matchround_num_lineups' => $this->countLineupsForRound($sameTeamPtIds, $roundId),
                 'matchround_minutes_played' => (int) $item->playerstats_minutes,
                 'matchround_score' => (int) $item->playerstats_score,
                 'matchround_goals' => (int) $item->playerstats_goals,
@@ -568,13 +603,20 @@ class PlayerPopupService
         return $out;
     }
 
-    private function countLineupsForRound(int $playerteamId, int $matchroundId): int
+    /**
+     * @param  list<int>  $playerteamIds
+     */
+    private function countLineupsForRound(array $playerteamIds, int $matchroundId): int
     {
+        if ($playerteamIds === []) {
+            return 0;
+        }
+
         return Userteam::query()
             ->where('userteam_matchround_id', $matchroundId)
-            ->where(function (Builder $q) use ($playerteamId) {
+            ->where(function (Builder $q) use ($playerteamIds) {
                 foreach (Userteam::playerSlotColumns() as $col) {
-                    $q->orWhere($col, $playerteamId);
+                    $q->orWhereIn($col, $playerteamIds);
                 }
             })
             ->count();
@@ -816,7 +858,6 @@ class PlayerPopupService
     private function playerSummary(Playerteam $playerteam): array
     {
         $teamId = (int) $playerteam->playerteam_team_id;
-        $hasPicture = (bool) $playerteam->playerteam_player_picture;
 
         return [
             'playerteam_id' => (int) $playerteam->playerteam_id,
@@ -826,9 +867,10 @@ class PlayerPopupService
             'player_nationality' => (string) ($playerteam->player->player_nationality ?: ''),
             'player_team_name' => (string) $playerteam->team->team_name,
             'player_team_nationality' => (string) ($playerteam->team->team_nationality ?: ''),
-            'player_picture_url' => $hasPicture
-                ? '/images/ffb/players/'.$teamId.'/'.$playerteam->playerteam_id.'.jpg'
-                : '/images/ffb/players/image_na.gif',
+            'player_picture_url' => PlayerPicture::url(
+                $teamId,
+                (int) $playerteam->playerteam_player_id,
+            ),
         ];
     }
 }

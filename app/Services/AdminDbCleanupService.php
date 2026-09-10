@@ -6,13 +6,13 @@ use App\Models\Player;
 use App\Models\Playerteam;
 use App\Models\Userteam;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class AdminDbCleanupService
 {
     public function __construct(
         private readonly AdminCenterService $adminCenter,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -56,9 +56,18 @@ class AdminDbCleanupService
      */
     public function duplicatePlayerteamGroups(): array
     {
-        $pairs = DB::table('ffb_playerteam')
-            ->select('playerteam_player_id', 'playerteam_team_id', DB::raw('COUNT(*) as entry_count'))
-            ->groupBy('playerteam_player_id', 'playerteam_team_id')
+        $withLeague = Schema::hasColumn('ffb_playerteam', 'playerteam_league_id');
+
+        $query = DB::table('ffb_playerteam')
+            ->select('playerteam_player_id', 'playerteam_team_id', DB::raw('COUNT(*) as entry_count'));
+        if ($withLeague) {
+            $query->addSelect('playerteam_league_id')
+                ->groupBy('playerteam_player_id', 'playerteam_team_id', 'playerteam_league_id');
+        } else {
+            $query->groupBy('playerteam_player_id', 'playerteam_team_id');
+        }
+
+        $pairs = $query
             ->having('entry_count', '>', 1)
             ->orderBy('playerteam_team_id')
             ->orderBy('playerteam_player_id')
@@ -70,11 +79,14 @@ class AdminDbCleanupService
 
         $rows = Playerteam::query()
             ->with(['player', 'team'])
-            ->where(function ($query) use ($pairs) {
+            ->where(function ($query) use ($pairs, $withLeague) {
                 foreach ($pairs as $pair) {
-                    $query->orWhere(function ($inner) use ($pair) {
+                    $query->orWhere(function ($inner) use ($pair, $withLeague) {
                         $inner->where('playerteam_player_id', (int) $pair->playerteam_player_id)
                             ->where('playerteam_team_id', (int) $pair->playerteam_team_id);
+                        if ($withLeague) {
+                            $inner->where('playerteam_league_id', (int) $pair->playerteam_league_id);
+                        }
                     });
                 }
             })
@@ -87,9 +99,13 @@ class AdminDbCleanupService
         $groups = [];
         foreach ($pairs as $pair) {
             $key = (int) $pair->playerteam_player_id.'|'.(int) $pair->playerteam_team_id;
+            if ($withLeague) {
+                $key .= '|'.(int) $pair->playerteam_league_id;
+            }
             $groups[$key] = [
                 'player_id' => (int) $pair->playerteam_player_id,
                 'team_id' => (int) $pair->playerteam_team_id,
+                'league_id' => $withLeague ? (int) $pair->playerteam_league_id : null,
                 'player_fname' => '',
                 'player_lname' => '',
                 'team_name' => '',
@@ -100,6 +116,9 @@ class AdminDbCleanupService
 
         foreach ($rows as $row) {
             $key = (int) $row->playerteam_player_id.'|'.(int) $row->playerteam_team_id;
+            if ($withLeague) {
+                $key .= '|'.(int) $row->playerteam_league_id;
+            }
             if (! isset($groups[$key])) {
                 continue;
             }

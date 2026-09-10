@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -17,12 +18,22 @@ class Playerteam extends Model
     protected $fillable = [
         'playerteam_player_id',
         'playerteam_team_id',
+        'playerteam_league_id',
         'playerteam_player_picture',
         'playerteam_status',
         'playerteam_player_price',
         'playerteam_player_position',
         'playerteam_date_transfer',
     ];
+
+    /**
+     * @param  Builder<Playerteam>  $query
+     * @return Builder<Playerteam>
+     */
+    public function scopeForLeague(Builder $query, int $leagueId): Builder
+    {
+        return $query->where('playerteam_league_id', $leagueId);
+    }
 
     public function player(): BelongsTo
     {
@@ -32,6 +43,11 @@ class Playerteam extends Model
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'playerteam_team_id', 'team_id');
+    }
+
+    public function league(): BelongsTo
+    {
+        return $this->belongsTo(Game::class, 'playerteam_league_id', 'game_id');
     }
 
     public function prices(): HasMany
