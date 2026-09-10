@@ -5,6 +5,8 @@
 @section('content')
     @php
         $teams = $data['teams'];
+        $leagues = $data['leagues'] ?? [];
+        $squadLeagueId = (int) ($data['squad_league_id'] ?? 0);
         $selectedTeamId = (int) $data['selected_team_id'];
         $selectedTeam = $data['selected_team'];
         $items = $data['items'];
@@ -29,6 +31,7 @@
             $grouped[$code][] = $item;
         }
         $rosterQuery = array_filter([
+            'squad_league_id' => $squadLeagueId > 0 ? $squadLeagueId : null,
             'team_id' => $selectedTeamId > 0 ? $selectedTeamId : null,
         ], static fn ($v) => $v !== null);
         $addQuery = $rosterQuery + ['tab' => 'add'];
@@ -43,8 +46,17 @@
             @if ($tab === 'add')
                 <input type="hidden" name="tab" value="add">
             @endif
+            <label for="squad_league_id">Liga</label>
+            <select id="squad_league_id" name="squad_league_id" onchange="this.form.submit()">
+                <option value="">— Liga wählen —</option>
+                @foreach ($leagues as $league)
+                    <option value="{{ $league['game_id'] }}" @selected($squadLeagueId === (int) $league['game_id'])>
+                        {{ $league['game_title'] }}
+                    </option>
+                @endforeach
+            </select>
             <label for="team_id">Team</label>
-            <select id="team_id" name="team_id" onchange="this.form.submit()">
+            <select id="team_id" name="team_id" onchange="this.form.submit()" @disabled($squadLeagueId <= 0)>
                 <option value="">— Team wählen —</option>
                 @foreach ($teams as $team)
                     <option value="{{ $team['team_id'] }}" @selected($selectedTeamId === (int) $team['team_id'])>
@@ -56,6 +68,9 @@
                 <button type="submit" class="admin-submit">Anzeigen</button>
             </noscript>
         </form>
+        @if (!empty($data['hint']))
+            <p class="hint">{{ $data['hint'] }}</p>
+        @endif
 
         @if (!empty($flashErrors))
             <div class="account-flash account-flash-error" role="alert">
@@ -128,6 +143,7 @@
                 >
                     @csrf
                     <input type="hidden" name="team_id" value="{{ $selectedTeamId }}">
+                    <input type="hidden" name="squad_league_id" value="{{ $squadLeagueId }}">
                     <div id="squad-delete-ids"></div>
 
                     <div class="admin-squad-savebar" id="squad-savebar">
@@ -299,6 +315,7 @@
             >
                 @csrf
                 <input type="hidden" name="team_id" value="{{ $selectedTeamId }}">
+                <input type="hidden" name="squad_league_id" value="{{ $squadLeagueId }}">
 
                 <div class="admin-squad-savebar" id="squad-add-savebar">
                     <button type="submit" class="admin-submit" id="squad-batch-submit" disabled>

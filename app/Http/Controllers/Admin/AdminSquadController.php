@@ -14,18 +14,19 @@ class AdminSquadController extends Controller
     public function __construct(
         private readonly FfbAuth $auth,
         private readonly AdminSquadService $squad,
-    ) {
-    }
+    ) {}
 
     public function show(Request $request): View
     {
         $userId = $this->auth->userId($request);
         $teamId = (int) $request->query('team_id', 0);
+        $leagueId = (int) $request->query('squad_league_id', 0);
         $errors = session('admin_errors');
 
         return $this->render(
             $userId,
             $teamId,
+            $leagueId > 0 ? $leagueId : null,
             is_array($errors) ? $errors : [],
         );
     }
@@ -33,8 +34,7 @@ class AdminSquadController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $result = $this->squad->batchAdd($request->all());
-        $teamId = (int) ($result['team_id'] ?? $request->input('team_id', 0));
-        $params = array_filter(['team_id' => $teamId > 0 ? $teamId : null]);
+        $params = $this->squadRedirectParams($request, $result);
 
         if ($result['ok']) {
             return redirect()->route('admin.squad', $params)
@@ -54,11 +54,7 @@ class AdminSquadController extends Controller
             $request->all(),
             $request->file('playerteam_picture_file'),
         );
-        $teamId = (int) ($result['team_id'] ?? $request->input('team_id', 0));
-        $redirect = redirect()->route(
-            'admin.squad',
-            array_filter(['team_id' => $teamId > 0 ? $teamId : null]),
-        );
+        $redirect = redirect()->route('admin.squad', $this->squadRedirectParams($request, $result));
 
         if ($result['ok']) {
             return $redirect->with('admin_message', $result['message']);
@@ -81,11 +77,7 @@ class AdminSquadController extends Controller
         }
 
         $result = $this->squad->batchUpdate($request->all(), $pictureFiles);
-        $teamId = (int) ($result['team_id'] ?? $request->input('team_id', 0));
-        $redirect = redirect()->route(
-            'admin.squad',
-            array_filter(['team_id' => $teamId > 0 ? $teamId : null]),
-        );
+        $redirect = redirect()->route('admin.squad', $this->squadRedirectParams($request, $result));
 
         if ($result['ok']) {
             return $redirect->with('admin_message', $result['message']);
@@ -97,11 +89,7 @@ class AdminSquadController extends Controller
     public function destroy(Request $request, int $playerteam): RedirectResponse
     {
         $result = $this->squad->delete($playerteam);
-        $teamId = (int) ($result['team_id'] ?? $request->input('team_id', 0));
-        $redirect = redirect()->route(
-            'admin.squad',
-            array_filter(['team_id' => $teamId > 0 ? $teamId : null]),
-        );
+        $redirect = redirect()->route('admin.squad', $this->squadRedirectParams($request, $result));
 
         if ($result['ok']) {
             return $redirect->with('admin_message', $result['message']);
@@ -111,12 +99,27 @@ class AdminSquadController extends Controller
     }
 
     /**
+     * @param  array{team_id?: int}  $result
+     * @return array<string, int>
+     */
+    private function squadRedirectParams(Request $request, array $result): array
+    {
+        $teamId = (int) ($result['team_id'] ?? $request->input('team_id', 0));
+        $leagueId = (int) $request->input('squad_league_id', $request->query('squad_league_id', 0));
+
+        return array_filter([
+            'team_id' => $teamId > 0 ? $teamId : null,
+            'squad_league_id' => $leagueId > 0 ? $leagueId : null,
+        ]);
+    }
+
+    /**
      * @param  list<string>  $errors
      */
-    private function render(int $userId, int $teamId, array $errors = []): View
+    private function render(int $userId, int $teamId, ?int $squadLeagueId, array $errors = []): View
     {
         return view('admin.squad', [
-            'data' => $this->squad->pagePayload($userId, $teamId),
+            'data' => $this->squad->pagePayload($userId, $teamId, $squadLeagueId),
             'errors' => $errors,
             'answer' => session('admin_message'),
             'legacyBase' => '/',
