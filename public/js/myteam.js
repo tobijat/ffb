@@ -90,7 +90,7 @@
             return legacyBase + 'images/ffb/shirts/shirt_BLANK.png';
         }
         if (gid > 0) {
-            return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '-.' + gid + '.png';
+            return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '-' + gid + '.png';
         }
         return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '.png';
     }
