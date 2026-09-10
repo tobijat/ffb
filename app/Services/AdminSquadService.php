@@ -753,16 +753,7 @@ class AdminSquadService
 
     private function isUsedInUserteams(int $playerteamId): bool
     {
-        $query = Userteam::query();
-        foreach (Userteam::playerSlotColumns() as $index => $column) {
-            if ($index === 0) {
-                $query->where($column, $playerteamId);
-            } else {
-                $query->orWhere($column, $playerteamId);
-            }
-        }
-
-        return $query->exists();
+        return Userteam::queryContainingAnyPlayerteam([$playerteamId])->exists();
     }
 
     /**

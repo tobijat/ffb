@@ -15,8 +15,7 @@ class AdminPlayerController extends Controller
     public function __construct(
         private readonly FfbAuth $auth,
         private readonly AdminPlayerService $players,
-    ) {
-    }
+    ) {}
 
     public function show(Request $request): View
     {
@@ -38,6 +37,7 @@ class AdminPlayerController extends Controller
             'nationality' => $request->query('nationality', ''),
             'page' => $request->query('page', 1),
             'exclude_team_id' => $request->query('exclude_team_id', 0),
+            'exclude_league_id' => $request->query('exclude_league_id', 0),
         ]));
     }
 

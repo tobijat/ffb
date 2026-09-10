@@ -209,6 +209,7 @@ class AdminSquadTest extends TestCase
             ->assertSee('/admin/players/search', false)
             ->assertSee('exclude_team_id', false)
             ->assertSee('data-exclude-team-id="3"', false)
+            ->assertSee('data-exclude-league-id="1"', false)
             ->assertSee('id="squad-candidate-pager"', false)
             ->assertSee('Vormerken', false)
             ->assertDontSee('Filtern</button>', false);
@@ -226,6 +227,7 @@ class AdminSquadTest extends TestCase
                 'nationality' => '',
                 'page' => 1,
                 'exclude_team_id' => 3,
+                'exclude_league_id' => 1,
             ])->andReturn([
                 'items' => [],
                 'total' => 0,
@@ -238,7 +240,7 @@ class AdminSquadTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->getJson('/admin/players/search?exclude_team_id=3')
+            ->getJson('/admin/players/search?exclude_team_id=3&exclude_league_id=1')
             ->assertOk()
             ->assertJsonPath('total', 0);
     }

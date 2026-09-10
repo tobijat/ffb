@@ -371,6 +371,7 @@
                 id="squad-candidate-section"
                 data-search-url="{{ route('admin.players.search') }}"
                 data-exclude-team-id="{{ $selectedTeamId }}"
+                data-exclude-league-id="{{ $squadLeagueId }}"
                 data-legacy-base="{{ $legacyBase }}"
                 data-per-page="{{ $perPage }}"
             >
@@ -890,6 +891,7 @@
 
     const searchUrl = candidateSection.getAttribute('data-search-url');
     const excludeTeamId = candidateSection.getAttribute('data-exclude-team-id') || '';
+    const excludeLeagueId = candidateSection.getAttribute('data-exclude-league-id') || '';
     const legacyBase = candidateSection.getAttribute('data-legacy-base') || pickLegacyBase;
     const filterQ = document.getElementById('squad_filter_q');
     const filterNat = document.getElementById('squad_filter_nationality');
@@ -1021,6 +1023,7 @@
         if (q !== '') params.set('q', q);
         if (nat !== '') params.set('nationality', nat);
         if (excludeTeamId) params.set('exclude_team_id', excludeTeamId);
+        if (excludeLeagueId) params.set('exclude_league_id', excludeLeagueId);
         if (page > 1) params.set('page', String(page));
 
         if (meta) meta.textContent = 'Lade Spieler…';

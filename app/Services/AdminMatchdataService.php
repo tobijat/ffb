@@ -124,22 +124,11 @@ class AdminMatchdataService
      */
     public function mostWanted(int $matchroundId): array
     {
-        $sql = 'SELECT ffb_team.team_id, ffb_team.team_name, COUNT(ffb_playerteam.playerteam_id) AS plnum '
+        $sql = 'SELECT ffb_team.team_id, ffb_team.team_name, COUNT(ffb_userteam_slot.userteam_slot_id) AS plnum '
             .'FROM ffb_team '
             .'INNER JOIN ffb_playerteam ON ffb_team.team_id = ffb_playerteam.playerteam_team_id '
-            .'INNER JOIN ffb_userteam ON ('
-            .'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id1 OR '
-            .'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id2 OR '
-            .'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id3 OR '
-            .'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id4 OR '
-            .'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id5 OR '
-            .'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id6 OR '
-            .'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id7 OR '
-            .'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id8 OR '
-            .'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id9 OR '
-            .'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id10 OR '
-            .'ffb_playerteam.playerteam_id = ffb_userteam.userteam_player_id11'
-            .') '
+            .'INNER JOIN ffb_userteam_slot ON ffb_playerteam.playerteam_id = ffb_userteam_slot.userteam_slot_playerteam_id '
+            .'INNER JOIN ffb_userteam ON ffb_userteam.userteam_id = ffb_userteam_slot.userteam_slot_userteam_id '
             .'WHERE ffb_userteam.userteam_matchround_id = ? '
             .'GROUP BY ffb_team.team_id, ffb_team.team_name '
             .'ORDER BY plnum DESC';

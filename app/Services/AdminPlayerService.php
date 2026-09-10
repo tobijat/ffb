@@ -37,7 +37,7 @@ class AdminPlayerService
     }
 
     /**
-     * @param  array{q?: string, nationality?: string, page?: int, exclude_team_id?: int}  $filters
+     * @param  array{q?: string, nationality?: string, page?: int, exclude_team_id?: int, exclude_league_id?: int}  $filters
      * @return array{
      *     items: list<array<string, mixed>>,
      *     total: int,
@@ -322,8 +322,8 @@ class AdminPlayerService
     }
 
     /**
-     * @param  array{q?: string, nationality?: string, page?: int, exclude_team_id?: int}  $filters
-     * @return array{q: string, nationality: string, page: int, exclude_team_id: int}
+     * @param  array{q?: string, nationality?: string, page?: int, exclude_team_id?: int, exclude_league_id?: int}  $filters
+     * @return array{q: string, nationality: string, page: int, exclude_team_id: int, exclude_league_id: int}
      */
     private function normalizeFilters(array $filters): array
     {
@@ -332,11 +332,12 @@ class AdminPlayerService
             'nationality' => strtoupper(trim((string) ($filters['nationality'] ?? ''))),
             'page' => max(1, (int) ($filters['page'] ?? 1)),
             'exclude_team_id' => max(0, (int) ($filters['exclude_team_id'] ?? 0)),
+            'exclude_league_id' => max(0, (int) ($filters['exclude_league_id'] ?? 0)),
         ];
     }
 
     /**
-     * @param  array{q: string, nationality: string, page: int, exclude_team_id: int}  $filters
+     * @param  array{q: string, nationality: string, page: int, exclude_team_id: int, exclude_league_id: int}  $filters
      */
     private function listItems(array $filters): LengthAwarePaginator
     {
@@ -349,11 +350,13 @@ class AdminPlayerService
 
         if ($filters['exclude_team_id'] > 0) {
             $onTeam = Playerteam::query()
-                ->where('playerteam_team_id', $filters['exclude_team_id'])
-                ->pluck('playerteam_player_id')
-                ->all();
-            if ($onTeam !== []) {
-                $query->whereNotIn('player_id', $onTeam);
+                ->where('playerteam_team_id', $filters['exclude_team_id']);
+            if ($filters['exclude_league_id'] > 0) {
+                $onTeam->where('playerteam_league_id', $filters['exclude_league_id']);
+            }
+            $onTeamIds = $onTeam->pluck('playerteam_player_id')->all();
+            if ($onTeamIds !== []) {
+                $query->whereNotIn('player_id', $onTeamIds);
             }
         }
 
@@ -518,22 +521,14 @@ class AdminPlayerService
         $playerteamIds = Playerteam::query()
             ->where('playerteam_player_id', $playerId)
             ->pluck('playerteam_id')
+            ->map(fn ($id) => (int) $id)
             ->all();
 
         if ($playerteamIds === []) {
             return false;
         }
 
-        $query = Userteam::query();
-        foreach (Userteam::playerSlotColumns() as $index => $column) {
-            if ($index === 0) {
-                $query->whereIn($column, $playerteamIds);
-            } else {
-                $query->orWhereIn($column, $playerteamIds);
-            }
-        }
-
-        return $query->exists();
+        return Userteam::queryContainingAnyPlayerteam($playerteamIds)->exists();
     }
 
     /**

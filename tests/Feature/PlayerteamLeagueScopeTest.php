@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Playerteam;
 use App\Services\AdminCenterService;
 use App\Services\AdminDbCleanupService;
+use App\Services\AdminPlayerService;
 use App\Services\AdminSquadService;
 use App\Services\PlayerteamLeagueBackfillService;
 use App\Services\PlayerteamLeagueInventoryService;
@@ -329,6 +330,53 @@ class PlayerteamLeagueScopeTest extends TestCase
             new PlayerteamLeagueInventoryService(new AdminDbCleanupService($adminCenter)),
             new AdminDbCleanupService($adminCenter),
         );
+    }
+
+    #[Test]
+    public function player_search_excludes_only_same_league_squad_members(): void
+    {
+        DB::table('ffb_game')->insert(['game_id' => 2, 'game_title' => 'Liga B']);
+        DB::table('ffb_player')->insert([
+            [
+                'player_id' => 3,
+                'player_fname' => 'Free',
+                'player_lname' => 'Agent',
+                'player_status' => 1,
+                'player_foreign_id' => '',
+                'player_nationality' => 'arg',
+                'player_status_description' => '',
+            ],
+        ]);
+        DB::table('ffb_playerteam')->insert([
+            'playerteam_id' => 100,
+            'playerteam_player_id' => 1,
+            'playerteam_team_id' => 10,
+            'playerteam_league_id' => 1,
+            'playerteam_player_picture' => '',
+            'playerteam_status' => 1,
+            'playerteam_player_price' => 5,
+            'playerteam_player_position' => 'd',
+            'playerteam_date_transfer' => '2020-01-01 00:00:00',
+        ]);
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $players = new AdminPlayerService($adminCenter);
+
+        $otherLeague = $players->search([
+            'exclude_team_id' => 10,
+            'exclude_league_id' => 2,
+        ]);
+        $idsOther = array_column($otherLeague['items'], 'player_id');
+        $this->assertContains(1, $idsOther);
+        $this->assertContains(3, $idsOther);
+
+        $sameLeague = $players->search([
+            'exclude_team_id' => 10,
+            'exclude_league_id' => 1,
+        ]);
+        $idsSame = array_column($sameLeague['items'], 'player_id');
+        $this->assertNotContains(1, $idsSame);
+        $this->assertContains(3, $idsSame);
     }
 
     private function seedBaseEntities(): void

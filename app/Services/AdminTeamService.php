@@ -655,21 +655,13 @@ class AdminTeamService
         $playerteamIds = Playerteam::query()
             ->where('playerteam_team_id', $teamId)
             ->pluck('playerteam_id')
+            ->map(fn ($id) => (int) $id)
             ->all();
 
         if ($playerteamIds === []) {
             return false;
         }
 
-        $query = Userteam::query();
-        foreach (Userteam::playerSlotColumns() as $index => $column) {
-            if ($index === 0) {
-                $query->whereIn($column, $playerteamIds);
-            } else {
-                $query->orWhereIn($column, $playerteamIds);
-            }
-        }
-
-        return $query->exists();
+        return Userteam::queryContainingAnyPlayerteam($playerteamIds)->exists();
     }
 }

@@ -101,22 +101,17 @@ class PlayerteamLeagueCharacterizationTest extends TestCase
             'userteam_id' => 1,
             'userteam_user_id' => 1,
             'userteam_matchround_id' => 1,
-            'userteam_player_id1' => 100,
-            'userteam_player_id2' => 0,
-            'userteam_player_id3' => 0,
-            'userteam_player_id4' => 0,
-            'userteam_player_id5' => 0,
-            'userteam_player_id6' => 0,
-            'userteam_player_id7' => 0,
-            'userteam_player_id8' => 0,
-            'userteam_player_id9' => 0,
-            'userteam_player_id10' => 0,
-            'userteam_player_id11' => 0,
+        ]);
+        DB::table('ffb_userteam_slot')->insert([
+            'userteam_slot_userteam_id' => 1,
+            'userteam_slot_slot' => 1,
+            'userteam_slot_playerteam_id' => 100,
         ]);
         $blockedLineup = $squad->delete(100);
         $this->assertFalse($blockedLineup['ok']);
         $this->assertStringContainsString('Userteams', $blockedLineup['errors'][0]);
 
+        DB::table('ffb_userteam_slot')->delete();
         DB::table('ffb_userteam')->delete();
         DB::table('ffb_playerstats')->insert([
             'playerstats_id' => 1,

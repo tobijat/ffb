@@ -96,6 +96,7 @@ class PlayerteamLeagueInventoryTest extends TestCase
         Schema::dropIfExists('ffb_goal');
         Schema::dropIfExists('ffb_psgoal');
         Schema::dropIfExists('ffb_playerfid');
+        Schema::dropIfExists('ffb_userteam_slot');
         Schema::dropIfExists('ffb_userteam');
         Schema::dropIfExists('ffb_match');
         Schema::dropIfExists('ffb_matchround');
@@ -153,9 +154,12 @@ class PlayerteamLeagueInventoryTest extends TestCase
         Schema::create('ffb_userteam', function ($table) {
             $table->integer('userteam_id')->primary();
             $table->integer('userteam_matchround_id')->nullable();
-            for ($i = 1; $i <= 11; $i++) {
-                $table->integer('userteam_player_id'.$i)->default(0);
-            }
+        });
+        Schema::create('ffb_userteam_slot', function ($table) {
+            $table->increments('userteam_slot_id');
+            $table->unsignedInteger('userteam_slot_userteam_id');
+            $table->unsignedTinyInteger('userteam_slot_slot');
+            $table->unsignedInteger('userteam_slot_playerteam_id');
         });
     }
 }
