@@ -10,8 +10,8 @@
 <body class="dash-body">
     @php
         $user = $data['user'];
-        $games = $data['games'];
-        $selectedId = (int) ($data['selected_game_id'] ?? 0);
+        $leagues = $data['leagues'];
+        $selectedId = (int) ($data['selected_league_id'] ?? 0);
         $news = $data['news'];
         $textPoll = $data['polls']['text'] ?? null;
         $selectPoll = $data['polls']['select'] ?? null;
@@ -38,29 +38,29 @@
     <main class="dash-main">
         <section class="games-section" aria-labelledby="games-title">
             <div class="section-head">
-                <h2 id="games-title">{{ $selectedId === 0 ? 'Spiel auswählen' : 'Verfügbare Spiele' }}</h2>
+                <h2 id="games-title">{{ $selectedId === 0 ? 'Liga auswählen' : 'Verfügbare Ligen' }}</h2>
                 <button type="button" class="linkish" id="toggle-archive" data-archive="{{ $archive ? '1' : '0' }}">
                     {{ $archive ? 'zu aktuellen Spielen' : 'zu vergangenen Spielen' }}
                 </button>
             </div>
             @if ($selectedId === 0)
-                <p class="hint">Klick ein Spiel an, um es auszuwählen.</p>
+                <p class="hint">Klick eine Liga an, um sie auszuwählen.</p>
             @else
-                <p class="hint">Das markierte Spiel ist ausgewählt.</p>
+                <p class="hint">Die markierte Liga ist ausgewählt.</p>
             @endif
 
             <div class="game-grid" id="game-grid">
-                @forelse ($games as $game)
+                @forelse ($leagues as $league)
                     <button
                         type="button"
-                        class="game-tile{{ $selectedId === (int) $game['game_id'] ? ' is-selected' : '' }}"
-                        data-game-id="{{ $game['game_id'] }}"
+                        class="game-tile{{ $selectedId === (int) $league['league_id'] ? ' is-selected' : '' }}"
+                        data-league-id="{{ $league['league_id'] }}"
                     >
-                        <img src="{{ $game['symbol_url'] }}" alt="" width="56" height="56" loading="lazy">
-                        <span>{{ $game['game_title'] }}</span>
+                        <img src="{{ $league['symbol_url'] }}" alt="" width="56" height="56" loading="lazy">
+                        <span>{{ $league['league_title'] }}</span>
                     </button>
                 @empty
-                    <p class="muted">Keine Spiele gefunden.</p>
+                    <p class="muted">Keine Ligen gefunden.</p>
                 @endforelse
             </div>
         </section>

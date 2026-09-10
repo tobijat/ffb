@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\GameOptions;
+use App\Models\LeagueOptions;
 use App\Models\WebUser;
 
 class HelpService
@@ -12,7 +12,7 @@ class HelpService
      */
     public function pagePayload(int $userId): array
     {
-        $gameId = 0;
+        $leagueId = 0;
         $user = null;
 
         if ($userId > 0) {
@@ -20,7 +20,7 @@ class HelpService
             if ($webUser) {
                 $details = $webUser->details;
                 $photo = (string) ($details?->user_details_photo ?: 'profile_na.png');
-                $gameId = (int) ($details?->user_details_ffb_selected_game ?? 0);
+                $leagueId = (int) ($details?->user_details_ffb_selected_league ?? 0);
                 $user = [
                     'user_id' => (int) $webUser->user_id,
                     'user_nickname' => (string) $webUser->user_nickname,
@@ -30,17 +30,17 @@ class HelpService
             }
         }
 
-        $options = $this->optionsForGame($gameId);
-        $usingDefaults = $gameId <= 0 || $options['options_game_id'] === 0;
+        $options = $this->optionsForGame($leagueId);
+        $usingDefaults = $leagueId <= 0 || $options['options_league_id'] === 0;
 
         return [
             'ok' => true,
             'data' => [
                 'user' => $user,
-                'selected_game_id' => $gameId,
+                'selected_league_id' => $leagueId,
                 'using_defaults' => $usingDefaults,
                 'options' => $options,
-                'wc_points' => $this->parseWcPoints((string) ($options['options_game_wcpoints'] ?? '')),
+                'wc_points' => $this->parseWcPoints((string) ($options['options_league_wcpoints'] ?? '')),
                 'navigation' => $user
                     ? app(DashboardService::class)->navigation()
                     : self::guestNavigation(),
@@ -60,21 +60,21 @@ class HelpService
     /**
      * @return array<string, mixed>
      */
-    private function optionsForGame(int $gameId): array
+    private function optionsForGame(int $leagueId): array
     {
         $options = null;
-        if ($gameId > 0) {
-            $options = GameOptions::query()->where('options_game_id', $gameId)->first();
+        if ($leagueId > 0) {
+            $options = LeagueOptions::query()->where('options_league_id', $leagueId)->first();
         }
         if (! $options) {
-            $options = GameOptions::query()->where('options_game_id', 0)->first();
+            $options = LeagueOptions::query()->where('options_league_id', 0)->first();
         }
 
         if (! $options) {
             return [
-                'options_game_id' => 0,
-                'options_game_pointsmode' => 'new',
-                'options_game_wcpoints' => '10,8,6,4,2,1',
+                'options_league_id' => 0,
+                'options_league_pointsmode' => 'new',
+                'options_league_wcpoints' => '10,8,6,4,2,1',
                 'options_lineup_max_players' => 11,
                 'options_lineup_max_credits' => 50,
                 'options_lineup_max_players_team' => 3,
@@ -114,9 +114,9 @@ class HelpService
         }
 
         return [
-            'options_game_id' => (int) $options->options_game_id,
-            'options_game_pointsmode' => (string) ($options->options_game_pointsmode ?: 'new'),
-            'options_game_wcpoints' => (string) ($options->options_game_wcpoints ?: ''),
+            'options_league_id' => (int) $options->options_league_id,
+            'options_league_pointsmode' => (string) ($options->options_league_pointsmode ?: 'new'),
+            'options_league_wcpoints' => (string) ($options->options_league_wcpoints ?: ''),
             'options_lineup_max_players' => (int) $options->options_lineup_max_players,
             'options_lineup_max_credits' => (float) $options->options_lineup_max_credits,
             'options_lineup_max_players_team' => (int) $options->options_lineup_max_players_team,

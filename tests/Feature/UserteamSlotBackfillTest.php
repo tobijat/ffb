@@ -98,9 +98,9 @@ class UserteamSlotBackfillTest extends TestCase
 
         Schema::create('ffb_matchround', function (Blueprint $table) {
             $table->integer('matchround_id')->primary();
-            $table->integer('matchround_game_id')->default(1);
+            $table->integer('matchround_league_id')->default(1);
         });
-        DB::table('ffb_matchround')->insert(['matchround_id' => 1, 'matchround_game_id' => 1]);
+        DB::table('ffb_matchround')->insert(['matchround_id' => 1, 'matchround_league_id' => 1]);
 
         Schema::create('ffb_userteam', function (Blueprint $table) {
             $table->integer('userteam_id')->primary();

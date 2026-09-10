@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Game;
-use App\Models\GameOptions;
+use App\Models\League;
+use App\Models\LeagueOptions;
 use App\Models\Matchround;
 use App\Models\News;
 use App\Models\Userscore;
@@ -16,8 +16,7 @@ class AdminLeagueService
 
     public function __construct(
         private readonly AdminCenterService $adminCenter,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>|null  $form
@@ -30,7 +29,7 @@ class AdminLeagueService
         return [
             'user' => $shell['user'],
             'navigation' => $shell['navigation'],
-            'selected_game' => $shell['selected_game'],
+            'selected_league' => $shell['selected_league'],
             'items' => $this->listItems(),
             'form' => $form ?? $this->emptyForm(),
             'mode' => $mode === 'update' ? 'update' : 'create',
@@ -44,14 +43,14 @@ class AdminLeagueService
     {
         return array_merge(
             [
-                'game_id' => '',
-                'game_title' => '',
-                'game_description' => '',
-                'game_status' => 1,
-                'game_visible' => 1,
-                'game_archive' => 0,
-                'game_countdown' => 0,
-                'game_symbol' => self::DEFAULT_SYMBOL,
+                'league_id' => '',
+                'league_title' => '',
+                'league_description' => '',
+                'league_status' => 1,
+                'league_visible' => 1,
+                'league_archive' => 0,
+                'league_countdown' => 0,
+                'league_symbol' => self::DEFAULT_SYMBOL,
                 'symbol_url' => '/images/ffb/symbols/'.self::DEFAULT_SYMBOL,
             ],
             $this->defaultOptionsForm(),
@@ -61,29 +60,29 @@ class AdminLeagueService
     /**
      * @return array<string, mixed>|null
      */
-    public function formForEdit(int $gameId): ?array
+    public function formForEdit(int $leagueId): ?array
     {
-        $game = Game::query()->with('options')->find($gameId);
-        if (! $game) {
+        $league = League::query()->with('options')->find($leagueId);
+        if (! $league) {
             return null;
         }
 
-        $symbol = (string) ($game->game_symbol ?: self::DEFAULT_SYMBOL);
-        $options = $game->options;
+        $symbol = (string) ($league->league_symbol ?: self::DEFAULT_SYMBOL);
+        $options = $league->options;
         $optionForm = $options
             ? $this->optionsToForm($options)
             : $this->defaultOptionsForm();
 
         return array_merge(
             [
-                'game_id' => (int) $game->game_id,
-                'game_title' => (string) $game->game_title,
-                'game_description' => (string) ($game->game_description ?? ''),
-                'game_status' => (int) (bool) $game->game_status,
-                'game_visible' => (int) (bool) $game->game_visible,
-                'game_archive' => (int) (bool) $game->game_archive,
-                'game_countdown' => (int) (bool) $game->game_countdown,
-                'game_symbol' => $symbol,
+                'league_id' => (int) $league->league_id,
+                'league_title' => (string) $league->league_title,
+                'league_description' => (string) ($league->league_description ?? ''),
+                'league_status' => (int) (bool) $league->league_status,
+                'league_visible' => (int) (bool) $league->league_visible,
+                'league_archive' => (int) (bool) $league->league_archive,
+                'league_countdown' => (int) (bool) $league->league_countdown,
+                'league_symbol' => $symbol,
                 'symbol_url' => '/images/ffb/symbols/'.$symbol,
             ],
             $optionForm,
@@ -111,23 +110,23 @@ class AdminLeagueService
                     'form' => $form,
                 ];
             }
-            $form['game_symbol'] = $uploaded;
+            $form['league_symbol'] = $uploaded;
             $form['symbol_url'] = '/images/ffb/symbols/'.$uploaded;
         }
 
         DB::transaction(function () use ($form): void {
-            $game = Game::query()->create([
-                'game_title' => $form['game_title'],
-                'game_description' => $form['game_description'] !== '' ? $form['game_description'] : null,
-                'game_status' => (int) $form['game_status'],
-                'game_visible' => (int) $form['game_visible'],
-                'game_archive' => (int) $form['game_archive'],
-                'game_countdown' => (int) $form['game_countdown'],
-                'game_symbol' => $form['game_symbol'],
+            $league = League::query()->create([
+                'league_title' => $form['league_title'],
+                'league_description' => $form['league_description'] !== '' ? $form['league_description'] : null,
+                'league_status' => (int) $form['league_status'],
+                'league_visible' => (int) $form['league_visible'],
+                'league_archive' => (int) $form['league_archive'],
+                'league_countdown' => (int) $form['league_countdown'],
+                'league_symbol' => $form['league_symbol'],
             ]);
 
-            GameOptions::query()->create(array_merge(
-                ['options_game_id' => (int) $game->game_id],
+            LeagueOptions::query()->create(array_merge(
+                ['options_league_id' => (int) $league->league_id],
                 $this->optionsFromForm($form),
             ));
         });
@@ -139,27 +138,27 @@ class AdminLeagueService
      * @param  array<string, mixed>  $input
      * @return array{ok: bool, message?: string, errors?: list<string>, form?: array<string, mixed>}
      */
-    public function update(int $gameId, array $input, ?UploadedFile $symbolFile = null): array
+    public function update(int $leagueId, array $input, ?UploadedFile $symbolFile = null): array
     {
-        $game = Game::query()->with('options')->find($gameId);
-        if (! $game) {
+        $league = League::query()->with('options')->find($leagueId);
+        if (! $league) {
             return [
                 'ok' => false,
                 'errors' => ['Liga nicht gefunden.'],
-                'form' => $this->normalizeInput($input + ['game_id' => $gameId]),
+                'form' => $this->normalizeInput($input + ['league_id' => $leagueId]),
             ];
         }
 
         $form = $this->normalizeInput($input + [
-            'game_id' => $gameId,
-            'game_symbol' => (string) ($game->game_symbol ?: self::DEFAULT_SYMBOL),
+            'league_id' => $leagueId,
+            'league_symbol' => (string) ($league->league_symbol ?: self::DEFAULT_SYMBOL),
         ]);
         $errors = $this->validate($form, $symbolFile);
         if ($errors !== []) {
             return ['ok' => false, 'errors' => $errors, 'form' => $form];
         }
 
-        $oldSymbol = (string) ($game->game_symbol ?: '');
+        $oldSymbol = (string) ($league->league_symbol ?: '');
         if ($symbolFile !== null) {
             $uploaded = $this->storeSymbol($symbolFile);
             if ($uploaded === null) {
@@ -169,33 +168,33 @@ class AdminLeagueService
                     'form' => $form,
                 ];
             }
-            $form['game_symbol'] = $uploaded;
+            $form['league_symbol'] = $uploaded;
             $form['symbol_url'] = '/images/ffb/symbols/'.$uploaded;
         }
 
-        DB::transaction(function () use ($game, $form, $oldSymbol): void {
-            $game->game_title = $form['game_title'];
-            $game->game_description = $form['game_description'] !== '' ? $form['game_description'] : null;
-            $game->game_status = (int) $form['game_status'];
-            $game->game_visible = (int) $form['game_visible'];
-            $game->game_archive = (int) $form['game_archive'];
-            $game->game_countdown = (int) $form['game_countdown'];
-            $game->game_symbol = $form['game_symbol'];
-            $game->save();
+        DB::transaction(function () use ($league, $form, $oldSymbol): void {
+            $league->league_title = $form['league_title'];
+            $league->league_description = $form['league_description'] !== '' ? $form['league_description'] : null;
+            $league->league_status = (int) $form['league_status'];
+            $league->league_visible = (int) $form['league_visible'];
+            $league->league_archive = (int) $form['league_archive'];
+            $league->league_countdown = (int) $form['league_countdown'];
+            $league->league_symbol = $form['league_symbol'];
+            $league->save();
 
             $optionsPayload = $this->optionsFromForm($form);
-            if ($game->options) {
-                $game->options->fill($optionsPayload)->save();
+            if ($league->options) {
+                $league->options->fill($optionsPayload)->save();
             } else {
-                GameOptions::query()->create(array_merge(
-                    ['options_game_id' => (int) $game->game_id],
+                LeagueOptions::query()->create(array_merge(
+                    ['options_league_id' => (int) $league->league_id],
                     $optionsPayload,
                 ));
             }
 
             if (
                 $oldSymbol !== ''
-                && $oldSymbol !== $form['game_symbol']
+                && $oldSymbol !== $form['league_symbol']
                 && $oldSymbol !== self::DEFAULT_SYMBOL
             ) {
                 $this->deleteSymbolFile($oldSymbol);
@@ -208,27 +207,27 @@ class AdminLeagueService
     /**
      * @return array{ok: bool, message?: string, errors?: list<string>}
      */
-    public function delete(int $gameId): array
+    public function delete(int $leagueId): array
     {
-        $game = Game::query()->find($gameId);
-        if (! $game) {
+        $league = League::query()->find($leagueId);
+        if (! $league) {
             return ['ok' => false, 'errors' => ['Liga nicht gefunden.']];
         }
 
-        if (Matchround::query()->where('matchround_game_id', $gameId)->exists()) {
+        if (Matchround::query()->where('matchround_league_id', $leagueId)->exists()) {
             return ['ok' => false, 'errors' => ['Löschen nicht möglich: Es gibt zugehörige Spielrunden.']];
         }
 
-        if (News::query()->where('news_game_id', $gameId)->exists()) {
+        if (News::query()->where('news_league_id', $leagueId)->exists()) {
             return ['ok' => false, 'errors' => ['Löschen nicht möglich: Es gibt zugehörige News.']];
         }
 
-        if (Userscore::query()->where('userscore_game_id', $gameId)->exists()) {
+        if (Userscore::query()->where('userscore_league_id', $leagueId)->exists()) {
             return ['ok' => false, 'errors' => ['Löschen nicht möglich: Es gibt zugehörige Ranglisten-Daten.']];
         }
 
-        $symbol = (string) ($game->game_symbol ?: '');
-        $game->delete();
+        $symbol = (string) ($league->league_symbol ?: '');
+        $league->delete();
 
         if ($symbol !== '' && $symbol !== self::DEFAULT_SYMBOL) {
             $this->deleteSymbolFile($symbol);
@@ -242,20 +241,20 @@ class AdminLeagueService
      */
     private function listItems(): array
     {
-        return Game::query()
-            ->orderBy('game_archive')
-            ->orderBy('game_title')
+        return League::query()
+            ->orderBy('league_archive')
+            ->orderBy('league_title')
             ->get()
-            ->map(function (Game $game) {
-                $symbol = (string) ($game->game_symbol ?: self::DEFAULT_SYMBOL);
+            ->map(function (League $league) {
+                $symbol = (string) ($league->league_symbol ?: self::DEFAULT_SYMBOL);
 
                 return [
-                    'game_id' => (int) $game->game_id,
-                    'game_title' => (string) $game->game_title,
-                    'game_status' => (int) (bool) $game->game_status,
-                    'game_visible' => (int) (bool) $game->game_visible,
-                    'game_archive' => (int) (bool) $game->game_archive,
-                    'game_countdown' => (int) (bool) $game->game_countdown,
+                    'league_id' => (int) $league->league_id,
+                    'league_title' => (string) $league->league_title,
+                    'league_status' => (int) (bool) $league->league_status,
+                    'league_visible' => (int) (bool) $league->league_visible,
+                    'league_archive' => (int) (bool) $league->league_archive,
+                    'league_countdown' => (int) (bool) $league->league_countdown,
                     'symbol_url' => '/images/ffb/symbols/'.$symbol,
                 ];
             })
@@ -269,25 +268,25 @@ class AdminLeagueService
      */
     private function normalizeInput(array $input): array
     {
-        $symbol = trim((string) ($input['game_symbol'] ?? self::DEFAULT_SYMBOL));
+        $symbol = trim((string) ($input['league_symbol'] ?? self::DEFAULT_SYMBOL));
         if ($symbol === '') {
             $symbol = self::DEFAULT_SYMBOL;
         }
 
         $form = [
-            'game_id' => (string) ($input['game_id'] ?? ''),
-            'game_title' => trim((string) ($input['game_title'] ?? '')),
-            'game_description' => trim((string) ($input['game_description'] ?? '')),
-            'game_status' => (int) ($input['game_status'] ?? 0) === 1 ? 1 : 0,
-            'game_visible' => (int) ($input['game_visible'] ?? 0) === 1 ? 1 : 0,
-            'game_archive' => (int) ($input['game_archive'] ?? 0) === 1 ? 1 : 0,
-            'game_countdown' => (int) ($input['game_countdown'] ?? 0) === 1 ? 1 : 0,
-            'game_symbol' => $symbol,
+            'league_id' => (string) ($input['league_id'] ?? ''),
+            'league_title' => trim((string) ($input['league_title'] ?? '')),
+            'league_description' => trim((string) ($input['league_description'] ?? '')),
+            'league_status' => (int) ($input['league_status'] ?? 0) === 1 ? 1 : 0,
+            'league_visible' => (int) ($input['league_visible'] ?? 0) === 1 ? 1 : 0,
+            'league_archive' => (int) ($input['league_archive'] ?? 0) === 1 ? 1 : 0,
+            'league_countdown' => (int) ($input['league_countdown'] ?? 0) === 1 ? 1 : 0,
+            'league_symbol' => $symbol,
             'symbol_url' => '/images/ffb/symbols/'.$symbol,
         ];
 
         foreach ($this->optionKeys() as $key) {
-            if (str_starts_with($key, 'options_game_') && ! str_ends_with($key, '_before')) {
+            if (str_starts_with($key, 'options_league_') && ! str_ends_with($key, '_before')) {
                 $form[$key] = trim((string) ($input[$key] ?? ''));
             } else {
                 $raw = $input[$key] ?? 0;
@@ -306,21 +305,21 @@ class AdminLeagueService
     {
         $errors = [];
 
-        if ($form['game_title'] === '') {
+        if ($form['league_title'] === '') {
             $errors[] = 'Bitte einen Liga-Titel angeben.';
         }
 
-        $rank = (string) ($form['options_game_rankmode'] ?? '');
+        $rank = (string) ($form['options_league_rankmode'] ?? '');
         if (! in_array($rank, ['wc', 'points'], true)) {
             $errors[] = 'Ungültiger Ranglisten-Modus.';
         }
 
-        $price = (string) ($form['options_game_pricemode'] ?? '');
+        $price = (string) ($form['options_league_pricemode'] ?? '');
         if (! in_array($price, ['dynamic', 'static'], true)) {
             $errors[] = 'Ungültiger Preis-Modus.';
         }
 
-        foreach (['options_game_pointsmode', 'options_game_wcpoints'] as $key) {
+        foreach (['options_league_pointsmode', 'options_league_wcpoints'] as $key) {
             if (! in_array((string) ($form[$key] ?? ''), ['new', 'old'], true)) {
                 $errors[] = 'Ungültiger Punkte-Modus.';
                 break;
@@ -328,7 +327,7 @@ class AdminLeagueService
         }
 
         foreach ($this->optionKeys() as $key) {
-            if (str_starts_with($key, 'options_game_') && ! str_ends_with($key, '_before')) {
+            if (str_starts_with($key, 'options_league_') && ! str_ends_with($key, '_before')) {
                 continue;
             }
             if (! is_numeric($form[$key] ?? null)) {
@@ -356,11 +355,11 @@ class AdminLeagueService
     private function defaultOptionsForm(): array
     {
         return [
-            'options_game_rankmode' => 'wc',
-            'options_game_pricemode' => 'dynamic',
-            'options_game_pointsmode' => 'new',
-            'options_game_wcpoints' => 'new',
-            'options_game_remind_hours_before' => 0,
+            'options_league_rankmode' => 'wc',
+            'options_league_pricemode' => 'dynamic',
+            'options_league_pointsmode' => 'new',
+            'options_league_wcpoints' => 'new',
+            'options_league_remind_hours_before' => 0,
             'options_score_minutes' => 60,
             'options_score_minutes_treshold' => 30,
             'options_score_minutes_gt' => 3,
@@ -419,7 +418,7 @@ class AdminLeagueService
     /**
      * @return array<string, mixed>
      */
-    private function optionsToForm(GameOptions $options): array
+    private function optionsToForm(LeagueOptions $options): array
     {
         $form = [];
         foreach ($this->optionKeys() as $key) {
@@ -437,7 +436,7 @@ class AdminLeagueService
     {
         $out = [];
         foreach ($this->optionKeys() as $key) {
-            if (str_starts_with($key, 'options_game_') && ! str_ends_with($key, '_before')) {
+            if (str_starts_with($key, 'options_league_') && ! str_ends_with($key, '_before')) {
                 $out[$key] = (string) $form[$key];
             } else {
                 $out[$key] = (int) $form[$key];

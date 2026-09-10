@@ -85,13 +85,13 @@
             apiBase: 'api',
             legacyBase: @json($legacyBase),
             userId: @json($user['user_id']),
-            selectedGameId: @json($data['selected_game_id'] ?? 0),
+            selectedLeagueId: @json($data['selected_league_id'] ?? 0),
             gameOver: @json((bool) ($data['game_over'] ?? false)),
         };
         window.FFB_MODAL = {
             apiBase: 'api',
             legacyBase: @json($legacyBase),
-            selectedGameId: @json($data['selected_game_id'] ?? 0),
+            selectedLeagueId: @json($data['selected_league_id'] ?? 0),
         };
     </script>
     <script src="js/modal.js?v=8" defer></script>

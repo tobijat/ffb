@@ -28,7 +28,7 @@
             'brandTitle' => 'Admin Center',
             'brandLabel' => 'AdminCenter',
             'brandIcon' => 'images/admin/navigation/nav_admin_start.png',
-            'brandGame' => $data['selected_game'] ?? null,
+            'brandLeague' => $data['selected_league'] ?? null,
         ])
 
         <nav class="dash-nav admin-nav" aria-label="Admin-Navigation">

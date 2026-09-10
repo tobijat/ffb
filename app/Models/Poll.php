@@ -24,8 +24,8 @@ class Poll extends Model
         return $this->hasMany(PollResult::class, 'poll_result_poll_id', 'poll_id');
     }
 
-    public function game(): BelongsTo
+    public function league(): BelongsTo
     {
-        return $this->belongsTo(Game::class, 'poll_game_id', 'game_id');
+        return $this->belongsTo(League::class, 'poll_league_id', 'league_id');
     }
 }

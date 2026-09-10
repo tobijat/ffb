@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Game;
-use App\Models\GameOptions;
 use App\Models\Goal;
+use App\Models\League;
+use App\Models\LeagueOptions;
 use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\Playerprice;
@@ -32,13 +32,13 @@ class PlayerPopupService
             return ['ok' => false, 'status' => 404, 'error' => 'Player not found'];
         }
 
-        $gameId = $this->selectedGameId($viewerId);
-        if ($gameId <= 0) {
+        $leagueId = $this->selectedLeagueId($viewerId);
+        if ($leagueId <= 0) {
             return ['ok' => false, 'status' => 422, 'error' => 'No game selected'];
         }
 
-        $options = GameOptions::query()->where('options_game_id', $gameId)->first();
-        $priceMode = (string) ($options?->options_game_pricemode ?: 'constant');
+        $options = LeagueOptions::query()->where('options_league_id', $leagueId)->first();
+        $priceMode = (string) ($options?->options_league_pricemode ?: 'constant');
 
         $ptIds = Playerteam::query()
             ->where('playerteam_player_id', $playerteam->playerteam_player_id)
@@ -53,18 +53,18 @@ class PlayerPopupService
 
         $now = date('Y-m-d H:i:s');
         $matchCountTotal = Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->where('matchround_startdate', '<', $now)
             ->count();
 
-        $numLineups = $this->countLineups($ptIds, $gameId);
+        $numLineups = $this->countLineups($ptIds, $leagueId);
         $matchCountPlayed = Playerstats::query()
             ->whereIn('playerstats_playerteam_id', $ptIds)
-            ->whereHas('matchround', fn (Builder $q) => $q->where('matchround_game_id', $gameId))
+            ->whereHas('matchround', fn (Builder $q) => $q->where('matchround_league_id', $leagueId))
             ->count();
 
         $rounds = Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->where('matchround_status', 1)
             ->orderByDesc('matchround_startdate')
             ->get();
@@ -142,7 +142,7 @@ class PlayerPopupService
             $pastMatches = $this->pastMatches(
                 $this->sameTeamPlayerteamIds($playerteam),
                 (int) $playerteam->playerteam_team_id,
-                $gameId,
+                $leagueId,
                 10 - count($matchrounds),
             );
         }
@@ -211,14 +211,14 @@ class PlayerPopupService
             return ['ok' => false, 'status' => 404, 'error' => 'Matchround not found'];
         }
 
-        $viewerGameId = $this->selectedGameId($viewerId);
-        $roundGameId = (int) $matchround->matchround_game_id;
-        $optionsGameId = $roundGameId > 0 ? $roundGameId : $viewerGameId;
-        $options = $optionsGameId > 0
-            ? GameOptions::query()->where('options_game_id', $optionsGameId)->first()
+        $viewerLeagueId = $this->selectedLeagueId($viewerId);
+        $roundLeagueId = (int) $matchround->matchround_league_id;
+        $optionsLeagueId = $roundLeagueId > 0 ? $roundLeagueId : $viewerLeagueId;
+        $options = $optionsLeagueId > 0
+            ? LeagueOptions::query()->where('options_league_id', $optionsLeagueId)->first()
             : null;
-        $pointsMode = (string) ($options?->options_game_pointsmode ?: 'new');
-        $priceMode = (string) ($options?->options_game_pricemode ?: 'constant');
+        $pointsMode = (string) ($options?->options_league_pointsmode ?: 'new');
+        $priceMode = (string) ($options?->options_league_pricemode ?: 'constant');
 
         $teamId = (int) $playerteam->playerteam_team_id;
         $sameTeamPtIds = $this->sameTeamPlayerteamIds($playerteam);
@@ -325,11 +325,11 @@ class PlayerPopupService
         ];
     }
 
-    private function selectedGameId(int $userId): int
+    private function selectedLeagueId(int $userId): int
     {
         return (int) (UserDetails::query()
             ->where('user_id', $userId)
-            ->value('user_details_ffb_selected_game') ?? 0);
+            ->value('user_details_ffb_selected_league') ?? 0);
     }
 
     /**
@@ -357,10 +357,10 @@ class PlayerPopupService
     /**
      * @param  list<int>  $ptIds
      */
-    private function countLineups(array $ptIds, int $gameId): int
+    private function countLineups(array $ptIds, int $leagueId): int
     {
         return Userteam::query()
-            ->whereHas('matchround', fn (Builder $q) => $q->where('matchround_game_id', $gameId))
+            ->whereHas('matchround', fn (Builder $q) => $q->where('matchround_league_id', $leagueId))
             ->whereHas('slots', fn (Builder $q) => $q->whereIn('userteam_slot_playerteam_id', $ptIds))
             ->count();
     }
@@ -517,7 +517,7 @@ class PlayerPopupService
      * @param  list<int>  $sameTeamPtIds
      * @return list<array<string, mixed>>
      */
-    private function pastMatches(array $sameTeamPtIds, int $teamId, int $gameId, int $limit): array
+    private function pastMatches(array $sameTeamPtIds, int $teamId, int $leagueId, int $limit): array
     {
         if ($limit <= 0 || $sameTeamPtIds === []) {
             return [];
@@ -531,7 +531,7 @@ class PlayerPopupService
             ->whereIn('playerstats_playerteam_id', $sameTeamPtIds)
             ->where('ffb_match.match_date', '<', $now)
             ->where('ffb_match.match_homescore', '>', -1)
-            ->where('ffb_matchround.matchround_game_id', '!=', $gameId)
+            ->where('ffb_matchround.matchround_league_id', '!=', $leagueId)
             ->orderByDesc('ffb_match.match_date')
             ->orderByDesc('ffb_match.match_id')
             ->select('ffb_playerstats.*')
@@ -667,9 +667,9 @@ class PlayerPopupService
      *
      * @return array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}
      */
-    public function chart(int $playerteamId, int $gameId): array
+    public function chart(int $playerteamId, int $leagueId): array
     {
-        $ctx = $this->resolvePlayerContext($playerteamId, $gameId);
+        $ctx = $this->resolvePlayerContext($playerteamId, $leagueId);
         if (! $ctx['ok']) {
             return $ctx;
         }
@@ -679,7 +679,7 @@ class PlayerPopupService
         $ptIds = $ctx['pt_ids'];
 
         $rounds = Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->where('matchround_status', 1)
             ->orderBy('matchround_startdate')
             ->get();
@@ -706,7 +706,7 @@ class PlayerPopupService
         return [
             'ok' => true,
             'data' => [
-                'game_id' => $gameId,
+                'league_id' => $leagueId,
                 'player' => $this->playerSummary($playerteam),
                 'rounds' => $series,
             ],
@@ -718,9 +718,9 @@ class PlayerPopupService
      *
      * @return array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}
      */
-    public function prices(int $playerteamId, int $gameId): array
+    public function prices(int $playerteamId, int $leagueId): array
     {
-        $ctx = $this->resolvePlayerContext($playerteamId, $gameId);
+        $ctx = $this->resolvePlayerContext($playerteamId, $leagueId);
         if (! $ctx['ok']) {
             return $ctx;
         }
@@ -731,12 +731,12 @@ class PlayerPopupService
 
         $now = date('Y-m-d H:i:s');
         $past = Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->where('matchround_startdate', '<', $now)
             ->orderBy('matchround_startdate')
             ->get();
         $running = Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->where('matchround_startdate', '>', $now)
             ->orderBy('matchround_startdate')
             ->limit(1)
@@ -748,7 +748,7 @@ class PlayerPopupService
             return [
                 'ok' => true,
                 'data' => [
-                    'game_id' => $gameId,
+                    'league_id' => $leagueId,
                     'player' => $this->playerSummary($playerteam),
                     'points' => [],
                 ],
@@ -792,7 +792,7 @@ class PlayerPopupService
         return [
             'ok' => true,
             'data' => [
-                'game_id' => $gameId,
+                'league_id' => $leagueId,
                 'player' => $this->playerSummary($playerteam),
                 'points' => $points,
             ],
@@ -800,16 +800,16 @@ class PlayerPopupService
     }
 
     /**
-     * @return array{ok: true, playerteam: Playerteam, game_id: int, pt_ids: list<int>}|array{ok: false, status: int, error: string}
+     * @return array{ok: true, playerteam: Playerteam, league_id: int, pt_ids: list<int>}|array{ok: false, status: int, error: string}
      */
-    private function resolvePlayerContext(int $playerteamId, int $gameId): array
+    private function resolvePlayerContext(int $playerteamId, int $leagueId): array
     {
         if ($playerteamId <= 0) {
             return ['ok' => false, 'status' => 422, 'error' => 'playerteam_id is required'];
         }
 
-        if ($gameId <= 0) {
-            return ['ok' => false, 'status' => 422, 'error' => 'game_id is required'];
+        if ($leagueId <= 0) {
+            return ['ok' => false, 'status' => 422, 'error' => 'league_id is required'];
         }
 
         $playerteam = Playerteam::query()->with(['player', 'team'])->find($playerteamId);
@@ -817,8 +817,8 @@ class PlayerPopupService
             return ['ok' => false, 'status' => 404, 'error' => 'Player not found'];
         }
 
-        if (! Game::query()->where('game_id', $gameId)->exists()) {
-            return ['ok' => false, 'status' => 404, 'error' => 'Game not found'];
+        if (! League::query()->where('league_id', $leagueId)->exists()) {
+            return ['ok' => false, 'status' => 404, 'error' => 'League not found'];
         }
 
         $ptIds = Playerteam::query()
@@ -835,7 +835,7 @@ class PlayerPopupService
         return [
             'ok' => true,
             'playerteam' => $playerteam,
-            'game_id' => $gameId,
+            'league_id' => $leagueId,
             'pt_ids' => $ptIds,
         ];
     }

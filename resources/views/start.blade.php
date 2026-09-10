@@ -88,7 +88,7 @@
                         <div><dt>Ø Punkte / Aufstellung</dt><dd>{{ number_format($stats['score_avg'], 2, ',', '.') }}</dd></div>
                     </dl>
                     @if (count($leagues))
-                        <p class="leagues">Aktive Ligen: {{ collect($leagues)->pluck('game_title')->join(' · ') }}</p>
+                        <p class="leagues">Aktive Ligen: {{ collect($leagues)->pluck('league_title')->join(' · ') }}</p>
                     @endif
                 </section>
             </div>

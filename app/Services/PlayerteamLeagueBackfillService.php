@@ -106,10 +106,10 @@ class PlayerteamLeagueBackfillService
                 $q->where('m.match_hometeam_id', $teamId)
                     ->orWhere('m.match_guestteam_id', $teamId);
             })
-            ->groupBy('mr.matchround_game_id')
+            ->groupBy('mr.matchround_league_id')
             ->orderBy(DB::raw('MIN(m.match_date)'))
             ->get([
-                'mr.matchround_game_id as game_id',
+                'mr.matchround_league_id as league_id',
                 DB::raw('MIN(m.match_date) as first_match'),
             ]);
 
@@ -123,9 +123,9 @@ class PlayerteamLeagueBackfillService
         );
 
         foreach ($leagueFirstMatches as $league) {
-            $gameId = (int) $league->game_id;
+            $leagueId = (int) $league->league_id;
             $firstMatch = substr((string) $league->first_match, 0, 10);
-            if ($gameId <= 0 || $firstMatch === '') {
+            if ($leagueId <= 0 || $firstMatch === '') {
                 continue;
             }
 
@@ -138,7 +138,7 @@ class PlayerteamLeagueBackfillService
             }
 
             if ($chosenId !== null) {
-                $assignment[$chosenId][] = $gameId;
+                $assignment[$chosenId][] = $leagueId;
             }
         }
 
@@ -313,7 +313,7 @@ class PlayerteamLeagueBackfillService
         $this->ensureLeagueColumn();
 
         $membership = $this->inventory->leagueMembershipByPlayerteam();
-        $defaultLeagueId = (int) config('ffb.registration_default_game_id', 1);
+        $defaultLeagueId = (int) config('ffb.registration_default_league_id', 1);
         $fallbackAssigned = 0;
         $copies = 0;
         $remappedFk = 0;
@@ -460,7 +460,7 @@ class PlayerteamLeagueBackfillService
             $bad = DB::table($table.' as t')
                 ->join('ffb_playerteam as pt', 'pt.playerteam_id', '=', "t.{$ptCol}")
                 ->join('ffb_matchround as mr', 'mr.matchround_id', '=', "t.{$roundCol}")
-                ->whereColumn('pt.playerteam_league_id', '!=', 'mr.matchround_game_id')
+                ->whereColumn('pt.playerteam_league_id', '!=', 'mr.matchround_league_id')
                 ->count();
             if ($bad > 0) {
                 $issues[] = "{$bad} {$table} rows point at wrong league playerteam";
@@ -482,7 +482,7 @@ class PlayerteamLeagueBackfillService
                     ->orWhere('m.match_guestteam_id', $teamId);
             })
             ->distinct()
-            ->pluck('mr.matchround_game_id')
+            ->pluck('mr.matchround_league_id')
             ->map(fn ($id) => (int) $id)
             ->filter(fn (int $id) => $id > 0)
             ->values()
@@ -519,7 +519,7 @@ class PlayerteamLeagueBackfillService
         $statIds = DB::table('ffb_playerstats as ps')
             ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'ps.playerstats_matchround_id')
             ->where('ps.playerstats_playerteam_id', $oldId)
-            ->where('mr.matchround_game_id', $leagueId)
+            ->where('mr.matchround_league_id', $leagueId)
             ->pluck('ps.playerstats_id');
         if ($statIds->isNotEmpty()) {
             $count += DB::table('ffb_playerstats')->whereIn('playerstats_id', $statIds)->update([
@@ -530,7 +530,7 @@ class PlayerteamLeagueBackfillService
         $priceIds = DB::table('ffb_playerprice as pp')
             ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'pp.playerprice_matchround_id')
             ->where('pp.playerprice_playerteam_id', $oldId)
-            ->where('mr.matchround_game_id', $leagueId)
+            ->where('mr.matchround_league_id', $leagueId)
             ->pluck('pp.playerprice_id');
         if ($priceIds->isNotEmpty()) {
             $count += DB::table('ffb_playerprice')->whereIn('playerprice_id', $priceIds)->update([
@@ -542,7 +542,7 @@ class PlayerteamLeagueBackfillService
             ->join('ffb_match as m', 'm.match_id', '=', 'g.goal_match_id')
             ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'm.match_round')
             ->where('g.goal_playerteam_id', $oldId)
-            ->where('mr.matchround_game_id', $leagueId)
+            ->where('mr.matchround_league_id', $leagueId)
             ->pluck('g.goal_id');
         if ($goalIds->isNotEmpty()) {
             $count += DB::table('ffb_goal')->whereIn('goal_id', $goalIds)->update([
@@ -554,7 +554,7 @@ class PlayerteamLeagueBackfillService
             ->join('ffb_match as m', 'm.match_id', '=', 'g.psgoal_match_id')
             ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'm.match_round')
             ->where('g.psgoal_playerteam_id', $oldId)
-            ->where('mr.matchround_game_id', $leagueId)
+            ->where('mr.matchround_league_id', $leagueId)
             ->pluck('g.psgoal_id');
         if ($psgoalIds->isNotEmpty()) {
             $count += DB::table('ffb_psgoal')->whereIn('psgoal_id', $psgoalIds)->update([
@@ -567,7 +567,7 @@ class PlayerteamLeagueBackfillService
                 $userteamIds = DB::table('ffb_userteam as ut')
                     ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'ut.userteam_matchround_id')
                     ->where("ut.{$column}", $oldId)
-                    ->where('mr.matchround_game_id', $leagueId)
+                    ->where('mr.matchround_league_id', $leagueId)
                     ->pluck('ut.userteam_id');
                 if ($userteamIds->isNotEmpty()) {
                     $count += DB::table('ffb_userteam')->whereIn('userteam_id', $userteamIds)->update([
@@ -582,7 +582,7 @@ class PlayerteamLeagueBackfillService
                 ->join('ffb_userteam as ut', 'ut.userteam_id', '=', 'us.userteam_slot_userteam_id')
                 ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'ut.userteam_matchround_id')
                 ->where('us.userteam_slot_playerteam_id', $oldId)
-                ->where('mr.matchround_game_id', $leagueId)
+                ->where('mr.matchround_league_id', $leagueId)
                 ->pluck('us.userteam_slot_id');
             if ($slotIds->isNotEmpty()) {
                 $count += DB::table('ffb_userteam_slot')->whereIn('userteam_slot_id', $slotIds)->update([

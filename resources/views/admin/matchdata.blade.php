@@ -8,8 +8,8 @@
 
 @section('content')
     @php
-        $games = $data['games'] ?? [];
-        $selectedGameId = (int) ($data['selected_game_id'] ?? 0);
+        $leagues = $data['leagues'] ?? [];
+        $selectedLeagueId = (int) ($data['selected_league_id'] ?? 0);
         $pointsmode = $data['pointsmode'] ?? 'new';
     @endphp
 
@@ -26,7 +26,7 @@
         data-csrf="{{ csrf_token() }}"
         data-images-base="{{ $legacyBase }}images/ffb/"
         data-pointsmode="{{ $pointsmode }}"
-        data-has-game="{{ $selectedGameId > 0 ? '1' : '0' }}"
+        data-has-game="{{ $selectedLeagueId > 0 ? '1' : '0' }}"
     >
         <div class="section-head">
             <h2 id="admin-matchdata-title">Spieldaten</h2>
@@ -37,16 +37,16 @@
                 <label for="admin-mp-league">Liga</label>
                 <select id="admin-mp-league" class="admin-mp-select">
                     <option value="">— Liga wählen —</option>
-                    @foreach ($games as $game)
-                        <option value="{{ $game['game_id'] }}" @selected($selectedGameId === (int) $game['game_id'])>
-                            {{ $game['game_title'] }}@if (!empty($game['game_archive'])) (Archiv)@endif
+                    @foreach ($leagues as $league)
+                        <option value="{{ $league['league_id'] }}" @selected($selectedLeagueId === (int) $league['league_id'])>
+                            {{ $league['league_title'] }}@if (!empty($league['league_archive'])) (Archiv)@endif
                         </option>
                     @endforeach
                 </select>
             </div>
             <div class="admin-mp-select-field">
                 <label for="admin-mp-round">Spielrunde</label>
-                <select id="admin-mp-round" class="admin-mp-select" @disabled($selectedGameId <= 0)>
+                <select id="admin-mp-round" class="admin-mp-select" @disabled($selectedLeagueId <= 0)>
                     <option value="">— Runde wählen —</option>
                 </select>
             </div>
@@ -58,7 +58,7 @@
             </div>
         </div>
 
-        @if ($selectedGameId <= 0)
+        @if ($selectedLeagueId <= 0)
             <p class="hint">Wähle oben eine Liga, um Spielerpunkte zu erfassen.</p>
         @else
             <p class="hint">Punkte-Modus: <strong>{{ $pointsmode }}</strong></p>

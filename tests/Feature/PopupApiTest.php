@@ -60,10 +60,10 @@ class PopupApiTest extends TestCase
             ],
             'participations' => [
                 [
-                    'game_id' => 26,
-                    'game_title' => 'Testliga',
-                    'game_symbol' => 'x.png',
-                    'game_archive' => false,
+                    'league_id' => 26,
+                    'league_title' => 'Testliga',
+                    'league_symbol' => 'x.png',
+                    'league_archive' => false,
                     'score_rm' => 'wc',
                     'score_wc' => 10,
                     'score_points' => 100,
@@ -190,7 +190,7 @@ class PopupApiTest extends TestCase
                 'match_date' => '01.09.2025',
                 'match_matchround_id' => 10,
                 'match_matchround_name' => 'Runde 1',
-                'match_game_title' => 'Testliga',
+                'match_league_title' => 'Testliga',
             ],
             'hometeam_players' => [],
             'guestteam_players' => [],
@@ -381,7 +381,7 @@ class PopupApiTest extends TestCase
             $mock->shouldReceive('chart')->once()->with(55, 26)->andReturn([
                 'ok' => true,
                 'data' => [
-                    'game_id' => 26,
+                    'league_id' => 26,
                     'player' => ['playerteam_id' => 55, 'player_name' => 'Max'],
                     'rounds' => [
                         [
@@ -400,13 +400,13 @@ class PopupApiTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->getJson('/api/popups/player/55/chart?game_id=26')
+            ->getJson('/api/popups/player/55/chart?league_id=26')
             ->assertOk()
-            ->assertJsonPath('data.game_id', 26)
+            ->assertJsonPath('data.league_id', 26)
             ->assertJsonPath('data.rounds.0.score', 5);
     }
 
-    public function test_player_chart_requires_game_id(): void
+    public function test_player_chart_requires_league_id(): void
     {
         $this->actingAsFfbUser();
 
@@ -414,14 +414,14 @@ class PopupApiTest extends TestCase
             $mock->shouldReceive('chart')->once()->with(55, 0)->andReturn([
                 'ok' => false,
                 'status' => 422,
-                'error' => 'game_id is required',
+                'error' => 'league_id is required',
             ]);
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->getJson('/api/popups/player/55/chart')
             ->assertStatus(422)
-            ->assertJsonPath('error', 'game_id is required');
+            ->assertJsonPath('error', 'league_id is required');
     }
 
     public function test_player_prices_returns_payload(): void
@@ -432,7 +432,7 @@ class PopupApiTest extends TestCase
             $mock->shouldReceive('prices')->once()->with(55, 26)->andReturn([
                 'ok' => true,
                 'data' => [
-                    'game_id' => 26,
+                    'league_id' => 26,
                     'player' => ['playerteam_id' => 55, 'player_name' => 'Max'],
                     'points' => [
                         [
@@ -448,7 +448,7 @@ class PopupApiTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->getJson('/api/popups/player/55/prices?game_id=26')
+            ->getJson('/api/popups/player/55/prices?league_id=26')
             ->assertOk()
             ->assertJsonPath('data.points.0.price', 4.5);
     }

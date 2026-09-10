@@ -19,15 +19,14 @@ class AdminMatchdataController extends Controller
         private readonly AdminMatchdataService $matchdata,
         private readonly AdminCenterService $adminCenter,
         private readonly WeltfussballProxyService $wfProxy,
-    ) {
-    }
+    ) {}
 
     public function show(Request $request): View
     {
         $userId = $this->auth->userId($request);
 
-        if ($request->filled('game_id')) {
-            $this->adminCenter->selectGame((int) $request->input('game_id'));
+        if ($request->filled('league_id')) {
+            $this->adminCenter->selectLeague((int) $request->input('league_id'));
         }
 
         return view('admin.matchdata', [

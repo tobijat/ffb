@@ -49,27 +49,27 @@ class AdminLeagueTest extends TestCase
                         'image_dir' => 'images/admin/navigation/',
                     ],
                 ],
-                'selected_game' => null,
+                'selected_league' => null,
                 'items' => [
                     [
-                        'game_id' => 26,
-                        'game_title' => 'Testliga',
-                        'game_status' => 1,
-                        'game_visible' => 1,
-                        'game_archive' => 0,
-                        'game_countdown' => 0,
+                        'league_id' => 26,
+                        'league_title' => 'Testliga',
+                        'league_status' => 1,
+                        'league_visible' => 1,
+                        'league_archive' => 0,
+                        'league_countdown' => 0,
                         'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
                     ],
                 ],
                 'form' => array_merge([
-                    'game_id' => '',
-                    'game_title' => '',
-                    'game_description' => '',
-                    'game_status' => 1,
-                    'game_visible' => 1,
-                    'game_archive' => 0,
-                    'game_countdown' => 0,
-                    'game_symbol' => 'symbol_game_na.png',
+                    'league_id' => '',
+                    'league_title' => '',
+                    'league_description' => '',
+                    'league_status' => 1,
+                    'league_visible' => 1,
+                    'league_archive' => 0,
+                    'league_countdown' => 0,
+                    'league_symbol' => 'symbol_game_na.png',
                     'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
                 ], $this->defaultOptions()),
                 'mode' => 'create',
@@ -81,8 +81,8 @@ class AdminLeagueTest extends TestCase
             ->assertOk()
             ->assertSee('Ligen', false)
             ->assertSee('Testliga', false)
-            ->assertSee('name="game_title"', false)
-            ->assertSee('name="game_symbol_file"', false)
+            ->assertSee('name="league_title"', false)
+            ->assertSee('name="league_symbol_file"', false)
             ->assertSee('Hinzufügen', false);
     }
 
@@ -101,11 +101,11 @@ class AdminLeagueTest extends TestCase
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->post('/admin/leagues', [
-                'game_title' => 'Neue Liga',
-                'game_status' => 1,
-                'game_visible' => 1,
-                'game_archive' => 0,
-                'game_countdown' => 0,
+                'league_title' => 'Neue Liga',
+                'league_status' => 1,
+                'league_visible' => 1,
+                'league_archive' => 0,
+                'league_countdown' => 0,
             ])
             ->assertRedirect(route('admin.leagues'))
             ->assertSessionHas('admin_message', 'Liga erfolgreich angelegt.');
@@ -136,11 +136,11 @@ class AdminLeagueTest extends TestCase
     private function defaultOptions(): array
     {
         return [
-            'options_game_rankmode' => 'wc',
-            'options_game_pricemode' => 'dynamic',
-            'options_game_pointsmode' => 'new',
-            'options_game_wcpoints' => 'new',
-            'options_game_remind_hours_before' => 0,
+            'options_league_rankmode' => 'wc',
+            'options_league_pricemode' => 'dynamic',
+            'options_league_pointsmode' => 'new',
+            'options_league_wcpoints' => 'new',
+            'options_league_remind_hours_before' => 0,
             'options_score_minutes' => 60,
             'options_score_minutes_treshold' => 30,
             'options_score_minutes_gt' => 3,

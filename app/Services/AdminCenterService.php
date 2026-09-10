@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Game;
+use App\Models\League;
 use App\Models\UserDetails;
 use App\Models\WebUser;
 
@@ -11,9 +11,8 @@ class AdminCenterService
     public function __construct(
         private readonly FfbAdminAccess $admins,
         private readonly LegacyPhpSession $legacySession,
-        private readonly GameBrand $gameBrand,
-    ) {
-    }
+        private readonly LeagueBrand $leagueBrand,
+    ) {}
 
     /**
      * Shared chrome for all admin pages (no full league grid).
@@ -21,15 +20,15 @@ class AdminCenterService
      * @return array{
      *     user: array<string, mixed>,
      *     navigation: list<array{symbol: string, name: string, link: string, style: string, image_dir: string}>,
-     *     selected_game_id: int,
-     *     selected_game: array{game_id: int, game_title: string, symbol_url: string}|null
+     *     selected_league_id: int,
+     *     selected_league: array{league_id: int, league_title: string, symbol_url: string}|null
      * }
      */
     public function shellPayload(int $userId): array
     {
         $webUser = WebUser::query()->with('details')->find($userId);
         $photo = (string) ($webUser?->details?->user_details_photo ?: 'profile_na.png');
-        $selectedGameId = $this->selectedGameId($userId);
+        $selectedLeagueId = $this->selectedLeagueId($userId);
 
         return [
             'user' => [
@@ -39,8 +38,8 @@ class AdminCenterService
                 'is_ffb_admin' => $this->admins->isAdmin($userId),
             ],
             'navigation' => $this->navigation(),
-            'selected_game_id' => $selectedGameId,
-            'selected_game' => $this->gameBrand->forGameId($selectedGameId),
+            'selected_league_id' => $selectedLeagueId,
+            'selected_league' => $this->leagueBrand->forLeagueId($selectedLeagueId),
         ];
     }
 
@@ -48,34 +47,34 @@ class AdminCenterService
      * @return array{
      *     user: array<string, mixed>,
      *     navigation: list<array{symbol: string, name: string, link: string, style: string, image_dir: string}>,
-     *     games: list<array<string, mixed>>,
-     *     selected_game_id: int,
-     *     selected_game: array{game_id: int, game_title: string, symbol_url: string}|null
+     *     leagues: list<array<string, mixed>>,
+     *     selected_league_id: int,
+     *     selected_league: array{league_id: int, league_title: string, symbol_url: string}|null
      * }
      */
     public function pagePayload(int $userId): array
     {
         return [
             ...$this->shellPayload($userId),
-            'games' => $this->games(),
+            'leagues' => $this->leagues(),
         ];
     }
 
     /**
-     * League already chosen elsewhere (legacy admin session, else player selected game).
+     * League already chosen elsewhere (legacy admin session, else player selected league).
      */
-    public function selectedGameId(int $userId): int
+    public function selectedLeagueId(int $userId): int
     {
-        $adminGameId = (int) $this->legacySession->get('game_id_admin', 0);
-        if ($adminGameId > 0 && Game::query()->whereKey($adminGameId)->exists()) {
-            return $adminGameId;
+        $adminLeagueId = (int) $this->legacySession->get('league_id_admin', 0);
+        if ($adminLeagueId > 0 && League::query()->whereKey($adminLeagueId)->exists()) {
+            return $adminLeagueId;
         }
 
         $selected = (int) (UserDetails::query()
             ->whereKey($userId)
-            ->value('user_details_ffb_selected_game') ?? 0);
+            ->value('user_details_ffb_selected_league') ?? 0);
 
-        if ($selected > 0 && Game::query()->whereKey($selected)->exists()) {
+        if ($selected > 0 && League::query()->whereKey($selected)->exists()) {
             return $selected;
         }
 
@@ -83,12 +82,12 @@ class AdminCenterService
     }
 
     /**
-     * @return array{ok: bool, message?: string, errors?: list<string>, game_id?: int}
+     * @return array{ok: bool, message?: string, errors?: list<string>, league_id?: int}
      */
-    public function selectGame(int $gameId): array
+    public function selectLeague(int $leagueId): array
     {
-        $game = Game::query()->find($gameId);
-        if (! $game) {
+        $league = League::query()->find($leagueId);
+        if (! $league) {
             return [
                 'ok' => false,
                 'errors' => ['Liga nicht gefunden.'],
@@ -96,14 +95,14 @@ class AdminCenterService
         }
 
         $this->legacySession->put([
-            'game_id_admin' => (int) $game->game_id,
-            'game_title_admin' => (string) $game->game_title,
+            'league_id_admin' => (int) $league->league_id,
+            'league_title_admin' => (string) $league->league_title,
         ]);
 
         return [
             'ok' => true,
-            'message' => 'Liga „'.$game->game_title.'“ ausgewählt.',
-            'game_id' => (int) $game->game_id,
+            'message' => 'Liga „'.$league->league_title.'“ ausgewählt.',
+            'league_id' => (int) $league->league_id,
         ];
     }
 
@@ -212,27 +211,27 @@ class AdminCenterService
      *
      * @return list<array<string, mixed>>
      */
-    private function games(): array
+    private function leagues(): array
     {
-        return Game::query()
-            ->orderBy('game_archive')
-            ->orderBy('game_title')
+        return League::query()
+            ->orderBy('league_archive')
+            ->orderBy('league_title')
             ->get()
-            ->map(function (Game $game) {
-                $status = (int) (bool) $game->game_status;
-                $archive = (int) (bool) $game->game_archive;
-                $visible = (int) (bool) $game->game_visible;
-                $countdown = (int) (bool) $game->game_countdown;
+            ->map(function (League $league) {
+                $status = (int) (bool) $league->league_status;
+                $archive = (int) (bool) $league->league_archive;
+                $visible = (int) (bool) $league->league_visible;
+                $countdown = (int) (bool) $league->league_countdown;
 
                 return [
-                    'game_id' => (int) $game->game_id,
-                    'game_title' => (string) $game->game_title,
-                    'game_symbol' => (string) ($game->game_symbol ?: 'symbol_game_na.png'),
-                    'symbol_url' => '/images/ffb/symbols/'.($game->game_symbol ?: 'symbol_game_na.png'),
-                    'game_status' => $status,
-                    'game_archive' => $archive,
-                    'game_visible' => $visible,
-                    'game_countdown' => $countdown,
+                    'league_id' => (int) $league->league_id,
+                    'league_title' => (string) $league->league_title,
+                    'league_symbol' => (string) ($league->league_symbol ?: 'symbol_game_na.png'),
+                    'symbol_url' => '/images/ffb/symbols/'.($league->league_symbol ?: 'symbol_game_na.png'),
+                    'league_status' => $status,
+                    'league_archive' => $archive,
+                    'league_visible' => $visible,
+                    'league_countdown' => $countdown,
                     'flags' => [
                         [
                             'label' => $status ? 'aktiv' : 'inaktiv',

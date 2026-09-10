@@ -26,16 +26,16 @@ class PlayerteamLeagueInventoryTest extends TestCase
     #[Test]
     public function it_flags_unreferenced_playerteams_and_derives_leagues_from_stats(): void
     {
-        DB::table('ffb_game')->insert(['game_id' => 1, 'game_title' => 'Euro']);
-        DB::table('ffb_game')->insert(['game_id' => 2, 'game_title' => 'WC']);
+        DB::table('ffb_league')->insert(['league_id' => 1, 'league_title' => 'Euro']);
+        DB::table('ffb_league')->insert(['league_id' => 2, 'league_title' => 'WC']);
         DB::table('ffb_matchround')->insert([
             'matchround_id' => 10,
-            'matchround_game_id' => 1,
+            'matchround_league_id' => 1,
             'matchround_title' => 'R1',
         ]);
         DB::table('ffb_matchround')->insert([
             'matchround_id' => 20,
-            'matchround_game_id' => 2,
+            'matchround_league_id' => 2,
             'matchround_title' => 'R1',
         ]);
 
@@ -101,15 +101,15 @@ class PlayerteamLeagueInventoryTest extends TestCase
         Schema::dropIfExists('ffb_match');
         Schema::dropIfExists('ffb_matchround');
         Schema::dropIfExists('ffb_playerteam');
-        Schema::dropIfExists('ffb_game');
+        Schema::dropIfExists('ffb_league');
 
-        Schema::create('ffb_game', function ($table) {
-            $table->integer('game_id')->primary();
-            $table->string('game_title');
+        Schema::create('ffb_league', function ($table) {
+            $table->integer('league_id')->primary();
+            $table->string('league_title');
         });
         Schema::create('ffb_matchround', function ($table) {
             $table->integer('matchround_id')->primary();
-            $table->integer('matchround_game_id');
+            $table->integer('matchround_league_id');
             $table->string('matchround_title')->nullable();
         });
         Schema::create('ffb_match', function ($table) {

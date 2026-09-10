@@ -17,8 +17,7 @@ class PopupController extends Controller
         private readonly MatchPopupService $matches,
         private readonly PlayerPopupService $players,
         private readonly AwardsPopupService $awards,
-    ) {
-    }
+    ) {}
 
     public function user(Request $request, int $userId): JsonResponse
     {
@@ -60,16 +59,16 @@ class PopupController extends Controller
 
     public function playerChart(Request $request, int $playerteamId): JsonResponse
     {
-        $gameId = (int) $request->query('game_id', 0);
-        $result = $this->players->chart($playerteamId, $gameId);
+        $leagueId = (int) $request->query('league_id', 0);
+        $result = $this->players->chart($playerteamId, $leagueId);
 
         return $this->respond($result);
     }
 
     public function playerPrices(Request $request, int $playerteamId): JsonResponse
     {
-        $gameId = (int) $request->query('game_id', 0);
-        $result = $this->players->prices($playerteamId, $gameId);
+        $leagueId = (int) $request->query('league_id', 0);
+        $result = $this->players->prices($playerteamId, $leagueId);
 
         return $this->respond($result);
     }

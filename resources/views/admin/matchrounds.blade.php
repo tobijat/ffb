@@ -7,9 +7,9 @@
         $form = $data['form'];
         $mode = $data['mode'];
         $items = $data['items'];
-        $games = $data['games'];
-        $selectedGameId = (int) $data['selected_game_id'];
-        $selectedGameTitle = $data['selected_game_title'];
+        $leagues = $data['leagues'];
+        $selectedLeagueId = (int) $data['selected_league_id'];
+        $selectedLeagueTitle = $data['selected_league_title'];
         $flashErrors = $errors ?: (session('admin_errors') ?: []);
     @endphp
 
@@ -19,12 +19,12 @@
         </div>
 
         <form class="admin-league-picker" method="get" action="{{ route('admin.matchrounds') }}">
-            <label for="game_id">Liga</label>
-            <select id="game_id" name="game_id" onchange="this.form.submit()">
+            <label for="league_id">Liga</label>
+            <select id="league_id" name="league_id" onchange="this.form.submit()">
                 <option value="">— Liga wählen —</option>
-                @foreach ($games as $game)
-                    <option value="{{ $game['game_id'] }}" @selected($selectedGameId === (int) $game['game_id'])>
-                        {{ $game['game_title'] }}@if ($game['game_archive']) (Archiv)@endif
+                @foreach ($leagues as $league)
+                    <option value="{{ $league['league_id'] }}" @selected($selectedLeagueId === (int) $league['league_id'])>
+                        {{ $league['league_title'] }}@if ($league['league_archive']) (Archiv)@endif
                     </option>
                 @endforeach
             </select>
@@ -50,10 +50,10 @@
             </div>
         @endif
 
-        @if ($selectedGameId <= 0)
+        @if ($selectedLeagueId <= 0)
             <p class="hint">Wähle oben eine Liga, um deren Spielrunden zu verwalten.</p>
         @else
-            <p class="hint">Liga: <strong>{{ $selectedGameTitle }}</strong></p>
+            <p class="hint">Liga: <strong>{{ $selectedLeagueTitle }}</strong></p>
 
             <form
                 class="admin-form"
@@ -65,7 +65,7 @@
                 @if ($mode === 'update')
                     @method('PUT')
                 @endif
-                <input type="hidden" name="matchround_game_id" value="{{ $selectedGameId }}">
+                <input type="hidden" name="matchround_league_id" value="{{ $selectedLeagueId }}">
 
                 <div class="admin-field">
                     <label for="matchround_title">* Titel</label>
@@ -107,7 +107,7 @@
                 <div class="admin-actions">
                     @if ($mode === 'update')
                         <button type="submit" class="admin-submit">Speichern</button>
-                        <a class="admin-cancel" href="{{ route('admin.matchrounds', ['game_id' => $selectedGameId]) }}">Abbrechen</a>
+                        <a class="admin-cancel" href="{{ route('admin.matchrounds', ['league_id' => $selectedLeagueId]) }}">Abbrechen</a>
                     @else
                         <button type="submit" class="admin-submit">Hinzufügen</button>
                     @endif
@@ -116,7 +116,7 @@
         @endif
     </section>
 
-    @if ($selectedGameId > 0)
+    @if ($selectedLeagueId > 0)
         <section class="panel admin-main" aria-labelledby="admin-matchrounds-list-title">
             <div class="section-head">
                 <h2 id="admin-matchrounds-list-title">Vorhandene Spielrunden</h2>
@@ -141,7 +141,7 @@
                         <form method="post" action="{{ route('admin.matchrounds.destroy', ['matchround' => $item['matchround_id']]) }}" onsubmit="return confirm('Diese Spielrunde wirklich löschen?');">
                             @csrf
                             @method('DELETE')
-                            <input type="hidden" name="game_id" value="{{ $selectedGameId }}">
+                            <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
                             <button type="submit" class="admin-icon-btn" title="Löschen">
                                 <img src="{{ $legacyBase }}images/ffb/symbols/delete.png" alt="Löschen" width="16" height="16">
                             </button>

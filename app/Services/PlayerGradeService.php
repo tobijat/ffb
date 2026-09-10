@@ -33,22 +33,22 @@ class PlayerGradeService
             ->map(fn ($id) => (int) $id)
             ->all();
 
-        $gameIds = $this->gameIdsForPlayerteams($ptIds);
-        if ($gameIds === []) {
+        $leagueIds = $this->leagueIdsForPlayerteams($ptIds);
+        if ($leagueIds === []) {
             return ['player_grade' => 0, 'player_trend' => 0];
         }
 
         $numPlayers = Playerstats::query()
             ->join('ffb_matchround', 'ffb_playerstats.playerstats_matchround_id', '=', 'ffb_matchround.matchround_id')
             ->join('ffb_playerteam', 'ffb_playerstats.playerstats_playerteam_id', '=', 'ffb_playerteam.playerteam_id')
-            ->whereIn('ffb_matchround.matchround_game_id', $gameIds)
+            ->whereIn('ffb_matchround.matchround_league_id', $leagueIds)
             ->where('ffb_playerteam.playerteam_player_position', $pos)
             ->count();
 
         $sumPointsAll = (float) (Playerstats::query()
             ->join('ffb_matchround', 'ffb_playerstats.playerstats_matchround_id', '=', 'ffb_matchround.matchround_id')
             ->join('ffb_playerteam', 'ffb_playerstats.playerstats_playerteam_id', '=', 'ffb_playerteam.playerteam_id')
-            ->whereIn('ffb_matchround.matchround_game_id', $gameIds)
+            ->whereIn('ffb_matchround.matchround_league_id', $leagueIds)
             ->where('ffb_playerteam.playerteam_player_position', $pos)
             ->sum('ffb_playerstats.playerstats_score') ?? 0);
 
@@ -57,7 +57,7 @@ class PlayerGradeService
         $mrIds = Matchround::query()
             ->select('ffb_matchround.matchround_id')
             ->join('ffb_match', 'ffb_match.match_round', '=', 'ffb_matchround.matchround_id')
-            ->whereIn('ffb_matchround.matchround_game_id', $gameIds)
+            ->whereIn('ffb_matchround.matchround_league_id', $leagueIds)
             ->where(function ($q) use ($teamId) {
                 $q->where('ffb_match.match_hometeam_id', $teamId)
                     ->orWhere('ffb_match.match_guestteam_id', $teamId);
@@ -136,7 +136,7 @@ class PlayerGradeService
      * @param  list<int>  $ptIds
      * @return list<int>
      */
-    private function gameIdsForPlayerteams(array $ptIds): array
+    private function leagueIdsForPlayerteams(array $ptIds): array
     {
         if ($ptIds === []) {
             return [];
@@ -146,7 +146,7 @@ class PlayerGradeService
             ->join('ffb_matchround', 'ffb_playerstats.playerstats_matchround_id', '=', 'ffb_matchround.matchround_id')
             ->whereIn('ffb_playerstats.playerstats_playerteam_id', $ptIds)
             ->distinct()
-            ->pluck('ffb_matchround.matchround_game_id')
+            ->pluck('ffb_matchround.matchround_league_id')
             ->map(fn ($id) => (int) $id)
             ->filter(fn ($id) => $id > 0)
             ->values()

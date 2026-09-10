@@ -21,7 +21,7 @@ Route::middleware([ResolveFfbUser::class])->group(function () {
         ->whereNumber('teamId');
 
     Route::get('/dashboard', [DashboardController::class, 'show']);
-    Route::post('/game/select', [DashboardController::class, 'selectGame']);
+    Route::post('/league/select', [DashboardController::class, 'selectLeague']);
     Route::post('/poll/vote', [DashboardController::class, 'votePoll']);
 
     Route::get('/userscore/matchrounds', [UserscoreController::class, 'matchrounds']);

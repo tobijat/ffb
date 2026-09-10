@@ -16,8 +16,7 @@ class RegistrationService
 {
     public function __construct(
         private readonly FfbPassword $passwords,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{ok: true, data: array<string, mixed>}
@@ -90,7 +89,7 @@ class RegistrationService
 
             $details = new UserDetails;
             $details->user_id = (int) $user->user_id;
-            $details->user_details_ffb_selected_game = (int) config('ffb.registration_default_game_id', 25);
+            $details->user_details_ffb_selected_league = (int) config('ffb.registration_default_league_id', 25);
             $details->user_details_ffb_favourite_team = 1;
             $details->user_details_last_update = $now;
             $details->save();

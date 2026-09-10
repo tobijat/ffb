@@ -8,7 +8,7 @@
     const config = window.FFB_MODAL || {};
     const apiBase = (config.apiBase || 'api').replace(/\/$/, '');
     const legacyBase = config.legacyBase || '/';
-    const selectedGameId = Number(config.selectedGameId) || 0;
+    const selectedLeagueId = Number(config.selectedLeagueId) || 0;
     const MAX_ROUNDS = 15;
     let lastPlayerData = null;
 
@@ -926,15 +926,15 @@
         const activeTab = tab === 'price' || tab === 'graphic' ? tab : 'info';
 
         if (activeTab === 'graphic') {
-            if (selectedGameId <= 0) {
-                throw new Error('game_id is required');
+            if (selectedLeagueId <= 0) {
+                throw new Error('league_id is required');
             }
             const chartJson = await fetchJson(
                 apiBase +
                     '/popups/player/' +
                     encodeURIComponent(playerteamId) +
-                    '/chart?game_id=' +
-                    encodeURIComponent(selectedGameId)
+                    '/chart?league_id=' +
+                    encodeURIComponent(selectedLeagueId)
             );
             setModal(
                 renderPlayerHead(data.player),
@@ -949,15 +949,15 @@
         }
 
         if (activeTab === 'price') {
-            if (selectedGameId <= 0) {
-                throw new Error('game_id is required');
+            if (selectedLeagueId <= 0) {
+                throw new Error('league_id is required');
             }
             const priceJson = await fetchJson(
                 apiBase +
                     '/popups/player/' +
                     encodeURIComponent(playerteamId) +
-                    '/prices?game_id=' +
-                    encodeURIComponent(selectedGameId)
+                    '/prices?league_id=' +
+                    encodeURIComponent(selectedLeagueId)
             );
             setModal(
                 renderPlayerHead(data.player),

@@ -32,7 +32,7 @@ class AdminTeamService
         return [
             'user' => $shell['user'],
             'navigation' => $shell['navigation'],
-            'selected_game' => $shell['selected_game'],
+            'selected_league' => $shell['selected_league'],
             'icons' => $this->iconOptions($selectedKey),
             'selected_symbol' => $this->selectedSymbol($selectedKey, $teamId),
             'uses_icon_picker' => ! $this->isMappedNation($selectedKey),

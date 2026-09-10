@@ -18,12 +18,12 @@ class News extends Model
         'news_text',
         'news_symbol',
         'news_priority',
-        'news_game_id',
+        'news_league_id',
         'news_date',
     ];
 
-    public function game(): BelongsTo
+    public function league(): BelongsTo
     {
-        return $this->belongsTo(Game::class, 'news_game_id', 'game_id');
+        return $this->belongsTo(League::class, 'news_league_id', 'league_id');
     }
 }

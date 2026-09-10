@@ -32,7 +32,7 @@ class PlayerteamLeagueScopeTest extends TestCase
     #[Test]
     public function squad_allows_same_player_team_in_different_leagues(): void
     {
-        DB::table('ffb_game')->insert(['game_id' => 2, 'game_title' => 'Liga B']);
+        DB::table('ffb_league')->insert(['league_id' => 2, 'league_title' => 'Liga B']);
         $squad = $this->squadService();
 
         $this->assertTrue($squad->batchAdd([
@@ -89,10 +89,10 @@ class PlayerteamLeagueScopeTest extends TestCase
     #[Test]
     public function backfill_duplicates_and_remaps_stats_to_league_copy(): void
     {
-        DB::table('ffb_game')->insert(['game_id' => 2, 'game_title' => 'Liga B']);
+        DB::table('ffb_league')->insert(['league_id' => 2, 'league_title' => 'Liga B']);
         DB::table('ffb_matchround')->insert([
             'matchround_id' => 2,
-            'matchround_game_id' => 2,
+            'matchround_league_id' => 2,
             'matchround_title' => 'R2',
             'matchround_startdate' => now()->addDay()->toDateTimeString(),
         ]);
@@ -184,7 +184,7 @@ class PlayerteamLeagueScopeTest extends TestCase
                 'playerteam_date_transfer' => '2020-01-01 00:00:00',
             ],
         ]);
-        DB::table('ffb_game')->insert(['game_id' => 2, 'game_title' => 'Liga B']);
+        DB::table('ffb_league')->insert(['league_id' => 2, 'league_title' => 'Liga B']);
 
         $groups = (new AdminDbCleanupService(Mockery::mock(AdminCenterService::class)))->duplicatePlayerteamGroups();
         $this->assertCount(1, $groups);
@@ -195,13 +195,13 @@ class PlayerteamLeagueScopeTest extends TestCase
     #[Test]
     public function transfer_spell_leagues_follow_latest_transfer_before_first_match(): void
     {
-        DB::table('ffb_game')->insert([
-            ['game_id' => 10, 'game_title' => '2009/10'],
-            ['game_id' => 15, 'game_title' => '2010/11'],
+        DB::table('ffb_league')->insert([
+            ['league_id' => 10, 'league_title' => '2009/10'],
+            ['league_id' => 15, 'league_title' => '2010/11'],
         ]);
         DB::table('ffb_matchround')->insert([
-            ['matchround_id' => 10, 'matchround_game_id' => 10, 'matchround_title' => 'A'],
-            ['matchround_id' => 15, 'matchround_game_id' => 15, 'matchround_title' => 'B'],
+            ['matchround_id' => 10, 'matchround_league_id' => 10, 'matchround_title' => 'A'],
+            ['matchround_id' => 15, 'matchround_league_id' => 15, 'matchround_title' => 'B'],
         ]);
         DB::table('ffb_match')->insert([
             ['match_id' => 10, 'match_round' => 10, 'match_hometeam_id' => 10, 'match_guestteam_id' => 11, 'match_date' => '2009-08-02 00:00:00'],
@@ -221,13 +221,13 @@ class PlayerteamLeagueScopeTest extends TestCase
     #[Test]
     public function restore_transfer_spell_replaces_wrong_league_copy(): void
     {
-        DB::table('ffb_game')->insert([
-            ['game_id' => 10, 'game_title' => '2009/10'],
-            ['game_id' => 15, 'game_title' => '2010/11'],
+        DB::table('ffb_league')->insert([
+            ['league_id' => 10, 'league_title' => '2009/10'],
+            ['league_id' => 15, 'league_title' => '2010/11'],
         ]);
         DB::table('ffb_matchround')->insert([
-            ['matchround_id' => 10, 'matchround_game_id' => 10, 'matchround_title' => 'A'],
-            ['matchround_id' => 15, 'matchround_game_id' => 15, 'matchround_title' => 'B'],
+            ['matchround_id' => 10, 'matchround_league_id' => 10, 'matchround_title' => 'A'],
+            ['matchround_id' => 15, 'matchround_league_id' => 15, 'matchround_title' => 'B'],
         ]);
         DB::table('ffb_match')->insert([
             ['match_id' => 10, 'match_round' => 10, 'match_hometeam_id' => 10, 'match_guestteam_id' => 11, 'match_date' => '2009-08-02 00:00:00'],
@@ -335,7 +335,7 @@ class PlayerteamLeagueScopeTest extends TestCase
     #[Test]
     public function player_search_excludes_only_same_league_squad_members(): void
     {
-        DB::table('ffb_game')->insert(['game_id' => 2, 'game_title' => 'Liga B']);
+        DB::table('ffb_league')->insert(['league_id' => 2, 'league_title' => 'Liga B']);
         DB::table('ffb_player')->insert([
             [
                 'player_id' => 3,
@@ -381,10 +381,10 @@ class PlayerteamLeagueScopeTest extends TestCase
 
     private function seedBaseEntities(): void
     {
-        DB::table('ffb_game')->insert(['game_id' => 1, 'game_title' => 'Testliga']);
+        DB::table('ffb_league')->insert(['league_id' => 1, 'league_title' => 'Testliga']);
         DB::table('ffb_matchround')->insert([
             'matchround_id' => 1,
-            'matchround_game_id' => 1,
+            'matchround_league_id' => 1,
             'matchround_title' => 'R1',
             'matchround_startdate' => now()->addDay()->toDateTimeString(),
         ]);
@@ -420,10 +420,10 @@ class PlayerteamLeagueScopeTest extends TestCase
         $adminCenter->shouldReceive('shellPayload')->andReturn([
             'user' => ['user_id' => 1],
             'navigation' => [],
-            'selected_game' => ['game_id' => 1],
-            'selected_game_id' => 1,
+            'selected_league' => ['league_id' => 1],
+            'selected_league_id' => 1,
         ])->byDefault();
-        $adminCenter->shouldReceive('selectedGameId')->andReturn(1)->byDefault();
+        $adminCenter->shouldReceive('selectedLeagueId')->andReturn(1)->byDefault();
 
         return new AdminSquadService($adminCenter);
     }

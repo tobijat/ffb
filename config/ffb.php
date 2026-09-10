@@ -57,10 +57,10 @@ return [
     | Default game for newly registered users
     |--------------------------------------------------------------------------
     |
-    | Maps to web_user_details.user_details_ffb_selected_game (ffb_game.game_id).
+    | Maps to web_user_details.user_details_ffb_selected_league (ffb_league.league_id).
     |
     */
-    'registration_default_game_id' => (int) env('FFB_REGISTRATION_DEFAULT_GAME_ID', 25),
+    'registration_default_league_id' => (int) env('FFB_REGISTRATION_DEFAULT_LEAGUE_ID', 25),
 
     /*
     |--------------------------------------------------------------------------

@@ -36,58 +36,58 @@
             class="admin-form admin-league-form"
             method="post"
             enctype="multipart/form-data"
-            action="{{ $mode === 'update' ? route('admin.leagues.update', ['game' => $form['game_id']]) : route('admin.leagues.store') }}"
+            action="{{ $mode === 'update' ? route('admin.leagues.update', ['league' => $form['league_id']]) : route('admin.leagues.store') }}"
             accept-charset="UTF-8"
         >
             @csrf
             @if ($mode === 'update')
                 @method('PUT')
-                <input type="hidden" name="game_id" value="{{ $form['game_id'] }}">
+                <input type="hidden" name="league_id" value="{{ $form['league_id'] }}">
             @endif
-            <input type="hidden" name="game_symbol" value="{{ $form['game_symbol'] }}">
+            <input type="hidden" name="league_symbol" value="{{ $form['league_symbol'] }}">
 
             <fieldset class="admin-fieldset">
                 <legend>Grunddaten</legend>
 
                 <div class="admin-field">
-                    <label for="game_title">* Titel</label>
-                    <input id="game_title" type="text" name="game_title" value="{{ $form['game_title'] }}" maxlength="255" required>
+                    <label for="league_title">* Titel</label>
+                    <input id="league_title" type="text" name="league_title" value="{{ $form['league_title'] }}" maxlength="255" required>
                 </div>
 
                 <div class="admin-field admin-field-top">
-                    <label for="game_description">Beschreibung</label>
-                    <textarea id="game_description" name="game_description" rows="3">{{ $form['game_description'] }}</textarea>
+                    <label for="league_description">Beschreibung</label>
+                    <textarea id="league_description" name="league_description" rows="3">{{ $form['league_description'] }}</textarea>
                 </div>
 
                 <div class="admin-field">
-                    <label for="game_status">Status</label>
-                    <select id="game_status" name="game_status">
-                        <option value="1" @selected((int) $form['game_status'] === 1)>aktiv</option>
-                        <option value="0" @selected((int) $form['game_status'] === 0)>inaktiv</option>
+                    <label for="league_status">Status</label>
+                    <select id="league_status" name="league_status">
+                        <option value="1" @selected((int) $form['league_status'] === 1)>aktiv</option>
+                        <option value="0" @selected((int) $form['league_status'] === 0)>inaktiv</option>
                     </select>
                 </div>
 
                 <div class="admin-field">
-                    <label for="game_visible">Sichtbar</label>
-                    <select id="game_visible" name="game_visible">
-                        <option value="1" @selected((int) $form['game_visible'] === 1)>ja</option>
-                        <option value="0" @selected((int) $form['game_visible'] === 0)>nein</option>
+                    <label for="league_visible">Sichtbar</label>
+                    <select id="league_visible" name="league_visible">
+                        <option value="1" @selected((int) $form['league_visible'] === 1)>ja</option>
+                        <option value="0" @selected((int) $form['league_visible'] === 0)>nein</option>
                     </select>
                 </div>
 
                 <div class="admin-field">
-                    <label for="game_archive">Archiv</label>
-                    <select id="game_archive" name="game_archive">
-                        <option value="0" @selected((int) $form['game_archive'] === 0)>nein (aktuell)</option>
-                        <option value="1" @selected((int) $form['game_archive'] === 1)>ja (archiviert)</option>
+                    <label for="league_archive">Archiv</label>
+                    <select id="league_archive" name="league_archive">
+                        <option value="0" @selected((int) $form['league_archive'] === 0)>nein (aktuell)</option>
+                        <option value="1" @selected((int) $form['league_archive'] === 1)>ja (archiviert)</option>
                     </select>
                 </div>
 
                 <div class="admin-field">
-                    <label for="game_countdown">Countdown</label>
-                    <select id="game_countdown" name="game_countdown">
-                        <option value="1" @selected((int) $form['game_countdown'] === 1)>an</option>
-                        <option value="0" @selected((int) $form['game_countdown'] === 0)>aus</option>
+                    <label for="league_countdown">Countdown</label>
+                    <select id="league_countdown" name="league_countdown">
+                        <option value="1" @selected((int) $form['league_countdown'] === 1)>an</option>
+                        <option value="0" @selected((int) $form['league_countdown'] === 0)>aus</option>
                     </select>
                 </div>
             </fieldset>
@@ -97,8 +97,8 @@
                 <div class="admin-symbol-row">
                     <img class="admin-symbol-preview" src="{{ $form['symbol_url'] }}" alt="" width="64" height="64" loading="lazy">
                     <div class="admin-field admin-field-stack">
-                        <label for="game_symbol_file">Bild hochladen</label>
-                        <input id="game_symbol_file" type="file" name="game_symbol_file" accept="image/png,image/jpeg,image/gif,image/webp">
+                        <label for="league_symbol_file">Bild hochladen</label>
+                        <input id="league_symbol_file" type="file" name="league_symbol_file" accept="image/png,image/jpeg,image/gif,image/webp">
                         <p class="hint">PNG, JPEG, GIF oder WebP, max. 2 MB. Leer lassen, um das aktuelle Symbol zu behalten.</p>
                     </div>
                 </div>
@@ -107,36 +107,36 @@
             <fieldset class="admin-fieldset">
                 <legend>Spielmodi</legend>
                 <div class="admin-field">
-                    <label for="options_game_rankmode">Rangliste</label>
-                    <select id="options_game_rankmode" name="options_game_rankmode">
-                        <option value="wc" @selected($form['options_game_rankmode'] === 'wc')>WC</option>
-                        <option value="points" @selected($form['options_game_rankmode'] === 'points')>Punkte</option>
+                    <label for="options_league_rankmode">Rangliste</label>
+                    <select id="options_league_rankmode" name="options_league_rankmode">
+                        <option value="wc" @selected($form['options_league_rankmode'] === 'wc')>WC</option>
+                        <option value="points" @selected($form['options_league_rankmode'] === 'points')>Punkte</option>
                     </select>
                 </div>
                 <div class="admin-field">
-                    <label for="options_game_pricemode">Preise</label>
-                    <select id="options_game_pricemode" name="options_game_pricemode">
-                        <option value="dynamic" @selected($form['options_game_pricemode'] === 'dynamic')>dynamisch</option>
-                        <option value="static" @selected($form['options_game_pricemode'] === 'static')>statisch</option>
+                    <label for="options_league_pricemode">Preise</label>
+                    <select id="options_league_pricemode" name="options_league_pricemode">
+                        <option value="dynamic" @selected($form['options_league_pricemode'] === 'dynamic')>dynamisch</option>
+                        <option value="static" @selected($form['options_league_pricemode'] === 'static')>statisch</option>
                     </select>
                 </div>
                 <div class="admin-field">
-                    <label for="options_game_pointsmode">Punkte</label>
-                    <select id="options_game_pointsmode" name="options_game_pointsmode">
-                        <option value="new" @selected($form['options_game_pointsmode'] === 'new')>neu</option>
-                        <option value="old" @selected($form['options_game_pointsmode'] === 'old')>alt</option>
+                    <label for="options_league_pointsmode">Punkte</label>
+                    <select id="options_league_pointsmode" name="options_league_pointsmode">
+                        <option value="new" @selected($form['options_league_pointsmode'] === 'new')>neu</option>
+                        <option value="old" @selected($form['options_league_pointsmode'] === 'old')>alt</option>
                     </select>
                 </div>
                 <div class="admin-field">
-                    <label for="options_game_wcpoints">WC-Punkte</label>
-                    <select id="options_game_wcpoints" name="options_game_wcpoints">
-                        <option value="new" @selected($form['options_game_wcpoints'] === 'new')>neu</option>
-                        <option value="old" @selected($form['options_game_wcpoints'] === 'old')>alt</option>
+                    <label for="options_league_wcpoints">WC-Punkte</label>
+                    <select id="options_league_wcpoints" name="options_league_wcpoints">
+                        <option value="new" @selected($form['options_league_wcpoints'] === 'new')>neu</option>
+                        <option value="old" @selected($form['options_league_wcpoints'] === 'old')>alt</option>
                     </select>
                 </div>
                 <div class="admin-field">
-                    <label for="options_game_remind_hours_before">Erinnerung (h)</label>
-                    <input id="options_game_remind_hours_before" type="number" name="options_game_remind_hours_before" value="{{ $form['options_game_remind_hours_before'] }}">
+                    <label for="options_league_remind_hours_before">Erinnerung (h)</label>
+                    <input id="options_league_remind_hours_before" type="number" name="options_league_remind_hours_before" value="{{ $form['options_league_remind_hours_before'] }}">
                 </div>
             </fieldset>
 
@@ -238,22 +238,22 @@
                     <img class="admin-league-list-icon" src="{{ $item['symbol_url'] }}" alt="" width="40" height="40" loading="lazy">
                     <div>
                         <h3 class="admin-list-title">
-                            {{ $item['game_title'] }}
-                            <span class="muted">(ID: {{ $item['game_id'] }})</span>
+                            {{ $item['league_title'] }}
+                            <span class="muted">(ID: {{ $item['league_id'] }})</span>
                         </h3>
                         <ul class="admin-game-flags" aria-label="Status">
-                            <li class="admin-game-flag admin-game-flag-{{ $item['game_status'] ? 'ok' : 'off' }}">{{ $item['game_status'] ? 'aktiv' : 'inaktiv' }}</li>
-                            <li class="admin-game-flag admin-game-flag-{{ $item['game_visible'] ? 'ok' : 'off' }}">{{ $item['game_visible'] ? 'sichtbar' : 'unsichtbar' }}</li>
-                            <li class="admin-game-flag admin-game-flag-{{ $item['game_archive'] ? 'warn' : 'ok' }}">{{ $item['game_archive'] ? 'archiviert' : 'aktuell' }}</li>
-                            <li class="admin-game-flag admin-game-flag-{{ $item['game_countdown'] ? 'ok' : 'muted' }}">{{ $item['game_countdown'] ? 'Countdown an' : 'Countdown aus' }}</li>
+                            <li class="admin-game-flag admin-game-flag-{{ $item['league_status'] ? 'ok' : 'off' }}">{{ $item['league_status'] ? 'aktiv' : 'inaktiv' }}</li>
+                            <li class="admin-game-flag admin-game-flag-{{ $item['league_visible'] ? 'ok' : 'off' }}">{{ $item['league_visible'] ? 'sichtbar' : 'unsichtbar' }}</li>
+                            <li class="admin-game-flag admin-game-flag-{{ $item['league_archive'] ? 'warn' : 'ok' }}">{{ $item['league_archive'] ? 'archiviert' : 'aktuell' }}</li>
+                            <li class="admin-game-flag admin-game-flag-{{ $item['league_countdown'] ? 'ok' : 'muted' }}">{{ $item['league_countdown'] ? 'Countdown an' : 'Countdown aus' }}</li>
                         </ul>
                     </div>
                 </div>
                 <div class="admin-list-actions">
-                    <a class="admin-icon-btn" href="{{ route('admin.leagues.edit', ['game' => $item['game_id']]) }}" title="Bearbeiten">
+                    <a class="admin-icon-btn" href="{{ route('admin.leagues.edit', ['league' => $item['league_id']]) }}" title="Bearbeiten">
                         <img src="{{ $legacyBase }}images/ffb/symbols/edit.png" alt="Bearbeiten" width="16" height="16">
                     </a>
-                    <form method="post" action="{{ route('admin.leagues.destroy', ['game' => $item['game_id']]) }}" onsubmit="return confirm('Diese Liga wirklich löschen?');">
+                    <form method="post" action="{{ route('admin.leagues.destroy', ['league' => $item['league_id']]) }}" onsubmit="return confirm('Diese Liga wirklich löschen?');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="admin-icon-btn" title="Löschen">

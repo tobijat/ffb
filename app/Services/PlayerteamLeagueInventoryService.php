@@ -158,56 +158,56 @@ class PlayerteamLeagueInventoryService
     }
 
     /**
-     * @return array<int, list<int>> playerteam_id => sorted unique game_ids
+     * @return array<int, list<int>> playerteam_id => sorted unique league_ids
      */
     public function leagueMembershipByPlayerteam(): array
     {
         /** @var array<int, array<int, int>> $map */
         $map = [];
 
-        $add = static function (array &$map, int $playerteamId, int $gameId): void {
-            if ($playerteamId <= 0 || $gameId <= 0) {
+        $add = static function (array &$map, int $playerteamId, int $leagueId): void {
+            if ($playerteamId <= 0 || $leagueId <= 0) {
                 return;
             }
-            $map[$playerteamId][$gameId] = $gameId;
+            $map[$playerteamId][$leagueId] = $leagueId;
         };
 
         foreach (DB::table('ffb_playerstats as ps')
             ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'ps.playerstats_matchround_id')
             ->where('ps.playerstats_playerteam_id', '>', 0)
-            ->select('ps.playerstats_playerteam_id', 'mr.matchround_game_id')
+            ->select('ps.playerstats_playerteam_id', 'mr.matchround_league_id')
             ->distinct()
             ->cursor() as $row) {
-            $add($map, (int) $row->playerstats_playerteam_id, (int) $row->matchround_game_id);
+            $add($map, (int) $row->playerstats_playerteam_id, (int) $row->matchround_league_id);
         }
 
         foreach (DB::table('ffb_playerprice as pp')
             ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'pp.playerprice_matchround_id')
             ->where('pp.playerprice_playerteam_id', '>', 0)
-            ->select('pp.playerprice_playerteam_id', 'mr.matchround_game_id')
+            ->select('pp.playerprice_playerteam_id', 'mr.matchround_league_id')
             ->distinct()
             ->cursor() as $row) {
-            $add($map, (int) $row->playerprice_playerteam_id, (int) $row->matchround_game_id);
+            $add($map, (int) $row->playerprice_playerteam_id, (int) $row->matchround_league_id);
         }
 
         foreach (DB::table('ffb_goal as g')
             ->join('ffb_match as m', 'm.match_id', '=', 'g.goal_match_id')
             ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'm.match_round')
             ->where('g.goal_playerteam_id', '>', 0)
-            ->select('g.goal_playerteam_id', 'mr.matchround_game_id')
+            ->select('g.goal_playerteam_id', 'mr.matchround_league_id')
             ->distinct()
             ->cursor() as $row) {
-            $add($map, (int) $row->goal_playerteam_id, (int) $row->matchround_game_id);
+            $add($map, (int) $row->goal_playerteam_id, (int) $row->matchround_league_id);
         }
 
         foreach (DB::table('ffb_psgoal as g')
             ->join('ffb_match as m', 'm.match_id', '=', 'g.psgoal_match_id')
             ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'm.match_round')
             ->where('g.psgoal_playerteam_id', '>', 0)
-            ->select('g.psgoal_playerteam_id', 'mr.matchround_game_id')
+            ->select('g.psgoal_playerteam_id', 'mr.matchround_league_id')
             ->distinct()
             ->cursor() as $row) {
-            $add($map, (int) $row->psgoal_playerteam_id, (int) $row->matchround_game_id);
+            $add($map, (int) $row->psgoal_playerteam_id, (int) $row->matchround_league_id);
         }
 
         if (Userteam::hasWideSlotColumns()) {
@@ -215,10 +215,10 @@ class PlayerteamLeagueInventoryService
                 foreach (DB::table('ffb_userteam as ut')
                     ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'ut.userteam_matchround_id')
                     ->where("ut.{$column}", '>', 0)
-                    ->select("ut.{$column} as playerteam_id", 'mr.matchround_game_id')
+                    ->select("ut.{$column} as playerteam_id", 'mr.matchround_league_id')
                     ->distinct()
                     ->cursor() as $row) {
-                    $add($map, (int) $row->playerteam_id, (int) $row->matchround_game_id);
+                    $add($map, (int) $row->playerteam_id, (int) $row->matchround_league_id);
                 }
             }
         }
@@ -228,10 +228,10 @@ class PlayerteamLeagueInventoryService
                 ->join('ffb_userteam as ut', 'ut.userteam_id', '=', 'us.userteam_slot_userteam_id')
                 ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'ut.userteam_matchround_id')
                 ->where('us.userteam_slot_playerteam_id', '>', 0)
-                ->select('us.userteam_slot_playerteam_id as playerteam_id', 'mr.matchround_game_id')
+                ->select('us.userteam_slot_playerteam_id as playerteam_id', 'mr.matchround_league_id')
                 ->distinct()
                 ->cursor() as $row) {
-                $add($map, (int) $row->playerteam_id, (int) $row->matchround_game_id);
+                $add($map, (int) $row->playerteam_id, (int) $row->matchround_league_id);
             }
         }
 
@@ -319,7 +319,7 @@ class PlayerteamLeagueInventoryService
             'ffb_playerfid',
             'ffb_match',
             'ffb_matchround',
-            'ffb_game',
+            'ffb_league',
         ];
     }
 

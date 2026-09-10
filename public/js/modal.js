@@ -220,10 +220,10 @@
                 }
 
                 let liga = '';
-                if (p.game_symbol) {
-                    liga += '<img src="' + symbolUrl(p.game_symbol) + '" alt="" width="16" height="16">';
+                if (p.league_symbol) {
+                    liga += '<img src="' + symbolUrl(p.league_symbol) + '" alt="" width="16" height="16">';
                 }
-                liga += escapeHtml(p.game_title);
+                liga += escapeHtml(p.league_title);
 
                 const range =
                     escapeHtml(p.score_start || '–') + ' – ' + escapeHtml(p.score_end || '–');
@@ -671,7 +671,7 @@
             '</div>' +
             '</div>' +
             '<div class="ffb-match-meta">' +
-            escapeHtml(match.match_game_title) +
+            escapeHtml(match.match_league_title) +
             ' — ' +
             escapeHtml(match.match_matchround_name) +
             '<br>' +

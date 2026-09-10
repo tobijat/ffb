@@ -4,15 +4,15 @@ use App\Http\Controllers\AccountPageController;
 use App\Http\Controllers\Admin\AdminAwardsController;
 use App\Http\Controllers\Admin\AdminCenterController;
 use App\Http\Controllers\Admin\AdminDbCleanupController;
-use App\Http\Controllers\Admin\AdminMailserviceController;
-use App\Http\Controllers\Admin\AdminMatchdataController;
-use App\Http\Controllers\Admin\AdminScoreController;
 use App\Http\Controllers\Admin\AdminLeagueController;
+use App\Http\Controllers\Admin\AdminMailserviceController;
 use App\Http\Controllers\Admin\AdminMatchController;
+use App\Http\Controllers\Admin\AdminMatchdataController;
 use App\Http\Controllers\Admin\AdminMatchroundController;
 use App\Http\Controllers\Admin\AdminNewsController;
 use App\Http\Controllers\Admin\AdminPlayerController;
 use App\Http\Controllers\Admin\AdminPlayerpriceController;
+use App\Http\Controllers\Admin\AdminScoreController;
 use App\Http\Controllers\Admin\AdminSquadController;
 use App\Http\Controllers\Admin\AdminTeamController;
 use App\Http\Controllers\Auth\LoginController;
@@ -68,13 +68,13 @@ Route::post('/profile', [AccountPageController::class, 'updateProfile'])->name('
 
 Route::middleware('ffb.admin')->group(function () {
     Route::get('/admin', [AdminCenterController::class, 'show'])->name('admin.center');
-    Route::post('/admin/games/{game}/select', [AdminCenterController::class, 'selectGame'])->name('admin.games.select');
+    Route::post('/admin/leagues/{league}/select', [AdminCenterController::class, 'selectLeague'])->name('admin.leagues.select');
 
     Route::get('/admin/leagues', [AdminLeagueController::class, 'show'])->name('admin.leagues');
     Route::post('/admin/leagues', [AdminLeagueController::class, 'store'])->name('admin.leagues.store');
-    Route::get('/admin/leagues/{game}/edit', [AdminLeagueController::class, 'edit'])->name('admin.leagues.edit');
-    Route::put('/admin/leagues/{game}', [AdminLeagueController::class, 'update'])->name('admin.leagues.update');
-    Route::delete('/admin/leagues/{game}', [AdminLeagueController::class, 'destroy'])->name('admin.leagues.destroy');
+    Route::get('/admin/leagues/{league}/edit', [AdminLeagueController::class, 'edit'])->name('admin.leagues.edit');
+    Route::put('/admin/leagues/{league}', [AdminLeagueController::class, 'update'])->name('admin.leagues.update');
+    Route::delete('/admin/leagues/{league}', [AdminLeagueController::class, 'destroy'])->name('admin.leagues.destroy');
 
     Route::get('/admin/matchrounds', [AdminMatchroundController::class, 'show'])->name('admin.matchrounds');
     Route::post('/admin/matchrounds', [AdminMatchroundController::class, 'store'])->name('admin.matchrounds.store');
@@ -126,7 +126,7 @@ Route::middleware('ffb.admin')->group(function () {
 
     Route::get('/admin/playerprice', [AdminPlayerpriceController::class, 'show'])->name('admin.playerprice');
     Route::post('/admin/playerprice/matchround-player-prices', [AdminPlayerpriceController::class, 'setMatchroundPlayerPrices'])->name('admin.playerprice.setMatchroundPlayerPrices');
-    Route::post('/admin/playerprice/game-elo-team-prices', [AdminPlayerpriceController::class, 'setGameEloTeamPrices'])->name('admin.playerprice.setGameEloTeamPrices');
+    Route::post('/admin/playerprice/league-elo-team-prices', [AdminPlayerpriceController::class, 'setLeagueEloTeamPrices'])->name('admin.playerprice.setLeagueEloTeamPrices');
     Route::post('/admin/playerprice/matchround-elo-team-prices', [AdminPlayerpriceController::class, 'setMatchroundEloTeamPrices'])->name('admin.playerprice.setMatchroundEloTeamPrices');
 
     Route::get('/admin/mailservice', [AdminMailserviceController::class, 'show'])->name('admin.mailservice');

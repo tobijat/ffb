@@ -33,7 +33,7 @@ class AdminMatchTest extends TestCase
         });
 
         $this->mock(AdminMatchService::class, function ($mock) {
-            $mock->shouldReceive('defaultGameId')->once()->with(544)->andReturn(0);
+            $mock->shouldReceive('defaultLeagueId')->once()->with(544)->andReturn(0);
             $mock->shouldReceive('pagePayload')->once()->with(544, 0, null, 'create')->andReturn([
                 'user' => [
                     'user_id' => 544,
@@ -50,12 +50,12 @@ class AdminMatchTest extends TestCase
                         'image_dir' => 'images/admin/navigation/',
                     ],
                 ],
-                'selected_game' => null,
-                'games' => [
-                    ['game_id' => 26, 'game_title' => 'Testliga', 'game_archive' => 0],
+                'selected_league' => null,
+                'leagues' => [
+                    ['league_id' => 26, 'league_title' => 'Testliga', 'league_archive' => 0],
                 ],
-                'selected_game_id' => 0,
-                'selected_game_title' => null,
+                'selected_league_id' => 0,
+                'selected_league_title' => null,
                 'matchrounds' => [],
                 'teams' => [],
                 'items' => [],
@@ -95,12 +95,12 @@ class AdminMatchTest extends TestCase
                     'is_ffb_admin' => true,
                 ],
                 'navigation' => [],
-                'selected_game' => null,
-                'games' => [
-                    ['game_id' => 26, 'game_title' => 'Testliga', 'game_archive' => 0],
+                'selected_league' => null,
+                'leagues' => [
+                    ['league_id' => 26, 'league_title' => 'Testliga', 'league_archive' => 0],
                 ],
-                'selected_game_id' => 26,
-                'selected_game_title' => 'Testliga',
+                'selected_league_id' => 26,
+                'selected_league_title' => 'Testliga',
                 'matchrounds' => [
                     ['matchround_id' => 12, 'matchround_title' => 'Runde 1'],
                 ],
@@ -134,7 +134,7 @@ class AdminMatchTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->get('/admin/matches?game_id=26')
+            ->get('/admin/matches?league_id=26')
             ->assertOk()
             ->assertSee('Testliga', false)
             ->assertSee('Heim FC', false)
@@ -164,7 +164,7 @@ class AdminMatchTest extends TestCase
             $mock->shouldReceive('create')->once()->andReturn([
                 'ok' => true,
                 'message' => 'Spiel erfolgreich hinzugefügt.',
-                'game_id' => 26,
+                'league_id' => 26,
                 'next_form' => $nextForm,
             ]);
         });
@@ -177,7 +177,7 @@ class AdminMatchTest extends TestCase
                 'match_guestteam_id' => 2,
                 'match_status' => '',
             ])
-            ->assertRedirect(route('admin.matches', ['game_id' => 26]))
+            ->assertRedirect(route('admin.matches', ['league_id' => 26]))
             ->assertSessionHas('admin_message', 'Spiel erfolgreich hinzugefügt.')
             ->assertSessionHas('admin_match_prefill', $nextForm);
     }
@@ -192,13 +192,13 @@ class AdminMatchTest extends TestCase
             $mock->shouldReceive('delete')->once()->with(99)->andReturn([
                 'ok' => true,
                 'message' => 'Spiel erfolgreich gelöscht.',
-                'game_id' => 26,
+                'league_id' => 26,
             ]);
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->delete('/admin/matches/99', ['game_id' => 26])
-            ->assertRedirect(route('admin.matches', ['game_id' => 26]))
+            ->delete('/admin/matches/99', ['league_id' => 26])
+            ->assertRedirect(route('admin.matches', ['league_id' => 26]))
             ->assertSessionHas('admin_message', 'Spiel erfolgreich gelöscht.');
     }
 }

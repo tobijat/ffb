@@ -49,7 +49,7 @@ class AdminPlayerTest extends TestCase
                         'image_dir' => 'images/admin/navigation/',
                     ],
                 ],
-                'selected_game' => null,
+                'selected_league' => null,
                 'countries' => ['AUT' => 'Österreich', 'GER' => 'Deutschland'],
                 'form' => [
                     'player_id' => '',

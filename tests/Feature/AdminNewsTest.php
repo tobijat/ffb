@@ -58,16 +58,16 @@ class AdminNewsTest extends TestCase
                         'news_symbol' => 'news.png',
                         'news_symbol_url' => '/images/ffb/symbols/news.png',
                         'news_priority' => 0,
-                        'news_game_id' => 0,
+                        'news_league_id' => 0,
                     ],
                 ],
-                'games' => [
-                    ['game_id' => 0, 'game_title' => 'Global'],
-                    ['game_id' => 26, 'game_title' => 'Testliga'],
+                'leagues' => [
+                    ['league_id' => 0, 'league_title' => 'Global'],
+                    ['league_id' => 26, 'league_title' => 'Testliga'],
                 ],
                 'form' => [
                     'news_id' => '',
-                    'news_game_id' => 0,
+                    'news_league_id' => 0,
                     'news_title' => '',
                     'news_text' => '',
                     'news_symbol' => '',
@@ -102,7 +102,7 @@ class AdminNewsTest extends TestCase
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->post('/admin/news', [
-                'news_game_id' => 0,
+                'news_league_id' => 0,
                 'news_title' => 'Titel',
                 'news_text' => 'Text',
                 'news_symbol' => '',
@@ -124,7 +124,7 @@ class AdminNewsTest extends TestCase
                 'errors' => ['Bitte alle mit * markierten Felder ausfüllen.'],
                 'form' => [
                     'news_id' => '',
-                    'news_game_id' => 0,
+                    'news_league_id' => 0,
                     'news_title' => '',
                     'news_text' => '',
                     'news_symbol' => '',
@@ -140,10 +140,10 @@ class AdminNewsTest extends TestCase
                 ],
                 'navigation' => [],
                 'items' => [],
-                'games' => [['game_id' => 0, 'game_title' => 'Global']],
+                'leagues' => [['league_id' => 0, 'league_title' => 'Global']],
                 'form' => [
                     'news_id' => '',
-                    'news_game_id' => 0,
+                    'news_league_id' => 0,
                     'news_title' => '',
                     'news_text' => '',
                     'news_symbol' => '',
@@ -155,7 +155,7 @@ class AdminNewsTest extends TestCase
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->post('/admin/news', [
-                'news_game_id' => 0,
+                'news_league_id' => 0,
                 'news_title' => '',
                 'news_text' => '',
             ])

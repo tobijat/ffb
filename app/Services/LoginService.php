@@ -14,8 +14,7 @@ class LoginService
         private readonly FfbPassword $passwords,
         private readonly FfbAuth $auth,
         private readonly LegacyPhpSession $legacySession,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{ok: true, destination: string, user_id: int}|array{ok: false, errors: list<string>}
@@ -104,7 +103,7 @@ class LoginService
             'user_name' => trim((string) $user->user_fname.' '.(string) $user->user_lname),
             'user_avatar' => (string) ($details?->user_details_avatar ?: 'avatar_na.png'),
             'user_photo' => (string) ($details?->user_details_photo ?: 'profile_na.png'),
-            'game_id_player' => (int) ($details?->user_details_ffb_selected_game ?? 0),
+            'league_id_player' => (int) ($details?->user_details_ffb_selected_league ?? 0),
             'admin_flag' => $isAdmin ? 1 : 0,
             'admin_section' => $isAdmin ? self::AREA_PREFIX : null,
         ]);

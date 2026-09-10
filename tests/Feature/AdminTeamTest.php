@@ -49,7 +49,7 @@ class AdminTeamTest extends TestCase
                         'image_dir' => 'images/admin/navigation/',
                     ],
                 ],
-                'selected_game' => null,
+                'selected_league' => null,
                 'icons' => [
                     [
                         'key' => 'aut',
@@ -147,7 +147,7 @@ class AdminTeamTest extends TestCase
                     'is_ffb_admin' => true,
                 ],
                 'navigation' => [],
-                'selected_game' => null,
+                'selected_league' => null,
                 'icons' => [],
                 'selected_symbol' => [
                     'key' => 'aut',

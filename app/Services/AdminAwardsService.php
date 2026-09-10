@@ -2,14 +2,15 @@
 
 namespace App\Services;
 
-use App\Models\Game;
-use App\Models\GameOptions;
+use App\Models\League;
+use App\Models\LeagueOptions;
 use App\Models\UserAward;
 use App\Models\UserAwardDefines;
 use App\Models\UserAwardFinished;
 use App\Models\Userscore;
 use App\Models\Userteam;
 use App\Models\WebUser;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -22,8 +23,7 @@ class AdminAwardsService
 
     public function __construct(
         private readonly AdminCenterService $adminCenter,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -433,14 +433,14 @@ class AdminAwardsService
             return;
         }
 
-        $gameId = $this->adminCenter->selectedGameId($adminUserId);
+        $leagueId = $this->adminCenter->selectedLeagueId($adminUserId);
         $usersQuery = WebUser::query()
             ->where('user_status', 'active')
             ->orderBy('user_id');
 
-        if ($gameId > 0) {
+        if ($leagueId > 0) {
             $usersQuery->whereIn('user_id', Userscore::query()
-                ->where('userscore_game_id', $gameId)
+                ->where('userscore_league_id', $leagueId)
                 ->select('userscore_user_id'));
         }
 
@@ -495,17 +495,17 @@ class AdminAwardsService
     {
         $aimCount = (int) $define->user_award_defines_aim_count;
         $aim = (int) $define->user_award_defines_aim;
-        $games = Game::query()
-            ->where('game_status', 1)
-            ->where('game_archive', 1)
+        $leagues = League::query()
+            ->where('league_status', 1)
+            ->where('league_archive', 1)
             ->get();
 
         $count = 0;
-        foreach ($games as $game) {
-            $rm = (string) (GameOptions::query()
-                ->where('options_game_id', (int) $game->game_id)
-                ->value('options_game_rankmode') ?? 'points');
-            if ($this->calculateUserRank($userId, (int) $game->game_id, $rm) === $aim) {
+        foreach ($leagues as $league) {
+            $rm = (string) (LeagueOptions::query()
+                ->where('options_league_id', (int) $league->league_id)
+                ->value('options_league_rankmode') ?? 'points');
+            if ($this->calculateUserRank($userId, (int) $league->league_id, $rm) === $aim) {
                 $count++;
             }
         }
@@ -521,9 +521,9 @@ class AdminAwardsService
 
         $userteams = Userteam::query()
             ->join('ffb_matchround', 'ffb_matchround.matchround_id', '=', 'ffb_userteam.userteam_matchround_id')
-            ->join('ffb_game', 'ffb_game.game_id', '=', 'ffb_matchround.matchround_game_id')
+            ->join('ffb_league', 'ffb_league.league_id', '=', 'ffb_matchround.matchround_league_id')
             ->where('ffb_matchround.matchround_enddate', '<', $now)
-            ->where('ffb_game.game_status', 1)
+            ->where('ffb_league.league_status', 1)
             ->where('ffb_userteam.userteam_user_id', $userId)
             ->get(['ffb_userteam.userteam_id', 'ffb_userteam.userteam_matchround_id']);
 
@@ -539,17 +539,17 @@ class AdminAwardsService
 
     private function calcAwardBeer(UserAwardDefines $define, int $userId): bool
     {
-        $gameId = (int) $define->user_award_defines_aim;
-        $game = Game::query()->find($gameId);
-        if (! $game || (int) $game->game_archive !== 1) {
+        $leagueId = (int) $define->user_award_defines_aim;
+        $league = League::query()->find($leagueId);
+        if (! $league || (int) $league->league_archive !== 1) {
             return false;
         }
 
-        $rm = (string) (GameOptions::query()
-            ->where('options_game_id', $gameId)
-            ->value('options_game_rankmode') ?? 'points');
+        $rm = (string) (LeagueOptions::query()
+            ->where('options_league_id', $leagueId)
+            ->value('options_league_rankmode') ?? 'points');
 
-        return $this->calculateUserRank($userId, $gameId, $rm) === 1;
+        return $this->calculateUserRank($userId, $leagueId, $rm) === 1;
     }
 
     private function calcAwardTopscorer(UserAwardDefines $define, int $userId): bool
@@ -562,9 +562,9 @@ class AdminAwardsService
             ->exists();
     }
 
-    private function calculateUserRank(int $userId, int $gameId, string $rm): int
+    private function calculateUserRank(int $userId, int $leagueId, string $rm): int
     {
-        $query = Userscore::query()->where('userscore_game_id', $gameId);
+        $query = Userscore::query()->where('userscore_league_id', $leagueId);
         if ($rm === 'wc') {
             $query->orderByDesc('userscore_wc_points')->orderByDesc('userscore_total');
         } else {
@@ -671,7 +671,7 @@ class AdminAwardsService
     }
 
     /**
-     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  Builder  $query
      */
     private function applyOperator($query, string $column, string $operator, mixed $aim): void
     {

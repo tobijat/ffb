@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class GameOptions extends Model
+class LeagueOptions extends Model
 {
     protected $table = 'ffb_options';
 
@@ -14,7 +14,7 @@ class GameOptions extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'options_game_id',
+        'options_league_id',
         'options_score_minutes',
         'options_score_minutes_treshold',
         'options_score_minutes_gt',
@@ -59,15 +59,15 @@ class GameOptions extends Model
         'options_lineup_max_d',
         'options_lineup_max_m',
         'options_lineup_max_s',
-        'options_game_rankmode',
-        'options_game_pricemode',
-        'options_game_pointsmode',
-        'options_game_wcpoints',
-        'options_game_remind_hours_before',
+        'options_league_rankmode',
+        'options_league_pricemode',
+        'options_league_pointsmode',
+        'options_league_wcpoints',
+        'options_league_remind_hours_before',
     ];
 
-    public function game(): BelongsTo
+    public function league(): BelongsTo
     {
-        return $this->belongsTo(Game::class, 'options_game_id', 'game_id');
+        return $this->belongsTo(League::class, 'options_league_id', 'league_id');
     }
 }

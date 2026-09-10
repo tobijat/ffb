@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Exceptions\CloudflareChallengeException;
-use App\Models\GameOptions;
 use App\Models\Goal;
+use App\Models\LeagueOptions;
 use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\Playerfid;
@@ -18,7 +18,7 @@ use Throwable;
 
 class AdminMatchdataService
 {
-    private ?GameOptions $optionsCache = null;
+    private ?LeagueOptions $optionsCache = null;
 
     public function __construct(
         private readonly AdminCenterService $adminCenter,
@@ -36,9 +36,9 @@ class AdminMatchdataService
         return [
             'user' => $admin['user'],
             'navigation' => $admin['navigation'],
-            'selected_game_id' => $admin['selected_game_id'],
-            'selected_game' => $admin['selected_game'],
-            'games' => $admin['games'],
+            'selected_league_id' => $admin['selected_league_id'],
+            'selected_league' => $admin['selected_league'],
+            'leagues' => $admin['leagues'],
             'pointsmode' => $this->pointsMode($userId),
         ];
     }
@@ -54,15 +54,15 @@ class AdminMatchdataService
      */
     public function rounds(int $userId): array
     {
-        $gameId = $this->adminCenter->selectedGameId($userId);
-        if ($gameId <= 0) {
+        $leagueId = $this->adminCenter->selectedLeagueId($userId);
+        if ($leagueId <= 0) {
             return [];
         }
 
         $now = time();
 
         return Matchround::query()
-            ->where('matchround_game_id', $gameId)
+            ->where('matchround_league_id', $leagueId)
             ->orderByDesc('matchround_startdate')
             ->get()
             ->map(function (Matchround $round) use ($now) {
@@ -160,7 +160,7 @@ class AdminMatchdataService
         $leagueId = 0;
         if ($matchId > 0) {
             $match = MatchGame::query()->with('matchround')->find($matchId);
-            $leagueId = (int) ($match?->matchround?->matchround_game_id ?? 0);
+            $leagueId = (int) ($match?->matchround?->matchround_league_id ?? 0);
         }
 
         $query = Playerteam::query()
@@ -526,7 +526,7 @@ class AdminMatchdataService
 
             $homeTeamId = (int) $match->match_hometeam_id;
             $guestTeamId = (int) $match->match_guestteam_id;
-            $leagueId = (int) ($match->matchround?->matchround_game_id ?? 0);
+            $leagueId = (int) ($match->matchround?->matchround_league_id ?? 0);
 
             $playerteams = Playerteam::query()
                 ->whereIn('playerteam_team_id', [$homeTeamId, $guestTeamId])
@@ -1116,23 +1116,23 @@ class AdminMatchdataService
 
     public function pointsMode(int $userId = 0): string
     {
-        return (string) ($this->options($userId)->options_game_pointsmode ?: 'new');
+        return (string) ($this->options($userId)->options_league_pointsmode ?: 'new');
     }
 
     /**
      * Scoring options of the league currently selected in the admin center.
      */
-    private function options(int $userId = 0): GameOptions
+    private function options(int $userId = 0): LeagueOptions
     {
-        if ($this->optionsCache instanceof GameOptions) {
+        if ($this->optionsCache instanceof LeagueOptions) {
             return $this->optionsCache;
         }
 
-        $gameId = $this->adminCenter->selectedGameId($userId);
+        $leagueId = $this->adminCenter->selectedLeagueId($userId);
 
-        return $this->optionsCache = GameOptions::query()->where('options_game_id', $gameId)->first()
-            ?? GameOptions::query()->where('options_game_id', 0)->first()
-            ?? new GameOptions;
+        return $this->optionsCache = LeagueOptions::query()->where('options_league_id', $leagueId)->first()
+            ?? LeagueOptions::query()->where('options_league_id', 0)->first()
+            ?? new LeagueOptions;
     }
 
     /**

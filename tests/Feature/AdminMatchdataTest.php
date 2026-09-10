@@ -48,17 +48,17 @@ class AdminMatchdataTest extends TestCase
                         'image_dir' => 'images/admin/navigation/',
                     ],
                 ],
-                'selected_game_id' => 1,
-                'selected_game' => [
-                    'game_id' => 1,
-                    'game_title' => 'Testliga',
+                'selected_league_id' => 1,
+                'selected_league' => [
+                    'league_id' => 1,
+                    'league_title' => 'Testliga',
                     'symbol_url' => '/images/ffb/symbols/x.png',
                 ],
-                'games' => [
+                'leagues' => [
                     [
-                        'game_id' => 1,
-                        'game_title' => 'Testliga',
-                        'game_archive' => 0,
+                        'league_id' => 1,
+                        'league_title' => 'Testliga',
+                        'league_archive' => 0,
                     ],
                 ],
                 'pointsmode' => 'new',

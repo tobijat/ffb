@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Game;
+use App\Models\League;
 use App\Models\Player;
 use App\Models\Playerstats;
 use App\Models\Playerteam;
@@ -47,7 +47,7 @@ class AdminSquadService
         return [
             'user' => $shell['user'],
             'navigation' => $shell['navigation'],
-            'selected_game' => $shell['selected_game'],
+            'selected_league' => $shell['selected_league'],
             'squad_league_id' => $leagueId,
             'leagues' => $this->leagueOptions(),
             'countries' => $this->countryOptions(),
@@ -363,7 +363,7 @@ class AdminSquadService
         if ($teamId <= 0 || ! Team::query()->whereKey($teamId)->exists()) {
             return ['ok' => false, 'errors' => ['Bitte ein Team wählen.'], 'team_id' => $teamId];
         }
-        if ($leagueId <= 0 || ! Game::query()->whereKey($leagueId)->exists()) {
+        if ($leagueId <= 0 || ! League::query()->whereKey($leagueId)->exists()) {
             return ['ok' => false, 'errors' => ['Bitte eine Liga wählen.'], 'team_id' => $teamId];
         }
 
@@ -470,7 +470,7 @@ class AdminSquadService
         if ($leagueId > 0) {
             $teamIds = DB::table('ffb_match as m')
                 ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'm.match_round')
-                ->where('mr.matchround_game_id', $leagueId)
+                ->where('mr.matchround_league_id', $leagueId)
                 ->select('m.match_hometeam_id', 'm.match_guestteam_id')
                 ->get()
                 ->flatMap(fn ($row) => [(int) $row->match_hometeam_id, (int) $row->match_guestteam_id])
@@ -513,16 +513,16 @@ class AdminSquadService
     }
 
     /**
-     * @return list<array{game_id: int, game_title: string}>
+     * @return list<array{league_id: int, league_title: string}>
      */
     private function leagueOptions(): array
     {
-        return Game::query()
-            ->orderByDesc('game_id')
-            ->get(['game_id', 'game_title'])
-            ->map(fn (Game $game): array => [
-                'game_id' => (int) $game->game_id,
-                'game_title' => (string) $game->game_title,
+        return League::query()
+            ->orderByDesc('league_id')
+            ->get(['league_id', 'league_title'])
+            ->map(fn (League $league): array => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => (string) $league->league_title,
             ])
             ->all();
     }
@@ -533,18 +533,18 @@ class AdminSquadService
     private function resolveSquadLeagueId(?int $squadLeagueId, array $shell): int
     {
         if ($squadLeagueId !== null && $squadLeagueId > 0) {
-            return Game::query()->whereKey($squadLeagueId)->exists() ? $squadLeagueId : 0;
+            return League::query()->whereKey($squadLeagueId)->exists() ? $squadLeagueId : 0;
         }
 
         $userId = (int) ($shell['user']['user_id'] ?? 0);
         if ($userId > 0) {
-            $fromAdmin = $this->adminCenter->selectedGameId($userId);
+            $fromAdmin = $this->adminCenter->selectedLeagueId($userId);
             if ($fromAdmin > 0) {
                 return $fromAdmin;
             }
         }
 
-        return (int) ($shell['selected_game']['game_id'] ?? 0);
+        return (int) ($shell['selected_league']['league_id'] ?? 0);
     }
 
     /**

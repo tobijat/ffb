@@ -156,7 +156,7 @@
             return;
         }
         try {
-            const data = await fetchJson(matchroundsUrl + '?game_id=' + encodeURIComponent(id));
+            const data = await fetchJson(matchroundsUrl + '?league_id=' + encodeURIComponent(id));
             const rounds = data.matchrounds || [];
             let html = '<option value="0">select Matchround..</option>';
             for (let i = 0; i < rounds.length; i++) {
@@ -179,7 +179,7 @@
     async function retrieveUsers() {
         clearUserlistDisplay();
         const params = new URLSearchParams();
-        if (gameId > 0) params.set('game_id', String(gameId));
+        if (gameId > 0) params.set('league_id', String(gameId));
         if (matchroundId > 0) params.set('matchround_id', String(matchroundId));
         params.set('userstatus', userstatusSelect ? userstatusSelect.value : '');
         params.set('mailservice', mstypeSelect ? mstypeSelect.value : '');

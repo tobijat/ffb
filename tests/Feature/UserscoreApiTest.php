@@ -34,7 +34,7 @@ class UserscoreApiTest extends TestCase
         $this->actingAsFfbUser();
 
         $payload = [
-            'selected_game_id' => 26,
+            'selected_league_id' => 26,
             'matchround_id' => 0,
             'rank_mode' => 'wc',
             'display_mode' => 'wc',
@@ -75,7 +75,7 @@ class UserscoreApiTest extends TestCase
             $mock->shouldReceive('forRound')->once()->with(544, 280, 'n', 'asc')->andReturn([
                 'ok' => true,
                 'data' => [
-                    'selected_game_id' => 26,
+                    'selected_league_id' => 26,
                     'matchround_id' => 280,
                     'rank_mode' => 'points',
                     'display_mode' => 'points',
@@ -99,7 +99,7 @@ class UserscoreApiTest extends TestCase
             $mock->shouldReceive('matchrounds')->once()->with(544)->andReturn([
                 'ok' => true,
                 'data' => [
-                    'selected_game_id' => 26,
+                    'selected_league_id' => 26,
                     'matchrounds' => [
                         ['matchround_id' => 1, 'matchround_title' => 'Runde 1', 'matches' => []],
                     ],
@@ -131,7 +131,7 @@ class UserscoreApiTest extends TestCase
                         'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
                         'update_profile_nag' => false,
                     ],
-                    'selected_game_id' => 26,
+                    'selected_league_id' => 26,
                     'navigation' => [
                         ['symbol' => 'nav_results.png', 'name' => 'Rangliste', 'link' => '/userscore', 'style' => 'big'],
                     ],

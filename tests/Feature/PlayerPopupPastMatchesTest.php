@@ -17,26 +17,26 @@ class PlayerPopupPastMatchesTest extends TestCase
         parent::setUp();
         $this->createLegacyFfbSchema(true);
 
-        DB::table('ffb_game')->insert([
-            ['game_id' => 1, 'game_title' => 'Current League'],
-            ['game_id' => 2, 'game_title' => 'Past League'],
+        DB::table('ffb_league')->insert([
+            ['league_id' => 1, 'league_title' => 'Current League'],
+            ['league_id' => 2, 'league_title' => 'Past League'],
         ]);
         DB::table('ffb_options')->insert([
             'options_id' => 1,
-            'options_game_id' => 1,
-            'options_game_pricemode' => 'constant',
+            'options_league_id' => 1,
+            'options_league_pricemode' => 'constant',
         ]);
         DB::table('ffb_matchround')->insert([
             [
                 'matchround_id' => 1,
-                'matchround_game_id' => 1,
+                'matchround_league_id' => 1,
                 'matchround_title' => 'Current R1',
                 'matchround_startdate' => now()->subDay()->toDateTimeString(),
                 'matchround_status' => 1,
             ],
             [
                 'matchround_id' => 2,
-                'matchround_game_id' => 2,
+                'matchround_league_id' => 2,
                 'matchround_title' => 'Past R1',
                 'matchround_startdate' => now()->subYear()->toDateTimeString(),
                 'matchround_status' => 1,
@@ -117,7 +117,7 @@ class PlayerPopupPastMatchesTest extends TestCase
         ]);
         DB::table('web_user_details')->insert([
             'user_id' => 544,
-            'user_details_ffb_selected_game' => 1,
+            'user_details_ffb_selected_league' => 1,
         ]);
     }
 

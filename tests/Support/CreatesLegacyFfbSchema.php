@@ -11,20 +11,20 @@ trait CreatesLegacyFfbSchema
     {
         $this->dropLegacyFfbSchema();
 
-        Schema::create('ffb_game', function (Blueprint $table) {
-            $table->integer('game_id')->primary();
-            $table->string('game_title')->default('');
-            $table->tinyInteger('game_visible')->default(1);
-            $table->tinyInteger('game_archive')->default(0);
-            $table->tinyInteger('game_countdown')->default(0);
-            $table->tinyInteger('game_status')->default(1);
-            $table->mediumText('game_description')->nullable();
-            $table->string('game_symbol')->default('');
+        Schema::create('ffb_league', function (Blueprint $table) {
+            $table->integer('league_id')->primary();
+            $table->string('league_title')->default('');
+            $table->tinyInteger('league_visible')->default(1);
+            $table->tinyInteger('league_archive')->default(0);
+            $table->tinyInteger('league_countdown')->default(0);
+            $table->tinyInteger('league_status')->default(1);
+            $table->mediumText('league_description')->nullable();
+            $table->string('league_symbol')->default('');
         });
 
         Schema::create('ffb_options', function (Blueprint $table) {
             $table->integer('options_id')->primary();
-            $table->integer('options_game_id');
+            $table->integer('options_league_id');
             $table->integer('options_lineup_max_players')->default(11);
             $table->integer('options_lineup_max_players_team')->default(3);
             $table->integer('options_lineup_max_credits')->default(100);
@@ -36,13 +36,13 @@ trait CreatesLegacyFfbSchema
             $table->integer('options_lineup_max_midfield')->default(5);
             $table->integer('options_lineup_min_striker')->default(1);
             $table->integer('options_lineup_max_striker')->default(3);
-            $table->string('options_game_pricemode')->default('constant');
-            $table->string('options_game_pointsmode')->default('new');
+            $table->string('options_league_pricemode')->default('constant');
+            $table->string('options_league_pointsmode')->default('new');
         });
 
         Schema::create('ffb_matchround', function (Blueprint $table) {
             $table->integer('matchround_id')->primary();
-            $table->integer('matchround_game_id');
+            $table->integer('matchround_league_id');
             $table->string('matchround_title')->default('');
             $table->timestamp('matchround_startdate')->nullable();
             $table->timestamp('matchround_enddate')->nullable();
@@ -157,7 +157,7 @@ trait CreatesLegacyFfbSchema
 
         Schema::create('web_user_details', function (Blueprint $table) {
             $table->integer('user_id')->primary();
-            $table->integer('user_details_ffb_selected_game')->default(0);
+            $table->integer('user_details_ffb_selected_league')->default(0);
         });
     }
 
@@ -177,7 +177,7 @@ trait CreatesLegacyFfbSchema
             'ffb_match',
             'ffb_matchround',
             'ffb_options',
-            'ffb_game',
+            'ffb_league',
             'web_user_details',
         ] as $table) {
             Schema::dropIfExists($table);
