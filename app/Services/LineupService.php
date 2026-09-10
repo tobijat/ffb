@@ -7,6 +7,7 @@ use App\Models\GameOptions;
 use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\Playerprice;
+use App\Models\Playerstats;
 use App\Models\Playerteam;
 use App\Models\Team;
 use App\Models\UserDetails;
@@ -20,8 +21,7 @@ class LineupService
 {
     public function __construct(
         private readonly PlayerGradeService $grades,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}
@@ -204,9 +204,14 @@ class LineupService
             return ['ok' => false, 'status' => 422, 'error' => 'team_id is required'];
         }
 
-        $gameId = $this->selectedGameId($userId);
-        $options = $gameId > 0
-            ? GameOptions::query()->where('options_game_id', $gameId)->first()
+        $matchround = Matchround::query()->find($matchroundId);
+        $leagueId = (int) ($matchround?->matchround_game_id ?? 0);
+        if ($leagueId <= 0) {
+            $leagueId = $this->selectedGameId($userId);
+        }
+
+        $options = $leagueId > 0
+            ? GameOptions::query()->where('options_game_id', $leagueId)->first()
             : null;
         $priceMode = (string) ($options?->options_game_pricemode ?: 'constant');
 
@@ -214,6 +219,7 @@ class LineupService
             ->with(['player', 'team'])
             ->where('playerteam_team_id', $teamId)
             ->where('playerteam_status', 1)
+            ->when($leagueId > 0, fn ($q) => $q->forLeague($leagueId))
             ->orderBy('playerteam_player_position')
             ->orderByDesc('playerteam_player_price')
             ->get();
@@ -408,6 +414,7 @@ class LineupService
             ->first();
 
         $priceMode = $options?->options_game_pricemode ?: 'constant';
+        $leagueId = (int) $matchround->matchround_game_id;
         $playerteams = Playerteam::query()
             ->with(['player', 'team'])
             ->whereIn('playerteam_id', $ids)
@@ -416,6 +423,15 @@ class LineupService
 
         if ($playerteams->count() !== 11) {
             return $this->fail(422, 'Invalid lineup: one or more players were not found');
+        }
+
+        foreach ($playerteams as $pt) {
+            if ((int) ($pt->playerteam_league_id ?? 0) !== $leagueId) {
+                return $this->fail(422, 'Invalid lineup: player does not belong to this league');
+            }
+            if ((int) $pt->playerteam_status !== 1) {
+                return $this->fail(422, 'Invalid lineup: inactive players are not allowed');
+            }
         }
 
         $dynamicPrices = $this->dynamicPrices($ids, $matchroundId, $priceMode);
@@ -488,6 +504,7 @@ class LineupService
                         $ids[] = (int) $part;
                     }
                 }
+
                 continue;
             }
 
@@ -653,7 +670,7 @@ class LineupService
             return collect();
         }
 
-        return \App\Models\Playerprice::query()
+        return Playerprice::query()
             ->where('playerprice_matchround_id', $matchroundId)
             ->whereIn('playerprice_playerteam_id', $playerteamIds)
             ->get()
@@ -670,7 +687,7 @@ class LineupService
             return collect();
         }
 
-        return \App\Models\Playerstats::query()
+        return Playerstats::query()
             ->where('playerstats_matchround_id', $matchroundId)
             ->whereIn('playerstats_playerteam_id', $playerteamIds)
             ->get()

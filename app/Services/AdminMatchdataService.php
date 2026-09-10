@@ -168,10 +168,20 @@ class AdminMatchdataService
 
         $pm = $this->pointsMode($userId);
 
+        $leagueId = 0;
+        if ($matchId > 0) {
+            $match = MatchGame::query()->with('matchround')->find($matchId);
+            $leagueId = (int) ($match?->matchround?->matchround_game_id ?? 0);
+        }
+
         $query = Playerteam::query()
             ->with('player')
             ->join('ffb_player', 'ffb_player.player_id', '=', 'ffb_playerteam.playerteam_player_id')
             ->where('ffb_playerteam.playerteam_team_id', $teamId);
+
+        if ($leagueId > 0) {
+            $query->where('ffb_playerteam.playerteam_league_id', $leagueId);
+        }
 
         if (! $allPlayers) {
             $query->where('ffb_playerteam.playerteam_status', 1);
@@ -397,6 +407,7 @@ class AdminMatchdataService
             $ptId = $this->findMatchingPlayerteamId($name, $dbPlayers, $usedPt);
             if ($ptId === null) {
                 $unmatched[] = $name;
+
                 continue;
             }
             $usedPt[$ptId] = true;
@@ -494,7 +505,7 @@ class AdminMatchdataService
             return ['ok' => false, 'errors' => ['No matchID given!']];
         }
 
-        $match = MatchGame::query()->find($matchId);
+        $match = MatchGame::query()->with('matchround')->find($matchId);
         if (! $match) {
             return ['ok' => false, 'errors' => ['No Match for this ID was found!']];
         }
@@ -526,9 +537,11 @@ class AdminMatchdataService
 
             $homeTeamId = (int) $match->match_hometeam_id;
             $guestTeamId = (int) $match->match_guestteam_id;
+            $leagueId = (int) ($match->matchround?->matchround_game_id ?? 0);
 
             $playerteams = Playerteam::query()
                 ->whereIn('playerteam_team_id', [$homeTeamId, $guestTeamId])
+                ->when($leagueId > 0, fn ($q) => $q->forLeague($leagueId))
                 ->get()
                 ->keyBy(fn (Playerteam $item) => (int) $item->playerteam_id);
 
