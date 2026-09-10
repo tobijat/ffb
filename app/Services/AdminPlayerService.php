@@ -6,6 +6,7 @@ use App\Models\Player;
 use App\Models\Playerteam;
 use App\Models\Userteam;
 use App\Support\Flag;
+use App\Support\PlayerPicture;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class AdminPlayerService
@@ -419,8 +420,6 @@ class AdminPlayerService
 
         $pictures = Playerteam::query()
             ->whereIn('playerteam_player_id', $playerIds)
-            ->where('playerteam_player_picture', '!=', '')
-            ->whereNotNull('playerteam_player_picture')
             ->orderByDesc('playerteam_id')
             ->get(['playerteam_player_id', 'playerteam_team_id', 'playerteam_id']);
 
@@ -430,11 +429,10 @@ class AdminPlayerService
             if (isset($byPlayer[$playerId])) {
                 continue;
             }
-            $byPlayer[$playerId] = '/images/ffb/players/'
-                .(int) $row->playerteam_team_id
-                .'/'
-                .(int) $row->playerteam_id
-                .'.jpg';
+            $url = PlayerPicture::url((int) $row->playerteam_team_id, $playerId);
+            if (! str_ends_with($url, 'image_na.gif')) {
+                $byPlayer[$playerId] = $url;
+            }
         }
 
         foreach ($items as &$item) {

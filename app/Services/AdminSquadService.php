@@ -2,12 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\Game;
 use App\Models\Player;
 use App\Models\Playerstats;
 use App\Models\Playerteam;
 use App\Models\Team;
 use App\Models\Userteam;
 use App\Support\Flag;
+use App\Support\PlayerPicture;
 use DateTimeImmutable;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -26,10 +28,11 @@ class AdminSquadService
     /**
      * @return array<string, mixed>
      */
-    public function pagePayload(int $userId, int $teamId): array
+    public function pagePayload(int $userId, int $teamId, ?int $squadLeagueId = null): array
     {
         $shell = $this->adminCenter->shellPayload($userId);
-        $teams = $this->teamOptions();
+        $leagueId = $this->resolveSquadLeagueId($squadLeagueId, $shell);
+        $teams = $this->teamOptions($leagueId);
         $teamId = $this->resolveTeamId($teamId, $teams);
         $selectedTeam = null;
         foreach ($teams as $team) {
@@ -39,12 +42,14 @@ class AdminSquadService
             }
         }
 
-        $items = $teamId > 0 ? $this->rosterItems($teamId) : [];
+        $items = ($teamId > 0 && $leagueId > 0) ? $this->rosterItems($teamId, $leagueId) : [];
 
         return [
             'user' => $shell['user'],
             'navigation' => $shell['navigation'],
             'selected_game' => $shell['selected_game'],
+            'squad_league_id' => $leagueId,
+            'leagues' => $this->leagueOptions(),
             'countries' => $this->countryOptions(),
             'prices' => range(1, 15),
             'positions' => [
@@ -68,6 +73,7 @@ class AdminSquadService
                 'playerteam_player_position' => 'd',
                 'playerteam_date_transfer' => self::DEFAULT_TRANSFER,
             ],
+            'hint' => 'Position und Preis gelten pro Liga.',
         ];
     }
 
@@ -278,10 +284,10 @@ class AdminSquadService
         $item->playerteam_date_transfer = $form['playerteam_date_transfer'].' 00:00:00';
 
         if ($pictureFile !== null) {
-            if (! $this->storePicture($pictureFile, $teamId, (int) $item->playerteam_id)) {
+            if (! $this->storePicture($pictureFile, $teamId, (int) $item->playerteam_player_id)) {
                 return false;
             }
-            $item->playerteam_player_picture = $item->playerteam_id.'.jpg';
+            $item->playerteam_player_picture = $teamId.'-'.(int) $item->playerteam_player_id.'.jpg';
         }
 
         $item->save();
@@ -332,9 +338,17 @@ class AdminSquadService
         $teamId = (int) $item->playerteam_team_id;
         $playerteamId = (int) $item->playerteam_id;
         $pictureName = (string) ($item->playerteam_player_picture ?? '');
+        $playerId = (int) $item->playerteam_player_id;
         $item->delete();
         if ($pictureName !== '') {
-            $this->deletePictureFile($teamId, $playerteamId);
+            // Only delete file if no other league row for same team+player remains.
+            $stillUsed = Playerteam::query()
+                ->where('playerteam_team_id', $teamId)
+                ->where('playerteam_player_id', $playerId)
+                ->exists();
+            if (! $stillUsed) {
+                $this->deletePictureFile($teamId, $playerId);
+            }
         }
     }
 
@@ -345,8 +359,12 @@ class AdminSquadService
     public function batchAdd(array $input): array
     {
         $teamId = (int) ($input['team_id'] ?? 0);
+        $leagueId = (int) ($input['squad_league_id'] ?? $input['playerteam_league_id'] ?? 0);
         if ($teamId <= 0 || ! Team::query()->whereKey($teamId)->exists()) {
             return ['ok' => false, 'errors' => ['Bitte ein Team wählen.'], 'team_id' => $teamId];
+        }
+        if ($leagueId <= 0 || ! Game::query()->whereKey($leagueId)->exists()) {
+            return ['ok' => false, 'errors' => ['Bitte eine Liga wählen.'], 'team_id' => $teamId];
         }
 
         $itemsInput = is_array($input['items'] ?? null) ? $input['items'] : [];
@@ -398,6 +416,7 @@ class AdminSquadService
 
         $existing = Playerteam::query()
             ->where('playerteam_team_id', $teamId)
+            ->where('playerteam_league_id', $leagueId)
             ->whereIn('playerteam_player_id', $playerIds)
             ->pluck('playerteam_player_id')
             ->map(fn ($id) => (int) $id)
@@ -406,7 +425,7 @@ class AdminSquadService
         if ($existing !== []) {
             return [
                 'ok' => false,
-                'errors' => ['Mindestens ein Spieler ist diesem Team bereits zugeordnet.'],
+                'errors' => ['Mindestens ein Spieler ist diesem Team in dieser Liga bereits zugeordnet.'],
                 'team_id' => $teamId,
             ];
         }
@@ -416,11 +435,12 @@ class AdminSquadService
             return ['ok' => false, 'errors' => ['Mindestens ein Spieler wurde nicht gefunden.'], 'team_id' => $teamId];
         }
 
-        DB::transaction(function () use ($prepared, $teamId) {
+        DB::transaction(function () use ($prepared, $teamId, $leagueId) {
             foreach ($prepared as $playerId => $form) {
                 Playerteam::query()->create([
                     'playerteam_player_id' => $playerId,
                     'playerteam_team_id' => $teamId,
+                    'playerteam_league_id' => $leagueId,
                     'playerteam_player_picture' => '',
                     'playerteam_status' => (int) $form['playerteam_status'],
                     'playerteam_player_price' => (int) $form['playerteam_player_price'],
@@ -444,10 +464,36 @@ class AdminSquadService
     /**
      * @return list<array{team_id: int, team_label: string}>
      */
-    private function teamOptions(): array
+    private function teamOptions(int $leagueId): array
     {
-        return Team::query()
-            ->orderBy('team_name')
+        $teamIds = [];
+        if ($leagueId > 0) {
+            $teamIds = DB::table('ffb_match as m')
+                ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'm.match_round')
+                ->where('mr.matchround_game_id', $leagueId)
+                ->select('m.match_hometeam_id', 'm.match_guestteam_id')
+                ->get()
+                ->flatMap(fn ($row) => [(int) $row->match_hometeam_id, (int) $row->match_guestteam_id])
+                ->filter(fn (int $id) => $id > 0)
+                ->unique()
+                ->values()
+                ->all();
+
+            $squadTeamIds = Playerteam::query()
+                ->where('playerteam_league_id', $leagueId)
+                ->distinct()
+                ->pluck('playerteam_team_id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+            $teamIds = array_values(array_unique(array_merge($teamIds, $squadTeamIds)));
+        }
+
+        $query = Team::query()->orderBy('team_name');
+        if ($teamIds !== []) {
+            $query->whereIn('team_id', $teamIds);
+        }
+
+        return $query
             ->get(['team_id', 'team_name', 'team_nationality', 'team_status'])
             ->map(function (Team $team) {
                 $name = (string) $team->team_name;
@@ -464,6 +510,41 @@ class AdminSquadService
             })
             ->values()
             ->all();
+    }
+
+    /**
+     * @return list<array{game_id: int, game_title: string}>
+     */
+    private function leagueOptions(): array
+    {
+        return Game::query()
+            ->orderByDesc('game_id')
+            ->get(['game_id', 'game_title'])
+            ->map(fn (Game $game): array => [
+                'game_id' => (int) $game->game_id,
+                'game_title' => (string) $game->game_title,
+            ])
+            ->all();
+    }
+
+    /**
+     * @param  array<string, mixed>  $shell
+     */
+    private function resolveSquadLeagueId(?int $squadLeagueId, array $shell): int
+    {
+        if ($squadLeagueId !== null && $squadLeagueId > 0) {
+            return Game::query()->whereKey($squadLeagueId)->exists() ? $squadLeagueId : 0;
+        }
+
+        $userId = (int) ($shell['user']['user_id'] ?? 0);
+        if ($userId > 0) {
+            $fromAdmin = $this->adminCenter->selectedGameId($userId);
+            if ($fromAdmin > 0) {
+                return $fromAdmin;
+            }
+        }
+
+        return (int) ($shell['selected_game']['game_id'] ?? 0);
     }
 
     /**
@@ -486,11 +567,12 @@ class AdminSquadService
     /**
      * @return list<array<string, mixed>>
      */
-    private function rosterItems(int $teamId): array
+    private function rosterItems(int $teamId, int $leagueId): array
     {
         return Playerteam::query()
             ->with('player')
             ->where('playerteam_team_id', $teamId)
+            ->where('playerteam_league_id', $leagueId)
             ->orderBy('playerteam_player_position')
             ->orderByDesc('playerteam_player_price')
             ->get()
@@ -515,11 +597,13 @@ class AdminSquadService
                 $player = $item->player;
                 $nat = strtoupper(trim((string) ($player?->player_nationality ?? '')));
                 $transfer = strtotime((string) $item->playerteam_date_transfer);
-                $hasPicture = trim((string) ($item->playerteam_player_picture ?? '')) !== '';
+                $playerId = (int) $item->playerteam_player_id;
+                $pictureUrl = PlayerPicture::url($teamId, $playerId);
+                $hasPicture = ! str_ends_with($pictureUrl, 'image_na.gif');
 
                 return [
                     'playerteam_id' => (int) $item->playerteam_id,
-                    'player_id' => (int) $item->playerteam_player_id,
+                    'player_id' => $playerId,
                     'player_fname' => (string) ($player?->player_fname ?? ''),
                     'player_lname' => (string) ($player?->player_lname ?? ''),
                     'player_nationality' => $nat,
@@ -529,9 +613,8 @@ class AdminSquadService
                     'playerteam_player_price' => (int) $item->playerteam_player_price,
                     'playerteam_player_position' => (string) $item->playerteam_player_position,
                     'playerteam_date_transfer' => $transfer ? date('Y-m-d', $transfer) : self::DEFAULT_TRANSFER,
-                    'picture_url' => $hasPicture
-                        ? '/images/ffb/players/'.$teamId.'/'.$item->playerteam_id.'.jpg'
-                        : '/images/ffb/players/image_na.gif',
+                    'playerteam_league_id' => (int) $item->playerteam_league_id,
+                    'picture_url' => $pictureUrl,
                     'has_picture' => $hasPicture,
                 ];
             })
@@ -603,19 +686,20 @@ class AdminSquadService
         return $errors;
     }
 
-    private function storePicture(UploadedFile $file, int $teamId, int $playerteamId): bool
+    private function storePicture(UploadedFile $file, int $teamId, int $playerId): bool
     {
         $dir = $this->playersDir($teamId);
         if (! is_dir($dir) && ! @mkdir($dir, 0775, true) && ! is_dir($dir)) {
             return false;
         }
 
-        $target = $dir.DIRECTORY_SEPARATOR.$playerteamId.'.jpg';
+        $filename = $teamId.'-'.$playerId.'.jpg';
+        $target = $dir.DIRECTORY_SEPARATOR.$filename;
         $mime = (string) $file->getMimeType();
 
         if ($mime === 'image/jpeg') {
             try {
-                $file->move($dir, $playerteamId.'.jpg');
+                $file->move($dir, $filename);
             } catch (\Throwable) {
                 return false;
             }
@@ -646,16 +730,15 @@ class AdminSquadService
         if (function_exists('imagepalettetotruecolor')) {
             @imagepalettetotruecolor($image);
         }
-
         $ok = @imagejpeg($image, $target, 90);
         imagedestroy($image);
 
         return (bool) $ok;
     }
 
-    private function deletePictureFile(int $teamId, int $playerteamId): void
+    private function deletePictureFile(int $teamId, int $playerId): void
     {
-        $path = $this->playersDir($teamId).DIRECTORY_SEPARATOR.$playerteamId.'.jpg';
+        $path = PlayerPicture::storagePath($teamId, $playerId);
         if (is_file($path)) {
             @unlink($path);
         }

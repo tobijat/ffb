@@ -21,8 +21,7 @@ class AdminPlayerpriceService
     public function __construct(
         private readonly AdminCenterService $adminCenter,
         private readonly EloRatingClient $eloRating,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -73,7 +72,7 @@ class AdminPlayerpriceService
             $details = [];
             $teamList = $this->teamIdsForMatchround($matchroundId);
             foreach ($teamList as $teamId) {
-                $margins = $this->calculatePlayerPriceMarginsForTeam($teamId, $priceMargin);
+                $margins = $this->calculatePlayerPriceMarginsForTeam($teamId, $priceMargin, $gameId);
                 array_push($details, ...$this->updatePlayerPrices($margins, $matchroundId));
             }
 
@@ -116,7 +115,7 @@ class AdminPlayerpriceService
             $teamPrices = $this->getTeamPrices($teamList, $maxPrice, $minPrice);
             $details = [];
             foreach ($teamPrices as $teamId => $teamPrice) {
-                $details[] = $this->updateBasePriceForTeamAndPlayers((int) $teamId, (float) $teamPrice);
+                $details[] = $this->updateBasePriceForTeamAndPlayers((int) $teamId, (float) $teamPrice, $gameId);
             }
 
             return [
@@ -165,7 +164,7 @@ class AdminPlayerpriceService
             $teamPrices = $this->getTeamPrices($teamList, $maxPrice, $minPrice);
             $details = [];
             foreach ($teamPrices as $teamId => $teamPrice) {
-                $details[] = $this->updateBasePriceForTeamAndPlayers((int) $teamId, (float) $teamPrice);
+                $details[] = $this->updateBasePriceForTeamAndPlayers((int) $teamId, (float) $teamPrice, $gameId);
             }
 
             return [
@@ -275,7 +274,7 @@ class AdminPlayerpriceService
                     ->first();
 
                 if (! $playerprice) {
-                    $playerprice = new Playerprice();
+                    $playerprice = new Playerprice;
                     $playerprice->playerprice_playerteam_id = $playerteamId;
                     $playerprice->playerprice_matchround_id = $matchroundId;
                 }
@@ -295,7 +294,7 @@ class AdminPlayerpriceService
     /**
      * @return array<int, float> playerteam_id => margin
      */
-    private function calculatePlayerPriceMarginsForTeam(int $teamId, float $margin): array
+    private function calculatePlayerPriceMarginsForTeam(int $teamId, float $margin, int $leagueId = 0): array
     {
         $lastMatches = $this->lastMatches($teamId);
         if ($lastMatches === []) {
@@ -317,6 +316,7 @@ class AdminPlayerpriceService
         $players = Playerteam::query()
             ->where('playerteam_team_id', $teamId)
             ->where('playerteam_status', 1)
+            ->when($leagueId > 0, fn ($q) => $q->forLeague($leagueId))
             ->get();
 
         $playerPriceMargins = [];
@@ -474,19 +474,20 @@ class AdminPlayerpriceService
         return $teamPrices;
     }
 
-    private function updateBasePriceForTeamAndPlayers(int $teamId, float $price): string
+    private function updateBasePriceForTeamAndPlayers(int $teamId, float $price, int $leagueId = 0): string
     {
         $team = Team::query()->find($teamId);
         if (! $team) {
             return 'Base price skipped: missing team '.$teamId;
         }
 
-        DB::transaction(function () use ($team, $price) {
+        DB::transaction(function () use ($team, $price, $leagueId) {
             $team->team_avg_price = $price;
             $team->save();
 
             Playerteam::query()
                 ->where('playerteam_team_id', (int) $team->team_id)
+                ->when($leagueId > 0, fn ($q) => $q->forLeague($leagueId))
                 ->update(['playerteam_player_price' => $price]);
         });
 
