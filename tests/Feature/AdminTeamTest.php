@@ -55,8 +55,8 @@ class AdminTeamTest extends TestCase
                         'key' => 'aut',
                         'url' => '/images/ffb/flags/aut.gif',
                         'label' => 'Österreich',
-                        'shirt_url' => '/images/ffb/shirts/shirt_AUT.png',
-                        'has_shirt' => true,
+                        'shirt_url' => null,
+                        'has_shirt' => false,
                     ],
                     [
                         'key' => 'wernberg',
@@ -156,6 +156,7 @@ class AdminTeamTest extends TestCase
                     'label' => 'Oesterreich',
                     'shirt_url' => null,
                     'has_shirt' => false,
+                    'shirt_path_hint' => 'shirts/7/aut.png',
                 ],
                 'uses_icon_picker' => false,
                 'prices' => range(1, 15),
@@ -174,7 +175,7 @@ class AdminTeamTest extends TestCase
             ->assertDontSee('id="team-icon-picker"', false)
             ->assertDontSee('name="team_icon_file"', false)
             ->assertSee('id="team-shirt-upload"', false)
-            ->assertSee('hidden', false);
+            ->assertSee('shirts/7/aut.png', false);
     }
 
     public function test_teams_store_redirects_on_success(): void

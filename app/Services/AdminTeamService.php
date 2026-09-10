@@ -7,8 +7,10 @@ use App\Models\Team;
 use App\Models\Teamfid;
 use App\Models\Userteam;
 use App\Support\Flag;
+use App\Support\TeamShirt;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 
 class AdminTeamService
 {
@@ -25,13 +27,14 @@ class AdminTeamService
         $shell = $this->adminCenter->shellPayload($userId);
         $form = $form ?? $this->emptyForm();
         $selectedKey = (string) ($form['team_nationality'] ?? '');
+        $teamId = (int) ($form['team_id'] ?? 0);
 
         return [
             'user' => $shell['user'],
             'navigation' => $shell['navigation'],
             'selected_game' => $shell['selected_game'],
             'icons' => $this->iconOptions($selectedKey),
-            'selected_symbol' => $this->selectedSymbol($selectedKey),
+            'selected_symbol' => $this->selectedSymbol($selectedKey, $teamId),
             'uses_icon_picker' => ! $this->isMappedNation($selectedKey),
             'prices' => range(1, 15),
             'items' => $this->listItems(),
@@ -93,7 +96,7 @@ class AdminTeamService
     public function create(array $input, ?UploadedFile $iconFile = null, ?UploadedFile $shirtFile = null): array
     {
         $form = $this->normalizeInput($input);
-        $prepared = $this->prepareFormWithIcon($form, $iconFile, $shirtFile, true);
+        $prepared = $this->prepareFormWithIcon($form, $iconFile, true);
         if (! $prepared['ok']) {
             return [
                 'ok' => false,
@@ -103,7 +106,17 @@ class AdminTeamService
         }
         $form = $prepared['form'];
 
-        DB::transaction(function () use ($form) {
+        $shirtErrors = $this->validateShirtUpload($shirtFile, $form['team_nationality']);
+        if ($shirtErrors !== []) {
+            return [
+                'ok' => false,
+                'errors' => $shirtErrors,
+                'form' => $form,
+            ];
+        }
+
+        $createdTeamId = 0;
+        DB::transaction(function () use ($form, &$createdTeamId) {
             $team = Team::query()->create([
                 'team_foreign_id' => '',
                 'team_name' => $form['team_name'],
@@ -112,9 +125,20 @@ class AdminTeamService
                 'team_num_players' => 0,
                 'team_status' => (int) $form['team_status'],
             ]);
+            $createdTeamId = (int) $team->team_id;
 
-            $this->upsertTeamfid((int) $team->team_id, $form);
+            $this->upsertTeamfid($createdTeamId, $form);
         });
+
+        if ($shirtFile !== null && $createdTeamId > 0) {
+            if (! $this->storeShirtFile($shirtFile, $createdTeamId, $form['team_nationality'])) {
+                return [
+                    'ok' => false,
+                    'errors' => ['Team wurde angelegt, aber das Trikot konnte nicht gespeichert werden.'],
+                    'form' => $form + ['team_id' => $createdTeamId],
+                ];
+            }
+        }
 
         return ['ok' => true, 'message' => 'Team erfolgreich hinzugefügt.'];
     }
@@ -135,7 +159,7 @@ class AdminTeamService
         }
 
         $form = $this->normalizeInput($input + ['team_id' => $teamId]);
-        $prepared = $this->prepareFormWithIcon($form, $iconFile, $shirtFile, false);
+        $prepared = $this->prepareFormWithIcon($form, $iconFile, false);
         if (! $prepared['ok']) {
             return [
                 'ok' => false,
@@ -144,6 +168,15 @@ class AdminTeamService
             ];
         }
         $form = $prepared['form'];
+
+        $shirtErrors = $this->validateShirtUpload($shirtFile, $form['team_nationality']);
+        if ($shirtErrors !== []) {
+            return [
+                'ok' => false,
+                'errors' => $shirtErrors,
+                'form' => $form,
+            ];
+        }
 
         DB::transaction(function () use ($item, $form) {
             $item->team_name = $form['team_name'];
@@ -154,6 +187,16 @@ class AdminTeamService
 
             $this->upsertTeamfid((int) $item->team_id, $form);
         });
+
+        if ($shirtFile !== null) {
+            if (! $this->storeShirtFile($shirtFile, $teamId, $form['team_nationality'])) {
+                return [
+                    'ok' => false,
+                    'errors' => ['Team wurde aktualisiert, aber das Trikot konnte nicht gespeichert werden.'],
+                    'form' => $form,
+                ];
+            }
+        }
 
         return ['ok' => true, 'message' => 'Team erfolgreich aktualisiert.'];
     }
@@ -215,9 +258,9 @@ class AdminTeamService
     }
 
     /**
-     * @return array{key: string, url: string|null, html: string, label: string, shirt_url: string|null, has_shirt: bool}|null
+     * @return array{key: string, url: string|null, html: string, label: string, shirt_url: string|null, has_shirt: bool, shirt_path_hint: string}|null
      */
-    private function selectedSymbol(string $selectedKey): ?array
+    private function selectedSymbol(string $selectedKey, int $teamId = 0): ?array
     {
         $selectedKey = $this->normalizeIconKey($selectedKey);
         if ($selectedKey === '') {
@@ -226,15 +269,19 @@ class AdminTeamService
 
         $countries = $this->countryLabels();
         $upper = strtoupper($selectedKey);
-        $shirtFile = $this->shirtFilename($selectedKey);
+        $shirtUrl = $teamId > 0 ? TeamShirt::url($teamId, $selectedKey) : null;
+        $pathHint = $teamId > 0
+            ? 'shirts/'.$teamId.'/'.$selectedKey.'.png'
+            : 'shirts/<team_id>/'.$selectedKey.'.png';
 
         return [
             'key' => $selectedKey,
             'url' => $this->isMappedNation($selectedKey) ? null : Flag::imageUrl($selectedKey),
             'html' => Flag::html($selectedKey),
             'label' => $countries[$upper] ?? $selectedKey,
-            'shirt_url' => $shirtFile !== null ? '/images/ffb/shirts/'.$shirtFile : null,
-            'has_shirt' => $shirtFile !== null,
+            'shirt_url' => $shirtUrl,
+            'has_shirt' => $shirtUrl !== null,
+            'shirt_path_hint' => $pathHint,
         ];
     }
 
@@ -246,14 +293,13 @@ class AdminTeamService
     {
         $upper = strtoupper($key);
         $label = $countries[$upper] ?? $key;
-        $shirtFile = $this->shirtFilename($key);
 
         return [
             'key' => $key,
             'url' => Flag::imageUrl($key),
             'label' => $label,
-            'shirt_url' => $shirtFile !== null ? '/images/ffb/shirts/'.$shirtFile : null,
-            'has_shirt' => $shirtFile !== null,
+            'shirt_url' => null,
+            'has_shirt' => false,
         ];
     }
 
@@ -388,7 +434,6 @@ class AdminTeamService
     private function prepareFormWithIcon(
         array $form,
         ?UploadedFile $iconFile,
-        ?UploadedFile $shirtFile,
         bool $isCreate,
     ): array {
         $errors = [];
@@ -431,23 +476,6 @@ class AdminTeamService
             $errors[] = 'Das gewählte Symbol existiert nicht im Flags-Ordner.';
         }
 
-        if ($shirtFile !== null) {
-            if ($form['team_nationality'] === '') {
-                $errors[] = 'Trikot-Upload braucht ein gewähltes Symbol.';
-            } else {
-                $mime = (string) $shirtFile->getMimeType();
-                if (! in_array($mime, ['image/png', 'image/jpeg', 'image/gif', 'image/webp'], true)) {
-                    $errors[] = 'Trikot muss ein Bild sein (PNG, JPEG, GIF oder WebP).';
-                }
-                if ($shirtFile->getSize() > 2 * 1024 * 1024) {
-                    $errors[] = 'Trikot darf maximal 2 MB groß sein.';
-                }
-                if ($errors === [] && ! $this->storeShirtFile($shirtFile, $form['team_nationality'])) {
-                    $errors[] = 'Trikot konnte nicht gespeichert werden.';
-                }
-            }
-        }
-
         if ($errors === [] && $isCreate && $form['team_name'] !== '') {
             $exists = Team::query()
                 ->where('team_name', $form['team_name'])
@@ -463,6 +491,33 @@ class AdminTeamService
             'errors' => $errors,
             'form' => $form,
         ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function validateShirtUpload(?UploadedFile $shirtFile, string $nationality): array
+    {
+        if ($shirtFile === null) {
+            return [];
+        }
+
+        $errors = [];
+        if ($nationality === '') {
+            $errors[] = 'Trikot-Upload braucht ein gewähltes Symbol.';
+
+            return $errors;
+        }
+
+        $mime = (string) $shirtFile->getMimeType();
+        if (! in_array($mime, ['image/png', 'image/jpeg', 'image/gif', 'image/webp'], true)) {
+            $errors[] = 'Trikot muss ein Bild sein (PNG, JPEG, GIF oder WebP).';
+        }
+        if ($shirtFile->getSize() > 2 * 1024 * 1024) {
+            $errors[] = 'Trikot darf maximal 2 MB groß sein.';
+        }
+
+        return $errors;
     }
 
     private function storeIconFile(UploadedFile $file, string $key): bool
@@ -488,22 +543,19 @@ class AdminTeamService
         return $this->convertAndStoreImage($file, $mime, $target, 'gif');
     }
 
-    private function storeShirtFile(UploadedFile $file, string $key): bool
+    private function storeShirtFile(UploadedFile $file, int $teamId, string $nationality): bool
     {
-        $key = $this->normalizeIconKey($key);
-        if ($key === '') {
+        $nat = TeamShirt::normalizeNationality($nationality);
+        if ($teamId <= 0 || $nat === '') {
             return false;
         }
 
-        $dir = $this->shirtsDir();
-        if (! is_dir($dir) && ! @mkdir($dir, 0775, true) && ! is_dir($dir)) {
-            return false;
-        }
+        $target = TeamShirt::defaultStoragePath($teamId, $nat);
+        $dir = dirname($target);
+        File::ensureDirectoryExists($dir);
 
-        // Legacy convention: shirt_AUT.png (uppercase key).
-        $filename = 'shirt_'.strtoupper($key).'.png';
-        $target = $dir.DIRECTORY_SEPARATOR.$filename;
         $mime = (string) $file->getMimeType();
+        $filename = basename($target);
 
         if ($mime === 'image/png') {
             try {
@@ -582,39 +634,9 @@ class AdminTeamService
         return is_file($this->flagsDir().DIRECTORY_SEPARATOR.$key.'.gif');
     }
 
-    private function shirtFileExists(string $key): bool
-    {
-        return $this->shirtFilename($key) !== null;
-    }
-
-    /**
-     * Legacy shirt files are usually shirt_AUT.png (uppercase key).
-     */
-    private function shirtFilename(string $key): ?string
-    {
-        $key = $this->normalizeIconKey($key);
-        if ($key === '') {
-            return null;
-        }
-
-        $dir = $this->shirtsDir();
-        foreach ([strtoupper($key), $key] as $variant) {
-            $name = 'shirt_'.$variant.'.png';
-            if (is_file($dir.DIRECTORY_SEPARATOR.$name)) {
-                return $name;
-            }
-        }
-
-        return null;
-    }
-
     private function normalizeIconKey(string $value): string
     {
-        $value = strtolower(trim($value));
-        $value = str_replace([' ', '.'], ['_', ''], $value);
-        $value = preg_replace('/[^a-z0-9_-]+/', '', $value) ?? '';
-
-        return $value;
+        return TeamShirt::normalizeNationality($value);
     }
 
     /**
@@ -641,13 +663,6 @@ class AdminTeamService
         $base = rtrim((string) config('ffb.legacy_images_path'), DIRECTORY_SEPARATOR.'\\/');
 
         return $base.DIRECTORY_SEPARATOR.'flags';
-    }
-
-    private function shirtsDir(): string
-    {
-        $base = rtrim((string) config('ffb.legacy_images_path'), DIRECTORY_SEPARATOR.'\\/');
-
-        return $base.DIRECTORY_SEPARATOR.'shirts';
     }
 
     private function hasPlayersInUserteams(int $teamId): bool

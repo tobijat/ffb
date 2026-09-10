@@ -72,9 +72,60 @@
         return '<img class="ffb-flag ffb-flag-img" src="' + src + '" alt="" width="16" height="11" loading="lazy"' + titleAttr + '>';
     }
 
-    function shirtUrl(code) {
-        const nat = code ? String(code) : 'AUT';
-        return legacyBase + 'images/ffb/shirts/shirt_' + nat + '.png';
+    const selectedGameId = Number(config.selectedGameId || 0) || 0;
+
+    function normalizeShirtNat(code) {
+        return String(code || 'aut')
+            .toLowerCase()
+            .trim()
+            .replace(/[ .]/g, '_')
+            .replace(/[^a-z0-9_-]+/g, '');
+    }
+
+    function shirtUrl(teamId, nationality, gameId) {
+        const tid = Number(teamId) || 0;
+        const nat = normalizeShirtNat(nationality);
+        const gid = Number(gameId ?? selectedGameId) || 0;
+        if (tid <= 0 || !nat) {
+            return legacyBase + 'images/ffb/shirts/shirt_BLANK.png';
+        }
+        if (gid > 0) {
+            return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '-.' + gid + '.png';
+        }
+        return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '.png';
+    }
+
+    function shirtFallbackUrl(teamId, nationality) {
+        const tid = Number(teamId) || 0;
+        const nat = normalizeShirtNat(nationality);
+        if (tid <= 0 || !nat) {
+            return legacyBase + 'images/ffb/shirts/shirt_BLANK.png';
+        }
+        return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '.png';
+    }
+
+    function shirtImgTag(teamId, nationality, attrs) {
+        const gid = Number(selectedGameId) || 0;
+        const primary = shirtUrl(teamId, nationality, gid);
+        const fallback = shirtFallbackUrl(teamId, nationality);
+        const blank = legacyBase + 'images/ffb/shirts/shirt_BLANK.png';
+        const onerror =
+            primary !== fallback
+                ? "this.onerror=function(){this.onerror=null;this.src='" +
+                  blank +
+                  "';};this.src='" +
+                  fallback +
+                  "';"
+                : "this.onerror=null;this.src='" + blank + "';";
+        return (
+            '<img class="shirt" src="' +
+            primary +
+            '" ' +
+            (attrs || '') +
+            ' onerror="' +
+            onerror +
+            '">'
+        );
     }
 
     function statusIcon(player) {
@@ -485,14 +536,13 @@
         const fname = escapeHtml(player.player_fname || '');
         const lname = escapeHtml(player.player_lname || '');
         const nat = player.playerteam_team_nationality || 'AUT';
+        const teamId = player.playerteam_team_id;
         return (
             '<div class="pitch-player">' +
             '<a href="#" data-modal="player" data-id="' +
             player.playerteam_id +
             '">' +
-            '<img class="shirt" src="' +
-            shirtUrl(nat) +
-            '" alt="" width="55" height="50">' +
+            shirtImgTag(teamId, nat, 'alt="" width="55" height="50"') +
             '</a>' +
             '<span class="name">' +
             fname +
