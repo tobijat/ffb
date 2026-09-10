@@ -210,11 +210,25 @@ class PlayerteamLeagueInventoryService
             $add($map, (int) $row->psgoal_playerteam_id, (int) $row->matchround_game_id);
         }
 
-        foreach (Userteam::playerSlotColumns() as $column) {
-            foreach (DB::table('ffb_userteam as ut')
+        if (Userteam::hasWideSlotColumns()) {
+            foreach (Userteam::playerSlotColumns() as $column) {
+                foreach (DB::table('ffb_userteam as ut')
+                    ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'ut.userteam_matchround_id')
+                    ->where("ut.{$column}", '>', 0)
+                    ->select("ut.{$column} as playerteam_id", 'mr.matchround_game_id')
+                    ->distinct()
+                    ->cursor() as $row) {
+                    $add($map, (int) $row->playerteam_id, (int) $row->matchround_game_id);
+                }
+            }
+        }
+
+        if (Userteam::hasSlotTable()) {
+            foreach (DB::table('ffb_userteam_slot as us')
+                ->join('ffb_userteam as ut', 'ut.userteam_id', '=', 'us.userteam_slot_userteam_id')
                 ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'ut.userteam_matchround_id')
-                ->where("ut.{$column}", '>', 0)
-                ->select("ut.{$column} as playerteam_id", 'mr.matchround_game_id')
+                ->where('us.userteam_slot_playerteam_id', '>', 0)
+                ->select('us.userteam_slot_playerteam_id as playerteam_id', 'mr.matchround_game_id')
                 ->distinct()
                 ->cursor() as $row) {
                 $add($map, (int) $row->playerteam_id, (int) $row->matchround_game_id);
@@ -297,6 +311,7 @@ class PlayerteamLeagueInventoryService
         return [
             'ffb_playerteam',
             'ffb_userteam',
+            'ffb_userteam_slot',
             'ffb_playerstats',
             'ffb_playerprice',
             'ffb_goal',
@@ -390,16 +405,6 @@ class PlayerteamLeagueInventoryService
      */
     private function playerteamIdsUsedInUserteams(): array
     {
-        $ids = [];
-        foreach (Userteam::playerSlotColumns() as $column) {
-            foreach (Userteam::query()->where($column, '>', 0)->distinct()->pluck($column) as $id) {
-                $id = (int) $id;
-                if ($id > 0) {
-                    $ids[$id] = $id;
-                }
-            }
-        }
-
-        return array_values($ids);
+        return Userteam::playerteamIdsUsedInLineups();
     }
 }

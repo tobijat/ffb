@@ -456,15 +456,12 @@ class LineupService
                 $created = true;
             }
 
-            foreach (Userteam::playerSlotColumns() as $index => $column) {
-                $userteam->{$column} = $ids[$index];
-            }
-
             $userteam->userteam_date = now()->format('Y-m-d H:i:s');
             $userteam->userteam_score = 0;
             $userteam->userteam_wc_points = 0;
             $userteam->userteam_price = $sumPrice;
             $userteam->save();
+            $userteam->syncSlots($ids);
 
             $gameId = $this->resolveGameId($userId, (int) $matchround->matchround_game_id);
             Userscore::query()->firstOrCreate(

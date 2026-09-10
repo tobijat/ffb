@@ -95,6 +95,7 @@ class AdminPlayerTest extends TestCase
                 'nationality' => 'AUT',
                 'page' => 2,
                 'exclude_team_id' => 0,
+                'exclude_league_id' => 0,
             ])->andReturn([
                 'items' => [
                     [

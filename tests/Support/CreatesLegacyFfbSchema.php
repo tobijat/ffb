@@ -142,9 +142,17 @@ trait CreatesLegacyFfbSchema
             $table->integer('userteam_matchround_id')->nullable();
             $table->double('userteam_price')->default(0);
             $table->double('userteam_score')->default(0);
-            for ($i = 1; $i <= 11; $i++) {
-                $table->integer('userteam_player_id'.$i)->default(0);
-            }
+            $table->double('userteam_wc_points')->default(0);
+            $table->string('userteam_date')->nullable();
+        });
+
+        Schema::create('ffb_userteam_slot', function (Blueprint $table) {
+            $table->increments('userteam_slot_id');
+            $table->unsignedInteger('userteam_slot_userteam_id');
+            $table->unsignedTinyInteger('userteam_slot_slot');
+            $table->unsignedInteger('userteam_slot_playerteam_id');
+            $table->unique(['userteam_slot_userteam_id', 'userteam_slot_slot']);
+            $table->index('userteam_slot_playerteam_id');
         });
 
         Schema::create('web_user_details', function (Blueprint $table) {
@@ -156,6 +164,7 @@ trait CreatesLegacyFfbSchema
     protected function dropLegacyFfbSchema(): void
     {
         foreach ([
+            'ffb_userteam_slot',
             'ffb_userteam',
             'ffb_playerfid',
             'ffb_psgoal',

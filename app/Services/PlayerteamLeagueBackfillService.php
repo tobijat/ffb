@@ -562,15 +562,31 @@ class PlayerteamLeagueBackfillService
             ]);
         }
 
-        foreach (Userteam::playerSlotColumns() as $column) {
-            $userteamIds = DB::table('ffb_userteam as ut')
+        if (Userteam::hasWideSlotColumns()) {
+            foreach (Userteam::playerSlotColumns() as $column) {
+                $userteamIds = DB::table('ffb_userteam as ut')
+                    ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'ut.userteam_matchround_id')
+                    ->where("ut.{$column}", $oldId)
+                    ->where('mr.matchround_game_id', $leagueId)
+                    ->pluck('ut.userteam_id');
+                if ($userteamIds->isNotEmpty()) {
+                    $count += DB::table('ffb_userteam')->whereIn('userteam_id', $userteamIds)->update([
+                        $column => $newId,
+                    ]);
+                }
+            }
+        }
+
+        if (Userteam::hasSlotTable()) {
+            $slotIds = DB::table('ffb_userteam_slot as us')
+                ->join('ffb_userteam as ut', 'ut.userteam_id', '=', 'us.userteam_slot_userteam_id')
                 ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'ut.userteam_matchround_id')
-                ->where("ut.{$column}", $oldId)
+                ->where('us.userteam_slot_playerteam_id', $oldId)
                 ->where('mr.matchround_game_id', $leagueId)
-                ->pluck('ut.userteam_id');
-            if ($userteamIds->isNotEmpty()) {
-                $count += DB::table('ffb_userteam')->whereIn('userteam_id', $userteamIds)->update([
-                    $column => $newId,
+                ->pluck('us.userteam_slot_id');
+            if ($slotIds->isNotEmpty()) {
+                $count += DB::table('ffb_userteam_slot')->whereIn('userteam_slot_id', $slotIds)->update([
+                    'userteam_slot_playerteam_id' => $newId,
                 ]);
             }
         }
@@ -585,8 +601,15 @@ class PlayerteamLeagueBackfillService
                 $source['column'] => $toId,
             ]);
         }
-        foreach (Userteam::playerSlotColumns() as $column) {
-            DB::table('ffb_userteam')->where($column, $fromId)->update([$column => $toId]);
+        if (Userteam::hasWideSlotColumns()) {
+            foreach (Userteam::playerSlotColumns() as $column) {
+                DB::table('ffb_userteam')->where($column, $fromId)->update([$column => $toId]);
+            }
+        }
+        if (Userteam::hasSlotTable()) {
+            DB::table('ffb_userteam_slot')->where('userteam_slot_playerteam_id', $fromId)->update([
+                'userteam_slot_playerteam_id' => $toId,
+            ]);
         }
     }
 }

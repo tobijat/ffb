@@ -195,22 +195,7 @@ class AdminDbCleanupService
      */
     private function playerteamIdsUsedInUserteams(): array
     {
-        $ids = [];
-        foreach (Userteam::playerSlotColumns() as $column) {
-            $columnIds = Userteam::query()
-                ->where($column, '>', 0)
-                ->distinct()
-                ->pluck($column)
-                ->all();
-            foreach ($columnIds as $id) {
-                $id = (int) $id;
-                if ($id > 0) {
-                    $ids[$id] = $id;
-                }
-            }
-        }
-
-        return array_values($ids);
+        return Userteam::playerteamIdsUsedInLineups();
     }
 
     /**

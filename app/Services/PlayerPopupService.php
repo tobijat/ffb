@@ -361,11 +361,7 @@ class PlayerPopupService
     {
         return Userteam::query()
             ->whereHas('matchround', fn (Builder $q) => $q->where('matchround_game_id', $gameId))
-            ->where(function (Builder $q) use ($ptIds) {
-                foreach (Userteam::playerSlotColumns() as $col) {
-                    $q->orWhereIn($col, $ptIds);
-                }
-            })
+            ->whereHas('slots', fn (Builder $q) => $q->whereIn('userteam_slot_playerteam_id', $ptIds))
             ->count();
     }
 
@@ -411,11 +407,7 @@ class PlayerPopupService
         $rows = Userteam::query()
             ->selectRaw('userteam_matchround_id, COUNT(*) as cnt')
             ->whereIn('userteam_matchround_id', $roundIds)
-            ->where(function (Builder $q) use ($ptIds) {
-                foreach (Userteam::playerSlotColumns() as $col) {
-                    $q->orWhereIn($col, $ptIds);
-                }
-            })
+            ->whereHas('slots', fn (Builder $q) => $q->whereIn('userteam_slot_playerteam_id', $ptIds))
             ->groupBy('userteam_matchround_id')
             ->get();
 
@@ -614,11 +606,7 @@ class PlayerPopupService
 
         return Userteam::query()
             ->where('userteam_matchround_id', $matchroundId)
-            ->where(function (Builder $q) use ($playerteamIds) {
-                foreach (Userteam::playerSlotColumns() as $col) {
-                    $q->orWhereIn($col, $playerteamIds);
-                }
-            })
+            ->whereHas('slots', fn (Builder $q) => $q->whereIn('userteam_slot_playerteam_id', $playerteamIds))
             ->count();
     }
 
