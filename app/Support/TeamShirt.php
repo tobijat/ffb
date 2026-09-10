@@ -6,7 +6,7 @@ namespace App\Support;
  * Team shirt paths: per team folder, nationality default + optional league override.
  *
  * Default: shirts/{team_id}/{nationality}.png
- * League:  shirts/{team_id}/{nationality}-.{game_id}.png
+ * League:  shirts/{team_id}/{nationality}-{game_id}.png
  */
 final class TeamShirt
 {
@@ -43,7 +43,7 @@ final class TeamShirt
         }
 
         if ($gameId !== null && $gameId > 0) {
-            $league = 'shirts/'.$teamId.'/'.$nat.'-.'.$gameId.'.png';
+            $league = 'shirts/'.$teamId.'/'.$nat.'-'.$gameId.'.png';
             if (self::fileExists($league)) {
                 return $league;
             }
@@ -78,7 +78,7 @@ final class TeamShirt
 
         return self::shirtsDir()
             .DIRECTORY_SEPARATOR.$teamId
-            .DIRECTORY_SEPARATOR.$nat.'-.'.$gameId.'.png';
+            .DIRECTORY_SEPARATOR.$nat.'-'.$gameId.'.png';
     }
 
     /**
@@ -98,7 +98,7 @@ final class TeamShirt
     {
         $nat = self::normalizeNationality($nationality);
 
-        return '/images/ffb/shirts/'.$teamId.'/'.$nat.'-.'.$gameId.'.png';
+        return '/images/ffb/shirts/'.$teamId.'/'.$nat.'-'.$gameId.'.png';
     }
 
     public static function blankUrl(bool $red = false): string

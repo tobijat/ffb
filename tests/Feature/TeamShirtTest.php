@@ -41,9 +41,9 @@ class TeamShirtTest extends TestCase
     {
         File::ensureDirectoryExists($this->shirtsDir.DIRECTORY_SEPARATOR.'76');
         File::put($this->shirtsDir.DIRECTORY_SEPARATOR.'76'.DIRECTORY_SEPARATOR.'arg.png', 'default');
-        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.'76'.DIRECTORY_SEPARATOR.'arg-.20.png', 'league');
+        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.'76'.DIRECTORY_SEPARATOR.'arg-20.png', 'league');
 
-        $this->assertSame('/images/ffb/shirts/76/arg-.20.png', TeamShirt::url(76, 'ARG', 20));
+        $this->assertSame('/images/ffb/shirts/76/arg-20.png', TeamShirt::url(76, 'ARG', 20));
         $this->assertSame('/images/ffb/shirts/76/arg.png', TeamShirt::url(76, 'arg', 99));
         $this->assertSame('/images/ffb/shirts/76/arg.png', TeamShirt::url(76, 'arg'));
         $this->assertNull(TeamShirt::url(99, 'arg', 20));
