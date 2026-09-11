@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LeagueOptions extends Model
 {
-    protected $table = 'ffb_options';
+    protected $table = 'ffb_league_options';
 
     protected $primaryKey = 'options_id';
 
@@ -42,12 +42,6 @@ class LeagueOptions extends Model
         'options_score_high_loss',
         'options_score_high_win',
         'options_score_high_win_loss_treshold',
-        'options_status_error',
-        'options_status_error_validation',
-        'options_status_success',
-        'options_status_success_insert',
-        'options_status_success_update',
-        'options_status_success_delete',
         'options_lineup_max_players',
         'options_lineup_max_credits',
         'options_lineup_max_players_team',

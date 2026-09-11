@@ -203,7 +203,7 @@ class LineupApiTest extends TestCase
         });
 
         $this->mock(LineupService::class, function ($mock) {
-            $mock->shouldReceive('options')->once()->with(544)->andReturn([
+            $mock->shouldReceive('options')->once()->with(544, 0)->andReturn([
                 'ok' => true,
                 'data' => [
                     'lineup_max_players' => 11,

@@ -779,15 +779,18 @@
         }
 
         try {
-            const optJson = await fetchJson('lineup/options');
-            options = optJson.data;
-
             const mrJson = await fetchJson('lineup/matchround');
             if (mrJson.data.game_over) {
                 gameOverUi();
                 return;
             }
             matchround = mrJson.data.matchround;
+            if (mrJson.data.lineup_options) {
+                options = mrJson.data.lineup_options;
+            } else {
+                const optJson = await fetchJson('lineup/options');
+                options = optJson.data;
+            }
             if (!matchround) {
                 roundMetaEl.textContent = '';
                 addErrorMessage('Keine weitere Spielrunde vorhanden! Bitte später nochmal probieren!');

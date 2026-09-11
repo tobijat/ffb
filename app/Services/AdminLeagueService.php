@@ -398,12 +398,6 @@ class AdminLeagueService
             'options_lineup_min_d' => 3,
             'options_lineup_min_m' => 3,
             'options_lineup_min_s' => 1,
-            'options_status_error' => 500,
-            'options_status_error_validation' => 501,
-            'options_status_success' => 200,
-            'options_status_success_insert' => 201,
-            'options_status_success_update' => 202,
-            'options_status_success_delete' => 203,
         ];
     }
 

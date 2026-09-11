@@ -21,6 +21,7 @@ class LineupService
 {
     public function __construct(
         private readonly PlayerGradeService $grades,
+        private readonly LineupOptionsResolver $lineupOptions,
     ) {}
 
     /**
@@ -61,35 +62,42 @@ class LineupService
     }
 
     /**
+     * League-default lineup limits (optional matchround_id applies override).
+     *
      * @return array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}
      */
-    public function options(int $userId): array
+    public function options(int $userId, int $matchroundId = 0): array
     {
         $leagueId = $this->selectedLeagueId($userId);
         if ($leagueId <= 0) {
             return ['ok' => false, 'status' => 422, 'error' => 'Kein Spiel ausgewählt.'];
         }
 
-        $options = LeagueOptions::query()->where('options_league_id', $leagueId)->first();
-        if (! $options) {
+        $leagueOptions = LeagueOptions::query()->where('options_league_id', $leagueId)->first();
+        if (! $leagueOptions && $matchroundId <= 0) {
             return ['ok' => false, 'status' => 404, 'error' => 'Keine Lineup-Optionen gefunden.'];
         }
+
+        $resolved = $matchroundId > 0
+            ? $this->lineupOptions->forMatchround($matchroundId)
+            : $this->lineupOptions->forLeague($leagueId);
 
         return [
             'ok' => true,
             'data' => [
-                'lineup_max_players' => (int) $options->options_lineup_max_players,
-                'lineup_max_credits' => (float) $options->options_lineup_max_credits,
-                'lineup_max_players_team' => (int) $options->options_lineup_max_players_team,
-                'lineup_min_g' => (int) $options->options_lineup_min_g,
-                'lineup_min_d' => (int) $options->options_lineup_min_d,
-                'lineup_min_m' => (int) $options->options_lineup_min_m,
-                'lineup_min_s' => (int) $options->options_lineup_min_s,
-                'lineup_max_g' => (int) $options->options_lineup_max_g,
-                'lineup_max_d' => (int) $options->options_lineup_max_d,
-                'lineup_max_m' => (int) $options->options_lineup_max_m,
-                'lineup_max_s' => (int) $options->options_lineup_max_s,
-                'game_pricemode' => (string) ($options->options_league_pricemode ?: 'constant'),
+                'lineup_max_players' => $resolved['lineup_max_players'],
+                'lineup_max_credits' => $resolved['lineup_max_credits'],
+                'lineup_max_players_team' => $resolved['lineup_max_players_team'],
+                'lineup_min_g' => $resolved['lineup_min_g'],
+                'lineup_min_d' => $resolved['lineup_min_d'],
+                'lineup_min_m' => $resolved['lineup_min_m'],
+                'lineup_min_s' => $resolved['lineup_min_s'],
+                'lineup_max_g' => $resolved['lineup_max_g'],
+                'lineup_max_d' => $resolved['lineup_max_d'],
+                'lineup_max_m' => $resolved['lineup_max_m'],
+                'lineup_max_s' => $resolved['lineup_max_s'],
+                'game_pricemode' => (string) ($leagueOptions?->options_league_pricemode ?: 'constant'),
+                'source' => $resolved['source'],
             ],
         ];
     }
@@ -191,6 +199,7 @@ class LineupService
                     'matches' => $matches,
                     'teams' => $teams,
                 ],
+                'lineup_options' => $this->lineupOptionsPayload((int) $round->matchround_id, $leagueId),
             ],
         ];
     }
@@ -391,13 +400,6 @@ class LineupService
     public function saveForRound(int $userId, int $matchroundId, array $playerteamIds): array
     {
         $ids = $this->normalizePlayerteamIds($playerteamIds);
-        if (count($ids) !== 11) {
-            return $this->fail(422, 'Invalid lineup: exactly 11 players are required');
-        }
-
-        if (count(array_unique($ids)) !== 11) {
-            return $this->fail(422, 'Invalid lineup: duplicate players are not allowed');
-        }
 
         $matchround = Matchround::query()->find($matchroundId);
         if (! $matchround) {
@@ -407,6 +409,16 @@ class LineupService
         // Legacy checkMatchround: only allow saves while startdate is still in the future.
         if (! $this->isMatchroundOpen($matchround)) {
             return $this->fail(409, 'Die Deadline für diese Spielrunde ist bereits vorüber! Deine Aufstellung wurde nicht gespeichert!');
+        }
+
+        $lineupRules = $this->lineupOptions->forMatchround($matchroundId);
+        $maxPlayers = (int) $lineupRules['lineup_max_players'];
+        if (count($ids) !== $maxPlayers) {
+            return $this->fail(422, "Invalid lineup: exactly {$maxPlayers} players are required");
+        }
+
+        if (count(array_unique($ids)) !== $maxPlayers) {
+            return $this->fail(422, 'Invalid lineup: duplicate players are not allowed');
         }
 
         $options = LeagueOptions::query()
@@ -421,7 +433,7 @@ class LineupService
             ->get()
             ->keyBy('playerteam_id');
 
-        if ($playerteams->count() !== 11) {
+        if ($playerteams->count() !== $maxPlayers) {
             return $this->fail(422, 'Invalid lineup: one or more players were not found');
         }
 
@@ -435,7 +447,7 @@ class LineupService
         }
 
         $dynamicPrices = $this->dynamicPrices($ids, $matchroundId, $priceMode);
-        $validationError = $this->validateAgainstOptions($ids, $playerteams, $dynamicPrices, $priceMode, $options);
+        $validationError = $this->validateAgainstOptions($ids, $playerteams, $dynamicPrices, $priceMode, $lineupRules);
         if ($validationError !== null) {
             return $this->fail(422, $validationError);
         }
@@ -527,15 +539,28 @@ class LineupService
      * @param  list<int>  $ids
      * @param  Collection<int, Playerteam>  $playerteams
      * @param  Collection<int, float|int|string>  $dynamicPrices
+     * @param  array{
+     *     lineup_max_players: int,
+     *     lineup_max_credits: float,
+     *     lineup_max_players_team: int,
+     *     lineup_min_g: int,
+     *     lineup_min_d: int,
+     *     lineup_min_m: int,
+     *     lineup_min_s: int,
+     *     lineup_max_g: int,
+     *     lineup_max_d: int,
+     *     lineup_max_m: int,
+     *     lineup_max_s: int
+     * }  $options
      */
     private function validateAgainstOptions(
         array $ids,
         Collection $playerteams,
         Collection $dynamicPrices,
         string $priceMode,
-        ?LeagueOptions $options,
+        array $options,
     ): ?string {
-        $maxPlayers = (int) ($options?->options_lineup_max_players ?: 11);
+        $maxPlayers = (int) ($options['lineup_max_players'] ?: 11);
         if (count($ids) !== $maxPlayers) {
             return "Invalid lineup: exactly {$maxPlayers} players are required";
         }
@@ -563,35 +588,61 @@ class LineupService
             $perTeam[$teamId] = ($perTeam[$teamId] ?? 0) + 1;
         }
 
-        if ($options) {
-            $maxPerTeam = (int) $options->options_lineup_max_players_team;
-            foreach ($perTeam as $count) {
-                if ($count > $maxPerTeam) {
-                    return "Invalid lineup: at most {$maxPerTeam} players from the same team";
-                }
-            }
-
-            $rules = [
-                'g' => [(int) $options->options_lineup_min_g, (int) $options->options_lineup_max_g],
-                'd' => [(int) $options->options_lineup_min_d, (int) $options->options_lineup_max_d],
-                'm' => [(int) $options->options_lineup_min_m, (int) $options->options_lineup_max_m],
-                's' => [(int) $options->options_lineup_min_s, (int) $options->options_lineup_max_s],
-            ];
-
-            foreach ($rules as $position => [$min, $max]) {
-                if ($counts[$position] < $min || $counts[$position] > $max) {
-                    return "Invalid lineup: position '{$position}' must be between {$min} and {$max}";
-                }
-            }
-
-            $maxCredits = (float) $options->options_lineup_max_credits;
-            $sumPrice = $this->sumPrices($ids, $playerteams, $dynamicPrices, $priceMode);
-            if ($sumPrice > $maxCredits) {
-                return "Invalid lineup: total price {$sumPrice} exceeds credit limit {$maxCredits}";
+        $maxPerTeam = (int) $options['lineup_max_players_team'];
+        foreach ($perTeam as $count) {
+            if ($count > $maxPerTeam) {
+                return "Invalid lineup: at most {$maxPerTeam} players from the same team";
             }
         }
 
+        $rules = [
+            'g' => [(int) $options['lineup_min_g'], (int) $options['lineup_max_g']],
+            'd' => [(int) $options['lineup_min_d'], (int) $options['lineup_max_d']],
+            'm' => [(int) $options['lineup_min_m'], (int) $options['lineup_max_m']],
+            's' => [(int) $options['lineup_min_s'], (int) $options['lineup_max_s']],
+        ];
+
+        foreach ($rules as $position => [$min, $max]) {
+            if ($counts[$position] < $min || $counts[$position] > $max) {
+                return "Invalid lineup: position '{$position}' must be between {$min} and {$max}";
+            }
+        }
+
+        $maxCredits = (float) $options['lineup_max_credits'];
+        $sumPrice = $this->sumPrices($ids, $playerteams, $dynamicPrices, $priceMode);
+        if ($sumPrice > $maxCredits) {
+            return "Invalid lineup: total price {$sumPrice} exceeds credit limit {$maxCredits}";
+        }
+
         return null;
+    }
+
+    /**
+     * @return array<string, int|float|string>
+     */
+    private function lineupOptionsPayload(int $matchroundId, int $leagueId): array
+    {
+        $resolved = $matchroundId > 0
+            ? $this->lineupOptions->forMatchround($matchroundId)
+            : $this->lineupOptions->forLeague($leagueId);
+
+        $leagueOptions = LeagueOptions::query()->where('options_league_id', $leagueId)->first();
+
+        return [
+            'lineup_max_players' => $resolved['lineup_max_players'],
+            'lineup_max_credits' => $resolved['lineup_max_credits'],
+            'lineup_max_players_team' => $resolved['lineup_max_players_team'],
+            'lineup_min_g' => $resolved['lineup_min_g'],
+            'lineup_min_d' => $resolved['lineup_min_d'],
+            'lineup_min_m' => $resolved['lineup_min_m'],
+            'lineup_min_s' => $resolved['lineup_min_s'],
+            'lineup_max_g' => $resolved['lineup_max_g'],
+            'lineup_max_d' => $resolved['lineup_max_d'],
+            'lineup_max_m' => $resolved['lineup_max_m'],
+            'lineup_max_s' => $resolved['lineup_max_s'],
+            'game_pricemode' => (string) ($leagueOptions?->options_league_pricemode ?: 'constant'),
+            'source' => $resolved['source'],
+        ];
     }
 
     /**
