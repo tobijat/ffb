@@ -63,6 +63,28 @@
     max-width: 28rem;
 }
 
+.admin-score-minutes-grid {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.admin-score-minutes-thresholds {
+    grid-template-columns: 1fr 1fr;
+    max-width: 36rem;
+}
+
+.admin-score-minutes-points {
+    grid-template-columns: 1fr 1fr 1fr;
+    max-width: 54rem;
+}
+
+.admin-form-separator {
+    border: 0;
+    border-top: 1px solid #7aaa7a;
+    margin: 12px 0;
+}
+
 .admin-option-field {
     display: grid;
     gap: 2px;
@@ -1474,6 +1496,12 @@
     .admin-actions {
         grid-template-columns: 1fr;
         padding-left: 0;
+    }
+
+    .admin-score-minutes-thresholds,
+    .admin-score-minutes-points {
+        grid-template-columns: 1fr;
+        max-width: none;
     }
 
     .admin-list-item {
