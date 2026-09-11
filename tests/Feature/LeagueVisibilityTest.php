@@ -85,6 +85,27 @@ class LeagueVisibilityTest extends TestCase
     }
 
     #[Test]
+    public function current_dashboard_keeps_selected_archived_league_visible(): void
+    {
+        DB::table('web_user_details')->where('user_id', 10)->update([
+            'user_details_ffb_selected_league' => 3,
+        ]);
+
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(false);
+        });
+
+        $leagues = collect(app(DashboardService::class)->payload(10, 1, false)['leagues'])
+            ->keyBy('league_id');
+
+        $this->assertTrue($leagues->has(1));
+        $this->assertTrue($leagues->has(3));
+        $this->assertSame('Visible Archive', $leagues[3]['league_title']);
+        $this->assertSame(1, $leagues[3]['league_archive']);
+        $this->assertFalse($leagues->has(4));
+    }
+
+    #[Test]
     public function non_admin_cannot_select_invisible_league(): void
     {
         $this->mock(FfbAdminAccess::class, function ($mock) {
