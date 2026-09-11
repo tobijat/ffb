@@ -55,14 +55,6 @@
                 </div>
 
                 <div class="admin-field">
-                    <label for="league_status">Status</label>
-                    <select id="league_status" name="league_status">
-                        <option value="1" @selected((int) $form['league_status'] === 1)>aktiv</option>
-                        <option value="0" @selected((int) $form['league_status'] === 0)>inaktiv</option>
-                    </select>
-                </div>
-
-                <div class="admin-field">
                     <label for="league_visible">Sichtbar</label>
                     <select id="league_visible" name="league_visible">
                         <option value="1" @selected((int) $form['league_visible'] === 1)>ja</option>
@@ -217,7 +209,6 @@
                             <span class="muted">(ID: {{ $item['league_id'] }})</span>
                         </h3>
                         <ul class="admin-game-flags" aria-label="Status">
-                            <li class="admin-game-flag admin-game-flag-{{ $item['league_status'] ? 'ok' : 'off' }}">{{ $item['league_status'] ? 'aktiv' : 'inaktiv' }}</li>
                             <li class="admin-game-flag admin-game-flag-{{ $item['league_visible'] ? 'ok' : 'off' }}">{{ $item['league_visible'] ? 'sichtbar' : 'unsichtbar' }}</li>
                             <li class="admin-game-flag admin-game-flag-{{ $item['league_archive'] ? 'warn' : 'ok' }}">{{ $item['league_archive'] ? 'archiviert' : 'aktuell' }}</li>
                         </ul>

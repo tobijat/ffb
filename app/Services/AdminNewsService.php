@@ -183,7 +183,6 @@ class AdminNewsService
     private function leagueOptions(int $selectedLeagueId): array
     {
         $leagues = League::query()
-            ->where('league_visible', 1)
             ->orderBy('league_title')
             ->get(['league_id', 'league_title']);
 

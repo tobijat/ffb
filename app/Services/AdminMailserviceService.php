@@ -37,7 +37,6 @@ class AdminMailserviceService
     public function activeGames(): array
     {
         return League::query()
-            ->where('league_status', 1)
             ->orderByDesc('league_id')
             ->get(['league_id', 'league_title'])
             ->map(static fn (League $league): array => [

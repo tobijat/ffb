@@ -47,11 +47,12 @@ class DashboardService
 
         $details = $user->details;
         $selectedLeagueId = (int) ($details?->user_details_ffb_selected_league ?? 0);
+        $isAdmin = app(FfbAdminAccess::class)->isAdmin($userId);
 
         return [
             'user' => $this->userPayload($user, $details),
             'selected_league_id' => $selectedLeagueId,
-            'leagues' => $this->games($archiveGames),
+            'leagues' => $this->leagues($archiveGames, $isAdmin),
             'archive' => $archiveGames,
             'news' => $this->news($selectedLeagueId, $newsPage),
             'polls' => [
@@ -68,7 +69,8 @@ class DashboardService
     public function selectLeague(int $userId, int $leagueId): array
     {
         $league = League::query()->find($leagueId);
-        if (! $league || ! $league->league_visible || ! $league->league_status) {
+        $isAdmin = app(FfbAdminAccess::class)->isAdmin($userId);
+        if (! $league || (! $isAdmin && ! (int) $league->league_visible)) {
             return ['ok' => false, 'status' => 422, 'error' => 'League not available'];
         }
 
@@ -83,7 +85,7 @@ class DashboardService
         return [
             'ok' => true,
             'selected_league_id' => $leagueId,
-            'league_title' => (string) $league->league_title,
+            'league_title' => $this->displayTitle($league, $isAdmin),
         ];
     }
 
@@ -174,26 +176,39 @@ class DashboardService
     /**
      * @return list<array<string, mixed>>
      */
-    private function games(bool $archive): array
+    private function leagues(bool $archive, bool $isAdmin): array
     {
-        return League::query()
-            ->where('league_visible', 1)
+        $query = League::query()
             ->where('league_archive', $archive ? 1 : 0)
-            ->where('league_status', 1)
             ->whereHas('matchrounds')
-            ->orderBy('league_title')
+            ->orderBy('league_title');
+
+        if (! $isAdmin) {
+            $query->where('league_visible', 1);
+        }
+
+        return $query
             ->get()
             ->map(fn (League $league) => [
                 'league_id' => (int) $league->league_id,
-                'league_title' => (string) $league->league_title,
+                'league_title' => $this->displayTitle($league, $isAdmin),
                 'league_symbol' => (string) ($league->league_symbol ?: 'symbol_game_na.png'),
                 'league_archive' => (int) (bool) $league->league_archive,
                 'league_visible' => (int) (bool) $league->league_visible,
-                'league_status' => (int) (bool) $league->league_status,
                 'symbol_url' => '/images/ffb/symbols/'.($league->league_symbol ?: 'symbol_game_na.png'),
             ])
             ->values()
             ->all();
+    }
+
+    private function displayTitle(League $league, bool $showInvisibleHint): string
+    {
+        $title = (string) $league->league_title;
+        if ($showInvisibleHint && ! (int) $league->league_visible) {
+            return $title.' (unsichtbar)';
+        }
+
+        return $title;
     }
 
     /**

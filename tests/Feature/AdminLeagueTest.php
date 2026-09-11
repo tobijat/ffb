@@ -54,7 +54,6 @@ class AdminLeagueTest extends TestCase
                     [
                         'league_id' => 26,
                         'league_title' => 'Testliga',
-                        'league_status' => 1,
                         'league_visible' => 1,
                         'league_archive' => 0,
                         'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
@@ -63,7 +62,6 @@ class AdminLeagueTest extends TestCase
                 'form' => array_merge([
                     'league_id' => '',
                     'league_title' => '',
-                    'league_status' => 1,
                     'league_visible' => 1,
                     'league_archive' => 0,
                     'league_symbol' => 'symbol_game_na.png',
@@ -99,7 +97,6 @@ class AdminLeagueTest extends TestCase
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->post('/admin/leagues', [
                 'league_title' => 'Neue Liga',
-                'league_status' => 1,
                 'league_visible' => 1,
                 'league_archive' => 0,
             ])
