@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\League;
 use App\Models\MatchGame;
 use App\Models\Matchround;
+use App\Models\MatchroundOptions;
 use App\Models\Playerstats;
 use App\Models\Userteam;
 use DateTimeImmutable;
@@ -79,6 +80,8 @@ class AdminMatchroundService
             'matchround_status' => 1,
             'matchround_startdate' => '',
             'matchround_enddate' => '',
+            'lineup_options_enabled' => 0,
+            ...$this->emptyLineupOptionsForm(),
         ];
     }
 
@@ -87,21 +90,32 @@ class AdminMatchroundService
      */
     public function formForEdit(int $matchroundId): ?array
     {
-        $item = Matchround::query()->find($matchroundId);
+        $item = Matchround::query()->with('options')->find($matchroundId);
         if (! $item) {
             return null;
         }
 
+        $override = $item->options;
+        $form = [
+            'matchround_id' => (int) $item->matchround_id,
+            'matchround_league_id' => (int) $item->matchround_league_id,
+            'matchround_title' => (string) $item->matchround_title,
+            'matchround_status' => (int) $item->matchround_status,
+            'matchround_startdate' => $this->toDatetimeLocalValue((string) $item->matchround_startdate),
+            'matchround_enddate' => $this->toDatetimeLocalValue((string) $item->matchround_enddate),
+            'lineup_options_enabled' => $override ? 1 : 0,
+            ...$this->emptyLineupOptionsForm(),
+        ];
+
+        if ($override) {
+            foreach ($this->lineupOptionKeys() as $key) {
+                $form[$key] = $override->{$key};
+            }
+        }
+
         return [
             'league_id' => (int) $item->matchround_league_id,
-            'form' => [
-                'matchround_id' => (int) $item->matchround_id,
-                'matchround_league_id' => (int) $item->matchround_league_id,
-                'matchround_title' => (string) $item->matchround_title,
-                'matchround_status' => (int) $item->matchround_status,
-                'matchround_startdate' => $this->toDatetimeLocalValue((string) $item->matchround_startdate),
-                'matchround_enddate' => $this->toDatetimeLocalValue((string) $item->matchround_enddate),
-            ],
+            'form' => $form,
         ];
     }
 
@@ -127,8 +141,18 @@ class AdminMatchroundService
             'matchround_startdate' => $startDb,
             'matchround_enddate' => $endDb,
             'matchround_credits' => 0,
-            'matchround_max_players_from_team' => 0,
         ]);
+
+        $created = Matchround::query()
+            ->where('matchround_league_id', (int) $form['matchround_league_id'])
+            ->where('matchround_startdate', $startDb)
+            ->where('matchround_enddate', $endDb)
+            ->orderByDesc('matchround_id')
+            ->first();
+
+        if ($created) {
+            $this->syncLineupOptions((int) $created->matchround_id, $form);
+        }
 
         return [
             'ok' => true,
@@ -168,6 +192,7 @@ class AdminMatchroundService
         $item->matchround_startdate = $this->toDbDateTime((string) $form['matchround_startdate']);
         $item->matchround_enddate = $this->toDbDateTime((string) $form['matchround_enddate']);
         $item->save();
+        $this->syncLineupOptions((int) $item->matchround_id, $form);
 
         return [
             'ok' => true,
@@ -215,6 +240,9 @@ class AdminMatchroundService
             ];
         }
 
+        MatchroundOptions::query()
+            ->where('matchround_options_matchround_id', $matchroundId)
+            ->delete();
         $item->delete();
 
         return [
@@ -292,14 +320,24 @@ class AdminMatchroundService
      */
     private function normalizeInput(array $input): array
     {
-        return [
+        $form = [
             'matchround_id' => (string) ($input['matchround_id'] ?? ''),
             'matchround_league_id' => (int) ($input['matchround_league_id'] ?? 0),
             'matchround_title' => trim((string) ($input['matchround_title'] ?? '')),
             'matchround_status' => (int) ($input['matchround_status'] ?? 1) === 0 ? 0 : 1,
             'matchround_startdate' => $this->normalizeDatetimeLocal((string) ($input['matchround_startdate'] ?? '')),
             'matchround_enddate' => $this->normalizeDatetimeLocal((string) ($input['matchround_enddate'] ?? '')),
+            'lineup_options_enabled' => (int) ($input['lineup_options_enabled'] ?? 0) === 1 ? 1 : 0,
+            ...$this->emptyLineupOptionsForm(),
         ];
+
+        foreach ($this->lineupOptionKeys() as $key) {
+            if (array_key_exists($key, $input) && $input[$key] !== '' && $input[$key] !== null) {
+                $form[$key] = is_numeric($input[$key]) ? 0 + $input[$key] : $input[$key];
+            }
+        }
+
+        return $form;
     }
 
     /**
@@ -352,7 +390,90 @@ class AdminMatchroundService
             }
         }
 
+        if ((int) $form['lineup_options_enabled'] === 1) {
+            foreach ($this->lineupOptionKeys() as $key) {
+                if (! is_numeric($form[$key])) {
+                    $errors[] = 'Bitte alle Aufstellungs-Overrides ausfüllen oder deaktivieren.';
+                    break;
+                }
+            }
+        }
+
         return $errors;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function lineupOptionKeys(): array
+    {
+        return [
+            'matchround_options_lineup_max_players',
+            'matchround_options_lineup_max_credits',
+            'matchround_options_lineup_max_players_team',
+            'matchround_options_lineup_min_g',
+            'matchround_options_lineup_min_d',
+            'matchround_options_lineup_min_m',
+            'matchround_options_lineup_min_s',
+            'matchround_options_lineup_max_g',
+            'matchround_options_lineup_max_d',
+            'matchround_options_lineup_max_m',
+            'matchround_options_lineup_max_s',
+        ];
+    }
+
+    /**
+     * @return array<string, int|float|string>
+     */
+    private function emptyLineupOptionsForm(): array
+    {
+        return [
+            'matchround_options_lineup_max_players' => '',
+            'matchround_options_lineup_max_credits' => '',
+            'matchround_options_lineup_max_players_team' => '',
+            'matchround_options_lineup_min_g' => '',
+            'matchround_options_lineup_min_d' => '',
+            'matchround_options_lineup_min_m' => '',
+            'matchround_options_lineup_min_s' => '',
+            'matchround_options_lineup_max_g' => '',
+            'matchround_options_lineup_max_d' => '',
+            'matchround_options_lineup_max_m' => '',
+            'matchround_options_lineup_max_s' => '',
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $form
+     */
+    private function syncLineupOptions(int $matchroundId, array $form): void
+    {
+        if ((int) ($form['lineup_options_enabled'] ?? 0) !== 1) {
+            MatchroundOptions::query()
+                ->where('matchround_options_matchround_id', $matchroundId)
+                ->delete();
+
+            return;
+        }
+
+        $payload = ['matchround_options_matchround_id' => $matchroundId];
+        foreach ($this->lineupOptionKeys() as $key) {
+            $payload[$key] = $key === 'matchround_options_lineup_max_credits'
+                ? (float) $form[$key]
+                : (int) $form[$key];
+        }
+
+        $existing = MatchroundOptions::query()
+            ->where('matchround_options_matchround_id', $matchroundId)
+            ->first();
+
+        if ($existing) {
+            $existing->fill($payload);
+            $existing->save();
+
+            return;
+        }
+
+        MatchroundOptions::query()->create($payload);
     }
 
     /**

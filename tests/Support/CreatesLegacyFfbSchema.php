@@ -22,20 +22,20 @@ trait CreatesLegacyFfbSchema
             $table->string('league_symbol')->default('');
         });
 
-        Schema::create('ffb_options', function (Blueprint $table) {
+        Schema::create('ffb_league_options', function (Blueprint $table) {
             $table->integer('options_id')->primary();
             $table->integer('options_league_id');
             $table->integer('options_lineup_max_players')->default(11);
             $table->integer('options_lineup_max_players_team')->default(3);
             $table->integer('options_lineup_max_credits')->default(100);
-            $table->integer('options_lineup_min_goalies')->default(1);
-            $table->integer('options_lineup_max_goalies')->default(1);
-            $table->integer('options_lineup_min_defence')->default(3);
-            $table->integer('options_lineup_max_defence')->default(5);
-            $table->integer('options_lineup_min_midfield')->default(3);
-            $table->integer('options_lineup_max_midfield')->default(5);
-            $table->integer('options_lineup_min_striker')->default(1);
-            $table->integer('options_lineup_max_striker')->default(3);
+            $table->integer('options_lineup_min_g')->default(1);
+            $table->integer('options_lineup_max_g')->default(1);
+            $table->integer('options_lineup_min_d')->default(3);
+            $table->integer('options_lineup_max_d')->default(5);
+            $table->integer('options_lineup_min_m')->default(3);
+            $table->integer('options_lineup_max_m')->default(5);
+            $table->integer('options_lineup_min_s')->default(1);
+            $table->integer('options_lineup_max_s')->default(3);
             $table->string('options_league_pricemode')->default('constant');
             $table->string('options_league_pointsmode')->default('new');
         });
@@ -48,7 +48,23 @@ trait CreatesLegacyFfbSchema
             $table->timestamp('matchround_enddate')->nullable();
             $table->tinyInteger('matchround_status')->default(1);
             $table->integer('matchround_credits')->default(100);
-            $table->integer('matchround_max_players_from_team')->default(3);
+        });
+
+        Schema::create('ffb_matchround_options', function (Blueprint $table) {
+            $table->increments('matchround_options_id');
+            $table->unsignedInteger('matchround_options_matchround_id');
+            $table->integer('matchround_options_lineup_max_players')->default(11);
+            $table->double('matchround_options_lineup_max_credits')->default(100);
+            $table->integer('matchround_options_lineup_max_players_team')->default(3);
+            $table->integer('matchround_options_lineup_min_g')->default(1);
+            $table->integer('matchround_options_lineup_min_d')->default(3);
+            $table->integer('matchround_options_lineup_min_m')->default(3);
+            $table->integer('matchround_options_lineup_min_s')->default(1);
+            $table->integer('matchround_options_lineup_max_g')->default(1);
+            $table->integer('matchround_options_lineup_max_d')->default(5);
+            $table->integer('matchround_options_lineup_max_m')->default(5);
+            $table->integer('matchround_options_lineup_max_s')->default(3);
+            $table->unique('matchround_options_matchround_id');
         });
 
         Schema::create('ffb_match', function (Blueprint $table) {
@@ -175,8 +191,9 @@ trait CreatesLegacyFfbSchema
             'ffb_player',
             'ffb_team',
             'ffb_match',
+            'ffb_matchround_options',
             'ffb_matchround',
-            'ffb_options',
+            'ffb_league_options',
             'ffb_league',
             'web_user_details',
         ] as $table) {

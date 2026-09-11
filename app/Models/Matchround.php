@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Matchround extends Model
 {
@@ -21,12 +22,16 @@ class Matchround extends Model
         'matchround_enddate',
         'matchround_status',
         'matchround_credits',
-        'matchround_max_players_from_team',
     ];
 
     public function league(): BelongsTo
     {
         return $this->belongsTo(League::class, 'matchround_league_id', 'league_id');
+    }
+
+    public function options(): HasOne
+    {
+        return $this->hasOne(MatchroundOptions::class, 'matchround_options_matchround_id', 'matchround_id');
     }
 
     public function userteams(): HasMany

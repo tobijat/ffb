@@ -104,6 +104,42 @@
                     </select>
                 </div>
 
+                <fieldset class="admin-fieldset">
+                    <legend>Aufstellungs-Overrides</legend>
+                    <p class="hint">Optional: eigene Limits für diese Spielrunde. Sonst gelten die Liga-Defaults.</p>
+                    <div class="admin-field">
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="lineup_options_enabled"
+                                value="1"
+                                @checked((int) ($form['lineup_options_enabled'] ?? 0) === 1)
+                            >
+                            Eigene Aufstellungslimits verwenden
+                        </label>
+                    </div>
+                    <div class="admin-option-grid">
+                        @foreach ([
+                            'matchround_options_lineup_max_players' => 'Max. Spieler',
+                            'matchround_options_lineup_max_credits' => 'Max. Credits',
+                            'matchround_options_lineup_max_players_team' => 'Max. pro Team',
+                            'matchround_options_lineup_min_g' => 'Min. TW',
+                            'matchround_options_lineup_max_g' => 'Max. TW',
+                            'matchround_options_lineup_min_d' => 'Min. AB',
+                            'matchround_options_lineup_max_d' => 'Max. AB',
+                            'matchround_options_lineup_min_m' => 'Min. MF',
+                            'matchround_options_lineup_max_m' => 'Max. MF',
+                            'matchround_options_lineup_min_s' => 'Min. ST',
+                            'matchround_options_lineup_max_s' => 'Max. ST',
+                        ] as $name => $label)
+                            <div class="admin-option-field">
+                                <label for="{{ $name }}">{{ $label }}</label>
+                                <input id="{{ $name }}" type="number" name="{{ $name }}" value="{{ $form[$name] ?? '' }}">
+                            </div>
+                        @endforeach
+                    </div>
+                </fieldset>
+
                 <div class="admin-actions">
                     @if ($mode === 'update')
                         <button type="submit" class="admin-submit">Speichern</button>

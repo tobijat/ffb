@@ -11,14 +11,14 @@ class LineupController extends Controller
 {
     public function __construct(
         private readonly LineupService $lineups,
-    ) {
-    }
+    ) {}
 
     public function options(Request $request): JsonResponse
     {
         $userId = (int) $request->attributes->get('ffb_user_id');
+        $matchroundId = (int) $request->query('matchround_id', 0);
 
-        return $this->respond($this->lineups->options($userId));
+        return $this->respond($this->lineups->options($userId, $matchroundId));
     }
 
     public function matchround(Request $request): JsonResponse

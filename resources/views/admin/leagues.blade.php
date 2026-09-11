@@ -204,18 +204,6 @@
                 </div>
             </fieldset>
 
-            {{-- Internal status codes kept in form for create/update round-trips --}}
-            @foreach ([
-                'options_status_error',
-                'options_status_error_validation',
-                'options_status_success',
-                'options_status_success_insert',
-                'options_status_success_update',
-                'options_status_success_delete',
-            ] as $hidden)
-                <input type="hidden" name="{{ $hidden }}" value="{{ $form[$hidden] }}">
-            @endforeach
-
             <div class="admin-actions admin-actions-flush">
                 @if ($mode === 'update')
                     <button type="submit" class="admin-submit">Speichern</button>

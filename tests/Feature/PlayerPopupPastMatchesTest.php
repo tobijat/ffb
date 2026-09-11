@@ -21,7 +21,7 @@ class PlayerPopupPastMatchesTest extends TestCase
             ['league_id' => 1, 'league_title' => 'Current League'],
             ['league_id' => 2, 'league_title' => 'Past League'],
         ]);
-        DB::table('ffb_options')->insert([
+        DB::table('ffb_league_options')->insert([
             'options_id' => 1,
             'options_league_id' => 1,
             'options_league_pricemode' => 'constant',
