@@ -20,10 +20,16 @@ class AdminTeamService
 
     /**
      * @param  array<string, mixed>|null  $form
+     * @param  array<string, mixed>|null  $auto
      * @return array<string, mixed>
      */
-    public function pagePayload(int $userId, ?array $form = null, string $mode = 'create'): array
-    {
+    public function pagePayload(
+        int $userId,
+        ?array $form = null,
+        string $mode = 'create',
+        string $tab = 'manual',
+        ?array $auto = null,
+    ): array {
         $shell = $this->adminCenter->shellPayload($userId);
         $form = $form ?? $this->emptyForm();
         $selectedKey = (string) ($form['team_nationality'] ?? '');
@@ -40,6 +46,21 @@ class AdminTeamService
             'items' => $this->listItems(),
             'form' => $form,
             'mode' => $mode === 'update' ? 'update' : 'create',
+            'tab' => $tab === 'auto' ? 'auto' : 'manual',
+            'auto' => $auto ?? $this->emptyAutoState(),
+        ];
+    }
+
+    /**
+     * @return array{analyzed: bool, source_name: string, present: list<array<string, mixed>>, missing: list<array<string, mixed>>}
+     */
+    public function emptyAutoState(): array
+    {
+        return [
+            'analyzed' => false,
+            'source_name' => '',
+            'present' => [],
+            'missing' => [],
         ];
     }
 
@@ -224,6 +245,315 @@ class AdminTeamService
         });
 
         return ['ok' => true, 'message' => 'Team erfolgreich gelöscht.'];
+    }
+
+    /**
+     * Parse a matchrounds JSON upload and compare team names against the database.
+     *
+     * @return array{
+     *     ok: bool,
+     *     errors?: list<string>,
+     *     auto?: array{analyzed: bool, source_name: string, present: list<array<string, mixed>>, missing: list<array<string, mixed>>},
+     *     message?: string
+     * }
+     */
+    public function analyzeMatchroundsFile(?UploadedFile $file): array
+    {
+        if ($file === null) {
+            return ['ok' => false, 'errors' => ['Bitte eine JSON-Datei auswählen.']];
+        }
+
+        if (! $file->isValid()) {
+            return ['ok' => false, 'errors' => ['Upload fehlgeschlagen.']];
+        }
+
+        if ($file->getSize() > 2 * 1024 * 1024) {
+            return ['ok' => false, 'errors' => ['JSON-Datei darf maximal 2 MB groß sein.']];
+        }
+
+        $raw = @file_get_contents($file->getRealPath() ?: '');
+        if (! is_string($raw) || $raw === '') {
+            return ['ok' => false, 'errors' => ['JSON-Datei konnte nicht gelesen werden.']];
+        }
+
+        $data = json_decode($raw, true);
+        if (! is_array($data)) {
+            return ['ok' => false, 'errors' => ['Ungültige JSON-Datei.']];
+        }
+
+        $names = $this->extractTeamNamesFromMatchrounds($data);
+        if ($names === []) {
+            return ['ok' => false, 'errors' => ['In der JSON-Datei wurden keine Teams gefunden (erwartet: spieltage[].spiele[].heim/gast).']];
+        }
+
+        $auto = $this->compareTeamNames($names, (string) $file->getClientOriginalName());
+
+        return [
+            'ok' => true,
+            'auto' => $auto,
+            'message' => count($auto['missing']).' neue Teams, '.count($auto['present']).' bereits vorhanden.',
+        ];
+    }
+
+    /**
+     * Create missing teams from the Auto-Teams draft rows.
+     *
+     * @param  list<array<string, mixed>>|array<int, array<string, mixed>>  $teams
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     auto?: array{analyzed: bool, source_name: string, present: list<array<string, mixed>>, missing: list<array<string, mixed>>}
+     * }
+     */
+    public function createMissingTeams(array $teams, string $sourceName = ''): array
+    {
+        $drafts = [];
+        $errors = [];
+        $seenNames = [];
+
+        foreach (array_values($teams) as $index => $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+
+            $form = $this->normalizeInput($row);
+            $prepared = $this->prepareFormWithIcon($form, null, true);
+            if (! $prepared['ok']) {
+                $label = $form['team_name'] !== '' ? $form['team_name'] : 'Zeile '.($index + 1);
+                $errors[] = $label.': '.implode(' ', $prepared['errors']);
+                $drafts[] = [
+                    'team_name' => $form['team_name'],
+                    'team_nationality' => $form['team_nationality'],
+                    'team_price' => (int) $form['team_price'],
+                    'team_status' => (int) $form['team_status'],
+                ];
+
+                continue;
+            }
+
+            $nameKey = mb_strtolower($prepared['form']['team_name']);
+            if (isset($seenNames[$nameKey])) {
+                $errors[] = $prepared['form']['team_name'].': Teamname kommt mehrfach in der Liste vor.';
+                $drafts[] = [
+                    'team_name' => $prepared['form']['team_name'],
+                    'team_nationality' => $prepared['form']['team_nationality'],
+                    'team_price' => (int) $prepared['form']['team_price'],
+                    'team_status' => (int) $prepared['form']['team_status'],
+                ];
+
+                continue;
+            }
+            $seenNames[$nameKey] = true;
+
+            $drafts[] = [
+                'team_name' => $prepared['form']['team_name'],
+                'team_nationality' => $prepared['form']['team_nationality'],
+                'team_price' => (int) $prepared['form']['team_price'],
+                'team_status' => (int) $prepared['form']['team_status'],
+                '_form' => $prepared['form'],
+            ];
+        }
+
+        if ($drafts === []) {
+            return [
+                'ok' => false,
+                'errors' => ['Keine Teams zum Anlegen.'],
+                'auto' => [
+                    'analyzed' => true,
+                    'source_name' => $sourceName,
+                    'present' => [],
+                    'missing' => [],
+                ],
+            ];
+        }
+
+        if ($errors !== []) {
+            return [
+                'ok' => false,
+                'errors' => $errors,
+                'auto' => [
+                    'analyzed' => true,
+                    'source_name' => $sourceName,
+                    'present' => [],
+                    'missing' => array_map(static function (array $row): array {
+                        unset($row['_form']);
+
+                        return $row;
+                    }, $drafts),
+                ],
+            ];
+        }
+
+        $created = 0;
+        DB::transaction(function () use ($drafts, &$created): void {
+            foreach ($drafts as $row) {
+                /** @var array<string, mixed> $form */
+                $form = $row['_form'];
+                $team = Team::query()->create([
+                    'team_foreign_id' => '',
+                    'team_name' => $form['team_name'],
+                    'team_nationality' => $form['team_nationality'],
+                    'team_avg_price' => (int) $form['team_price'],
+                    'team_num_players' => 0,
+                    'team_status' => (int) $form['team_status'],
+                ]);
+                $this->upsertTeamfid((int) $team->team_id, $form);
+                $created++;
+            }
+        });
+
+        return [
+            'ok' => true,
+            'message' => $created === 1
+                ? '1 Team erfolgreich hinzugefügt.'
+                : $created.' Teams erfolgreich hinzugefügt.',
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return list<string>
+     */
+    private function extractTeamNamesFromMatchrounds(array $data): array
+    {
+        $spieltage = $data['spieltage'] ?? null;
+        if (! is_array($spieltage)) {
+            return [];
+        }
+
+        $unique = [];
+        foreach ($spieltage as $round) {
+            if (! is_array($round)) {
+                continue;
+            }
+
+            $spiele = $round['spiele'] ?? null;
+            if (! is_array($spiele)) {
+                continue;
+            }
+
+            foreach ($spiele as $match) {
+                if (! is_array($match)) {
+                    continue;
+                }
+
+                foreach (['heim', 'gast'] as $side) {
+                    $name = trim((string) ($match[$side] ?? ''));
+                    if ($name === '') {
+                        continue;
+                    }
+
+                    $key = mb_strtolower($name);
+                    if (! isset($unique[$key])) {
+                        $unique[$key] = $name;
+                    }
+                }
+            }
+        }
+
+        $names = array_values($unique);
+        natcasesort($names);
+
+        return array_values($names);
+    }
+
+    /**
+     * @param  list<string>  $names
+     * @return array{analyzed: bool, source_name: string, present: list<array<string, mixed>>, missing: list<array<string, mixed>>}
+     */
+    private function compareTeamNames(array $names, string $sourceName): array
+    {
+        $existing = Team::query()
+            ->orderBy('team_name')
+            ->get(['team_id', 'team_name', 'team_nationality', 'team_avg_price', 'team_status']);
+
+        $byName = [];
+        foreach ($existing as $team) {
+            $key = mb_strtolower(trim((string) $team->team_name));
+            if ($key === '' || isset($byName[$key])) {
+                continue;
+            }
+            $byName[$key] = $team;
+        }
+
+        $present = [];
+        $missing = [];
+        foreach ($names as $name) {
+            $key = mb_strtolower($name);
+            if (isset($byName[$key])) {
+                $team = $byName[$key];
+                $present[] = [
+                    'team_id' => (int) $team->team_id,
+                    'team_name' => (string) $team->team_name,
+                    'team_nationality' => $this->normalizeIconKey((string) ($team->team_nationality ?? '')),
+                    'team_price' => (int) $team->team_avg_price,
+                    'team_status' => (int) (bool) $team->team_status,
+                ];
+
+                continue;
+            }
+
+            $missing[] = [
+                'team_name' => $name,
+                'team_nationality' => $this->suggestNationality($name),
+                'team_price' => 5,
+                'team_status' => 1,
+            ];
+        }
+
+        return [
+            'analyzed' => true,
+            'source_name' => $sourceName,
+            'present' => $present,
+            'missing' => $missing,
+        ];
+    }
+
+    private function suggestNationality(string $teamName): string
+    {
+        $needle = mb_strtolower(trim($teamName));
+        if ($needle === '') {
+            return '';
+        }
+
+        $aliases = [
+            'niederlande' => 'ned',
+            'holland' => 'ned',
+            'nordmazedonien' => 'mkd',
+            'mazedonien' => 'mkd',
+            'bosnien und herzegowina' => 'bih',
+            'bosnien-herzegowina' => 'bih',
+            'tschechische republik' => 'cze',
+            'republik moldau' => 'mda',
+            'moldawien' => 'mda',
+            'weißrussland' => 'blr',
+            'weissrussland' => 'blr',
+            'belarus' => 'blr',
+            'kosovo' => 'kos',
+        ];
+
+        $code = $aliases[$needle] ?? '';
+        if ($code === '') {
+            foreach ($this->countryLabels() as $countryCode => $label) {
+                if (mb_strtolower(trim((string) $label)) === $needle) {
+                    $code = (string) $countryCode;
+                    break;
+                }
+            }
+        }
+
+        $normalized = $this->normalizeIconKey($code);
+        $remap = [
+            'rks' => 'kos',
+        ];
+        $normalized = $remap[$normalized] ?? $normalized;
+
+        if ($normalized !== '' && $this->iconFileExists($normalized)) {
+            return $normalized;
+        }
+
+        return '';
     }
 
     /**

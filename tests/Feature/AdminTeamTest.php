@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Services\AdminTeamService;
 use App\Services\FfbAdminAccess;
 use App\Services\FfbAuth;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class AdminTeamTest extends TestCase
@@ -33,7 +34,7 @@ class AdminTeamTest extends TestCase
         });
 
         $this->mock(AdminTeamService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544, null, 'create')->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -99,6 +100,13 @@ class AdminTeamTest extends TestCase
                     'teamfid_url_foe' => '',
                 ],
                 'mode' => 'create',
+                'tab' => 'manual',
+                'auto' => [
+                    'analyzed' => false,
+                    'source_name' => '',
+                    'present' => [],
+                    'missing' => [],
+                ],
             ]);
         });
 
@@ -106,6 +114,7 @@ class AdminTeamTest extends TestCase
             ->get('/admin/teams')
             ->assertOk()
             ->assertSee('Teams', false)
+            ->assertSee('Auto-Teams', false)
             ->assertSee('Rapid', false)
             ->assertSee('name="team_name"', false)
             ->assertSee('Symbol (Flagge / Logo)', false)
@@ -139,7 +148,7 @@ class AdminTeamTest extends TestCase
             ];
 
             $mock->shouldReceive('formForEdit')->once()->with(7)->andReturn($form);
-            $mock->shouldReceive('pagePayload')->once()->with(544, $form, 'update')->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -163,6 +172,13 @@ class AdminTeamTest extends TestCase
                 'items' => [],
                 'form' => $form,
                 'mode' => 'update',
+                'tab' => 'manual',
+                'auto' => [
+                    'analyzed' => false,
+                    'source_name' => '',
+                    'present' => [],
+                    'missing' => [],
+                ],
             ]);
         });
 
@@ -223,5 +239,160 @@ class AdminTeamTest extends TestCase
             ->delete('/admin/teams/3')
             ->assertRedirect(route('admin.teams'))
             ->assertSessionHas('admin_message', 'Team erfolgreich gelöscht.');
+    }
+
+    public function test_auto_teams_tab_renders_upload_form(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminTeamService::class, function ($mock) {
+            $mock->shouldReceive('pagePayload')->once()->andReturn([
+                'user' => [
+                    'user_id' => 544,
+                    'user_nickname' => 'adminuser',
+                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'is_ffb_admin' => true,
+                ],
+                'navigation' => [],
+                'selected_league' => null,
+                'icons' => [],
+                'selected_symbol' => null,
+                'uses_icon_picker' => true,
+                'prices' => range(1, 15),
+                'items' => [],
+                'form' => [
+                    'team_id' => '',
+                    'team_name' => '',
+                    'team_nationality' => '',
+                    'team_icon_key' => '',
+                    'team_price' => 5,
+                    'team_status' => 1,
+                    'teamfid_fid_tm' => '',
+                    'teamfid_name_tm' => '',
+                    'teamfid_name_wf' => '',
+                    'teamfid_url_foe' => '',
+                ],
+                'mode' => 'create',
+                'tab' => 'auto',
+                'auto' => [
+                    'analyzed' => false,
+                    'source_name' => '',
+                    'present' => [],
+                    'missing' => [],
+                ],
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->get('/admin/teams?tab=auto')
+            ->assertOk()
+            ->assertSee('Auto-Teams', false)
+            ->assertSee('name="matchrounds_json"', false)
+            ->assertSee('Teams prüfen', false)
+            ->assertDontSee('name="team_name"', false);
+    }
+
+    public function test_auto_teams_analyze_stores_result_and_redirects(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminTeamService::class, function ($mock) {
+            $mock->shouldReceive('analyzeMatchroundsFile')->once()->andReturn([
+                'ok' => true,
+                'message' => '1 neue Teams, 1 bereits vorhanden.',
+                'auto' => [
+                    'analyzed' => true,
+                    'source_name' => 'nations.json',
+                    'present' => [
+                        [
+                            'team_id' => 1,
+                            'team_name' => 'Deutschland',
+                            'team_nationality' => 'ger',
+                            'team_price' => 5,
+                            'team_status' => 1,
+                        ],
+                    ],
+                    'missing' => [
+                        [
+                            'team_name' => 'Kosovo',
+                            'team_nationality' => 'rks',
+                            'team_price' => 5,
+                            'team_status' => 1,
+                        ],
+                    ],
+                ],
+            ]);
+        });
+
+        $file = UploadedFile::fake()->createWithContent(
+            'nations.json',
+            json_encode([
+                'spieltage' => [
+                    [
+                        'spieltag' => 1,
+                        'spiele' => [
+                            ['datum' => '2026-09-24', 'heim' => 'Deutschland', 'gast' => 'Kosovo'],
+                        ],
+                    ],
+                ],
+            ], JSON_THROW_ON_ERROR),
+        );
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->post('/admin/teams/auto/analyze', [
+                'matchrounds_json' => $file,
+            ])
+            ->assertRedirect(route('admin.teams', ['tab' => 'auto']))
+            ->assertSessionHas('admin_message', '1 neue Teams, 1 bereits vorhanden.')
+            ->assertSessionHas('admin_teams_auto.missing.0.team_name', 'Kosovo');
+    }
+
+    public function test_auto_teams_store_creates_and_clears_session(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminTeamService::class, function ($mock) {
+            $mock->shouldReceive('createMissingTeams')->once()->andReturn([
+                'ok' => true,
+                'message' => '1 Team erfolgreich hinzugefügt.',
+            ]);
+        });
+
+        $this->withSession([
+            FfbAuth::SESSION_USER_ID => 544,
+            'admin_teams_auto' => [
+                'analyzed' => true,
+                'source_name' => 'nations.json',
+                'present' => [],
+                'missing' => [
+                    [
+                        'team_name' => 'Kosovo',
+                        'team_nationality' => 'rks',
+                        'team_price' => 5,
+                        'team_status' => 1,
+                    ],
+                ],
+            ],
+        ])
+            ->post('/admin/teams/auto', [
+                'source_name' => 'nations.json',
+                'teams' => [
+                    [
+                        'team_name' => 'Kosovo',
+                        'team_nationality' => 'rks',
+                        'team_price' => 5,
+                        'team_status' => 1,
+                    ],
+                ],
+            ])
+            ->assertRedirect(route('admin.teams', ['tab' => 'auto']))
+            ->assertSessionHas('admin_message', '1 Team erfolgreich hinzugefügt.')
+            ->assertSessionMissing('admin_teams_auto');
     }
 }
