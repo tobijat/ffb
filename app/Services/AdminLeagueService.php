@@ -118,7 +118,7 @@ class AdminLeagueService
 
             LeagueOptions::query()->create(array_merge(
                 ['options_league_id' => (int) $league->league_id],
-                $this->optionsFromForm($form),
+                $this->optionsFromForm($form, pointsMode: 'new'),
             ));
         });
 
@@ -170,13 +170,14 @@ class AdminLeagueService
             $league->league_symbol = $form['league_symbol'];
             $league->save();
 
-            $optionsPayload = $this->optionsFromForm($form);
+            $existingPointsMode = (string) ($league->options?->options_league_pointsmode ?: 'new');
+            $optionsPayload = $this->optionsFromForm($form, pointsMode: $existingPointsMode);
             if ($league->options) {
                 $league->options->fill($optionsPayload)->save();
             } else {
                 LeagueOptions::query()->create(array_merge(
                     ['options_league_id' => (int) $league->league_id],
-                    $optionsPayload,
+                    $this->optionsFromForm($form, pointsMode: 'new'),
                 ));
             }
 
@@ -269,6 +270,12 @@ class AdminLeagueService
         ];
 
         foreach ($this->optionKeys() as $key) {
+            if ($key === 'options_league_pointsmode') {
+                // Not editable via admin form; create/update set it explicitly.
+                $form[$key] = 'new';
+
+                continue;
+            }
             if (str_starts_with($key, 'options_league_') && ! str_ends_with($key, '_before')) {
                 $form[$key] = trim((string) ($input[$key] ?? ''));
             } else {
@@ -302,11 +309,8 @@ class AdminLeagueService
             $errors[] = 'Ungültiger Preis-Modus.';
         }
 
-        foreach (['options_league_pointsmode', 'options_league_lcpoints'] as $key) {
-            if (! in_array((string) ($form[$key] ?? ''), ['new', 'old'], true)) {
-                $errors[] = 'Ungültiger Punkte-Modus.';
-                break;
-            }
+        if (! in_array((string) ($form['options_league_lcpoints'] ?? ''), ['new', 'old'], true)) {
+            $errors[] = 'Ungültiger Punkte-Modus.';
         }
 
         foreach ($this->optionKeys() as $key) {
@@ -409,10 +413,15 @@ class AdminLeagueService
      * @param  array<string, mixed>  $form
      * @return array<string, int|string>
      */
-    private function optionsFromForm(array $form): array
+    private function optionsFromForm(array $form, string $pointsMode): array
     {
         $out = [];
         foreach ($this->optionKeys() as $key) {
+            if ($key === 'options_league_pointsmode') {
+                $out[$key] = $pointsMode === 'old' ? 'old' : 'new';
+
+                continue;
+            }
             if (str_starts_with($key, 'options_league_') && ! str_ends_with($key, '_before')) {
                 $out[$key] = (string) $form[$key];
             } else {
