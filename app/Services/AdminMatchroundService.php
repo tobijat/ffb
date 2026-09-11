@@ -140,7 +140,6 @@ class AdminMatchroundService
             'matchround_league_id' => (int) $form['matchround_league_id'],
             'matchround_startdate' => $startDb,
             'matchround_enddate' => $endDb,
-            'matchround_credits' => 0,
         ]);
 
         $created = Matchround::query()

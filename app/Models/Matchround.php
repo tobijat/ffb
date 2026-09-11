@@ -21,7 +21,6 @@ class Matchround extends Model
         'matchround_startdate',
         'matchround_enddate',
         'matchround_status',
-        'matchround_credits',
     ];
 
     public function league(): BelongsTo

@@ -53,7 +53,6 @@ class LineupOptionsResolverTest extends TestCase
                 'matchround_startdate' => now()->addDay()->toDateTimeString(),
                 'matchround_enddate' => now()->addDays(2)->toDateTimeString(),
                 'matchround_status' => 1,
-                'matchround_credits' => 100,
             ],
             [
                 'matchround_id' => 11,
@@ -62,7 +61,6 @@ class LineupOptionsResolverTest extends TestCase
                 'matchround_startdate' => now()->addDays(3)->toDateTimeString(),
                 'matchround_enddate' => now()->addDays(4)->toDateTimeString(),
                 'matchround_status' => 1,
-                'matchround_credits' => 100,
             ],
         ]);
 
