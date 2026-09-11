@@ -25,6 +25,8 @@ class AdminMatchController extends Controller
         }
         $errors = session('admin_errors');
         $prefill = session('admin_match_prefill');
+        $tab = $request->query('tab') === 'auto' ? 'auto' : 'manual';
+        $auto = session('admin_matches_auto');
 
         return $this->render(
             $userId,
@@ -32,6 +34,8 @@ class AdminMatchController extends Controller
             is_array($prefill) ? $prefill : null,
             'create',
             is_array($errors) ? $errors : [],
+            $tab,
+            is_array($auto) ? $auto : null,
         );
     }
 
@@ -113,9 +117,72 @@ class AdminMatchController extends Controller
         return $redirect->with('admin_errors', $result['errors'] ?? ['Löschen fehlgeschlagen.']);
     }
 
+    public function analyzeAuto(Request $request): RedirectResponse
+    {
+        $leagueId = (int) $request->input('league_id', 0);
+        $result = $this->matches->analyzeMatchroundsFile(
+            $leagueId,
+            $request->file('matchrounds_json'),
+        );
+
+        $redirectQuery = ['tab' => 'auto'];
+        if ($leagueId > 0) {
+            $redirectQuery['league_id'] = $leagueId;
+        }
+
+        if (! ($result['ok'] ?? false)) {
+            return redirect()
+                ->route('admin.matches', $redirectQuery)
+                ->with('admin_errors', $result['errors'] ?? ['Analyse fehlgeschlagen.']);
+        }
+
+        session(['admin_matches_auto' => $result['auto']]);
+
+        return redirect()
+            ->route('admin.matches', $redirectQuery)
+            ->with('admin_message', $result['message'] ?? null);
+    }
+
+    public function storeAuto(Request $request): RedirectResponse
+    {
+        $leagueId = (int) $request->input('league_id', 0);
+        /** @var list<array<string, mixed>>|array<int, array<string, mixed>> $matches */
+        $matches = $request->input('matches', []);
+        if (! is_array($matches)) {
+            $matches = [];
+        }
+
+        $sourceName = (string) ($request->input('source_name')
+            ?: (session('admin_matches_auto.source_name') ?? ''));
+        $result = $this->matches->createMatchesFromDraft($matches, $leagueId, $sourceName);
+
+        $redirectQuery = ['tab' => 'auto'];
+        $resultLeagueId = (int) ($result['league_id'] ?? $leagueId);
+        if ($resultLeagueId > 0) {
+            $redirectQuery['league_id'] = $resultLeagueId;
+        }
+
+        if (! ($result['ok'] ?? false)) {
+            if (isset($result['auto']) && is_array($result['auto'])) {
+                session(['admin_matches_auto' => $result['auto']]);
+            }
+
+            return redirect()
+                ->route('admin.matches', $redirectQuery)
+                ->with('admin_errors', $result['errors'] ?? ['Anlegen fehlgeschlagen.']);
+        }
+
+        session()->forget('admin_matches_auto');
+
+        return redirect()
+            ->route('admin.matches', $redirectQuery)
+            ->with('admin_message', $result['message'] ?? null);
+    }
+
     /**
      * @param  array<string, mixed>|null  $form
      * @param  list<string>  $errors
+     * @param  array<string, mixed>|null  $auto
      */
     private function render(
         int $userId,
@@ -123,9 +190,11 @@ class AdminMatchController extends Controller
         ?array $form = null,
         string $mode = 'create',
         array $errors = [],
+        string $tab = 'manual',
+        ?array $auto = null,
     ): View {
         return view('admin.matches', [
-            'data' => $this->matches->pagePayload($userId, $leagueId, $form, $mode),
+            'data' => $this->matches->pagePayload($userId, $leagueId, $form, $mode, $tab, $auto),
             'errors' => $errors,
             'answer' => session('admin_message'),
             'legacyBase' => '/',

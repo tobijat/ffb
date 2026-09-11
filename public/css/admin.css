@@ -1952,3 +1952,69 @@
         grid-template-columns: 1fr;
     }
 }
+
+.admin-auto-matches-upload {
+    margin-top: 12px;
+}
+
+.admin-auto-matches-result {
+    margin-top: 16px;
+}
+
+.admin-form.admin-auto-matches-form {
+    max-width: none;
+    width: 100%;
+}
+
+.admin-auto-matches-table-wrap {
+    overflow-x: auto;
+    margin-bottom: 10px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.admin-auto-matches-table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+}
+
+.admin-auto-matches-table th,
+.admin-auto-matches-table td {
+    padding: 4px 6px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid #b5d6b5;
+}
+
+.admin-auto-matches-table select,
+.admin-auto-matches-table input[type="date"],
+.admin-auto-matches-table input[type="text"] {
+    width: auto;
+    box-sizing: border-box;
+}
+
+.admin-auto-matches-table select[name*="[match_round]"] {
+    min-width: 12rem;
+}
+
+.admin-auto-matches-table input[type="date"] {
+    min-width: 10rem;
+}
+
+.admin-auto-matches-table select[name*="[match_hometeam_id]"],
+.admin-auto-matches-table select[name*="[match_guestteam_id]"] {
+    min-width: 18rem;
+}
+
+.admin-auto-matches-table input[type="text"] {
+    min-width: 6rem;
+    max-width: 10rem;
+}
+
+.admin-auto-match-actions {
+    width: 2.5rem;
+    text-align: center;
+}
+

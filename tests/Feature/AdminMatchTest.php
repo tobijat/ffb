@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Services\AdminMatchService;
 use App\Services\FfbAdminAccess;
 use App\Services\FfbAuth;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class AdminMatchTest extends TestCase
@@ -34,7 +35,7 @@ class AdminMatchTest extends TestCase
 
         $this->mock(AdminMatchService::class, function ($mock) {
             $mock->shouldReceive('defaultLeagueId')->once()->with(544)->andReturn(0);
-            $mock->shouldReceive('pagePayload')->once()->with(544, 0, null, 'create')->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -68,6 +69,13 @@ class AdminMatchTest extends TestCase
                     'match_status' => '',
                 ],
                 'mode' => 'create',
+                'tab' => 'manual',
+                'auto' => [
+                    'analyzed' => false,
+                    'source_name' => '',
+                    'league_id' => 0,
+                    'matches' => [],
+                ],
             ]);
         });
 
@@ -75,6 +83,7 @@ class AdminMatchTest extends TestCase
             ->get('/admin/matches')
             ->assertOk()
             ->assertSee('Spiele', false)
+            ->assertSee('Auto-Matches', false)
             ->assertSee('Liga wählen', false)
             ->assertSee('Wähle oben eine Liga', false)
             ->assertDontSee('name="match_hometeam_id"', false);
@@ -87,7 +96,7 @@ class AdminMatchTest extends TestCase
         });
 
         $this->mock(AdminMatchService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544, 26, null, 'create')->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -130,6 +139,13 @@ class AdminMatchTest extends TestCase
                     'match_status' => '',
                 ],
                 'mode' => 'create',
+                'tab' => 'manual',
+                'auto' => [
+                    'analyzed' => false,
+                    'source_name' => '',
+                    'league_id' => 0,
+                    'matches' => [],
+                ],
             ]);
         });
 
@@ -200,5 +216,157 @@ class AdminMatchTest extends TestCase
             ->delete('/admin/matches/99', ['league_id' => 26])
             ->assertRedirect(route('admin.matches', ['league_id' => 26]))
             ->assertSessionHas('admin_message', 'Spiel erfolgreich gelöscht.');
+    }
+
+    public function test_auto_matches_tab_renders_upload_form(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminMatchService::class, function ($mock) {
+            $mock->shouldReceive('pagePayload')->once()->andReturn([
+                'user' => [
+                    'user_id' => 544,
+                    'user_nickname' => 'adminuser',
+                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'is_ffb_admin' => true,
+                ],
+                'navigation' => [],
+                'selected_league' => null,
+                'leagues' => [
+                    ['league_id' => 26, 'league_title' => 'Testliga', 'league_archive' => 0],
+                ],
+                'selected_league_id' => 26,
+                'selected_league_title' => 'Testliga',
+                'matchrounds' => [
+                    ['matchround_id' => 12, 'matchround_title' => 'Runde 1'],
+                ],
+                'teams' => [
+                    ['team_id' => 1, 'team_label' => 'Heim FC'],
+                ],
+                'items' => [],
+                'form' => [
+                    'match_id' => '',
+                    'match_round' => '',
+                    'match_date' => '',
+                    'match_hometeam_id' => '',
+                    'match_guestteam_id' => '',
+                    'match_status' => '',
+                ],
+                'mode' => 'create',
+                'tab' => 'auto',
+                'auto' => [
+                    'analyzed' => false,
+                    'source_name' => '',
+                    'league_id' => 26,
+                    'matches' => [],
+                ],
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->get('/admin/matches?tab=auto&league_id=26')
+            ->assertOk()
+            ->assertSee('Auto-Matches', false)
+            ->assertSee('name="matchrounds_json"', false)
+            ->assertSee('Spiele prüfen', false)
+            ->assertDontSee('Hinzufügen', false);
+    }
+
+    public function test_auto_matches_analyze_stores_result_and_redirects(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminMatchService::class, function ($mock) {
+            $mock->shouldReceive('analyzeMatchroundsFile')->once()->andReturn([
+                'ok' => true,
+                'message' => '1 Spiel bereit zum Anlegen.',
+                'league_id' => 26,
+                'auto' => [
+                    'analyzed' => true,
+                    'source_name' => 'plan.json',
+                    'league_id' => 26,
+                    'matches' => [
+                        [
+                            'match_round' => 12,
+                            'match_date' => '2026-09-24',
+                            'match_hometeam_id' => 1,
+                            'match_guestteam_id' => 2,
+                            'match_status' => '',
+                            'home_name' => 'Niederlande',
+                            'guest_name' => 'Deutschland',
+                            'spieltag' => 1,
+                        ],
+                    ],
+                ],
+            ]);
+        });
+
+        $file = UploadedFile::fake()->createWithContent(
+            'plan.json',
+            json_encode([
+                'spieltage' => [
+                    [
+                        'spieltag' => 1,
+                        'spiele' => [
+                            ['datum' => '2026-09-24', 'heim' => 'Niederlande', 'gast' => 'Deutschland'],
+                        ],
+                    ],
+                ],
+            ], JSON_THROW_ON_ERROR),
+        );
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->post('/admin/matches/auto/analyze', [
+                'league_id' => 26,
+                'matchrounds_json' => $file,
+            ])
+            ->assertRedirect(route('admin.matches', ['tab' => 'auto', 'league_id' => 26]))
+            ->assertSessionHas('admin_message', '1 Spiel bereit zum Anlegen.')
+            ->assertSessionHas('admin_matches_auto.matches.0.home_name', 'Niederlande');
+    }
+
+    public function test_auto_matches_store_creates_and_clears_session(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminMatchService::class, function ($mock) {
+            $mock->shouldReceive('createMatchesFromDraft')->once()->andReturn([
+                'ok' => true,
+                'message' => '1 Spiel hinzugefügt.',
+                'league_id' => 26,
+            ]);
+        });
+
+        $this->withSession([
+            FfbAuth::SESSION_USER_ID => 544,
+            'admin_matches_auto' => [
+                'analyzed' => true,
+                'source_name' => 'plan.json',
+                'league_id' => 26,
+                'matches' => [],
+            ],
+        ])
+            ->post('/admin/matches/auto', [
+                'league_id' => 26,
+                'source_name' => 'plan.json',
+                'matches' => [
+                    [
+                        'match_round' => 12,
+                        'match_date' => '2026-09-24',
+                        'match_hometeam_id' => 1,
+                        'match_guestteam_id' => 2,
+                        'match_status' => '',
+                    ],
+                ],
+            ])
+            ->assertRedirect(route('admin.matches', ['tab' => 'auto', 'league_id' => 26]))
+            ->assertSessionHas('admin_message', '1 Spiel hinzugefügt.')
+            ->assertSessionMissing('admin_matches_auto');
     }
 }
