@@ -63,8 +63,16 @@ class LeagueVisibilityTest extends TestCase
     }
 
     #[Test]
-    public function admin_dashboard_shows_invisible_leagues_with_hint(): void
+    public function admin_dashboard_shows_invisible_and_empty_leagues_faded_without_title_hint(): void
     {
+        DB::table('ffb_league')->insert([
+            'league_id' => 5,
+            'league_title' => 'Empty Current',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_symbol' => '',
+        ]);
+
         $this->mock(FfbAdminAccess::class, function ($mock) {
             $mock->shouldReceive('isAdmin')->andReturn(true);
         });
@@ -77,11 +85,42 @@ class LeagueVisibilityTest extends TestCase
             ->keyBy('league_id');
 
         $this->assertSame('Visible Current', $current[1]['league_title']);
-        $this->assertSame('Hidden Current (unsichtbar)', $current[2]['league_title']);
+        $this->assertFalse($current[1]['is_faded']);
+        $this->assertTrue($current[1]['has_matchrounds']);
+
+        $this->assertSame('Hidden Current', $current[2]['league_title']);
         $this->assertSame(0, $current[2]['league_visible']);
+        $this->assertTrue($current[2]['is_faded']);
+
+        $this->assertSame('Empty Current', $current[5]['league_title']);
+        $this->assertFalse($current[5]['has_matchrounds']);
+        $this->assertTrue($current[5]['is_faded']);
 
         $this->assertSame('Visible Archive', $archive[3]['league_title']);
-        $this->assertSame('Hidden Archive (unsichtbar)', $archive[4]['league_title']);
+        $this->assertSame('Hidden Archive', $archive[4]['league_title']);
+        $this->assertTrue($archive[4]['is_faded']);
+    }
+
+    #[Test]
+    public function non_admin_dashboard_hides_empty_leagues(): void
+    {
+        DB::table('ffb_league')->insert([
+            'league_id' => 5,
+            'league_title' => 'Empty Current',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_symbol' => '',
+        ]);
+
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(false);
+        });
+
+        $titles = collect(app(DashboardService::class)->payload(10, 1, false)['leagues'])
+            ->pluck('league_title')
+            ->all();
+
+        $this->assertSame(['Visible Current'], $titles);
     }
 
     #[Test]
@@ -119,7 +158,7 @@ class LeagueVisibilityTest extends TestCase
     }
 
     #[Test]
-    public function admin_can_select_invisible_league_with_hinted_title(): void
+    public function admin_can_select_invisible_league(): void
     {
         $this->mock(FfbAdminAccess::class, function ($mock) {
             $mock->shouldReceive('isAdmin')->andReturn(true);
@@ -129,7 +168,7 @@ class LeagueVisibilityTest extends TestCase
 
         $this->assertTrue($result['ok']);
         $this->assertSame(2, $result['selected_league_id']);
-        $this->assertSame('Hidden Current (unsichtbar)', $result['league_title']);
+        $this->assertSame('Hidden Current', $result['league_title']);
         $this->assertSame(2, (int) DB::table('web_user_details')->where('user_id', 10)->value('user_details_ffb_selected_league'));
     }
 
@@ -203,7 +242,7 @@ class LeagueVisibilityTest extends TestCase
         $adminTitles = collect($admin['data']['participations'])->pluck('league_title')->all();
 
         $this->assertSame(['Visible Current'], $nonAdminTitles);
-        $this->assertSame(['Hidden Current (unsichtbar)', 'Visible Current'], $adminTitles);
+        $this->assertSame(['Hidden Current', 'Visible Current'], $adminTitles);
     }
 
     private function createVisibilityExtraTables(): void
