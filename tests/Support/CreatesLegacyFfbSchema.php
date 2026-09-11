@@ -47,7 +47,6 @@ trait CreatesLegacyFfbSchema
             $table->timestamp('matchround_startdate')->nullable();
             $table->timestamp('matchround_enddate')->nullable();
             $table->tinyInteger('matchround_status')->default(1);
-            $table->integer('matchround_credits')->default(100);
         });
 
         Schema::create('ffb_matchround_options', function (Blueprint $table) {

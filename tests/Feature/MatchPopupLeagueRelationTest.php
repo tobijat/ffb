@@ -34,7 +34,6 @@ class MatchPopupLeagueRelationTest extends TestCase
             'matchround_startdate' => now()->subDay()->toDateTimeString(),
             'matchround_enddate' => now()->addDay()->toDateTimeString(),
             'matchround_status' => 1,
-            'matchround_credits' => 100,
         ]);
 
         DB::table('ffb_team')->insert([
