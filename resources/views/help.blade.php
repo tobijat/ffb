@@ -13,11 +13,11 @@
         $user = $data['user'];
         $nav = $data['navigation'];
         $o = $data['options'];
-        $wc = $data['wc_points'];
+        $lc = $data['lc_points'];
         $usingDefaults = $data['using_defaults'];
         $pointsMode = $o['options_league_pointsmode'] ?? 'new';
-        $wcBestCount = max(0, count($wc) - 1);
-        $wcRest = $wc[$wcBestCount] ?? 1;
+        $lcBestCount = max(0, count($lc) - 1);
+        $lcRest = $lc[$lcBestCount] ?? 1;
     @endphp
 
     <header class="dash-top">
@@ -94,17 +94,17 @@
                         <em class="help-note">Hinweis: Die hier angegebenen Werte sind die Standard-Einstellung. Diese können jedoch je nach Liga anders sein. Um die
                         Werte für deine Liga zu sehen, musst du nach dem Einloggen auf der Startseite eine Liga auswählen und dann diese Seite aufrufen.</em>
                     @endif
-                    Die <b>Plazierung</b> in der Rangliste errechnet sich aus den <b>erreichten WeltCup-Punkten</b>. WeltCup-Punkte
+                    Die <b>Plazierung</b> in der Rangliste errechnet sich aus den <b>erreichten LigaCup-Punkten</b>. LigaCup-Punkte
                     bekommst du immer, wenn dein Team in einer <b>Spielrunde</b> unter den <b>besten Mannschaften</b> ist.<br>
-                    Die <b>{{ $wcBestCount }} besten Mannschaften</b> in jeder Runde bekommen folgende Anzahl an <b>WeltCup-Punkten</b>:
+                    Die <b>{{ $lcBestCount }} besten Mannschaften</b> in jeder Runde bekommen folgende Anzahl an <b>LigaCup-Punkten</b>:
                     <ul>
-                        @for ($i = 0; $i < $wcBestCount; $i++)
-                            <li>{{ $i + 1 }}. Platz: <b>{{ $wc[$i] }}</b> Punkte</li>
+                        @for ($i = 0; $i < $lcBestCount; $i++)
+                            <li>{{ $i + 1 }}. Platz: <b>{{ $lc[$i] }}</b> Punkte</li>
                         @endfor
                     </ul>
-                    <b>Alle restlichen</b> Spieler bekommen <b>{{ $wcRest }}</b> Punkt(e).<br>
-                    Dein Ziel ist es also während einer Liga <b>so oft wie möglich</b> unter die <b>besten {{ $wcBestCount }} Mannschaften</b>
-                    zu kommen, um am Ende der Saison die meisten Weltcup-Punkte gesammelt zu haben. Die <b>aktuelle Rangliste</b> kannst du immer
+                    <b>Alle restlichen</b> Spieler bekommen <b>{{ $lcRest }}</b> Punkt(e).<br>
+                    Dein Ziel ist es also während einer Liga <b>so oft wie möglich</b> unter die <b>besten {{ $lcBestCount }} Mannschaften</b>
+                    zu kommen, um am Ende der Saison die meisten LigaCup-Punkte gesammelt zu haben. Die <b>aktuelle Rangliste</b> kannst du immer
                     unter <b>"Rangliste"</b> anschauen.
                 </div>
             </section>

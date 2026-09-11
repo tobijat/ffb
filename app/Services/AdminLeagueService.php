@@ -293,7 +293,7 @@ class AdminLeagueService
         }
 
         $rank = (string) ($form['options_league_rankmode'] ?? '');
-        if (! in_array($rank, ['wc', 'points'], true)) {
+        if (! in_array($rank, ['lc', 'points'], true)) {
             $errors[] = 'Ungültiger Ranglisten-Modus.';
         }
 
@@ -302,7 +302,7 @@ class AdminLeagueService
             $errors[] = 'Ungültiger Preis-Modus.';
         }
 
-        foreach (['options_league_pointsmode', 'options_league_wcpoints'] as $key) {
+        foreach (['options_league_pointsmode', 'options_league_lcpoints'] as $key) {
             if (! in_array((string) ($form[$key] ?? ''), ['new', 'old'], true)) {
                 $errors[] = 'Ungültiger Punkte-Modus.';
                 break;
@@ -338,10 +338,10 @@ class AdminLeagueService
     private function defaultOptionsForm(): array
     {
         return [
-            'options_league_rankmode' => 'wc',
+            'options_league_rankmode' => 'lc',
             'options_league_pricemode' => 'dynamic',
             'options_league_pointsmode' => 'new',
-            'options_league_wcpoints' => 'new',
+            'options_league_lcpoints' => 'new',
             'options_league_remind_hours_before' => 0,
             'options_score_minutes' => 60,
             'options_score_minutes_treshold' => 30,

@@ -142,14 +142,14 @@ class LeagueVisibilityTest extends TestCase
                 'userscore_user_id' => 20,
                 'userscore_league_id' => 1,
                 'userscore_total' => 10,
-                'userscore_wc_points' => 5,
+                'userscore_lc_points' => 5,
             ],
             [
                 'userscore_id' => 2,
                 'userscore_user_id' => 20,
                 'userscore_league_id' => 2,
                 'userscore_total' => 8,
-                'userscore_wc_points' => 3,
+                'userscore_lc_points' => 3,
             ],
         ]);
 
@@ -242,7 +242,7 @@ class LeagueVisibilityTest extends TestCase
             $table->integer('userscore_user_id');
             $table->integer('userscore_league_id');
             $table->integer('userscore_total')->default(0);
-            $table->integer('userscore_wc_points')->default(0);
+            $table->integer('userscore_lc_points')->default(0);
         });
 
         Schema::create('ffb_news', function (Blueprint $table) {
@@ -274,7 +274,7 @@ class LeagueVisibilityTest extends TestCase
         });
 
         Schema::table('ffb_league_options', function (Blueprint $table) {
-            $table->string('options_league_rankmode')->default('wc');
+            $table->string('options_league_rankmode')->default('lc');
         });
     }
 

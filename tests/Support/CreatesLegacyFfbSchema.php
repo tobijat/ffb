@@ -154,7 +154,7 @@ trait CreatesLegacyFfbSchema
             $table->integer('userteam_matchround_id')->nullable();
             $table->double('userteam_price')->default(0);
             $table->double('userteam_score')->default(0);
-            $table->double('userteam_wc_points')->default(0);
+            $table->double('userteam_lc_points')->default(0);
             $table->string('userteam_date')->nullable();
         });
 

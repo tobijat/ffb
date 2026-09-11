@@ -129,10 +129,10 @@ class AdminLeagueTest extends TestCase
     private function defaultOptions(): array
     {
         return [
-            'options_league_rankmode' => 'wc',
+            'options_league_rankmode' => 'lc',
             'options_league_pricemode' => 'dynamic',
             'options_league_pointsmode' => 'new',
-            'options_league_wcpoints' => 'new',
+            'options_league_lcpoints' => 'new',
             'options_league_remind_hours_before' => 0,
             'options_score_minutes' => 60,
             'options_score_minutes_treshold' => 30,

@@ -183,8 +183,8 @@
             pager += '</div>';
         }
 
-        const scoreHeader = displayMode === 'wc'
-            ? '<th class="col-score"><b>WeltCup</b> ' + sortLink('wc', 'asc', 'Aufsteigend') + sortLink('wc', 'desc', 'Absteigend') + '</th>'
+        const scoreHeader = displayMode === 'lc'
+            ? '<th class="col-score"><b>LigaCup</b> ' + sortLink('lc', 'asc', 'Aufsteigend') + sortLink('lc', 'desc', 'Absteigend') + '</th>'
             : '<th class="col-score"><b>Punkte</b> ' + sortLink('po', 'asc', 'Aufsteigend') + sortLink('po', 'desc', 'Absteigend') + '</th>';
 
         let html = pager;
@@ -199,7 +199,7 @@
 
         for (let i = pageStart; i < end; i++) {
             const row = entries[i];
-            const pointsSum = displayMode === 'wc' ? Number(row.user_wc_points) : Number(row.user_score);
+            const pointsSum = displayMode === 'lc' ? Number(row.user_lc_points) : Number(row.user_score);
             let cls = i % 2 === 0 ? 'row-even' : 'row-odd';
             if (Number(row.user_id) === userId) {
                 cls += ' is-me';
@@ -211,9 +211,9 @@
                 }
             }
 
-            const scoreCell = displayMode === 'wc'
-                ? '<span class="subscore">(Punkte: ' + row.user_score + ')</span><b>' + row.user_wc_points + '</b>'
-                : '<span class="subscore">(WeltCup: ' + row.user_wc_points + ')</span><b>' + row.user_score + '</b>';
+            const scoreCell = displayMode === 'lc'
+                ? '<span class="subscore">(Punkte: ' + row.user_score + ')</span><b>' + row.user_lc_points + '</b>'
+                : '<span class="subscore">(LigaCup: ' + row.user_lc_points + ')</span><b>' + row.user_score + '</b>';
 
             html += '<tr class="' + cls.trim() + '">';
             html += '<td class="col-rank">' + row.user_rank + '</td>';
@@ -251,7 +251,7 @@
                 data = await fetchJson('userscore' + qs);
             }
             entries = data.entries || [];
-            displayMode = data.display_mode === 'wc' ? 'wc' : 'points';
+            displayMode = data.display_mode === 'lc' ? 'lc' : 'points';
             pageStart = 0;
             renderTable();
         } catch (err) {
@@ -301,8 +301,8 @@
         if (sortBtn) {
             event.preventDefault();
             sortFlag = sortBtn.getAttribute('data-sort') || '';
-            // Map UI wc/po to server flags (legacy: default path for score cols)
-            if (sortFlag === 'wc' || sortFlag === 'po') {
+            // Map UI lc/po to server flags (legacy: default path for score cols)
+            if (sortFlag === 'lc' || sortFlag === 'po') {
                 sortFlag = '';
             }
             sortDir = sortBtn.getAttribute('data-dir') || 'desc';

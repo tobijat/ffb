@@ -15,9 +15,9 @@ class UserscoreServiceTest extends TestCase
         $method->setAccessible(true);
 
         $entries = [
-            ['user_nickname' => 'b', 'user_score' => 10, 'user_wc_points' => 5],
-            ['user_nickname' => 'a', 'user_score' => 10, 'user_wc_points' => 5],
-            ['user_nickname' => 'c', 'user_score' => 8, 'user_wc_points' => 4],
+            ['user_nickname' => 'b', 'user_score' => 10, 'user_lc_points' => 5],
+            ['user_nickname' => 'a', 'user_score' => 10, 'user_lc_points' => 5],
+            ['user_nickname' => 'c', 'user_score' => 8, 'user_lc_points' => 4],
         ];
 
         $ranked = $method->invoke($service, $entries, 'points');

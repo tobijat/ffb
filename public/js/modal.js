@@ -197,7 +197,7 @@
         if (parts.length) {
             table += '<div class="ffb-profile-section"><h3>Teilnahmen</h3>';
             table += '<table class="ffb-profile-table"><thead><tr>';
-            table += '<th><b>Liga</b></th><th><b>von – bis</b></th><th><b>Punkte (WC)</b></th><th><b>Platz</b></th>';
+            table += '<th><b>Liga</b></th><th><b>von – bis</b></th><th><b>Punkte (LC)</b></th><th><b>Platz</b></th>';
             table += '</tr></thead><tbody>';
 
             for (let i = 0; i < parts.length; i++) {
@@ -213,10 +213,10 @@
                 }
 
                 let scoreCell;
-                if (p.score_rm === 'wc') {
-                    scoreCell = escapeHtml(p.score_points) + ' (<b>' + escapeHtml(p.score_wc) + '</b>)';
+                if (p.score_rm === 'lc') {
+                    scoreCell = escapeHtml(p.score_points) + ' (<b>' + escapeHtml(p.score_lc) + '</b>)';
                 } else {
-                    scoreCell = '<b>' + escapeHtml(p.score_points) + '</b> (' + escapeHtml(p.score_wc) + ')';
+                    scoreCell = '<b>' + escapeHtml(p.score_points) + '</b> (' + escapeHtml(p.score_lc) + ')';
                 }
 
                 let liga = '';

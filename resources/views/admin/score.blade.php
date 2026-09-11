@@ -54,7 +54,7 @@
         </div>
         <p class="hint">
             Summiert die Spieler-Punkte der Aufstellung je Userteam und schreibt
-            <code>userteam_score</code>. Anschließend werden WC-Punkte für beendete
+            <code>userteam_score</code>. Anschließend werden LC-Punkte für beendete
             Spielrunden neu vergeben.
         </p>
         <form class="admin-form" method="post" action="{{ route('admin.score.setUserteamScores') }}" accept-charset="UTF-8">
@@ -73,7 +73,7 @@
             <h2 id="admin-score-user-title">User Score</h2>
         </div>
         <p class="hint">
-            Summiert die Userteam-Scores und WC-Punkte je User über alle Spielrunden der Liga
+            Summiert die Userteam-Scores und LC-Punkte je User über alle Spielrunden der Liga
             und schreibt <code>ffb_userscore</code>.
         </p>
         <form class="admin-form" method="post" action="{{ route('admin.score.setUserScores') }}" accept-charset="UTF-8">

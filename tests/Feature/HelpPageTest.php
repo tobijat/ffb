@@ -20,7 +20,7 @@ class HelpPageTest extends TestCase
                     'options' => [
                         'options_league_id' => 0,
                         'options_league_pointsmode' => 'new',
-                        'options_league_wcpoints' => '10,8,6,4,2,1',
+                        'options_league_lcpoints' => '10,8,6,4,2,1',
                         'options_lineup_max_players' => 11,
                         'options_lineup_max_credits' => 50,
                         'options_lineup_max_players_team' => 3,
@@ -57,7 +57,7 @@ class HelpPageTest extends TestCase
                         'options_score_penaltyshootout_hit' => 0,
                         'options_score_penaltyshootout_lost' => 0,
                     ],
-                    'wc_points' => [10, 8, 6, 4, 2, 1],
+                    'lc_points' => [10, 8, 6, 4, 2, 1],
                     'navigation' => [
                         ['symbol' => 'nav_help.png', 'name' => 'Regeln', 'link' => '/help', 'style' => 'big'],
                     ],
@@ -89,7 +89,7 @@ class HelpPageTest extends TestCase
                     'options' => [
                         'options_league_id' => 26,
                         'options_league_pointsmode' => 'new',
-                        'options_league_wcpoints' => '10,8,6,4,2,1',
+                        'options_league_lcpoints' => '10,8,6,4,2,1',
                         'options_lineup_max_players' => 11,
                         'options_lineup_max_credits' => 50,
                         'options_lineup_max_players_team' => 3,
@@ -126,7 +126,7 @@ class HelpPageTest extends TestCase
                         'options_score_penaltyshootout_hit' => 0,
                         'options_score_penaltyshootout_lost' => 0,
                     ],
-                    'wc_points' => [10, 8, 6, 4, 2, 1],
+                    'lc_points' => [10, 8, 6, 4, 2, 1],
                     'navigation' => [
                         ['symbol' => 'nav_help.png', 'name' => 'Regeln', 'link' => '/help', 'style' => 'big'],
                     ],

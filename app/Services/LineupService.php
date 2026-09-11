@@ -384,7 +384,7 @@ class LineupService
                 'userteam_matchround_id' => (int) $userteam->userteam_matchround_id,
                 'userteam_score' => (int) $userteam->userteam_score,
                 'userteam_price' => (float) $userteam->userteam_price,
-                'userteam_wc_points' => (int) $userteam->userteam_wc_points,
+                'userteam_lc_points' => (int) $userteam->userteam_lc_points,
                 'userteam_username' => (string) $user->user_nickname,
             ],
             'players' => $players,
@@ -470,7 +470,7 @@ class LineupService
 
             $userteam->userteam_date = now()->format('Y-m-d H:i:s');
             $userteam->userteam_score = 0;
-            $userteam->userteam_wc_points = 0;
+            $userteam->userteam_lc_points = 0;
             $userteam->userteam_price = $sumPrice;
             $userteam->save();
             $userteam->syncSlots($ids);
@@ -483,7 +483,7 @@ class LineupService
                 ],
                 [
                     'userscore_total' => 0,
-                    'userscore_wc_points' => 0,
+                    'userscore_lc_points' => 0,
                 ]
             );
         });

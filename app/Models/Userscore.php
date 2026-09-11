@@ -17,7 +17,7 @@ class Userscore extends Model
         'userscore_user_id',
         'userscore_league_id',
         'userscore_total',
-        'userscore_wc_points',
+        'userscore_lc_points',
     ];
 
     public function user(): BelongsTo
