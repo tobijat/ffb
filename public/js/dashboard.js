@@ -45,7 +45,8 @@
             const leagueId = Number(btn.dataset.leagueId);
             try {
                 await api('POST', 'league/select', { league_id: leagueId });
-                reload({ newsPage: 1, archive });
+                // After picking a league (including from archive), return to current leagues.
+                reload({ newsPage: 1, archive: false });
             } catch (err) {
                 alert(err.message || 'Liga konnte nicht gewählt werden.');
             }
