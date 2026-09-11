@@ -16,7 +16,6 @@ trait CreatesLegacyFfbSchema
             $table->string('league_title')->default('');
             $table->tinyInteger('league_visible')->default(1);
             $table->tinyInteger('league_archive')->default(0);
-            $table->tinyInteger('league_status')->default(1);
             $table->string('league_symbol')->default('');
         });
 

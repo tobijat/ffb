@@ -72,7 +72,7 @@ class ProfilePopupService
                     'favourite_team' => $favTeam,
                     'own_team' => $ownTeam,
                 ],
-                'participations' => $this->participations($profileUserId),
+                'participations' => $this->participations($profileUserId, $viewerId),
             ],
         ];
     }
@@ -101,12 +101,18 @@ class ProfilePopupService
     /**
      * @return list<array<string, mixed>>
      */
-    private function participations(int $userId): array
+    private function participations(int $profileUserId, int $viewerId): array
     {
+        $viewerIsAdmin = app(FfbAdminAccess::class)->isAdmin($viewerId);
+
         $scores = Userscore::query()
             ->with('league')
-            ->where('userscore_user_id', $userId)
-            ->whereHas('league', fn ($q) => $q->where('league_status', 1))
+            ->where('userscore_user_id', $profileUserId)
+            ->whereHas('league', function ($q) use ($viewerIsAdmin) {
+                if (! $viewerIsAdmin) {
+                    $q->where('league_visible', 1);
+                }
+            })
             ->orderByDesc('userscore_league_id')
             ->get();
 
@@ -127,18 +133,24 @@ class ProfilePopupService
 
             $archive = (int) ($league->league_archive ?? 0) === 1;
             [$start, $end] = $this->gameDateRange($leagueId, $archive);
+            $visible = (int) (bool) $league->league_visible;
+            $title = (string) $league->league_title;
+            if ($viewerIsAdmin && ! $visible) {
+                $title .= ' (unsichtbar)';
+            }
 
             $out[] = [
                 'league_id' => $leagueId,
-                'league_title' => (string) $league->league_title,
+                'league_title' => $title,
                 'league_symbol' => $league->league_symbol ?: null,
                 'league_archive' => $archive,
+                'league_visible' => $visible,
                 'score_rm' => $rankMode,
                 'score_wc' => (int) $score->userscore_wc_points,
                 'score_points' => (int) $score->userscore_total,
                 'score_start' => $start,
                 'score_end' => $end,
-                'user_rank' => $this->calculateUserRank($userId, $leagueId, $rankMode),
+                'user_rank' => $this->calculateUserRank($profileUserId, $leagueId, $rankMode),
             ];
         }
 

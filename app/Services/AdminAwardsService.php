@@ -496,7 +496,6 @@ class AdminAwardsService
         $aimCount = (int) $define->user_award_defines_aim_count;
         $aim = (int) $define->user_award_defines_aim;
         $leagues = League::query()
-            ->where('league_status', 1)
             ->where('league_archive', 1)
             ->get();
 
@@ -521,9 +520,7 @@ class AdminAwardsService
 
         $userteams = Userteam::query()
             ->join('ffb_matchround', 'ffb_matchround.matchround_id', '=', 'ffb_userteam.userteam_matchround_id')
-            ->join('ffb_league', 'ffb_league.league_id', '=', 'ffb_matchround.matchround_league_id')
             ->where('ffb_matchround.matchround_enddate', '<', $now)
-            ->where('ffb_league.league_status', 1)
             ->where('ffb_userteam.userteam_user_id', $userId)
             ->get(['ffb_userteam.userteam_id', 'ffb_userteam.userteam_matchround_id']);
 

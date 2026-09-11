@@ -59,7 +59,6 @@ class StartPageService
         return League::query()
             ->where('league_visible', 1)
             ->where('league_archive', 0)
-            ->where('league_status', 1)
             ->orderBy('league_title')
             ->get(['league_id', 'league_title'])
             ->map(fn (League $league) => [

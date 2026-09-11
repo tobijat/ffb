@@ -69,11 +69,9 @@ class AdminCenterTest extends TestCase
                         'league_title' => 'Testliga',
                         'league_symbol' => 'symbol_game_na.png',
                         'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
-                        'league_status' => 1,
                         'league_archive' => 0,
                         'league_visible' => 1,
                         'flags' => [
-                            ['label' => 'aktiv', 'tone' => 'ok'],
                             ['label' => 'aktuell', 'tone' => 'ok'],
                             ['label' => 'sichtbar', 'tone' => 'ok'],
                         ],
@@ -83,11 +81,9 @@ class AdminCenterTest extends TestCase
                         'league_title' => 'Alte Liga',
                         'league_symbol' => 'symbol_game_na.png',
                         'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
-                        'league_status' => 0,
                         'league_archive' => 1,
                         'league_visible' => 0,
                         'flags' => [
-                            ['label' => 'inaktiv', 'tone' => 'off'],
                             ['label' => 'archiviert', 'tone' => 'warn'],
                             ['label' => 'unsichtbar', 'tone' => 'off'],
                         ],
@@ -105,7 +101,7 @@ class AdminCenterTest extends TestCase
             ->assertSee('News', false)
             ->assertSee('Testliga', false)
             ->assertSee('Alte Liga', false)
-            ->assertSee('aktiv', false)
+            ->assertSee('aktuell', false)
             ->assertSee('archiviert', false)
             ->assertSee('unsichtbar', false)
             ->assertSee('href="/admin/matchrounds"', false)

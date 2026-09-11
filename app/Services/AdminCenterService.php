@@ -218,7 +218,6 @@ class AdminCenterService
             ->orderBy('league_title')
             ->get()
             ->map(function (League $league) {
-                $status = (int) (bool) $league->league_status;
                 $archive = (int) (bool) $league->league_archive;
                 $visible = (int) (bool) $league->league_visible;
 
@@ -227,14 +226,9 @@ class AdminCenterService
                     'league_title' => (string) $league->league_title,
                     'league_symbol' => (string) ($league->league_symbol ?: 'symbol_game_na.png'),
                     'symbol_url' => '/images/ffb/symbols/'.($league->league_symbol ?: 'symbol_game_na.png'),
-                    'league_status' => $status,
                     'league_archive' => $archive,
                     'league_visible' => $visible,
                     'flags' => [
-                        [
-                            'label' => $status ? 'aktiv' : 'inaktiv',
-                            'tone' => $status ? 'ok' : 'off',
-                        ],
                         [
                             'label' => $archive ? 'archiviert' : 'aktuell',
                             'tone' => $archive ? 'warn' : 'ok',
