@@ -86,28 +86,33 @@
             <fieldset class="admin-fieldset">
                 <legend>Spielmodi</legend>
                 <div class="admin-field">
-                    <label for="options_league_rankmode">Rangliste</label>
+                    <label for="options_league_rankmode">Modus für Rangliste</label>
                     <select id="options_league_rankmode" name="options_league_rankmode">
                         <option value="lc" @selected($form['options_league_rankmode'] === 'lc')>LC</option>
                         <option value="points" @selected($form['options_league_rankmode'] === 'points')>Punkte</option>
                     </select>
                 </div>
                 <div class="admin-field">
-                    <label for="options_league_pricemode">Preise</label>
+                    <label for="options_league_pricemode">Preisberechnung</label>
                     <select id="options_league_pricemode" name="options_league_pricemode">
                         <option value="dynamic" @selected($form['options_league_pricemode'] === 'dynamic')>dynamisch</option>
                         <option value="static" @selected($form['options_league_pricemode'] === 'static')>statisch</option>
                     </select>
                 </div>
                 <div class="admin-field">
-                    <label for="options_league_lcpoints">LC-Punkte</label>
-                    <select id="options_league_lcpoints" name="options_league_lcpoints">
-                        <option value="new" @selected($form['options_league_lcpoints'] === 'new')>neu</option>
-                        <option value="old" @selected($form['options_league_lcpoints'] === 'old')>alt</option>
-                    </select>
+                    <label for="options_league_lcpoints">LigaCup Punkteverteilung</label>
+                    <input
+                        id="options_league_lcpoints"
+                        type="text"
+                        name="options_league_lcpoints"
+                        value="{{ $form['options_league_lcpoints'] }}"
+                        maxlength="255"
+                        placeholder="z.B. 12,10,8,7,6,5,4,3,2,1"
+                        required
+                    >
                 </div>
                 <div class="admin-field">
-                    <label for="options_league_remind_hours_before">Erinnerung (h)</label>
+                    <label for="options_league_remind_hours_before">Aufstellungserinnerung (h)</label>
                     <input id="options_league_remind_hours_before" type="number" name="options_league_remind_hours_before" value="{{ $form['options_league_remind_hours_before'] }}">
                 </div>
             </fieldset>
@@ -116,21 +121,30 @@
                 <legend>Aufstellungslimits</legend>
                 <div class="admin-option-grid">
                     @foreach ([
-                        'options_lineup_max_players' => 'Max. Spieler',
-                        'options_lineup_max_credits' => 'Max. Credits',
-                        'options_lineup_max_players_team' => 'Max. pro Team',
-                        'options_lineup_min_g' => 'Min. TW',
-                        'options_lineup_max_g' => 'Max. TW',
-                        'options_lineup_min_d' => 'Min. AB',
-                        'options_lineup_max_d' => 'Max. AB',
-                        'options_lineup_min_m' => 'Min. MF',
-                        'options_lineup_max_m' => 'Max. MF',
-                        'options_lineup_min_s' => 'Min. ST',
-                        'options_lineup_max_s' => 'Max. ST',
+                        'options_lineup_max_players' => 'Max. Spieler / Aufstellung',
+                        'options_lineup_max_credits' => 'Max. Credits / Aufstellung',
+                        'options_lineup_max_players_team' => 'Max. Spieler vom selben Team',
                     ] as $name => $label)
                         <div class="admin-option-field">
                             <label for="{{ $name }}">{{ $label }}</label>
                             <input id="{{ $name }}" type="number" name="{{ $name }}" value="{{ $form[$name] }}">
+                        </div>
+                    @endforeach
+                </div>
+                <div class="admin-lineup-pos-grid">
+                    @foreach ([
+                        ['options_lineup_min_g', 'Min. Goalie', 'options_lineup_max_g', 'Max. Goalie'],
+                        ['options_lineup_min_d', 'Min. Abwehr', 'options_lineup_max_d', 'Max. Abwehr'],
+                        ['options_lineup_min_m', 'Min. Mittelfeld', 'options_lineup_max_m', 'Max. Mittelfeld'],
+                        ['options_lineup_min_s', 'Min. Sturm', 'options_lineup_max_s', 'Max. Sturm'],
+                    ] as [$minName, $minLabel, $maxName, $maxLabel])
+                        <div class="admin-option-field">
+                            <label for="{{ $minName }}">{{ $minLabel }}</label>
+                            <input id="{{ $minName }}" type="number" name="{{ $minName }}" value="{{ $form[$minName] }}">
+                        </div>
+                        <div class="admin-option-field">
+                            <label for="{{ $maxName }}">{{ $maxLabel }}</label>
+                            <input id="{{ $maxName }}" type="number" name="{{ $maxName }}" value="{{ $form[$maxName] }}">
                         </div>
                     @endforeach
                 </div>
@@ -140,11 +154,11 @@
                 <legend>Punktewertung</legend>
                 <div class="admin-option-grid">
                     @foreach ([
-                        'options_score_minutes' => 'Minuten',
-                        'options_score_minutes_treshold' => 'Minuten-Schwelle',
-                        'options_score_minutes_gt' => 'Min. > Schwelle',
-                        'options_score_minutes_lt' => 'Min. < Schwelle',
-                        'options_score_minutes_lt30' => 'Min. < 30',
+                        'options_score_minutes_threshold_upper' => 'Einsatzminuten: obere Schwelle',
+                        'options_score_minutes_threshold_lower' => 'Einsatzminuten: untere Schwelle',
+                        'options_score_minutes_high' => 'Einsatz-Punkte: ab oberer Schwelle',
+                        'options_score_minutes_middle' => 'Einsatz-Punkte: zwischen Schwellen',
+                        'options_score_minutes_low' => 'Einsatz-Punkte: bis untere Schwelle',
                         'options_score_goals_g' => 'Tor TW',
                         'options_score_goals_d' => 'Tor AB',
                         'options_score_goals_m' => 'Tor MF',

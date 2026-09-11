@@ -15,11 +15,11 @@ class LeagueOptions extends Model
 
     protected $fillable = [
         'options_league_id',
-        'options_score_minutes',
-        'options_score_minutes_treshold',
-        'options_score_minutes_gt',
-        'options_score_minutes_lt',
-        'options_score_minutes_lt30',
+        'options_score_minutes_threshold_upper',
+        'options_score_minutes_threshold_lower',
+        'options_score_minutes_high',
+        'options_score_minutes_middle',
+        'options_score_minutes_low',
         'options_score_goals_g',
         'options_score_goals_d',
         'options_score_goals_m',

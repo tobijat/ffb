@@ -39,7 +39,7 @@ class AdminLeaguePointsModeTest extends TestCase
             'options_league_rankmode' => 'lc',
             'options_league_pricemode' => 'dynamic',
             'options_league_pointsmode' => 'old',
-            'options_league_lcpoints' => 'new',
+            'options_league_lcpoints' => '12,10,8,7,6,5,4,3,2,1',
         ] + $this->numericOptionDefaults());
 
         $this->assertTrue($result['ok']);
@@ -65,7 +65,7 @@ class AdminLeaguePointsModeTest extends TestCase
             'options_league_rankmode' => 'lc',
             'options_league_pricemode' => 'dynamic',
             'options_league_pointsmode' => 'old',
-            'options_league_lcpoints' => 'new',
+            'options_league_lcpoints' => '10,8,6,4,2,1',
         ] + $this->numericOptionDefaults());
 
         $result = $this->service()->update((int) $league->league_id, [
@@ -75,7 +75,7 @@ class AdminLeaguePointsModeTest extends TestCase
             'options_league_rankmode' => 'points',
             'options_league_pricemode' => 'static',
             'options_league_pointsmode' => 'new',
-            'options_league_lcpoints' => 'old',
+            'options_league_lcpoints' => '12,10,8,7,6,5,4,3,2,1',
         ] + $this->numericOptionDefaults());
 
         $this->assertTrue($result['ok']);
@@ -85,7 +85,42 @@ class AdminLeaguePointsModeTest extends TestCase
         $this->assertSame('old', (string) $options->options_league_pointsmode);
         $this->assertSame('points', (string) $options->options_league_rankmode);
         $this->assertSame('static', (string) $options->options_league_pricemode);
-        $this->assertSame('old', (string) $options->options_league_lcpoints);
+        $this->assertSame('12,10,8,7,6,5,4,3,2,1', (string) $options->options_league_lcpoints);
+    }
+
+    #[Test]
+    public function create_rejects_invalid_lc_points_list(): void
+    {
+        $result = $this->service()->create([
+            'league_title' => 'Neue Liga',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'options_league_rankmode' => 'lc',
+            'options_league_pricemode' => 'dynamic',
+            'options_league_lcpoints' => '12,ten,8',
+        ] + $this->numericOptionDefaults());
+
+        $this->assertFalse($result['ok']);
+        $this->assertNotEmpty($result['errors'] ?? []);
+    }
+
+    #[Test]
+    public function create_normalizes_spaced_lc_points_list(): void
+    {
+        $result = $this->service()->create([
+            'league_title' => 'Neue Liga',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'options_league_rankmode' => 'lc',
+            'options_league_pricemode' => 'dynamic',
+            'options_league_lcpoints' => '12, 10, 8, 7',
+        ] + $this->numericOptionDefaults());
+
+        $this->assertTrue($result['ok']);
+        $this->assertSame(
+            '12,10,8,7',
+            (string) LeagueOptions::query()->value('options_league_lcpoints')
+        );
     }
 
     private function service(): AdminLeagueService
@@ -114,7 +149,7 @@ class AdminLeaguePointsModeTest extends TestCase
             $table->string('options_league_rankmode')->default('lc');
             $table->string('options_league_pricemode')->default('dynamic');
             $table->string('options_league_pointsmode')->default('new');
-            $table->string('options_league_lcpoints')->default('new');
+            $table->string('options_league_lcpoints')->default('12,10,8,7,6,5,4,3,2,1');
 
             foreach (array_merge(
                 ['options_league_remind_hours_before' => 0],
@@ -132,11 +167,11 @@ class AdminLeaguePointsModeTest extends TestCase
     {
         return [
             'options_league_remind_hours_before' => 0,
-            'options_score_minutes' => 60,
-            'options_score_minutes_treshold' => 30,
-            'options_score_minutes_gt' => 3,
-            'options_score_minutes_lt' => 2,
-            'options_score_minutes_lt30' => 1,
+            'options_score_minutes_threshold_upper' => 60,
+            'options_score_minutes_threshold_lower' => 30,
+            'options_score_minutes_high' => 3,
+            'options_score_minutes_middle' => 2,
+            'options_score_minutes_low' => 1,
             'options_score_goals_g' => 6,
             'options_score_goals_d' => 5,
             'options_score_goals_m' => 4,

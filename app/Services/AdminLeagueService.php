@@ -284,6 +284,10 @@ class AdminLeagueService
             }
         }
 
+        $form['options_league_lcpoints'] = $this->normalizeLcPointsList(
+            (string) ($form['options_league_lcpoints'] ?? '')
+        );
+
         return $form;
     }
 
@@ -309,8 +313,8 @@ class AdminLeagueService
             $errors[] = 'Ungültiger Preis-Modus.';
         }
 
-        if (! in_array((string) ($form['options_league_lcpoints'] ?? ''), ['new', 'old'], true)) {
-            $errors[] = 'Ungültiger Punkte-Modus.';
+        if (! $this->isValidLcPointsList((string) ($form['options_league_lcpoints'] ?? ''))) {
+            $errors[] = 'LC-Punkte müssen eine kommagetrennte Liste von Zahlen sein (z.B. 12,10,8,7,6,5,4,3,2,1).';
         }
 
         foreach ($this->optionKeys() as $key) {
@@ -345,13 +349,13 @@ class AdminLeagueService
             'options_league_rankmode' => 'lc',
             'options_league_pricemode' => 'dynamic',
             'options_league_pointsmode' => 'new',
-            'options_league_lcpoints' => 'new',
+            'options_league_lcpoints' => '12,10,8,7,6,5,4,3,2,1',
             'options_league_remind_hours_before' => 0,
-            'options_score_minutes' => 60,
-            'options_score_minutes_treshold' => 30,
-            'options_score_minutes_gt' => 3,
-            'options_score_minutes_lt' => 2,
-            'options_score_minutes_lt30' => 1,
+            'options_score_minutes_threshold_upper' => 60,
+            'options_score_minutes_threshold_lower' => 30,
+            'options_score_minutes_high' => 3,
+            'options_score_minutes_middle' => 2,
+            'options_score_minutes_low' => 1,
             'options_score_goals_g' => 6,
             'options_score_goals_d' => 5,
             'options_score_goals_m' => 4,
@@ -430,6 +434,36 @@ class AdminLeagueService
         }
 
         return $out;
+    }
+
+    private function normalizeLcPointsList(string $raw): string
+    {
+        $raw = trim($raw);
+        if ($raw === '') {
+            return '';
+        }
+
+        $parts = array_map(
+            static fn (string $part): string => trim($part),
+            explode(',', $raw)
+        );
+
+        return implode(',', array_values(array_filter($parts, static fn (string $part): bool => $part !== '')));
+    }
+
+    private function isValidLcPointsList(string $raw): bool
+    {
+        if ($raw === '') {
+            return false;
+        }
+
+        foreach (explode(',', $raw) as $part) {
+            if ($part === '' || ! preg_match('/^-?\d+$/', $part)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function storeSymbol(UploadedFile $file): ?string
