@@ -974,23 +974,23 @@ class AdminMatchdataService
         }
 
         $options = $this->options();
-        $full = (int) $options->options_score_minutes;
-        $treshold = (int) $options->options_score_minutes_treshold;
+        $upper = (int) $options->options_score_minutes_threshold_upper;
+        $lower = (int) $options->options_score_minutes_threshold_lower;
 
         if ($this->pointsMode() === 'new') {
-            if ($num < $treshold) {
-                return (int) $options->options_score_minutes_lt30;
+            if ($num < $lower) {
+                return (int) $options->options_score_minutes_low;
             }
-            if ($num < $full) {
-                return (int) $options->options_score_minutes_lt;
+            if ($num < $upper) {
+                return (int) $options->options_score_minutes_middle;
             }
 
-            return (int) $options->options_score_minutes_gt;
+            return (int) $options->options_score_minutes_high;
         }
 
-        return $num < $full
-            ? (int) $options->options_score_minutes_lt
-            : (int) $options->options_score_minutes_gt;
+        return $num < $upper
+            ? (int) $options->options_score_minutes_middle
+            : (int) $options->options_score_minutes_high;
     }
 
     private function calcScoreCards(string $type): int
@@ -1048,7 +1048,7 @@ class AdminMatchdataService
     {
         $options = $this->options();
         $pm = $this->pointsMode();
-        $clean = ($pm === 'new' && $num === 0 && $minutes >= (int) $options->options_score_minutes_treshold)
+        $clean = ($pm === 'new' && $num === 0 && $minutes >= (int) $options->options_score_minutes_threshold_lower)
             || ($pm === 'old' && $num === 0);
 
         if (! $clean) {
@@ -1077,7 +1077,7 @@ class AdminMatchdataService
     {
         $options = $this->options();
         if (
-            $minutes >= (int) $options->options_score_minutes_treshold
+            $minutes >= (int) $options->options_score_minutes_threshold_lower
             && $num >= (int) $options->options_score_high_win_loss_treshold
         ) {
             return (int) $options->options_score_high_loss;
@@ -1090,7 +1090,7 @@ class AdminMatchdataService
     {
         $options = $this->options();
         if (
-            $minutes >= (int) $options->options_score_minutes_treshold
+            $minutes >= (int) $options->options_score_minutes_threshold_lower
             && $num >= (int) $options->options_score_high_win_loss_treshold
         ) {
             return (int) $options->options_score_high_win;

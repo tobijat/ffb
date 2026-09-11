@@ -169,34 +169,34 @@
                             </tr>
                             @if ($pointsMode === 'new')
                                 <tr>
-                                    <td><b>mind. 1 und weniger als {{ $o['options_score_minutes_treshold'] }}<br>Minuten gespielt</b></td>
-                                    <td>+{{ $o['options_score_minutes_lt30'] }}</td>
-                                    <td>+{{ $o['options_score_minutes_lt30'] }}</td>
-                                    <td>+{{ $o['options_score_minutes_lt30'] }}</td>
-                                    <td>+{{ $o['options_score_minutes_lt30'] }}</td>
+                                    <td><b>mind. 1 und weniger als {{ $o['options_score_minutes_threshold_lower'] }}<br>Minuten gespielt</b></td>
+                                    <td>+{{ $o['options_score_minutes_low'] }}</td>
+                                    <td>+{{ $o['options_score_minutes_low'] }}</td>
+                                    <td>+{{ $o['options_score_minutes_low'] }}</td>
+                                    <td>+{{ $o['options_score_minutes_low'] }}</td>
                                 </tr>
                                 <tr>
-                                    <td><b>zwischen {{ $o['options_score_minutes_treshold'] }} und {{ $o['options_score_minutes'] }}<br>Minuten gespielt</b></td>
-                                    <td>+{{ $o['options_score_minutes_lt'] }}</td>
-                                    <td>+{{ $o['options_score_minutes_lt'] }}</td>
-                                    <td>+{{ $o['options_score_minutes_lt'] }}</td>
-                                    <td>+{{ $o['options_score_minutes_lt'] }}</td>
+                                    <td><b>zwischen {{ $o['options_score_minutes_threshold_lower'] }} und {{ $o['options_score_minutes_threshold_upper'] }}<br>Minuten gespielt</b></td>
+                                    <td>+{{ $o['options_score_minutes_middle'] }}</td>
+                                    <td>+{{ $o['options_score_minutes_middle'] }}</td>
+                                    <td>+{{ $o['options_score_minutes_middle'] }}</td>
+                                    <td>+{{ $o['options_score_minutes_middle'] }}</td>
                                 </tr>
                             @else
                                 <tr>
-                                    <td><b>weniger als {{ $o['options_score_minutes'] }}<br>Minuten gespielt</b></td>
-                                    <td>+{{ $o['options_score_minutes_lt'] }}</td>
-                                    <td>+{{ $o['options_score_minutes_lt'] }}</td>
-                                    <td>+{{ $o['options_score_minutes_lt'] }}</td>
-                                    <td>+{{ $o['options_score_minutes_lt'] }}</td>
+                                    <td><b>weniger als {{ $o['options_score_minutes_threshold_upper'] }}<br>Minuten gespielt</b></td>
+                                    <td>+{{ $o['options_score_minutes_middle'] }}</td>
+                                    <td>+{{ $o['options_score_minutes_middle'] }}</td>
+                                    <td>+{{ $o['options_score_minutes_middle'] }}</td>
+                                    <td>+{{ $o['options_score_minutes_middle'] }}</td>
                                 </tr>
                             @endif
                             <tr>
-                                <td><b>mindestens {{ $o['options_score_minutes'] }}<br>Minuten gespielt</b></td>
-                                <td>+{{ $o['options_score_minutes_gt'] }}</td>
-                                <td>+{{ $o['options_score_minutes_gt'] }}</td>
-                                <td>+{{ $o['options_score_minutes_gt'] }}</td>
-                                <td>+{{ $o['options_score_minutes_gt'] }}</td>
+                                <td><b>mindestens {{ $o['options_score_minutes_threshold_upper'] }}<br>Minuten gespielt</b></td>
+                                <td>+{{ $o['options_score_minutes_high'] }}</td>
+                                <td>+{{ $o['options_score_minutes_high'] }}</td>
+                                <td>+{{ $o['options_score_minutes_high'] }}</td>
+                                <td>+{{ $o['options_score_minutes_high'] }}</td>
                             </tr>
                             <tr>
                                 <td><b>geschossenes Tor</b></td>
@@ -216,7 +216,7 @@
                             @endif
                             @if ($pointsMode === 'new')
                                 <tr>
-                                    <td><b>kein Gegentor und mind.<br>{{ $o['options_score_minutes_treshold'] }} Minuten gespielt</b></td>
+                                    <td><b>kein Gegentor und mind.<br>{{ $o['options_score_minutes_threshold_lower'] }} Minuten gespielt</b></td>
                                     <td>+{{ $o['options_score_no_oppgoals_g'] }}</td>
                                     <td>+{{ $o['options_score_no_oppgoals_d'] }}</td>
                                     <td>+{{ $o['options_score_no_oppgoals_m'] }}</td>

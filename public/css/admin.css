@@ -16,6 +16,14 @@
     max-width: none;
 }
 
+.admin-league-form .admin-field {
+    grid-template-columns: minmax(14rem, 18rem) 1fr;
+}
+
+.admin-league-form .admin-field > label {
+    white-space: nowrap;
+}
+
 .admin-symbol-row {
     display: flex;
     flex-wrap: wrap;
@@ -45,6 +53,14 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
     gap: 8px;
+}
+
+.admin-lineup-pos-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+    max-width: 28rem;
 }
 
 .admin-option-field {
