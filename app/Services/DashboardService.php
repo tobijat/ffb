@@ -52,7 +52,7 @@ class DashboardService
         return [
             'user' => $this->userPayload($user, $details),
             'selected_league_id' => $selectedLeagueId,
-            'leagues' => $this->leagues($archiveGames, $isAdmin),
+            'leagues' => $this->leagues($archiveGames, $isAdmin, $selectedLeagueId),
             'archive' => $archiveGames,
             'news' => $this->news($selectedLeagueId, $newsPage),
             'polls' => [
@@ -176,10 +176,16 @@ class DashboardService
     /**
      * @return list<array<string, mixed>>
      */
-    private function leagues(bool $archive, bool $isAdmin): array
+    private function leagues(bool $archive, bool $isAdmin, int $selectedLeagueId = 0): array
     {
         $query = League::query()
-            ->where('league_archive', $archive ? 1 : 0)
+            ->where(function ($q) use ($archive, $selectedLeagueId): void {
+                $q->where('league_archive', $archive ? 1 : 0);
+                // Keep a selected archived league visible on the current (non-archive) picker.
+                if (! $archive && $selectedLeagueId > 0) {
+                    $q->orWhere('league_id', $selectedLeagueId);
+                }
+            })
             ->whereHas('matchrounds')
             ->orderBy('league_title');
 
