@@ -77,7 +77,7 @@ class AdminScoreTest extends TestCase
         $this->mock(AdminScoreService::class, function ($mock) {
             $mock->shouldReceive('setUserteamScores')->once()->with(544)->andReturn([
                 'ok' => true,
-                'message' => 'Userteam-Scores erfolgreich aktualisiert (inkl. WC-Punkte für beendete Runden).',
+                'message' => 'Userteam-Scores erfolgreich aktualisiert (inkl. LC-Punkte für beendete Runden).',
                 'details' => ['userteam_id: 11 score: 42'],
             ]);
         });

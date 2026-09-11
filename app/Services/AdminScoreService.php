@@ -32,7 +32,7 @@ class AdminScoreService
 
     /**
      * Recalculate every userteam score for the selected league from playerstats,
-     * then recompute finished-round WC points on those userteams.
+     * then recompute finished-round LC points on those userteams.
      *
      * @return array{ok: bool, message?: string, errors?: list<string>, details?: list<string>}
      */
@@ -82,17 +82,17 @@ class AdminScoreService
             }
         });
 
-        $this->setWcPointsForGame($leagueId);
+        $this->setLcPointsForGame($leagueId);
 
         return [
             'ok' => true,
-            'message' => 'Userteam-Scores erfolgreich aktualisiert (inkl. WC-Punkte für beendete Runden).',
+            'message' => 'Userteam-Scores erfolgreich aktualisiert (inkl. LC-Punkte für beendete Runden).',
             'details' => $details,
         ];
     }
 
     /**
-     * Aggregate userteam scores / WC points into ffb_userscore for the selected league.
+     * Aggregate userteam scores / LC points into ffb_userscore for the selected league.
      *
      * @return array{ok: bool, message?: string, errors?: list<string>, details?: list<string>}
      */
@@ -119,7 +119,7 @@ class AdminScoreService
 
         $totals = Userteam::query()
             ->whereIn('userteam_matchround_id', $matchroundIds)
-            ->selectRaw('userteam_user_id, SUM(userteam_score) as total_score, SUM(userteam_wc_points) as total_wc')
+            ->selectRaw('userteam_user_id, SUM(userteam_score) as total_score, SUM(userteam_lc_points) as total_lc')
             ->groupBy('userteam_user_id')
             ->get();
 
@@ -129,7 +129,7 @@ class AdminScoreService
             foreach ($totals as $row) {
                 $uid = (int) $row->userteam_user_id;
                 $total = (int) $row->total_score;
-                $wc = (int) $row->total_wc;
+                $lc = (int) $row->total_lc;
 
                 $userscore = Userscore::query()
                     ->where('userscore_user_id', $uid)
@@ -138,19 +138,19 @@ class AdminScoreService
 
                 if ($userscore) {
                     $userscore->userscore_total = $total;
-                    $userscore->userscore_wc_points = $wc;
+                    $userscore->userscore_lc_points = $lc;
                     $userscore->save();
                     $details[] = 'user_id: '.$uid.' score: '.$total;
-                    $details[] = 'user_id: '.$uid.' wc_score: '.$wc;
+                    $details[] = 'user_id: '.$uid.' lc_score: '.$lc;
                 } else {
                     Userscore::query()->create([
                         'userscore_user_id' => $uid,
                         'userscore_league_id' => $leagueId,
                         'userscore_total' => $total,
-                        'userscore_wc_points' => $wc,
+                        'userscore_lc_points' => $lc,
                     ]);
                     $details[] = 'user_id: '.$uid.' score: '.$total.' (new entry created!)';
-                    $details[] = 'user_id: '.$uid.' wc_score: '.$wc;
+                    $details[] = 'user_id: '.$uid.' lc_score: '.$lc;
                 }
             }
         });
@@ -163,19 +163,19 @@ class AdminScoreService
     }
 
     /**
-     * Assign WC points on finished matchrounds (enddate in the past), matching legacy ranking.
+     * Assign LC points on finished matchrounds (enddate in the past), matching legacy ranking.
      */
-    private function setWcPointsForGame(int $leagueId): void
+    private function setLcPointsForGame(int $leagueId): void
     {
         $options = LeagueOptions::query()->where('options_league_id', $leagueId)->first()
             ?? LeagueOptions::query()->where('options_league_id', 0)->first();
 
-        // Legacy: explode comma-separated options_league_wcpoints (index = rank - 1).
-        $wcPoints = array_map(
+        // Legacy: explode comma-separated options_league_lcpoints (index = rank - 1).
+        $lcPoints = array_map(
             static fn (string $v): int => (int) trim($v),
-            explode(',', (string) ($options?->options_league_wcpoints ?? ''))
+            explode(',', (string) ($options?->options_league_lcpoints ?? ''))
         );
-        if ($wcPoints === []) {
+        if ($lcPoints === []) {
             return;
         }
 
@@ -226,20 +226,20 @@ class AdminScoreService
                     $tieSpan++;
                 }
 
-                if ($rank < count($wcPoints)) {
-                    $wc = $wcPoints[$rank - 1];
+                if ($rank < count($lcPoints)) {
+                    $lc = $lcPoints[$rank - 1];
                 } else {
-                    $wc = $wcPoints[count($wcPoints) - 1];
+                    $lc = $lcPoints[count($lcPoints) - 1];
                 }
 
-                $users[$index]['user_wc_points'] = $wc;
+                $users[$index]['user_lc_points'] = $lc;
                 $lastScore = $currScore;
             }
 
             foreach ($users as $item) {
                 Userteam::query()
                     ->whereKey($item['user_userteam_id'])
-                    ->update(['userteam_wc_points' => $item['user_wc_points']]);
+                    ->update(['userteam_lc_points' => $item['user_lc_points']]);
             }
         }
     }

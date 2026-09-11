@@ -40,7 +40,7 @@ class HelpService
                 'selected_league_id' => $leagueId,
                 'using_defaults' => $usingDefaults,
                 'options' => $options,
-                'wc_points' => $this->parseWcPoints((string) ($options['options_league_wcpoints'] ?? '')),
+                'lc_points' => $this->parseLcPoints((string) ($options['options_league_lcpoints'] ?? '')),
                 'navigation' => $user
                     ? app(DashboardService::class)->navigation()
                     : self::guestNavigation(),
@@ -74,7 +74,7 @@ class HelpService
             return [
                 'options_league_id' => 0,
                 'options_league_pointsmode' => 'new',
-                'options_league_wcpoints' => '10,8,6,4,2,1',
+                'options_league_lcpoints' => '10,8,6,4,2,1',
                 'options_lineup_max_players' => 11,
                 'options_lineup_max_credits' => 50,
                 'options_lineup_max_players_team' => 3,
@@ -116,7 +116,7 @@ class HelpService
         return [
             'options_league_id' => (int) $options->options_league_id,
             'options_league_pointsmode' => (string) ($options->options_league_pointsmode ?: 'new'),
-            'options_league_wcpoints' => (string) ($options->options_league_wcpoints ?: ''),
+            'options_league_lcpoints' => (string) ($options->options_league_lcpoints ?: ''),
             'options_lineup_max_players' => (int) $options->options_lineup_max_players,
             'options_lineup_max_credits' => (float) $options->options_lineup_max_credits,
             'options_lineup_max_players_team' => (int) $options->options_lineup_max_players_team,
@@ -158,7 +158,7 @@ class HelpService
     /**
      * @return list<int|string>
      */
-    private function parseWcPoints(string $raw): array
+    private function parseLcPoints(string $raw): array
     {
         if ($raw === '') {
             return [10, 8, 6, 4, 2, 1];

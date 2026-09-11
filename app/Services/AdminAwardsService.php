@@ -562,8 +562,8 @@ class AdminAwardsService
     private function calculateUserRank(int $userId, int $leagueId, string $rm): int
     {
         $query = Userscore::query()->where('userscore_league_id', $leagueId);
-        if ($rm === 'wc') {
-            $query->orderByDesc('userscore_wc_points')->orderByDesc('userscore_total');
+        if ($rm === 'lc') {
+            $query->orderByDesc('userscore_lc_points')->orderByDesc('userscore_total');
         } else {
             $query->orderByDesc('userscore_total');
         }
@@ -575,11 +575,11 @@ class AdminAwardsService
         $i = 0;
         foreach ($items as $item) {
             $i++;
-            if ($rm === 'wc') {
-                $wc = (int) $item->userscore_wc_points;
+            if ($rm === 'lc') {
+                $lc = (int) $item->userscore_lc_points;
                 $pts = (int) $item->userscore_total;
-                if ($wc < $lastScore) {
-                    $lastScore = $wc;
+                if ($lc < $lastScore) {
+                    $lastScore = $lc;
                     $lastPoints = $pts;
                     $rank = $i;
                 } elseif ($pts < $lastPoints) {

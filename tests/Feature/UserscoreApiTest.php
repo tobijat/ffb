@@ -36,15 +36,15 @@ class UserscoreApiTest extends TestCase
         $payload = [
             'selected_league_id' => 26,
             'matchround_id' => 0,
-            'rank_mode' => 'wc',
-            'display_mode' => 'wc',
+            'rank_mode' => 'lc',
+            'display_mode' => 'lc',
             'entries' => [
                 [
                     'user_id' => 544,
                     'user_nickname' => 'tester',
                     'user_favourite_team_nationality' => 'aut',
                     'user_score' => 100,
-                    'user_wc_points' => 12,
+                    'user_lc_points' => 12,
                     'participations' => 3,
                     'matchround_wins' => 1,
                     'user_rank' => 1,

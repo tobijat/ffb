@@ -194,7 +194,7 @@ class UserscoreService
                 'user_nickname' => $nick,
                 'user_favourite_team_nationality' => $favFlags[$uid] ?? '0',
                 'user_score' => $total,
-                'user_wc_points' => (int) $score->userscore_wc_points,
+                'user_lc_points' => (int) $score->userscore_lc_points,
                 'participations' => $parts,
                 'matchround_wins' => (int) ($wins[$nick] ?? 0),
             ];
@@ -209,7 +209,7 @@ class UserscoreService
                 'selected_league_id' => $leagueId,
                 'matchround_id' => 0,
                 'rank_mode' => $rankMode,
-                'display_mode' => $rankMode === 'wc' ? 'wc' : 'points',
+                'display_mode' => $rankMode === 'lc' ? 'lc' : 'points',
                 'entries' => array_values($entries),
                 'num_results' => count($entries),
             ],
@@ -263,7 +263,7 @@ class UserscoreService
                 'user_nickname' => $nick,
                 'user_favourite_team_nationality' => $favFlags[$uid] ?? '0',
                 'user_score' => $score,
-                'user_wc_points' => (int) $team->userteam_wc_points,
+                'user_lc_points' => (int) $team->userteam_lc_points,
                 'participations' => $parts,
                 'matchround_wins' => (int) ($wins[$nick] ?? 0),
             ];
@@ -296,9 +296,9 @@ class UserscoreService
     {
         $mode = (string) (LeagueOptions::query()
             ->where('options_league_id', $leagueId)
-            ->value('options_league_rankmode') ?? 'wc');
+            ->value('options_league_rankmode') ?? 'lc');
 
-        return in_array($mode, ['points', 'wc'], true) ? $mode : 'wc';
+        return in_array($mode, ['points', 'lc'], true) ? $mode : 'lc';
     }
 
     /**
@@ -402,24 +402,24 @@ class UserscoreService
     {
         usort($entries, function (array $a, array $b) use ($rankMode): int {
             if ($rankMode === 'points') {
-                return [$b['user_score'], $b['user_wc_points'], strtolower($a['user_nickname'])]
-                    <=> [$a['user_score'], $a['user_wc_points'], strtolower($b['user_nickname'])];
+                return [$b['user_score'], $b['user_lc_points'], strtolower($a['user_nickname'])]
+                    <=> [$a['user_score'], $a['user_lc_points'], strtolower($b['user_nickname'])];
             }
 
-            return [$b['user_wc_points'], $b['user_score'], strtolower($a['user_nickname'])]
-                <=> [$a['user_wc_points'], $a['user_score'], strtolower($b['user_nickname'])];
+            return [$b['user_lc_points'], $b['user_score'], strtolower($a['user_nickname'])]
+                <=> [$a['user_lc_points'], $a['user_score'], strtolower($b['user_nickname'])];
         });
 
         $rank = 1;
         $j = 1;
-        $lastWc = -1;
+        $lastLc = -1;
         $lastPoints = -1;
         foreach ($entries as $i => $item) {
-            if ($item['user_wc_points'] < $lastWc || $item['user_score'] < $lastPoints) {
+            if ($item['user_lc_points'] < $lastLc || $item['user_score'] < $lastPoints) {
                 $rank = $j;
             }
             $j++;
-            $lastWc = $item['user_wc_points'];
+            $lastLc = $item['user_lc_points'];
             $lastPoints = $item['user_score'];
             $entries[$i]['user_rank'] = $rank;
         }
@@ -470,12 +470,12 @@ class UserscoreService
                 'n' => $cmp(strtolower($a['user_nickname']), strtolower($b['user_nickname'])),
                 'p' => $cmp($a['participations'], $b['participations'])
                     ?: ($overall
-                        ? ($cmp($a['user_wc_points'], $b['user_wc_points']) ?: $cmp($a['user_score'], $b['user_score']))
+                        ? ($cmp($a['user_lc_points'], $b['user_lc_points']) ?: $cmp($a['user_score'], $b['user_score']))
                         : $cmp($a['user_score'], $b['user_score']))
                     ?: (strtolower($a['user_nickname']) <=> strtolower($b['user_nickname'])),
                 'w' => $cmp($a['matchround_wins'], $b['matchround_wins'])
                     ?: ($overall
-                        ? ($cmp($a['user_wc_points'], $b['user_wc_points']) ?: $cmp($a['user_score'], $b['user_score']))
+                        ? ($cmp($a['user_lc_points'], $b['user_lc_points']) ?: $cmp($a['user_score'], $b['user_score']))
                         : $cmp($a['user_score'], $b['user_score']))
                     ?: (strtolower($a['user_nickname']) <=> strtolower($b['user_nickname'])),
                 'r' => $cmp($a['user_rank'], $b['user_rank'])
@@ -483,9 +483,9 @@ class UserscoreService
                 default => $overall
                     ? ($rankMode === 'points'
                         ? ($cmp($a['user_score'], $b['user_score'])
-                            ?: $cmp($a['user_wc_points'], $b['user_wc_points'])
+                            ?: $cmp($a['user_lc_points'], $b['user_lc_points'])
                             ?: (strtolower($a['user_nickname']) <=> strtolower($b['user_nickname'])))
-                        : ($cmp($a['user_wc_points'], $b['user_wc_points'])
+                        : ($cmp($a['user_lc_points'], $b['user_lc_points'])
                             ?: $cmp($a['user_score'], $b['user_score'])
                             ?: (strtolower($a['user_nickname']) <=> strtolower($b['user_nickname']))))
                     : ($cmp($a['user_score'], $b['user_score'])

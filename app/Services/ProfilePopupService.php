@@ -126,9 +126,9 @@ class ProfilePopupService
             $leagueId = (int) $league->league_id;
             $rankMode = (string) (LeagueOptions::query()
                 ->where('options_league_id', $leagueId)
-                ->value('options_league_rankmode') ?? 'wc');
-            if (! in_array($rankMode, ['points', 'wc'], true)) {
-                $rankMode = 'wc';
+                ->value('options_league_rankmode') ?? 'lc');
+            if (! in_array($rankMode, ['points', 'lc'], true)) {
+                $rankMode = 'lc';
             }
 
             $archive = (int) ($league->league_archive ?? 0) === 1;
@@ -146,7 +146,7 @@ class ProfilePopupService
                 'league_archive' => $archive,
                 'league_visible' => $visible,
                 'score_rm' => $rankMode,
-                'score_wc' => (int) $score->userscore_wc_points,
+                'score_lc' => (int) $score->userscore_lc_points,
                 'score_points' => (int) $score->userscore_total,
                 'score_start' => $start,
                 'score_end' => $end,
@@ -188,8 +188,8 @@ class ProfilePopupService
     private function calculateUserRank(int $userId, int $leagueId, string $rankMode): int
     {
         $query = Userscore::query()->where('userscore_league_id', $leagueId);
-        if ($rankMode === 'wc') {
-            $query->orderByDesc('userscore_wc_points')->orderByDesc('userscore_total');
+        if ($rankMode === 'lc') {
+            $query->orderByDesc('userscore_lc_points')->orderByDesc('userscore_total');
         } else {
             $query->orderByDesc('userscore_total');
         }
@@ -206,11 +206,11 @@ class ProfilePopupService
 
         foreach ($items as $item) {
             $i++;
-            if ($rankMode === 'wc') {
-                $wc = (int) $item->userscore_wc_points;
+            if ($rankMode === 'lc') {
+                $lc = (int) $item->userscore_lc_points;
                 $pts = (int) $item->userscore_total;
-                if ($wc < $lastScore) {
-                    $lastScore = $wc;
+                if ($lc < $lastScore) {
+                    $lastScore = $lc;
                     $lastPoints = $pts;
                     $rank = $i;
                 } elseif ($pts < $lastPoints) {

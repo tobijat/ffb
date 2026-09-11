@@ -88,7 +88,7 @@
                 <div class="admin-field">
                     <label for="options_league_rankmode">Rangliste</label>
                     <select id="options_league_rankmode" name="options_league_rankmode">
-                        <option value="wc" @selected($form['options_league_rankmode'] === 'wc')>WC</option>
+                        <option value="lc" @selected($form['options_league_rankmode'] === 'lc')>LC</option>
                         <option value="points" @selected($form['options_league_rankmode'] === 'points')>Punkte</option>
                     </select>
                 </div>
@@ -107,10 +107,10 @@
                     </select>
                 </div>
                 <div class="admin-field">
-                    <label for="options_league_wcpoints">WC-Punkte</label>
-                    <select id="options_league_wcpoints" name="options_league_wcpoints">
-                        <option value="new" @selected($form['options_league_wcpoints'] === 'new')>neu</option>
-                        <option value="old" @selected($form['options_league_wcpoints'] === 'old')>alt</option>
+                    <label for="options_league_lcpoints">LC-Punkte</label>
+                    <select id="options_league_lcpoints" name="options_league_lcpoints">
+                        <option value="new" @selected($form['options_league_lcpoints'] === 'new')>neu</option>
+                        <option value="old" @selected($form['options_league_lcpoints'] === 'old')>alt</option>
                     </select>
                 </div>
                 <div class="admin-field">
