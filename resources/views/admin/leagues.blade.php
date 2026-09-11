@@ -100,13 +100,6 @@
                     </select>
                 </div>
                 <div class="admin-field">
-                    <label for="options_league_pointsmode">Punkte</label>
-                    <select id="options_league_pointsmode" name="options_league_pointsmode">
-                        <option value="new" @selected($form['options_league_pointsmode'] === 'new')>neu</option>
-                        <option value="old" @selected($form['options_league_pointsmode'] === 'old')>alt</option>
-                    </select>
-                </div>
-                <div class="admin-field">
                     <label for="options_league_lcpoints">LC-Punkte</label>
                     <select id="options_league_lcpoints" name="options_league_lcpoints">
                         <option value="new" @selected($form['options_league_lcpoints'] === 'new')>neu</option>

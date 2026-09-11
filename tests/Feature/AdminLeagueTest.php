@@ -78,6 +78,7 @@ class AdminLeagueTest extends TestCase
             ->assertSee('Testliga', false)
             ->assertSee('name="league_title"', false)
             ->assertSee('name="league_symbol_file"', false)
+            ->assertDontSee('name="options_league_pointsmode"', false)
             ->assertSee('Hinzufügen', false);
     }
 
