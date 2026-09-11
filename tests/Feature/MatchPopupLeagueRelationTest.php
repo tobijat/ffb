@@ -22,7 +22,6 @@ class MatchPopupLeagueRelationTest extends TestCase
             'league_title' => 'Bundesliga Test',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_countdown' => 0,
             'league_status' => 1,
             'league_symbol' => '',
         ]);

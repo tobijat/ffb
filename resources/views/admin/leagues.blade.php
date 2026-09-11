@@ -54,11 +54,6 @@
                     <input id="league_title" type="text" name="league_title" value="{{ $form['league_title'] }}" maxlength="255" required>
                 </div>
 
-                <div class="admin-field admin-field-top">
-                    <label for="league_description">Beschreibung</label>
-                    <textarea id="league_description" name="league_description" rows="3">{{ $form['league_description'] }}</textarea>
-                </div>
-
                 <div class="admin-field">
                     <label for="league_status">Status</label>
                     <select id="league_status" name="league_status">
@@ -80,14 +75,6 @@
                     <select id="league_archive" name="league_archive">
                         <option value="0" @selected((int) $form['league_archive'] === 0)>nein (aktuell)</option>
                         <option value="1" @selected((int) $form['league_archive'] === 1)>ja (archiviert)</option>
-                    </select>
-                </div>
-
-                <div class="admin-field">
-                    <label for="league_countdown">Countdown</label>
-                    <select id="league_countdown" name="league_countdown">
-                        <option value="1" @selected((int) $form['league_countdown'] === 1)>an</option>
-                        <option value="0" @selected((int) $form['league_countdown'] === 0)>aus</option>
                     </select>
                 </div>
             </fieldset>
@@ -233,7 +220,6 @@
                             <li class="admin-game-flag admin-game-flag-{{ $item['league_status'] ? 'ok' : 'off' }}">{{ $item['league_status'] ? 'aktiv' : 'inaktiv' }}</li>
                             <li class="admin-game-flag admin-game-flag-{{ $item['league_visible'] ? 'ok' : 'off' }}">{{ $item['league_visible'] ? 'sichtbar' : 'unsichtbar' }}</li>
                             <li class="admin-game-flag admin-game-flag-{{ $item['league_archive'] ? 'warn' : 'ok' }}">{{ $item['league_archive'] ? 'archiviert' : 'aktuell' }}</li>
-                            <li class="admin-game-flag admin-game-flag-{{ $item['league_countdown'] ? 'ok' : 'muted' }}">{{ $item['league_countdown'] ? 'Countdown an' : 'Countdown aus' }}</li>
                         </ul>
                     </div>
                 </div>

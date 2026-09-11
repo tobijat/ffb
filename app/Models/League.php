@@ -18,9 +18,7 @@ class League extends Model
         'league_title',
         'league_visible',
         'league_archive',
-        'league_countdown',
         'league_status',
-        'league_description',
         'league_symbol',
     ];
 

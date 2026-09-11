@@ -45,11 +45,9 @@ class AdminLeagueService
             [
                 'league_id' => '',
                 'league_title' => '',
-                'league_description' => '',
                 'league_status' => 1,
                 'league_visible' => 1,
                 'league_archive' => 0,
-                'league_countdown' => 0,
                 'league_symbol' => self::DEFAULT_SYMBOL,
                 'symbol_url' => '/images/ffb/symbols/'.self::DEFAULT_SYMBOL,
             ],
@@ -77,11 +75,9 @@ class AdminLeagueService
             [
                 'league_id' => (int) $league->league_id,
                 'league_title' => (string) $league->league_title,
-                'league_description' => (string) ($league->league_description ?? ''),
                 'league_status' => (int) (bool) $league->league_status,
                 'league_visible' => (int) (bool) $league->league_visible,
                 'league_archive' => (int) (bool) $league->league_archive,
-                'league_countdown' => (int) (bool) $league->league_countdown,
                 'league_symbol' => $symbol,
                 'symbol_url' => '/images/ffb/symbols/'.$symbol,
             ],
@@ -117,11 +113,9 @@ class AdminLeagueService
         DB::transaction(function () use ($form): void {
             $league = League::query()->create([
                 'league_title' => $form['league_title'],
-                'league_description' => $form['league_description'] !== '' ? $form['league_description'] : null,
                 'league_status' => (int) $form['league_status'],
                 'league_visible' => (int) $form['league_visible'],
                 'league_archive' => (int) $form['league_archive'],
-                'league_countdown' => (int) $form['league_countdown'],
                 'league_symbol' => $form['league_symbol'],
             ]);
 
@@ -174,11 +168,9 @@ class AdminLeagueService
 
         DB::transaction(function () use ($league, $form, $oldSymbol): void {
             $league->league_title = $form['league_title'];
-            $league->league_description = $form['league_description'] !== '' ? $form['league_description'] : null;
             $league->league_status = (int) $form['league_status'];
             $league->league_visible = (int) $form['league_visible'];
             $league->league_archive = (int) $form['league_archive'];
-            $league->league_countdown = (int) $form['league_countdown'];
             $league->league_symbol = $form['league_symbol'];
             $league->save();
 
@@ -254,7 +246,6 @@ class AdminLeagueService
                     'league_status' => (int) (bool) $league->league_status,
                     'league_visible' => (int) (bool) $league->league_visible,
                     'league_archive' => (int) (bool) $league->league_archive,
-                    'league_countdown' => (int) (bool) $league->league_countdown,
                     'symbol_url' => '/images/ffb/symbols/'.$symbol,
                 ];
             })
@@ -276,11 +267,9 @@ class AdminLeagueService
         $form = [
             'league_id' => (string) ($input['league_id'] ?? ''),
             'league_title' => trim((string) ($input['league_title'] ?? '')),
-            'league_description' => trim((string) ($input['league_description'] ?? '')),
             'league_status' => (int) ($input['league_status'] ?? 0) === 1 ? 1 : 0,
             'league_visible' => (int) ($input['league_visible'] ?? 0) === 1 ? 1 : 0,
             'league_archive' => (int) ($input['league_archive'] ?? 0) === 1 ? 1 : 0,
-            'league_countdown' => (int) ($input['league_countdown'] ?? 0) === 1 ? 1 : 0,
             'league_symbol' => $symbol,
             'symbol_url' => '/images/ffb/symbols/'.$symbol,
         ];

@@ -189,7 +189,6 @@ class DashboardService
                 'league_symbol' => (string) ($league->league_symbol ?: 'symbol_game_na.png'),
                 'league_archive' => (int) (bool) $league->league_archive,
                 'league_visible' => (int) (bool) $league->league_visible,
-                'league_countdown' => (int) (bool) $league->league_countdown,
                 'league_status' => (int) (bool) $league->league_status,
                 'symbol_url' => '/images/ffb/symbols/'.($league->league_symbol ?: 'symbol_game_na.png'),
             ])
