@@ -112,6 +112,10 @@
     align-items: flex-start;
 }
 
+.admin-league-list-body .admin-game-flags {
+    justify-content: flex-start;
+}
+
 .admin-league-list-icon {
     flex: 0 0 auto;
     object-fit: contain;
