@@ -133,10 +133,10 @@
                 </div>
                 <div class="admin-lineup-pos-grid">
                     @foreach ([
-                        ['options_lineup_min_g', 'Min. Goalie', 'options_lineup_max_g', 'Max. Goalie'],
-                        ['options_lineup_min_d', 'Min. Abwehr', 'options_lineup_max_d', 'Max. Abwehr'],
-                        ['options_lineup_min_m', 'Min. Mittelfeld', 'options_lineup_max_m', 'Max. Mittelfeld'],
-                        ['options_lineup_min_s', 'Min. Sturm', 'options_lineup_max_s', 'Max. Sturm'],
+                        ['options_lineup_min_g', 'Min. Spieler als Goalie', 'options_lineup_max_g', 'Max. Spieler als Goalie'],
+                        ['options_lineup_min_d', 'Min. Spieler in Abwehr', 'options_lineup_max_d', 'Max. Spieler in Abwehr'],
+                        ['options_lineup_min_m', 'Min. Spieler inMittelfeld', 'options_lineup_max_m', 'Max. Spieler in Mittelfeld'],
+                        ['options_lineup_min_s', 'Min. Spieler in Angriff', 'options_lineup_max_s', 'Max. Spieler in Angriff'],
                     ] as [$minName, $minLabel, $maxName, $maxLabel])
                         <div class="admin-option-field">
                             <label for="{{ $minName }}">{{ $minLabel }}</label>
@@ -152,32 +152,91 @@
 
             <fieldset class="admin-fieldset">
                 <legend>Punktewertung</legend>
+
+                <div class="admin-score-minutes-grid admin-score-minutes-thresholds">
+                    @foreach ([
+                        'options_score_minutes_threshold_lower' => 'Einsatzminuten: untere Schwelle',
+                        'options_score_minutes_threshold_upper' => 'Einsatzminuten: obere Schwelle',
+                    ] as $name => $label)
+                        <div class="admin-option-field">
+                            <label for="{{ $name }}">{{ $label }}</label>
+                            <input id="{{ $name }}" type="number" name="{{ $name }}" value="{{ $form[$name] }}">
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="admin-score-minutes-grid admin-score-minutes-points">
+                    @foreach ([
+                        'options_score_minutes_low' => 'Einsatz-Punkte: bis untere Schwelle',
+                        'options_score_minutes_middle' => 'Einsatz-Punkte: zwischen Schwellen',
+                        'options_score_minutes_high' => 'Einsatz-Punkte: ab oberer Schwelle',
+                    ] as $name => $label)
+                        <div class="admin-option-field">
+                            <label for="{{ $name }}">{{ $label }}</label>
+                            <input id="{{ $name }}" type="number" name="{{ $name }}" value="{{ $form[$name] }}">
+                        </div>
+                    @endforeach
+                </div>
+
+                <hr class="admin-form-separator">
+
                 <div class="admin-option-grid">
                     @foreach ([
-                        'options_score_minutes_threshold_upper' => 'Einsatzminuten: obere Schwelle',
-                        'options_score_minutes_threshold_lower' => 'Einsatzminuten: untere Schwelle',
-                        'options_score_minutes_high' => 'Einsatz-Punkte: ab oberer Schwelle',
-                        'options_score_minutes_middle' => 'Einsatz-Punkte: zwischen Schwellen',
-                        'options_score_minutes_low' => 'Einsatz-Punkte: bis untere Schwelle',
-                        'options_score_goals_g' => 'Tor TW',
-                        'options_score_goals_d' => 'Tor AB',
-                        'options_score_goals_m' => 'Tor MF',
-                        'options_score_goals_s' => 'Tor ST',
-                        'options_score_assists' => 'Assist',
+                        'options_score_goals_g' => 'Tor von Goalie',
+                        'options_score_goals_d' => 'Tor von Abwehrspieler',
+                        'options_score_goals_m' => 'Tor von Mittelfeldspieler',
+                        'options_score_goals_s' => 'Tor von Angreifer',
+                        'options_score_assists' => 'Tor-Assist',
                         'options_score_owngoals' => 'Eigentor',
-                        'options_score_no_oppgoals_g' => 'Zu-Null TW',
-                        'options_score_no_oppgoals_d' => 'Zu-Null AB',
-                        'options_score_no_oppgoals_m' => 'Zu-Null MF',
-                        'options_score_oppgoals_g' => 'Gegentor TW',
-                        'options_score_oppgoals_d' => 'Gegentor AB',
-                        'options_score_card_y' => 'Gelb',
-                        'options_score_card_yr' => 'Gelb-Rot',
-                        'options_score_card_r' => 'Rot',
                         'options_score_penalty_saved' => 'Elfmeter gehalten',
                         'options_score_penalty_lost' => 'Elfmeter verschossen',
-                        'options_score_penaltyshootout_save' => 'Elfmeterschießen gehalten',
-                        'options_score_penaltyshootout_lost' => 'Elfmeterschießen verschossen',
-                        'options_score_penaltyshootout_hit' => 'Elfmeterschießen getroffen',
+                    ] as $name => $label)
+                        <div class="admin-option-field">
+                            <label for="{{ $name }}">{{ $label }}</label>
+                            <input id="{{ $name }}" type="number" name="{{ $name }}" value="{{ $form[$name] }}">
+                        </div>
+                    @endforeach
+                </div>
+
+                <hr class="admin-form-separator">
+
+                <div class="admin-option-grid">
+                    @foreach ([
+                        'options_score_no_oppgoals_g' => 'Goalie: kein Gegentor',
+                        'options_score_no_oppgoals_d' => 'Abwehr: kein Gegentor',
+                        'options_score_no_oppgoals_m' => 'Mittelfeld: kein Gegentor',
+                        'options_score_oppgoals_g' => 'pro Gegentor Goalie',
+                        'options_score_oppgoals_d' => 'pro Gegentor Abwehr',
+                    ] as $name => $label)
+                        <div class="admin-option-field">
+                            <label for="{{ $name }}">{{ $label }}</label>
+                            <input id="{{ $name }}" type="number" name="{{ $name }}" value="{{ $form[$name] }}">
+                        </div>
+                    @endforeach
+                </div>
+
+                <hr class="admin-form-separator">
+
+                <div class="admin-option-grid">
+                    @foreach ([
+                        'options_score_card_y' => 'Gelbe Karte',
+                        'options_score_card_yr' => 'Gelb-Rote Karte',
+                        'options_score_card_r' => 'Rote Karte',
+                    ] as $name => $label)
+                        <div class="admin-option-field">
+                            <label for="{{ $name }}">{{ $label }}</label>
+                            <input id="{{ $name }}" type="number" name="{{ $name }}" value="{{ $form[$name] }}">
+                        </div>
+                    @endforeach
+                </div>
+
+                <hr class="admin-form-separator">
+
+                <div class="admin-option-grid">
+                    @foreach ([
+                        'options_score_penaltyshootout_save' => 'im Elfmeterschießen gehalten',
+                        'options_score_penaltyshootout_lost' => 'im Elfmeterschießen verschossen',
+                        'options_score_penaltyshootout_hit' => 'im Elfmeterschießen getroffen',
                         'options_score_high_win' => 'High-Win',
                         'options_score_high_loss' => 'High-Loss',
                         'options_score_high_win_loss_treshold' => 'High-Schwelle',
