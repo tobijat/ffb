@@ -2,25 +2,48 @@
 
 @section('title', 'Spiele')
 
-@section('content')
-    @php
-        $form = $data['form'];
-        $mode = $data['mode'];
-        $items = $data['items'];
-        $leagues = $data['leagues'];
-        $matchrounds = $data['matchrounds'];
-        $teams = $data['teams'];
-        $selectedLeagueId = (int) $data['selected_league_id'];
-        $selectedLeagueTitle = $data['selected_league_title'];
-        $flashErrors = $errors ?: (session('admin_errors') ?: []);
-    @endphp
+@php
+    $form = $data['form'];
+    $mode = $data['mode'];
+    $items = $data['items'];
+    $leagues = $data['leagues'];
+    $matchrounds = $data['matchrounds'];
+    $teams = $data['teams'];
+    $selectedLeagueId = (int) $data['selected_league_id'];
+    $selectedLeagueTitle = $data['selected_league_title'];
+    $tab = ($data['tab'] ?? 'manual') === 'auto' ? 'auto' : 'manual';
+    $auto = $data['auto'] ?? ['analyzed' => false, 'source_name' => '', 'league_id' => 0, 'matches' => []];
+    $flashErrors = $errors ?: (session('admin_errors') ?: []);
+    $autoMatches = is_array($auto['matches'] ?? null) ? $auto['matches'] : [];
+    $autoAnalyzed = (bool) ($auto['analyzed'] ?? false);
+    $autoSource = (string) ($auto['source_name'] ?? '');
+@endphp
 
+@section('content')
     <section class="panel admin-main" aria-labelledby="admin-matches-title">
         <div class="section-head">
             <h2 id="admin-matches-title">Spiele</h2>
         </div>
 
+        <nav class="admin-squad-tabs ffb-tabs" aria-label="Spiele-Bereiche">
+            <a
+                class="admin-squad-tab ffb-tab{{ $tab === 'manual' ? ' is-active' : '' }}"
+                href="{{ route('admin.matches', array_filter(['league_id' => $selectedLeagueId > 0 ? $selectedLeagueId : null])) }}"
+            >
+                Spiele
+            </a>
+            <a
+                class="admin-squad-tab ffb-tab{{ $tab === 'auto' ? ' is-active' : '' }}"
+                href="{{ route('admin.matches', array_filter(['tab' => 'auto', 'league_id' => $selectedLeagueId > 0 ? $selectedLeagueId : null])) }}"
+            >
+                Auto-Matches
+            </a>
+        </nav>
+
         <form class="admin-league-picker" method="get" action="{{ route('admin.matches') }}">
+            @if ($tab === 'auto')
+                <input type="hidden" name="tab" value="auto">
+            @endif
             <label for="league_id">Liga</label>
             <select id="league_id" name="league_id" onchange="this.form.submit()">
                 <option value="">— Liga wählen —</option>
@@ -52,7 +75,169 @@
             </div>
         @endif
 
-        @if ($selectedLeagueId <= 0)
+        @if ($tab === 'auto')
+            @if ($selectedLeagueId <= 0)
+                <p class="hint">Wähle oben eine Liga, um Spiele automatisch anzulegen.</p>
+            @else
+                <p class="hint">Liga: <strong>{{ $selectedLeagueTitle }}</strong></p>
+
+                <form
+                    class="admin-form admin-auto-matches-upload"
+                    method="post"
+                    enctype="multipart/form-data"
+                    action="{{ route('admin.matches.auto.analyze') }}"
+                    accept-charset="UTF-8"
+                >
+                    @csrf
+                    <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
+                    <div class="admin-field">
+                        <label for="matchrounds_json">Spielplan-JSON</label>
+                        <input
+                            id="matchrounds_json"
+                            type="file"
+                            name="matchrounds_json"
+                            accept=".json,application/json"
+                            required
+                        >
+                        <p class="hint">
+                            JSON mit <code>spieltage[].spiele[].heim</code> / <code>gast</code>. Max. 2&nbsp;MB.
+                            Alle Teams müssen bereits in der DB existieren.
+                        </p>
+                    </div>
+                    <div class="admin-actions">
+                        <button type="submit" class="admin-submit">Spiele prüfen</button>
+                    </div>
+                </form>
+
+                @if ($autoAnalyzed && count($autoMatches) > 0)
+                    <div class="admin-auto-matches-result">
+                        @if ($autoSource !== '')
+                            <p class="muted">Datei: {{ $autoSource }}</p>
+                        @endif
+
+                        <form
+                            class="admin-form admin-auto-matches-form"
+                            id="admin-auto-matches-form"
+                            method="post"
+                            action="{{ route('admin.matches.auto.store') }}"
+                            accept-charset="UTF-8"
+                        >
+                            @csrf
+                            <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
+                            <input type="hidden" name="source_name" value="{{ $autoSource }}">
+
+                            <div class="admin-auto-matches-table-wrap">
+                                <table class="admin-auto-matches-table" id="admin-auto-matches-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Spielrunde *</th>
+                                            <th>Datum *</th>
+                                            <th>Heim *</th>
+                                            <th>Gast *</th>
+                                            <th>Status</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($autoMatches as $index => $match)
+                                            <tr class="admin-auto-match-row">
+                                                <td>
+                                                    <input type="hidden" name="matches[{{ $index }}][home_name]" value="{{ $match['home_name'] ?? '' }}">
+                                                    <input type="hidden" name="matches[{{ $index }}][guest_name]" value="{{ $match['guest_name'] ?? '' }}">
+                                                    <input type="hidden" name="matches[{{ $index }}][spieltag]" value="{{ $match['spieltag'] ?? '' }}">
+                                                    <select
+                                                        name="matches[{{ $index }}][match_round]"
+                                                        required
+                                                        aria-label="Spielrunde {{ $index + 1 }}"
+                                                    >
+                                                        <option value=""></option>
+                                                        @foreach ($matchrounds as $round)
+                                                            <option
+                                                                value="{{ $round['matchround_id'] }}"
+                                                                @selected((string) ($match['match_round'] ?? '') === (string) $round['matchround_id'])
+                                                            >
+                                                                {{ $round['matchround_title'] }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input
+                                                        type="date"
+                                                        name="matches[{{ $index }}][match_date]"
+                                                        value="{{ $match['match_date'] ?? '' }}"
+                                                        required
+                                                        aria-label="Datum {{ $index + 1 }}"
+                                                    >
+                                                </td>
+                                                <td>
+                                                    <select
+                                                        name="matches[{{ $index }}][match_hometeam_id]"
+                                                        required
+                                                        aria-label="Heimteam {{ $index + 1 }}"
+                                                    >
+                                                        <option value=""></option>
+                                                        @foreach ($teams as $team)
+                                                            <option
+                                                                value="{{ $team['team_id'] }}"
+                                                                @selected((string) ($match['match_hometeam_id'] ?? '') === (string) $team['team_id'])
+                                                            >
+                                                                {{ $team['team_label'] }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <select
+                                                        name="matches[{{ $index }}][match_guestteam_id]"
+                                                        required
+                                                        aria-label="Gastteam {{ $index + 1 }}"
+                                                    >
+                                                        <option value=""></option>
+                                                        @foreach ($teams as $team)
+                                                            <option
+                                                                value="{{ $team['team_id'] }}"
+                                                                @selected((string) ($match['match_guestteam_id'] ?? '') === (string) $team['team_id'])
+                                                            >
+                                                                {{ $team['team_label'] }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input
+                                                        type="text"
+                                                        name="matches[{{ $index }}][match_status]"
+                                                        value="{{ $match['match_status'] ?? '' }}"
+                                                        maxlength="255"
+                                                        placeholder="leer = OK"
+                                                        aria-label="Status {{ $index + 1 }}"
+                                                    >
+                                                </td>
+                                                <td class="admin-auto-match-actions">
+                                                    <button
+                                                        type="button"
+                                                        class="admin-icon-btn admin-auto-match-discard"
+                                                        title="Zeile verwerfen"
+                                                        aria-label="Zeile verwerfen"
+                                                    >
+                                                        <img src="{{ $legacyBase }}images/ffb/symbols/delete.png" alt="" width="16" height="16">
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="admin-actions">
+                                <button type="submit" class="admin-submit">Spiele anlegen</button>
+                            </div>
+                        </form>
+                    </div>
+                @endif
+            @endif
+        @elseif ($selectedLeagueId <= 0)
             <p class="hint">Wähle oben eine Liga, um deren Spiele zu verwalten.</p>
         @elseif ($matchrounds === [])
             <p class="hint">Liga: <strong>{{ $selectedLeagueTitle }}</strong> — noch keine Spielrunden. Lege zuerst unter Spielrunden welche an.</p>
@@ -128,7 +313,7 @@
         @endif
     </section>
 
-    @if ($selectedLeagueId > 0)
+    @if ($tab === 'manual' && $selectedLeagueId > 0)
         <section class="panel admin-main" aria-labelledby="admin-matches-list-title">
             <div class="section-head">
                 <h2 id="admin-matches-list-title">Vorhandene Spiele</h2>
@@ -191,3 +376,23 @@
         </section>
     @endif
 @endsection
+
+@if ($tab === 'auto')
+@push('scripts')
+<script>
+(function () {
+    const table = document.getElementById('admin-auto-matches-table');
+    if (!table) return;
+
+    table.addEventListener('click', function (event) {
+        const button = event.target.closest('.admin-auto-match-discard');
+        if (!button) return;
+        const row = button.closest('tr.admin-auto-match-row');
+        if (row) {
+            row.remove();
+        }
+    });
+})();
+</script>
+@endpush
+@endif

@@ -259,6 +259,34 @@ class AdminTeamService
      */
     public function analyzeMatchroundsFile(?UploadedFile $file): array
     {
+        $parsed = $this->parseMatchroundsUpload($file);
+        if (! ($parsed['ok'] ?? false)) {
+            return ['ok' => false, 'errors' => $parsed['errors'] ?? ['Analyse fehlgeschlagen.']];
+        }
+
+        /** @var array<string, mixed> $data */
+        $data = $parsed['data'];
+        $names = $this->extractTeamNamesFromMatchrounds($data);
+        if ($names === []) {
+            return ['ok' => false, 'errors' => ['In der JSON-Datei wurden keine Teams gefunden (erwartet: spieltage[].spiele[].heim/gast).']];
+        }
+
+        $auto = $this->compareTeamNames($names, (string) $parsed['source_name']);
+
+        return [
+            'ok' => true,
+            'auto' => $auto,
+            'message' => count($auto['missing']).' neue Teams, '.count($auto['present']).' bereits vorhanden.',
+        ];
+    }
+
+    /**
+     * Decode and validate a Spielplan JSON upload.
+     *
+     * @return array{ok: bool, errors?: list<string>, data?: array<string, mixed>, source_name?: string}
+     */
+    public function parseMatchroundsUpload(?UploadedFile $file): array
+    {
         if ($file === null) {
             return ['ok' => false, 'errors' => ['Bitte eine JSON-Datei auswählen.']];
         }
@@ -281,18 +309,93 @@ class AdminTeamService
             return ['ok' => false, 'errors' => ['Ungültige JSON-Datei.']];
         }
 
-        $names = $this->extractTeamNamesFromMatchrounds($data);
-        if ($names === []) {
-            return ['ok' => false, 'errors' => ['In der JSON-Datei wurden keine Teams gefunden (erwartet: spieltage[].spiele[].heim/gast).']];
+        if (! isset($data['spieltage']) || ! is_array($data['spieltage'])) {
+            return ['ok' => false, 'errors' => ['JSON muss ein Array "spieltage" enthalten.']];
         }
-
-        $auto = $this->compareTeamNames($names, (string) $file->getClientOriginalName());
 
         return [
             'ok' => true,
-            'auto' => $auto,
-            'message' => count($auto['missing']).' neue Teams, '.count($auto['present']).' bereits vorhanden.',
+            'data' => $data,
+            'source_name' => (string) $file->getClientOriginalName(),
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return list<string>
+     */
+    public function extractTeamNamesFromMatchrounds(array $data): array
+    {
+        $spieltage = $data['spieltage'] ?? null;
+        if (! is_array($spieltage)) {
+            return [];
+        }
+
+        $unique = [];
+        foreach ($spieltage as $round) {
+            if (! is_array($round)) {
+                continue;
+            }
+
+            $spiele = $round['spiele'] ?? null;
+            if (! is_array($spiele)) {
+                continue;
+            }
+
+            foreach ($spiele as $match) {
+                if (! is_array($match)) {
+                    continue;
+                }
+
+                foreach (['heim', 'gast'] as $side) {
+                    $name = trim((string) ($match[$side] ?? ''));
+                    if ($name === '') {
+                        continue;
+                    }
+
+                    $key = mb_strtolower($name);
+                    if (! isset($unique[$key])) {
+                        $unique[$key] = $name;
+                    }
+                }
+            }
+        }
+
+        $names = array_values($unique);
+        natcasesort($names);
+
+        return array_values($names);
+    }
+
+    /**
+     * @param  list<string>  $names
+     * @return list<string>
+     */
+    public function missingTeamNames(array $names): array
+    {
+        $comparison = $this->compareTeamNames($names, '');
+
+        return array_values(array_map(
+            static fn (array $row): string => (string) $row['team_name'],
+            $comparison['missing'],
+        ));
+    }
+
+    /**
+     * @return array<string, int> lowercase team name => team_id
+     */
+    public function teamIdsByName(): array
+    {
+        $map = [];
+        foreach (Team::query()->get(['team_id', 'team_name']) as $team) {
+            $key = mb_strtolower(trim((string) $team->team_name));
+            if ($key === '' || isset($map[$key])) {
+                continue;
+            }
+            $map[$key] = (int) $team->team_id;
+        }
+
+        return $map;
     }
 
     /**
@@ -409,53 +512,6 @@ class AdminTeamService
                 ? '1 Team erfolgreich hinzugefügt.'
                 : $created.' Teams erfolgreich hinzugefügt.',
         ];
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     * @return list<string>
-     */
-    private function extractTeamNamesFromMatchrounds(array $data): array
-    {
-        $spieltage = $data['spieltage'] ?? null;
-        if (! is_array($spieltage)) {
-            return [];
-        }
-
-        $unique = [];
-        foreach ($spieltage as $round) {
-            if (! is_array($round)) {
-                continue;
-            }
-
-            $spiele = $round['spiele'] ?? null;
-            if (! is_array($spiele)) {
-                continue;
-            }
-
-            foreach ($spiele as $match) {
-                if (! is_array($match)) {
-                    continue;
-                }
-
-                foreach (['heim', 'gast'] as $side) {
-                    $name = trim((string) ($match[$side] ?? ''));
-                    if ($name === '') {
-                        continue;
-                    }
-
-                    $key = mb_strtolower($name);
-                    if (! isset($unique[$key])) {
-                        $unique[$key] = $name;
-                    }
-                }
-            }
-        }
-
-        $names = array_values($unique);
-        natcasesort($names);
-
-        return array_values($names);
     }
 
     /**
