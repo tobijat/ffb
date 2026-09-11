@@ -72,12 +72,10 @@ class AdminCenterTest extends TestCase
                         'league_status' => 1,
                         'league_archive' => 0,
                         'league_visible' => 1,
-                        'league_countdown' => 0,
                         'flags' => [
                             ['label' => 'aktiv', 'tone' => 'ok'],
                             ['label' => 'aktuell', 'tone' => 'ok'],
                             ['label' => 'sichtbar', 'tone' => 'ok'],
-                            ['label' => 'Countdown aus', 'tone' => 'muted'],
                         ],
                     ],
                     [
@@ -88,12 +86,10 @@ class AdminCenterTest extends TestCase
                         'league_status' => 0,
                         'league_archive' => 1,
                         'league_visible' => 0,
-                        'league_countdown' => 0,
                         'flags' => [
                             ['label' => 'inaktiv', 'tone' => 'off'],
                             ['label' => 'archiviert', 'tone' => 'warn'],
                             ['label' => 'unsichtbar', 'tone' => 'off'],
-                            ['label' => 'Countdown aus', 'tone' => 'muted'],
                         ],
                     ],
                 ],

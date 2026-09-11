@@ -221,7 +221,6 @@ class AdminCenterService
                 $status = (int) (bool) $league->league_status;
                 $archive = (int) (bool) $league->league_archive;
                 $visible = (int) (bool) $league->league_visible;
-                $countdown = (int) (bool) $league->league_countdown;
 
                 return [
                     'league_id' => (int) $league->league_id,
@@ -231,7 +230,6 @@ class AdminCenterService
                     'league_status' => $status,
                     'league_archive' => $archive,
                     'league_visible' => $visible,
-                    'league_countdown' => $countdown,
                     'flags' => [
                         [
                             'label' => $status ? 'aktiv' : 'inaktiv',
@@ -244,10 +242,6 @@ class AdminCenterService
                         [
                             'label' => $visible ? 'sichtbar' : 'unsichtbar',
                             'tone' => $visible ? 'ok' : 'off',
-                        ],
-                        [
-                            'label' => $countdown ? 'Countdown an' : 'Countdown aus',
-                            'tone' => $countdown ? 'ok' : 'muted',
                         ],
                     ],
                 ];

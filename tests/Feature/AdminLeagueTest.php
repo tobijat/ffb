@@ -57,18 +57,15 @@ class AdminLeagueTest extends TestCase
                         'league_status' => 1,
                         'league_visible' => 1,
                         'league_archive' => 0,
-                        'league_countdown' => 0,
                         'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
                     ],
                 ],
                 'form' => array_merge([
                     'league_id' => '',
                     'league_title' => '',
-                    'league_description' => '',
                     'league_status' => 1,
                     'league_visible' => 1,
                     'league_archive' => 0,
-                    'league_countdown' => 0,
                     'league_symbol' => 'symbol_game_na.png',
                     'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
                 ], $this->defaultOptions()),
@@ -105,7 +102,6 @@ class AdminLeagueTest extends TestCase
                 'league_status' => 1,
                 'league_visible' => 1,
                 'league_archive' => 0,
-                'league_countdown' => 0,
             ])
             ->assertRedirect(route('admin.leagues'))
             ->assertSessionHas('admin_message', 'Liga erfolgreich angelegt.');

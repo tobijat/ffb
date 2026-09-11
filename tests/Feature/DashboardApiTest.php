@@ -71,7 +71,6 @@ class DashboardApiTest extends TestCase
                         'league_symbol' => 'x.png',
                         'league_archive' => 0,
                         'league_visible' => 1,
-                        'league_countdown' => 1,
                         'league_status' => 1,
                         'symbol_url' => '/images/ffb/symbols/x.png',
                     ],
