@@ -1892,3 +1892,63 @@
         grid-template-columns: repeat(auto-fill, minmax(3.4rem, 1fr));
     }
 }
+
+.admin-auto-teams-upload {
+    margin-top: 12px;
+}
+
+.admin-auto-teams-result {
+    margin-top: 16px;
+}
+
+.admin-auto-teams-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+.admin-auto-teams-column h3 {
+    margin: 0 0 8px;
+    font-size: 11pt;
+}
+
+.admin-auto-teams-list {
+    margin: 0;
+    padding-left: 1.2em;
+}
+
+.admin-auto-teams-list li {
+    margin: 0.25em 0;
+}
+
+.admin-auto-teams-table-wrap {
+    overflow-x: auto;
+    margin-bottom: 10px;
+}
+
+.admin-auto-teams-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+}
+
+.admin-auto-teams-table th,
+.admin-auto-teams-table td {
+    padding: 4px 6px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid #b5d6b5;
+}
+
+.admin-auto-teams-table input[type="text"],
+.admin-auto-teams-table select {
+    width: 100%;
+    max-width: 14rem;
+}
+
+@media (max-width: 900px) {
+    .admin-auto-teams-columns {
+        grid-template-columns: 1fr;
+    }
+}

@@ -14,19 +14,22 @@ class AdminTeamController extends Controller
     public function __construct(
         private readonly FfbAuth $auth,
         private readonly AdminTeamService $teams,
-    ) {
-    }
+    ) {}
 
     public function show(Request $request): View
     {
         $userId = $this->auth->userId($request);
         $errors = session('admin_errors');
+        $tab = $request->query('tab') === 'auto' ? 'auto' : 'manual';
+        $auto = session('admin_teams_auto');
 
         return $this->render(
             $userId,
             null,
             'create',
             is_array($errors) ? $errors : [],
+            $tab,
+            is_array($auto) ? $auto : null,
         );
     }
 
@@ -105,18 +108,70 @@ class AdminTeamController extends Controller
             ->with('admin_errors', $result['errors'] ?? ['Löschen fehlgeschlagen.']);
     }
 
+    public function analyzeAuto(Request $request): RedirectResponse
+    {
+        $result = $this->teams->analyzeMatchroundsFile($request->file('matchrounds_json'));
+
+        if (! ($result['ok'] ?? false)) {
+            return redirect()
+                ->route('admin.teams', ['tab' => 'auto'])
+                ->with('admin_errors', $result['errors'] ?? ['Analyse fehlgeschlagen.']);
+        }
+
+        session(['admin_teams_auto' => $result['auto']]);
+
+        return redirect()
+            ->route('admin.teams', ['tab' => 'auto'])
+            ->with('admin_message', $result['message'] ?? null);
+    }
+
+    public function storeAuto(Request $request): RedirectResponse
+    {
+        /** @var list<array<string, mixed>>|array<int, array<string, mixed>> $teams */
+        $teams = $request->input('teams', []);
+        if (! is_array($teams)) {
+            $teams = [];
+        }
+
+        $sourceName = (string) ($request->input('source_name') ?: (session('admin_teams_auto.source_name') ?? ''));
+        $result = $this->teams->createMissingTeams($teams, $sourceName);
+
+        if (! ($result['ok'] ?? false)) {
+            if (isset($result['auto']) && is_array($result['auto'])) {
+                $previous = session('admin_teams_auto');
+                if (is_array($previous) && isset($previous['present']) && is_array($previous['present'])) {
+                    $result['auto']['present'] = $previous['present'];
+                }
+                session(['admin_teams_auto' => $result['auto']]);
+            }
+
+            return redirect()
+                ->route('admin.teams', ['tab' => 'auto'])
+                ->with('admin_errors', $result['errors'] ?? ['Anlegen fehlgeschlagen.']);
+        }
+
+        session()->forget('admin_teams_auto');
+
+        return redirect()
+            ->route('admin.teams', ['tab' => 'auto'])
+            ->with('admin_message', $result['message'] ?? null);
+    }
+
     /**
      * @param  array<string, mixed>|null  $form
      * @param  list<string>  $errors
+     * @param  array<string, mixed>|null  $auto
      */
     private function render(
         int $userId,
         ?array $form = null,
         string $mode = 'create',
         array $errors = [],
+        string $tab = 'manual',
+        ?array $auto = null,
     ): View {
         return view('admin.teams', [
-            'data' => $this->teams->pagePayload($userId, $form, $mode),
+            'data' => $this->teams->pagePayload($userId, $form, $mode, $tab, $auto),
             'errors' => $errors,
             'answer' => session('admin_message'),
             'legacyBase' => '/',

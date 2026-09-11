@@ -1,24 +1,45 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Teams')
 
-@section('content')
-    @php
-        $form = $data['form'];
-        $mode = $data['mode'];
-        $items = $data['items'];
-        $icons = $data['icons'];
-        $prices = $data['prices'];
-        $selectedSymbol = $data['selected_symbol'] ?? null;
-        $usesIconPicker = (bool) ($data['uses_icon_picker'] ?? true);
-        $flashErrors = $errors ?: (session('admin_errors') ?: []);
-        $selectedIcon = (string) $form['team_nationality'];
-    @endphp
+@php
+    $form = $data['form'];
+    $mode = $data['mode'];
+    $items = $data['items'];
+    $icons = $data['icons'];
+    $prices = $data['prices'];
+    $tab = ($data['tab'] ?? 'manual') === 'auto' ? 'auto' : 'manual';
+    $auto = $data['auto'] ?? ['analyzed' => false, 'source_name' => '', 'present' => [], 'missing' => []];
+    $selectedSymbol = $data['selected_symbol'] ?? null;
+    $usesIconPicker = (bool) ($data['uses_icon_picker'] ?? true);
+    $flashErrors = $errors ?: (session('admin_errors') ?: []);
+    $selectedIcon = (string) $form['team_nationality'];
+    $autoPresent = is_array($auto['present'] ?? null) ? $auto['present'] : [];
+    $autoMissing = is_array($auto['missing'] ?? null) ? $auto['missing'] : [];
+    $autoAnalyzed = (bool) ($auto['analyzed'] ?? false);
+    $autoSource = (string) ($auto['source_name'] ?? '');
+@endphp
 
+@section('content')
     <section class="panel admin-main" aria-labelledby="admin-teams-title">
         <div class="section-head">
             <h2 id="admin-teams-title">Teams</h2>
         </div>
+
+        <nav class="admin-squad-tabs ffb-tabs" aria-label="Teams-Bereiche">
+            <a
+                class="admin-squad-tab ffb-tab{{ $tab === 'manual' ? ' is-active' : '' }}"
+                href="{{ route('admin.teams') }}"
+            >
+                Teams
+            </a>
+            <a
+                class="admin-squad-tab ffb-tab{{ $tab === 'auto' ? ' is-active' : '' }}"
+                href="{{ route('admin.teams', ['tab' => 'auto']) }}"
+            >
+                Auto-Teams
+            </a>
+        </nav>
 
         @if (!empty($flashErrors))
             <div class="account-flash account-flash-error" role="alert">
@@ -37,6 +58,152 @@
             </div>
         @endif
 
+        @if ($tab === 'auto')
+            <form
+                class="admin-form admin-auto-teams-upload"
+                method="post"
+                enctype="multipart/form-data"
+                action="{{ route('admin.teams.auto.analyze') }}"
+                accept-charset="UTF-8"
+            >
+                @csrf
+                <div class="admin-field">
+                    <label for="matchrounds_json">Spielplan-JSON</label>
+                    <input
+                        id="matchrounds_json"
+                        type="file"
+                        name="matchrounds_json"
+                        accept=".json,application/json"
+                        required
+                    >
+                    <p class="hint">
+                        JSON mit <code>spieltage[].spiele[].heim</code> / <code>gast</code>. Max. 2&nbsp;MB.
+                    </p>
+                </div>
+                <div class="admin-actions">
+                    <button type="submit" class="admin-submit">Teams prüfen</button>
+                </div>
+            </form>
+
+            @if ($autoAnalyzed)
+                <div class="admin-auto-teams-result">
+                    @if ($autoSource !== '')
+                        <p class="muted">Datei: {{ $autoSource }}</p>
+                    @endif
+
+                    <div class="admin-auto-teams-columns">
+                        <section class="admin-auto-teams-column" aria-labelledby="admin-auto-present-title">
+                            <h3 id="admin-auto-present-title">
+                                Bereits vorhanden
+                                <span class="admin-squad-count">{{ count($autoPresent) }}</span>
+                            </h3>
+                            @if (count($autoPresent) === 0)
+                                <p class="muted">Keine der Teams aus der Datei sind bereits angelegt.</p>
+                            @else
+                                <ul class="admin-auto-teams-list">
+                                    @foreach ($autoPresent as $present)
+                                        <li>
+                                            <strong>{{ $present['team_name'] }}</strong>
+                                            <span class="muted">#{{ $present['team_id'] }}</span>
+                                            @if (($present['team_nationality'] ?? '') !== '')
+                                                <span class="muted">{{ $present['team_nationality'] }}</span>
+                                            @endif
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </section>
+
+                        <section class="admin-auto-teams-column" aria-labelledby="admin-auto-missing-title">
+                            <h3 id="admin-auto-missing-title">
+                                Noch nicht vorhanden
+                                <span class="admin-squad-count">{{ count($autoMissing) }}</span>
+                            </h3>
+                            @if (count($autoMissing) === 0)
+                                <p class="muted">Alle Teams aus der Datei sind bereits in der Datenbank.</p>
+                            @else
+                                <form
+                                    class="admin-form"
+                                    method="post"
+                                    action="{{ route('admin.teams.auto.store') }}"
+                                    accept-charset="UTF-8"
+                                >
+                                    @csrf
+                                    <input type="hidden" name="source_name" value="{{ $autoSource }}">
+
+                                    <div class="admin-auto-teams-table-wrap">
+                                        <table class="admin-auto-teams-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Teamname *</th>
+                                                    <th>Symbol</th>
+                                                    <th>Preis</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($autoMissing as $index => $missing)
+                                                    <tr>
+                                                        <td>
+                                                            <input
+                                                                type="text"
+                                                                name="teams[{{ $index }}][team_name]"
+                                                                value="{{ $missing['team_name'] ?? '' }}"
+                                                                maxlength="255"
+                                                                required
+                                                                aria-label="Teamname {{ $index + 1 }}"
+                                                            >
+                                                        </td>
+                                                        <td>
+                                                            <input
+                                                                type="text"
+                                                                name="teams[{{ $index }}][team_nationality]"
+                                                                value="{{ $missing['team_nationality'] ?? '' }}"
+                                                                maxlength="32"
+                                                                placeholder="z. B. ger"
+                                                                aria-label="Symbol {{ $index + 1 }}"
+                                                            >
+                                                        </td>
+                                                        <td>
+                                                            <select
+                                                                name="teams[{{ $index }}][team_price]"
+                                                                aria-label="Preis {{ $index + 1 }}"
+                                                            >
+                                                                @foreach ($prices as $price)
+                                                                    <option
+                                                                        value="{{ $price }}"
+                                                                        @selected((int) ($missing['team_price'] ?? 5) === (int) $price)
+                                                                    >
+                                                                        {{ $price }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select
+                                                                name="teams[{{ $index }}][team_status]"
+                                                                aria-label="Status {{ $index + 1 }}"
+                                                            >
+                                                                <option value="1" @selected((int) ($missing['team_status'] ?? 1) === 1)>aktiv</option>
+                                                                <option value="0" @selected((int) ($missing['team_status'] ?? 1) === 0)>inaktiv</option>
+                                                            </select>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="admin-actions">
+                                        <button type="submit" class="admin-submit">Teams anlegen</button>
+                                    </div>
+                                </form>
+                            @endif
+                        </section>
+                    </div>
+                </div>
+            @endif
+        @else
         <form
             class="admin-form"
             method="post"
@@ -218,8 +385,10 @@
                 @endif
             </div>
         </form>
+        @endif
     </section>
 
+    @if ($tab === 'manual')
     <section class="panel admin-main" aria-labelledby="admin-teams-list-title">
         <div class="section-head">
             <h2 id="admin-teams-list-title">Vorhandene Teams</h2>
@@ -285,8 +454,10 @@
             <p class="muted">Noch keine Teams.</p>
         @endforelse
     </section>
+    @endif
 @endsection
 
+@if ($tab === 'manual')
 @push('scripts')
 <script>
 (function () {
@@ -402,3 +573,4 @@
 })();
 </script>
 @endpush
+@endif
