@@ -237,9 +237,6 @@
                         'options_score_penaltyshootout_save' => 'im Elfmeterschießen gehalten',
                         'options_score_penaltyshootout_lost' => 'im Elfmeterschießen verschossen',
                         'options_score_penaltyshootout_hit' => 'im Elfmeterschießen getroffen',
-                        'options_score_high_win' => 'High-Win',
-                        'options_score_high_loss' => 'High-Loss',
-                        'options_score_high_win_loss_treshold' => 'High-Schwelle',
                     ] as $name => $label)
                         <div class="admin-option-field">
                             <label for="{{ $name }}">{{ $label }}</label>

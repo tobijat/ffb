@@ -556,44 +556,29 @@ class AdminMatchdataService
 
                     if ($teamId === $homeTeamId) {
                         $oppScore = $guestscore;
-                        $winMargin = $homescore - $guestscore;
-                        $lossMargin = $guestscore - $homescore;
                     } elseif ($teamId === $guestTeamId) {
                         $oppScore = $homescore;
-                        $winMargin = $guestscore - $homescore;
-                        $lossMargin = $homescore - $guestscore;
                     } else {
                         continue;
                     }
 
                     $scoreNooppgoals = $this->calcScoreOppGoalsNo($oppScore, $position, $statMinutes);
-                    $scoreHighWin = $this->calcScoreHighWin($winMargin, $statMinutes);
-                    $scoreHighLoss = $this->calcScoreHighLoss($lossMargin, $statMinutes);
 
-                    // Legacy quirk: the new high win/loss values are stored but never added back
-                    // into the total, while the old ones are subtracted. New mode additionally
-                    // leaves the oppgoals part untouched (it is goal minute dependent).
                     if ($pm === 'new') {
                         $score = (int) $stat->playerstats_score
                             - (int) $stat->playerstats_score_nooppgoals
-                            - (int) $stat->playerstats_score_high_loss
-                            - (int) $stat->playerstats_score_high_win
                             + $scoreNooppgoals;
                     } else {
                         $scoreOppgoals = $this->calcScoreOppGoals($oppScore, $position, $statMinutes);
                         $score = (int) $stat->playerstats_score
                             - (int) $stat->playerstats_score_oppgoals
                             - (int) $stat->playerstats_score_nooppgoals
-                            - (int) $stat->playerstats_score_high_loss
-                            - (int) $stat->playerstats_score_high_win
                             + $scoreOppgoals
                             + $scoreNooppgoals;
                         $stat->playerstats_score_oppgoals = $scoreOppgoals;
                     }
 
                     $stat->playerstats_score_nooppgoals = $scoreNooppgoals;
-                    $stat->playerstats_score_high_win = $scoreHighWin;
-                    $stat->playerstats_score_high_loss = $scoreHighLoss;
                     $stat->playerstats_score = $score;
                     $stat->save();
                 }
@@ -1071,32 +1056,6 @@ class AdminMatchdataService
     private function calcScorePenaltySaved(int $num): int
     {
         return (int) $this->options()->options_score_penalty_saved * $num;
-    }
-
-    private function calcScoreHighLoss(int $num, int $minutes): int
-    {
-        $options = $this->options();
-        if (
-            $minutes >= (int) $options->options_score_minutes_threshold_lower
-            && $num >= (int) $options->options_score_high_win_loss_treshold
-        ) {
-            return (int) $options->options_score_high_loss;
-        }
-
-        return 0;
-    }
-
-    private function calcScoreHighWin(int $num, int $minutes): int
-    {
-        $options = $this->options();
-        if (
-            $minutes >= (int) $options->options_score_minutes_threshold_lower
-            && $num >= (int) $options->options_score_high_win_loss_treshold
-        ) {
-            return (int) $options->options_score_high_win;
-        }
-
-        return 0;
     }
 
     private function calcScorePenaltyshootoutSave(int $num): int
