@@ -85,7 +85,7 @@ class DashboardService
         return [
             'ok' => true,
             'selected_league_id' => $leagueId,
-            'league_title' => $this->displayTitle($league, $isAdmin),
+            'league_title' => (string) $league->league_title,
         ];
     }
 
@@ -186,35 +186,33 @@ class DashboardService
                     $q->orWhere('league_id', $selectedLeagueId);
                 }
             })
-            ->whereHas('matchrounds')
+            ->withCount('matchrounds')
             ->orderBy('league_title');
 
         if (! $isAdmin) {
-            $query->where('league_visible', 1);
+            $query->where('league_visible', 1)
+                ->whereHas('matchrounds');
         }
 
         return $query
             ->get()
-            ->map(fn (League $league) => [
-                'league_id' => (int) $league->league_id,
-                'league_title' => $this->displayTitle($league, $isAdmin),
-                'league_symbol' => (string) ($league->league_symbol ?: 'symbol_game_na.png'),
-                'league_archive' => (int) (bool) $league->league_archive,
-                'league_visible' => (int) (bool) $league->league_visible,
-                'symbol_url' => '/images/ffb/symbols/'.($league->league_symbol ?: 'symbol_game_na.png'),
-            ])
+            ->map(function (League $league) use ($isAdmin): array {
+                $visible = (int) (bool) $league->league_visible;
+                $hasMatchrounds = (int) $league->matchrounds_count > 0;
+
+                return [
+                    'league_id' => (int) $league->league_id,
+                    'league_title' => (string) $league->league_title,
+                    'league_symbol' => (string) ($league->league_symbol ?: 'symbol_game_na.png'),
+                    'league_archive' => (int) (bool) $league->league_archive,
+                    'league_visible' => $visible,
+                    'has_matchrounds' => $hasMatchrounds,
+                    'is_faded' => $isAdmin && (! $visible || ! $hasMatchrounds),
+                    'symbol_url' => '/images/ffb/symbols/'.($league->league_symbol ?: 'symbol_game_na.png'),
+                ];
+            })
             ->values()
             ->all();
-    }
-
-    private function displayTitle(League $league, bool $showInvisibleHint): string
-    {
-        $title = (string) $league->league_title;
-        if ($showInvisibleHint && ! (int) $league->league_visible) {
-            return $title.' (unsichtbar)';
-        }
-
-        return $title;
     }
 
     /**

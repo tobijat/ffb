@@ -135,9 +135,6 @@ class ProfilePopupService
             [$start, $end] = $this->gameDateRange($leagueId, $archive);
             $visible = (int) (bool) $league->league_visible;
             $title = (string) $league->league_title;
-            if ($viewerIsAdmin && ! $visible) {
-                $title .= ' (unsichtbar)';
-            }
 
             $out[] = [
                 'league_id' => $leagueId,

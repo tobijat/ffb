@@ -255,6 +255,15 @@
     border-color: #990000;
 }
 
+.game-tile.is-faded {
+    opacity: 0.45;
+}
+
+.game-tile.is-faded:hover,
+.game-tile.is-faded.is-selected {
+    opacity: 0.7;
+}
+
 .game-tile img {
     width: 56px;
     height: 56px;
