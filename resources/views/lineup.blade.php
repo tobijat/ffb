@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/start.css?v=20">
     <link rel="stylesheet" href="css/dashboard.css?v=11">
     <link rel="stylesheet" href="css/modal.css?v=9">
-    <link rel="stylesheet" href="css/myteam.css?v=8">
+    <link rel="stylesheet" href="css/myteam.css?v=9">
     <link rel="stylesheet" href="css/lineup.css?v=3">
 </head>
 <body class="dash-body">

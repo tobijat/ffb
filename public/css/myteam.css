@@ -209,9 +209,9 @@
 }
 
 .match-list .score {
-    font-weight: bold;
+    font-weight: normal;
     text-align: center;
-    min-width: 3.5rem;
+    min-width: 4.5rem;
     line-height: 1.15;
 }
 
