@@ -296,7 +296,7 @@
         ) {
             return escapeHtml(match.match_homescore) + ':' + escapeHtml(match.match_guestscore);
         }
-        return '-:-';
+        return escapeHtml(match.match_date || '-:-');
     }
 
     function renderMatches() {
