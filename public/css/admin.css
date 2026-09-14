@@ -2067,6 +2067,22 @@
     max-width: 9rem;
 }
 
+.admin-auto-squad-photo {
+    width: 48px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.admin-auto-squad-photo img {
+    display: block;
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin: 0 auto;
+    background: #f0f0f0;
+}
+
 .admin-auto-squad-num {
     white-space: nowrap;
     color: #666;
@@ -2152,5 +2168,29 @@
     width: 100%;
     min-width: 4.5rem;
     max-width: 8rem;
+}
+
+.admin-squad-images-form {
+    margin-top: 1rem;
+    max-width: none;
+}
+
+.admin-squad-images-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.admin-squad-images-table tr.status-nicht_gefunden {
+    background: rgba(180, 80, 40, 0.04);
+}
+
+.admin-squad-images-table tr.status-gefunden {
+    background: rgba(40, 140, 80, 0.05);
+}
+
+.admin-auto-squad-badge.is-found {
+    background: rgba(40, 140, 80, 0.15);
 }
 

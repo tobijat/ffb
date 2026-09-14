@@ -25,6 +25,7 @@ class AdminSquadService
     public function __construct(
         private readonly AdminCenterService $adminCenter,
         private readonly AdminPlayerService $players,
+        private readonly WikimediaPlayerImageService $wikimediaImages,
     ) {}
 
     /**
@@ -36,6 +37,7 @@ class AdminSquadService
         ?int $squadLeagueId = null,
         string $tab = 'roster',
         ?array $auto = null,
+        ?array $images = null,
     ): array {
         $shell = $this->adminCenter->shellPayload($userId);
         $leagueId = $this->resolveSquadLeagueId($squadLeagueId, $shell);
@@ -53,8 +55,20 @@ class AdminSquadService
         $resolvedTab = match ($tab) {
             'add' => 'add',
             'auto' => 'auto',
+            'images' => 'images',
             default => 'roster',
         };
+
+        $imageState = $images ?? $this->emptyImagesState();
+        if ($resolvedTab === 'images' && $teamId > 0 && $leagueId > 0) {
+            $imageState['team_id'] = $teamId;
+            $imageState['league_id'] = $leagueId;
+            // Keep check results when re-rendering after POST; otherwise load fresh roster.
+            if (! (bool) ($imageState['checked'] ?? false) || ($imageState['players'] ?? []) === []) {
+                $imageState['players'] = $this->squadImagePlayers($teamId, $leagueId);
+                $imageState['checked'] = false;
+            }
+        }
 
         return [
             'user' => $shell['user'],
@@ -88,7 +102,272 @@ class AdminSquadService
             'hint' => 'Position und Preis gelten pro Liga.',
             'tab' => $resolvedTab,
             'auto' => $auto ?? $this->emptyAutoState(),
+            'images' => $imageState,
         ];
+    }
+
+    /**
+     * @return array{
+     *     checked: bool,
+     *     team_id: int,
+     *     league_id: int,
+     *     players: list<array<string, mixed>>
+     * }
+     */
+    public function emptyImagesState(): array
+    {
+        return [
+            'checked' => false,
+            'team_id' => 0,
+            'league_id' => 0,
+            'players' => [],
+        ];
+    }
+
+    /**
+     * Resolve Wikimedia portraits for squad players without a local image (no DB/file writes).
+     *
+     * @param  array<int|string, mixed>  $lookupNames  player_id => lookup name override
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     team_id: int,
+     *     league_id: int,
+     *     images?: array{checked: bool, team_id: int, league_id: int, players: list<array<string, mixed>>}
+     * }
+     */
+    public function checkWikimediaImagesForSquadPlayers(int $teamId, int $leagueId, array $lookupNames = []): array
+    {
+        $guard = $this->guardImagesTeamLeague($teamId, $leagueId);
+        if ($guard !== null) {
+            return $guard;
+        }
+
+        $players = $this->squadImagePlayers($teamId, $leagueId);
+        $normalizedLookups = [];
+        foreach ($lookupNames as $rawId => $rawName) {
+            $playerId = (int) $rawId;
+            $name = trim((string) $rawName);
+            if ($playerId > 0 && $name !== '') {
+                $normalizedLookups[$playerId] = $name;
+            }
+        }
+
+        $namesToResolve = [];
+        foreach ($players as $index => $row) {
+            if ((bool) ($row['has_picture'] ?? false)) {
+                $players[$index]['status'] = 'vorhanden';
+                $players[$index]['lookup_name'] = (string) ($row['display_name'] ?? '');
+                $players[$index]['commons_file'] = '';
+
+                continue;
+            }
+
+            $playerId = (int) ($row['player_id'] ?? 0);
+            $lookupName = $normalizedLookups[$playerId]
+                ?? (string) ($row['lookup_name'] ?? $row['display_name'] ?? '');
+            $players[$index]['lookup_name'] = $lookupName;
+            $players[$index]['commons_file'] = '';
+            $players[$index]['picture_url'] = '';
+            $players[$index]['has_picture'] = false;
+
+            if ($lookupName === '') {
+                $players[$index]['status'] = 'nicht_gefunden';
+
+                continue;
+            }
+
+            $namesToResolve[] = $lookupName;
+        }
+
+        $resolved = $namesToResolve !== []
+            ? $this->wikimediaImages->resolveImagesByPlayerNames($namesToResolve)
+            : [];
+
+        $foundCount = 0;
+        $missingCount = 0;
+        foreach ($players as $index => $row) {
+            if ((string) ($row['status'] ?? '') === 'vorhanden') {
+                continue;
+            }
+
+            $lookupName = (string) ($players[$index]['lookup_name'] ?? '');
+            $image = $lookupName !== '' ? ($resolved[$lookupName] ?? null) : null;
+            if ($image !== null) {
+                $players[$index]['status'] = 'gefunden';
+                $players[$index]['commons_file'] = $image['commons_file'];
+                $players[$index]['picture_url'] = $image['thumbnail_url'];
+                $foundCount++;
+            } else {
+                $players[$index]['status'] = 'nicht_gefunden';
+                $players[$index]['commons_file'] = '';
+                $players[$index]['picture_url'] = '';
+                $missingCount++;
+            }
+        }
+
+        $parts = [];
+        if ($foundCount === 1) {
+            $parts[] = '1 Bild gefunden';
+        } elseif ($foundCount > 1) {
+            $parts[] = $foundCount.' Bilder gefunden';
+        } else {
+            $parts[] = 'Keine Bilder gefunden';
+        }
+        if ($missingCount === 1) {
+            $parts[] = '1 ohne Treffer';
+        } elseif ($missingCount > 1) {
+            $parts[] = $missingCount.' ohne Treffer';
+        }
+
+        return [
+            'ok' => true,
+            'team_id' => $teamId,
+            'league_id' => $leagueId,
+            'message' => implode(' · ', $parts).'.',
+            'images' => [
+                'checked' => true,
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+                'players' => $players,
+            ],
+        ];
+    }
+
+    /**
+     * Persist Commons portraits for players already resolved as gefunden.
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @return array{ok: bool, message?: string, errors?: list<string>, team_id: int, league_id: int}
+     */
+    public function applyWikimediaImagesForSquadPlayers(int $teamId, int $leagueId, array $rows): array
+    {
+        $guard = $this->guardImagesTeamLeague($teamId, $leagueId);
+        if ($guard !== null) {
+            return $guard;
+        }
+
+        $toAssign = [];
+        foreach ($rows as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $playerId = (int) ($row['player_id'] ?? 0);
+            $commonsFile = trim((string) ($row['commons_file'] ?? ''));
+            if ($playerId <= 0 || $commonsFile === '') {
+                continue;
+            }
+            if (PlayerPicture::exists($teamId, $playerId)) {
+                continue;
+            }
+            $toAssign[] = [
+                'player_id' => $playerId,
+                'commons_file' => $commonsFile,
+                'thumbnail_url' => trim((string) ($row['thumbnail_url'] ?? '')),
+            ];
+        }
+
+        if ($toAssign === []) {
+            return [
+                'ok' => true,
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+                'message' => 'Keine gefundenen Bilder zum Übernehmen.',
+            ];
+        }
+
+        $result = $this->wikimediaImages->assignImagesToNewSquadPlayers($toAssign, $teamId, $leagueId);
+        $stored = (int) ($result['stored'] ?? 0);
+        if ($stored === 1) {
+            $message = '1 Bild übernommen.';
+        } elseif ($stored > 1) {
+            $message = $stored.' Bilder übernommen.';
+        } else {
+            $message = 'Keine Bilder konnten gespeichert werden.';
+        }
+
+        return [
+            'ok' => true,
+            'team_id' => $teamId,
+            'league_id' => $leagueId,
+            'message' => $message,
+        ];
+    }
+
+    /**
+     * @return array{ok: false, errors: list<string>, team_id: int, league_id: int}|null
+     */
+    private function guardImagesTeamLeague(int $teamId, int $leagueId): ?array
+    {
+        if ($teamId <= 0) {
+            return ['ok' => false, 'errors' => ['Bitte zuerst ein Team wählen.'], 'team_id' => 0, 'league_id' => $leagueId];
+        }
+        if ($leagueId <= 0) {
+            return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga wählen.'], 'team_id' => $teamId, 'league_id' => 0];
+        }
+        if (! Team::query()->whereKey($teamId)->exists()) {
+            return ['ok' => false, 'errors' => ['Team nicht gefunden.'], 'team_id' => $teamId, 'league_id' => $leagueId];
+        }
+        if (! League::query()->whereKey($leagueId)->exists()) {
+            return ['ok' => false, 'errors' => ['Liga nicht gefunden.'], 'team_id' => $teamId, 'league_id' => $leagueId];
+        }
+
+        return null;
+    }
+
+    /**
+     * All squad players for Auto-Bilder (any playerteam_status), including current picture state.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function squadImagePlayers(int $teamId, int $leagueId): array
+    {
+        $roster = $this->rosterItems($teamId, $leagueId);
+
+        $playerIds = [];
+        foreach ($roster as $item) {
+            $playerId = (int) ($item['player_id'] ?? 0);
+            if ($playerId > 0) {
+                $playerIds[] = $playerId;
+            }
+        }
+
+        $commonsByPlayerId = [];
+        if ($playerIds !== []) {
+            $commonsByPlayerId = Player::query()
+                ->whereIn('player_id', array_values(array_unique($playerIds)))
+                ->pluck('player_commons_image', 'player_id')
+                ->all();
+        }
+
+        return array_values(array_map(
+            function (array $item) use ($commonsByPlayerId): array {
+                $playerId = (int) ($item['player_id'] ?? 0);
+                $fname = (string) ($item['player_fname'] ?? '');
+                $lname = (string) ($item['player_lname'] ?? '');
+                $hasPicture = (bool) ($item['has_picture'] ?? false);
+                $displayName = $this->wikimediaImages->displayName($fname, $lname);
+
+                return [
+                    'playerteam_id' => (int) ($item['playerteam_id'] ?? 0),
+                    'player_id' => $playerId,
+                    'player_fname' => $fname,
+                    'player_lname' => $lname,
+                    'display_name' => $displayName,
+                    'lookup_name' => $displayName,
+                    'player_nationality' => (string) ($item['player_nationality'] ?? ''),
+                    'playerteam_player_position' => (string) ($item['playerteam_player_position'] ?? ''),
+                    'playerteam_player_price' => (int) ($item['playerteam_player_price'] ?? 0),
+                    'player_commons_image' => (string) ($commonsByPlayerId[$playerId] ?? ''),
+                    'commons_file' => '',
+                    'picture_url' => (string) ($item['picture_url'] ?? ''),
+                    'has_picture' => $hasPicture,
+                    'status' => $hasPicture ? 'vorhanden' : 'wird_geprueft',
+                ];
+            },
+            $roster,
+        ));
     }
 
     /**
