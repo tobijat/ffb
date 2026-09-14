@@ -12,6 +12,7 @@ use App\Support\Flag;
 use App\Support\PlayerPicture;
 use DateTimeImmutable;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class AdminSquadService
@@ -23,13 +24,19 @@ class AdminSquadService
 
     public function __construct(
         private readonly AdminCenterService $adminCenter,
+        private readonly AdminPlayerService $players,
     ) {}
 
     /**
      * @return array<string, mixed>
      */
-    public function pagePayload(int $userId, int $teamId, ?int $squadLeagueId = null): array
-    {
+    public function pagePayload(
+        int $userId,
+        int $teamId,
+        ?int $squadLeagueId = null,
+        string $tab = 'roster',
+        ?array $auto = null,
+    ): array {
         $shell = $this->adminCenter->shellPayload($userId);
         $leagueId = $this->resolveSquadLeagueId($squadLeagueId, $shell);
         $teams = $this->teamOptions($leagueId);
@@ -43,6 +50,11 @@ class AdminSquadService
         }
 
         $items = ($teamId > 0 && $leagueId > 0) ? $this->rosterItems($teamId, $leagueId) : [];
+        $resolvedTab = match ($tab) {
+            'add' => 'add',
+            'auto' => 'auto',
+            default => 'roster',
+        };
 
         return [
             'user' => $shell['user'],
@@ -74,6 +86,557 @@ class AdminSquadService
                 'playerteam_date_transfer' => self::DEFAULT_TRANSFER,
             ],
             'hint' => 'Position und Preis gelten pro Liga.',
+            'tab' => $resolvedTab,
+            'auto' => $auto ?? $this->emptyAutoState(),
+        ];
+    }
+
+    /**
+     * @return array{analyzed: bool, source_name: string, team_id: int, league_id: int, fifa_code: string, players: list<array<string, mixed>>, almost: list<array<string, mixed>>}
+     */
+    public function emptyAutoState(): array
+    {
+        return [
+            'analyzed' => false,
+            'source_name' => '',
+            'team_id' => 0,
+            'league_id' => 0,
+            'fifa_code' => '',
+            'players' => [],
+            'almost' => [],
+        ];
+    }
+
+    /**
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     team_id?: int,
+     *     league_id?: int,
+     *     auto?: array{analyzed: bool, source_name: string, team_id: int, league_id: int, fifa_code: string, players: list<array<string, mixed>>}
+     * }
+     */
+    public function analyzeSquadsFile(int $teamId, int $leagueId, ?UploadedFile $file): array
+    {
+        if ($teamId <= 0) {
+            return ['ok' => false, 'errors' => ['Bitte zuerst ein Team wählen.'], 'team_id' => 0, 'league_id' => $leagueId];
+        }
+        if ($leagueId <= 0) {
+            return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga wählen.'], 'team_id' => $teamId, 'league_id' => 0];
+        }
+
+        $team = Team::query()->find($teamId);
+        if (! $team) {
+            return ['ok' => false, 'errors' => ['Team nicht gefunden.'], 'team_id' => $teamId, 'league_id' => $leagueId];
+        }
+        if (! League::query()->whereKey($leagueId)->exists()) {
+            return ['ok' => false, 'errors' => ['Liga nicht gefunden.'], 'team_id' => $teamId, 'league_id' => $leagueId];
+        }
+
+        $fifaCode = strtoupper(trim((string) ($team->team_nationality ?? '')));
+        if ($fifaCode === '') {
+            return [
+                'ok' => false,
+                'errors' => ['Das ausgewählte Team hat keinen FIFA-/Nationalitäts-Code (team_nationality).'],
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+            ];
+        }
+
+        $parsed = $this->parseSquadsUpload($file);
+        if (! ($parsed['ok'] ?? false)) {
+            return [
+                'ok' => false,
+                'errors' => $parsed['errors'] ?? ['Analyse fehlgeschlagen.'],
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+            ];
+        }
+
+        /** @var list<mixed> $entries */
+        $entries = $parsed['data'];
+        $sourceName = (string) $parsed['source_name'];
+        $squadEntry = $this->findSquadEntryByFifaCode($entries, $fifaCode);
+        if ($squadEntry === null) {
+            return [
+                'ok' => false,
+                'errors' => ['In der JSON-Datei wurde kein Kader mit FIFA-Code '.$fifaCode.' gefunden.'],
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+            ];
+        }
+
+        $rawPlayers = $squadEntry['players'] ?? null;
+        if (! is_array($rawPlayers) || $rawPlayers === []) {
+            return [
+                'ok' => false,
+                'errors' => ['Für FIFA-Code '.$fifaCode.' wurden keine Spieler in der JSON-Datei gefunden.'],
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+            ];
+        }
+
+        $onSquadRows = Playerteam::query()
+            ->where('playerteam_team_id', $teamId)
+            ->where('playerteam_league_id', $leagueId)
+            ->get([
+                'playerteam_id',
+                'playerteam_player_id',
+                'playerteam_player_position',
+                'playerteam_player_price',
+                'playerteam_status',
+                'playerteam_date_transfer',
+            ])
+            ->keyBy(fn (Playerteam $row): int => (int) $row->playerteam_player_id);
+
+        /** @var Collection<int, Player> $candidates */
+        $candidates = Player::query()
+            ->whereRaw('UPPER(player_nationality) = ?', [$fifaCode])
+            ->get([
+                'player_id',
+                'player_fname',
+                'player_lname',
+                'player_nationality',
+                'player_foreign_id',
+            ]);
+
+        $draft = [];
+        $almost = [];
+        $alreadyOnSquad = 0;
+        /** @var array<int, true> $usedPlayerIds */
+        $usedPlayerIds = [];
+
+        foreach ($rawPlayers as $rawPlayer) {
+            if (! is_array($rawPlayer)) {
+                continue;
+            }
+
+            $fullName = trim((string) ($rawPlayer['name'] ?? ''));
+            if ($fullName === '') {
+                continue;
+            }
+
+            $jsonSingleName = $this->isSingleTokenName($fullName);
+            [$fname, $lname] = $this->splitPlayerName($fullName);
+            $position = $this->mapJsonPosition((string) ($rawPlayer['pos'] ?? ''));
+            $existing = $this->findExactPlayerAmong($candidates, $fname, $lname, $usedPlayerIds);
+            $matchKind = $existing !== null ? 'exact' : null;
+
+            if ($existing === null) {
+                $existing = $this->findAlmostPlayerAmong(
+                    $candidates,
+                    $fname,
+                    $lname,
+                    $jsonSingleName,
+                    $usedPlayerIds,
+                );
+                if ($existing !== null) {
+                    $matchKind = 'almost';
+                }
+            }
+
+            $playerId = $existing !== null ? (int) $existing->player_id : 0;
+            if ($playerId > 0) {
+                $usedPlayerIds[$playerId] = true;
+            }
+
+            $onSquad = $playerId > 0 && $onSquadRows->has($playerId);
+            /** @var Playerteam|null $squadRow */
+            $squadRow = $onSquad ? $onSquadRows->get($playerId) : null;
+
+            if ($matchKind === 'almost' && ! $onSquad) {
+                $almost[] = [
+                    'use_existing' => false,
+                    'match_reason' => $this->almostMatchReason(
+                        $fname,
+                        $lname,
+                        $jsonSingleName,
+                        (string) $existing->player_fname,
+                        (string) $existing->player_lname,
+                    ),
+                    'json_number' => (int) ($rawPlayer['number'] ?? 0),
+                    'json_name' => $fullName,
+                    'json_fname' => $fname,
+                    'json_lname' => $lname,
+                    'json_nationality' => $fifaCode,
+                    'json_position' => $position,
+                    'db_player_id' => $playerId,
+                    'db_fname' => (string) $existing->player_fname,
+                    'db_lname' => (string) $existing->player_lname,
+                    'db_nationality' => strtoupper(trim((string) ($existing->player_nationality ?? ''))),
+                    'db_position' => '',
+                    'db_squads' => [],
+                    'db_foreign_id' => (string) ($existing->player_foreign_id ?? ''),
+                    'playerteam_player_position' => $position,
+                    'playerteam_player_price' => 5,
+                    'playerteam_status' => 1,
+                    'playerteam_date_transfer' => self::DEFAULT_TRANSFER,
+                ];
+
+                continue;
+            }
+
+            if ($onSquad) {
+                $alreadyOnSquad++;
+            }
+
+            $transfer = self::DEFAULT_TRANSFER;
+            if ($squadRow !== null) {
+                $transferTs = strtotime((string) $squadRow->playerteam_date_transfer);
+                if ($transferTs) {
+                    $transfer = date('Y-m-d', $transferTs);
+                }
+            }
+
+            $isNew = $existing === null;
+            $draft[] = [
+                'player_id' => $playerId,
+                'playerteam_id' => $squadRow !== null ? (int) $squadRow->playerteam_id : 0,
+                'is_new' => $isNew,
+                'on_squad' => $onSquad,
+                'player_fname' => $isNew ? $fname : (string) $existing->player_fname,
+                'player_lname' => $isNew ? $lname : (string) $existing->player_lname,
+                'player_nationality' => $isNew
+                    ? $fifaCode
+                    : strtoupper(trim((string) ($existing->player_nationality ?? ''))),
+                'player_status' => 1,
+                'player_status_description' => '',
+                'player_foreign_id' => $isNew
+                    ? ''
+                    : (string) ($existing->player_foreign_id ?? ''),
+                'playerteam_player_position' => $squadRow !== null
+                    ? (string) $squadRow->playerteam_player_position
+                    : $position,
+                'playerteam_player_price' => $squadRow !== null
+                    ? (int) $squadRow->playerteam_player_price
+                    : 5,
+                'playerteam_status' => $squadRow !== null
+                    ? (int) $squadRow->playerteam_status
+                    : 1,
+                'playerteam_date_transfer' => $transfer,
+                'json_number' => (int) ($rawPlayer['number'] ?? 0),
+                'json_name' => $fullName,
+            ];
+        }
+
+        if ($draft === [] && $almost === []) {
+            return [
+                'ok' => false,
+                'errors' => ['In der JSON-Datei wurden keine gültigen Spieler für diesen Kader gefunden.'],
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+            ];
+        }
+
+        if ($almost !== []) {
+            $almost = $this->enrichAlmostMatchesWithSquads($almost, $leagueId);
+        }
+
+        $draft = $this->sortAutoDraftByPosition($draft);
+        $almost = $this->sortAlmostDraftByPosition($almost);
+
+        $parts = [];
+        $readyCount = count($draft);
+        if ($readyCount === 1) {
+            $parts[] = '1 Spieler bereit zum Übernehmen';
+        } elseif ($readyCount > 1) {
+            $parts[] = $readyCount.' Spieler bereit zum Übernehmen';
+        }
+        if ($alreadyOnSquad === 1) {
+            $parts[] = 'davon 1 bereits im Kader';
+        } elseif ($alreadyOnSquad > 1) {
+            $parts[] = 'davon '.$alreadyOnSquad.' bereits im Kader';
+        }
+        if (count($almost) === 1) {
+            $parts[] = '1 Namens-Ähnlichkeit zur Prüfung';
+        } elseif (count($almost) > 1) {
+            $parts[] = count($almost).' Namens-Ähnlichkeiten zur Prüfung';
+        }
+
+        return [
+            'ok' => true,
+            'team_id' => $teamId,
+            'league_id' => $leagueId,
+            'auto' => [
+                'analyzed' => true,
+                'source_name' => $sourceName,
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+                'fifa_code' => $fifaCode,
+                'players' => $draft,
+                'almost' => $almost,
+            ],
+            'message' => implode(', ', $parts).'.',
+        ];
+    }
+
+    /**
+     * Create missing players and add all draft rows to the squad via batchAdd.
+     * Almost-matches are resolved via use_existing (reuse DB player) or create from JSON.
+     *
+     * @param  list<array<string, mixed>>|array<int, array<string, mixed>>  $players
+     * @param  list<array<string, mixed>>|array<int, array<string, mixed>>  $almost
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     team_id?: int,
+     *     league_id?: int,
+     *     auto?: array{analyzed: bool, source_name: string, team_id: int, league_id: int, fifa_code: string, players: list<array<string, mixed>>, almost: list<array<string, mixed>>}
+     * }
+     */
+    public function createSquadFromDraft(
+        array $players,
+        int $teamId,
+        int $leagueId,
+        string $sourceName = '',
+        string $fifaCode = '',
+        array $almost = [],
+    ): array {
+        if ($teamId <= 0) {
+            return ['ok' => false, 'errors' => ['Bitte zuerst ein Team wählen.'], 'team_id' => 0, 'league_id' => $leagueId];
+        }
+        if ($leagueId <= 0) {
+            return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga wählen.'], 'team_id' => $teamId, 'league_id' => 0];
+        }
+
+        $mainDrafts = [];
+        foreach (array_values($players) as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $mainDrafts[] = $this->normalizeAutoDraftRow($row);
+        }
+
+        $almostDrafts = [];
+        foreach (array_values($almost) as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $almostDrafts[] = $this->normalizeAlmostDraftRow($row);
+        }
+
+        $drafts = $mainDrafts;
+        foreach ($almostDrafts as $almostRow) {
+            $drafts[] = $this->resolveAlmostRowToDraft($almostRow, $teamId, $leagueId);
+        }
+
+        $autoState = static function (array $playersState, array $almostState) use ($sourceName, $teamId, $leagueId, $fifaCode): array {
+            return [
+                'analyzed' => true,
+                'source_name' => $sourceName,
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+                'fifa_code' => $fifaCode,
+                'players' => $playersState,
+                'almost' => $almostState,
+            ];
+        };
+
+        if ($drafts === []) {
+            return [
+                'ok' => false,
+                'errors' => ['Keine Spieler zum Übernehmen.'],
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+                'auto' => $autoState([], $almostDrafts),
+            ];
+        }
+
+        $errors = [];
+        $newNameKeys = [];
+        foreach ($drafts as $index => $row) {
+            $label = $this->autoDraftLabel($row, $index);
+            $roster = $this->normalizeRosterInput($row);
+            $rowErrors = $this->validateRosterFields($roster, null);
+
+            if ($row['on_squad']) {
+                if ($row['player_id'] <= 0) {
+                    $rowErrors[] = 'Spieler-ID fehlt.';
+                }
+            } elseif ($row['is_new']) {
+                $playerErrors = $this->players->validateCreateInput([
+                    'player_fname' => $row['player_fname'],
+                    'player_lname' => $row['player_lname'],
+                    'player_nationality' => $row['player_nationality'],
+                    'player_status' => 1,
+                    'player_status_description' => '',
+                    'player_foreign_id' => $row['player_foreign_id'],
+                ]);
+                foreach ($playerErrors as $playerError) {
+                    $rowErrors[] = $playerError;
+                }
+
+                $nameKey = mb_strtolower($row['player_fname'].'|'.$row['player_lname'].'|'.$row['player_nationality']);
+                if (isset($newNameKeys[$nameKey])) {
+                    $rowErrors[] = 'Doppelter neuer Spieler in dieser Liste.';
+                } else {
+                    $newNameKeys[$nameKey] = true;
+                }
+            } elseif ($row['player_id'] <= 0) {
+                $rowErrors[] = 'Spieler-ID fehlt.';
+            } elseif (! Player::query()->whereKey($row['player_id'])->exists()) {
+                $rowErrors[] = 'Spieler nicht gefunden.';
+            }
+
+            if ($rowErrors !== []) {
+                $errors[] = $label.': '.implode(' ', $rowErrors);
+            }
+        }
+
+        if ($errors !== []) {
+            return [
+                'ok' => false,
+                'errors' => $errors,
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+                'auto' => $autoState($mainDrafts, $almostDrafts),
+            ];
+        }
+
+        $createdPlayers = 0;
+        $updatedOnSquad = 0;
+        $items = [];
+        $playerIds = [];
+
+        foreach ($drafts as $index => $row) {
+            $roster = $this->normalizeRosterInput($row);
+
+            if ($row['on_squad']) {
+                $squadItem = null;
+                if ($row['playerteam_id'] > 0) {
+                    $squadItem = Playerteam::query()
+                        ->whereKey($row['playerteam_id'])
+                        ->where('playerteam_team_id', $teamId)
+                        ->where('playerteam_league_id', $leagueId)
+                        ->first();
+                }
+                if ($squadItem === null && $row['player_id'] > 0) {
+                    $squadItem = Playerteam::query()
+                        ->where('playerteam_player_id', $row['player_id'])
+                        ->where('playerteam_team_id', $teamId)
+                        ->where('playerteam_league_id', $leagueId)
+                        ->first();
+                }
+                if ($squadItem === null) {
+                    $label = $this->autoDraftLabel($row, $index);
+
+                    return [
+                        'ok' => false,
+                        'errors' => [$label.': Kader-Eintrag nicht gefunden.'],
+                        'team_id' => $teamId,
+                        'league_id' => $leagueId,
+                        'auto' => $autoState($mainDrafts, $almostDrafts),
+                    ];
+                }
+
+                if (! $this->applyRosterFields($squadItem, $roster, null)) {
+                    $label = $this->autoDraftLabel($row, $index);
+
+                    return [
+                        'ok' => false,
+                        'errors' => [$label.': Kader-Aktualisierung fehlgeschlagen.'],
+                        'team_id' => $teamId,
+                        'league_id' => $leagueId,
+                        'auto' => $autoState($mainDrafts, $almostDrafts),
+                    ];
+                }
+                $updatedOnSquad++;
+
+                continue;
+            }
+
+            $playerId = $row['player_id'];
+            if ($row['is_new'] || $playerId <= 0) {
+                $createResult = $this->players->create([
+                    'player_fname' => $row['player_fname'],
+                    'player_lname' => $row['player_lname'],
+                    'player_nationality' => $row['player_nationality'],
+                    'player_status' => 1,
+                    'player_status_description' => '',
+                    'player_foreign_id' => $row['player_foreign_id'],
+                ]);
+                if (! ($createResult['ok'] ?? false)) {
+                    $label = $this->autoDraftLabel($row, $index);
+                    $createErrors = $createResult['errors'] ?? ['Spieler anlegen fehlgeschlagen.'];
+
+                    return [
+                        'ok' => false,
+                        'errors' => [$label.': '.implode(' ', $createErrors)],
+                        'team_id' => $teamId,
+                        'league_id' => $leagueId,
+                        'auto' => $autoState($mainDrafts, $almostDrafts),
+                    ];
+                }
+                $playerId = (int) ($createResult['player_id'] ?? 0);
+                $createdPlayers++;
+                $drafts[$index]['player_id'] = $playerId;
+                $drafts[$index]['is_new'] = false;
+            }
+
+            $playerIds[] = $playerId;
+            $items[$playerId] = [
+                'playerteam_status' => $row['playerteam_status'],
+                'playerteam_player_price' => $row['playerteam_player_price'],
+                'playerteam_player_position' => $row['playerteam_player_position'],
+                'playerteam_date_transfer' => $row['playerteam_date_transfer'],
+            ];
+        }
+
+        if ($playerIds === []) {
+            $parts = [];
+            if ($updatedOnSquad === 1) {
+                $parts[] = '1 Kader-Eintrag aktualisiert';
+            } elseif ($updatedOnSquad > 1) {
+                $parts[] = $updatedOnSquad.' Kader-Einträge aktualisiert';
+            } else {
+                $parts[] = 'Keine Spieler zum Übernehmen';
+            }
+
+            return [
+                'ok' => true,
+                'message' => implode(', ', $parts).'.',
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+            ];
+        }
+
+        $addResult = $this->batchAdd([
+            'team_id' => $teamId,
+            'squad_league_id' => $leagueId,
+            'items' => $items,
+            'player_ids' => $playerIds,
+        ]);
+
+        if (! ($addResult['ok'] ?? false)) {
+            return [
+                'ok' => false,
+                'errors' => $addResult['errors'] ?? ['Kader-Übernahme fehlgeschlagen.'],
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+                'auto' => $autoState($mainDrafts, $almostDrafts),
+            ];
+        }
+
+        $parts = [];
+        if ($createdPlayers === 1) {
+            $parts[] = '1 Spieler neu angelegt';
+        } elseif ($createdPlayers > 1) {
+            $parts[] = $createdPlayers.' Spieler neu angelegt';
+        }
+        $parts[] = $addResult['message'] ?? (count($playerIds).' Spieler zum Kader hinzugefügt.');
+        if ($updatedOnSquad === 1) {
+            $parts[] = '1 Kader-Eintrag aktualisiert.';
+        } elseif ($updatedOnSquad > 1) {
+            $parts[] = $updatedOnSquad.' Kader-Einträge aktualisiert.';
+        }
+
+        return [
+            'ok' => true,
+            'message' => implode(' ', $parts),
+            'team_id' => $teamId,
+            'league_id' => $leagueId,
         ];
     }
 
@@ -462,7 +1025,7 @@ class AdminSquadService
     }
 
     /**
-     * @return list<array{team_id: int, team_label: string}>
+     * @return list<array{team_id: int, team_label: string, team_nationality: string}>
      */
     private function teamOptions(int $leagueId): array
     {
@@ -506,6 +1069,7 @@ class AdminSquadService
                 return [
                     'team_id' => (int) $team->team_id,
                     'team_label' => $label,
+                    'team_nationality' => strtoupper($nat),
                 ];
             })
             ->values()
@@ -770,5 +1334,496 @@ class AdminSquadService
         asort($countries, SORT_STRING | SORT_FLAG_CASE);
 
         return $countries;
+    }
+
+    /**
+     * @return array{ok: bool, errors?: list<string>, data?: list<mixed>, source_name?: string}
+     */
+    private function parseSquadsUpload(?UploadedFile $file): array
+    {
+        if ($file === null) {
+            return ['ok' => false, 'errors' => ['Bitte eine JSON-Datei auswählen.']];
+        }
+
+        if (! $file->isValid()) {
+            return ['ok' => false, 'errors' => ['Upload fehlgeschlagen.']];
+        }
+
+        if ($file->getSize() > 2 * 1024 * 1024) {
+            return ['ok' => false, 'errors' => ['JSON-Datei darf maximal 2 MB groß sein.']];
+        }
+
+        $raw = @file_get_contents($file->getRealPath() ?: '');
+        if (! is_string($raw) || $raw === '') {
+            return ['ok' => false, 'errors' => ['JSON-Datei konnte nicht gelesen werden.']];
+        }
+
+        $data = json_decode($raw, true);
+        if (! is_array($data)) {
+            return ['ok' => false, 'errors' => ['Ungültige JSON-Datei.']];
+        }
+
+        if ($data !== [] && ! array_is_list($data)) {
+            return ['ok' => false, 'errors' => ['JSON muss ein Array von Teams mit FIFA-Code und Spielern enthalten.']];
+        }
+
+        return [
+            'ok' => true,
+            'data' => $data,
+            'source_name' => (string) $file->getClientOriginalName(),
+        ];
+    }
+
+    /**
+     * @param  list<mixed>  $entries
+     * @return array<string, mixed>|null
+     */
+    private function findSquadEntryByFifaCode(array $entries, string $fifaCode): ?array
+    {
+        $wanted = strtoupper($fifaCode);
+        foreach ($entries as $entry) {
+            if (! is_array($entry)) {
+                continue;
+            }
+            $code = strtoupper(trim((string) ($entry['fifa_code'] ?? '')));
+            if ($code !== '' && $code === $wanted) {
+                return $entry;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array{0: string, 1: string}
+     */
+    private function splitPlayerName(string $fullName): array
+    {
+        $parts = preg_split('/\s+/u', trim($fullName)) ?: [];
+        $parts = array_values(array_filter($parts, static fn (string $part): bool => $part !== ''));
+        if ($parts === []) {
+            return ['', ''];
+        }
+        if (count($parts) === 1) {
+            return [$parts[0], $parts[0]];
+        }
+
+        $lname = array_pop($parts);
+
+        return [implode(' ', $parts), (string) $lname];
+    }
+
+    private function mapJsonPosition(string $pos): string
+    {
+        return match (strtoupper(trim($pos))) {
+            'GK' => 'g',
+            'DF' => 'd',
+            'MF' => 'm',
+            'FW', 'ST' => 's',
+            default => 'd',
+        };
+    }
+
+    private function isSingleTokenName(string $fullName): bool
+    {
+        $parts = preg_split('/\s+/u', trim($fullName)) ?: [];
+        $parts = array_values(array_filter($parts, static fn (string $part): bool => $part !== ''));
+
+        return count($parts) === 1;
+    }
+
+    private function foldName(string $value): string
+    {
+        $value = mb_strtolower(trim($value));
+        $value = preg_replace('/\s+/u', ' ', $value) ?? $value;
+        if ($value === '') {
+            return '';
+        }
+
+        if (class_exists(\Normalizer::class)) {
+            $normalized = \Normalizer::normalize($value, \Normalizer::FORM_D);
+            if (is_string($normalized) && $normalized !== '') {
+                $value = $normalized;
+            }
+            $value = preg_replace('/\p{Mn}+/u', '', $value) ?? $value;
+        } else {
+            $converted = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+            if (is_string($converted) && $converted !== '') {
+                $value = $converted;
+            }
+        }
+
+        $value = preg_replace('/[^a-z0-9 ]+/i', '', $value) ?? $value;
+
+        return trim(preg_replace('/\s+/u', ' ', $value) ?? $value);
+    }
+
+    /**
+     * @param  Collection<int, Player>  $candidates
+     * @param  array<int, true>  $usedPlayerIds
+     */
+    private function findExactPlayerAmong($candidates, string $fname, string $lname, array $usedPlayerIds): ?Player
+    {
+        if ($fname === '' || $lname === '') {
+            return null;
+        }
+
+        foreach ($candidates as $candidate) {
+            $id = (int) $candidate->player_id;
+            if (isset($usedPlayerIds[$id])) {
+                continue;
+            }
+            if ((string) $candidate->player_fname === $fname && (string) $candidate->player_lname === $lname) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  Collection<int, Player>  $candidates
+     * @param  array<int, true>  $usedPlayerIds
+     */
+    private function findAlmostPlayerAmong(
+        $candidates,
+        string $fname,
+        string $lname,
+        bool $jsonSingleName,
+        array $usedPlayerIds,
+    ): ?Player {
+        if ($fname === '' || $lname === '') {
+            return null;
+        }
+
+        foreach ($candidates as $candidate) {
+            $id = (int) $candidate->player_id;
+            if (isset($usedPlayerIds[$id])) {
+                continue;
+            }
+            if ($this->isAlmostNameMatch(
+                $fname,
+                $lname,
+                $jsonSingleName,
+                (string) $candidate->player_fname,
+                (string) $candidate->player_lname,
+            )) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private function isAlmostNameMatch(
+        string $jsonFname,
+        string $jsonLname,
+        bool $jsonSingleName,
+        string $dbFname,
+        string $dbLname,
+    ): bool {
+        $jF = $this->foldName($jsonFname);
+        $jL = $this->foldName($jsonLname);
+        $dF = $this->foldName($dbFname);
+        $dL = $this->foldName($dbLname);
+        if ($jF === '' || $jL === '' || $dF === '' || $dL === '') {
+            return false;
+        }
+
+        // Exact string match is handled earlier; folded equality covers accents/case.
+        if ($jF === $dF && $jL === $dL) {
+            return true;
+        }
+
+        // First/last name switched.
+        if ($jF === $dL && $jL === $dF) {
+            return true;
+        }
+
+        $dbSingleName = $dF === $dL;
+        if ($jsonSingleName && $dbSingleName && $jF === $dF) {
+            return true;
+        }
+
+        // JSON single token vs DB legacy single-name (fname == lname).
+        if ($dbSingleName && ($dF === $jF || $dF === $jL)) {
+            return true;
+        }
+
+        // DB single name equals folded full JSON name.
+        if ($dbSingleName && $dF === $this->foldName(trim($jsonFname.' '.$jsonLname))) {
+            return true;
+        }
+
+        // JSON single name equals either DB part when DB also uses duplicated single name only —
+        // already covered. If JSON is single and DB has fname==lname different fold — false.
+
+        return false;
+    }
+
+    private function almostMatchReason(
+        string $jsonFname,
+        string $jsonLname,
+        bool $jsonSingleName,
+        string $dbFname,
+        string $dbLname,
+    ): string {
+        $jF = $this->foldName($jsonFname);
+        $jL = $this->foldName($jsonLname);
+        $dF = $this->foldName($dbFname);
+        $dL = $this->foldName($dbLname);
+        $dbSingleName = $dF === $dL;
+        $jsonFoldedSingle = $jF === $jL;
+
+        if ($jF === $dF && $jL === $dL) {
+            if (($jsonSingleName || $jsonFoldedSingle) && $dbSingleName) {
+                return 'Einzelnamen-Variante';
+            }
+
+            return 'Schreibweise/Akzente';
+        }
+
+        if (($jsonSingleName || $dbSingleName) && ($jF === $dF || $jF === $dL || $dF === $jL)) {
+            return 'Einzelnamen-Variante';
+        }
+
+        if ($jF === $dL && $jL === $dF) {
+            return 'Vor-/Nachname vertauscht';
+        }
+
+        return 'Ähnlicher Name';
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $almost
+     * @return list<array<string, mixed>>
+     */
+    private function enrichAlmostMatchesWithSquads(array $almost, int $leagueId): array
+    {
+        $playerIds = [];
+        foreach ($almost as $row) {
+            $id = (int) ($row['db_player_id'] ?? 0);
+            if ($id > 0) {
+                $playerIds[] = $id;
+            }
+        }
+        $playerIds = array_values(array_unique($playerIds));
+        if ($playerIds === []) {
+            return $almost;
+        }
+
+        $rows = Playerteam::query()
+            ->with(['team:team_id,team_name', 'league:league_id,league_title'])
+            ->whereIn('playerteam_player_id', $playerIds)
+            ->get();
+
+        /** @var array<int, list<string>> $squadsByPlayer */
+        $squadsByPlayer = [];
+        /** @var array<int, string> $positionByPlayer */
+        $positionByPlayer = [];
+
+        foreach ($rows as $row) {
+            $playerId = (int) $row->playerteam_player_id;
+            $teamName = trim((string) ($row->team?->team_name ?? ''));
+            if ($teamName !== '') {
+                $leagueTitle = trim((string) ($row->league?->league_title ?? ''));
+                $label = $leagueTitle !== '' ? $teamName.' ('.$leagueTitle.')' : $teamName;
+                $squadsByPlayer[$playerId] ??= [];
+                if (! in_array($label, $squadsByPlayer[$playerId], true)) {
+                    $squadsByPlayer[$playerId][] = $label;
+                }
+            }
+
+            $pos = strtolower(trim((string) $row->playerteam_player_position));
+            if ($pos === '' || ! in_array($pos, self::POSITIONS, true)) {
+                continue;
+            }
+            if (! isset($positionByPlayer[$playerId]) || (int) $row->playerteam_league_id === $leagueId) {
+                $positionByPlayer[$playerId] = $pos;
+            }
+        }
+
+        foreach ($almost as $index => $row) {
+            $playerId = (int) ($row['db_player_id'] ?? 0);
+            $almost[$index]['db_squads'] = $squadsByPlayer[$playerId] ?? [];
+            $almost[$index]['db_position'] = $positionByPlayer[$playerId] ?? '';
+        }
+
+        return $almost;
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    private function normalizeAlmostDraftRow(array $row): array
+    {
+        $roster = $this->normalizeRosterInput($row);
+        $useExisting = ((string) ($row['use_existing'] ?? '0') === '1' || ($row['use_existing'] ?? false) === true);
+
+        return [
+            'use_existing' => $useExisting,
+            'match_reason' => trim((string) ($row['match_reason'] ?? '')),
+            'json_number' => (int) ($row['json_number'] ?? 0),
+            'json_name' => trim((string) ($row['json_name'] ?? '')),
+            'json_fname' => trim((string) ($row['json_fname'] ?? '')),
+            'json_lname' => trim((string) ($row['json_lname'] ?? '')),
+            'json_nationality' => strtoupper(trim((string) ($row['json_nationality'] ?? ''))),
+            'json_position' => $this->normalizeRosterInput([
+                'playerteam_player_position' => $row['json_position'] ?? $roster['playerteam_player_position'],
+            ])['playerteam_player_position'],
+            'db_player_id' => (int) ($row['db_player_id'] ?? 0),
+            'db_fname' => trim((string) ($row['db_fname'] ?? '')),
+            'db_lname' => trim((string) ($row['db_lname'] ?? '')),
+            'db_nationality' => strtoupper(trim((string) ($row['db_nationality'] ?? ''))),
+            'db_position' => strtolower(trim((string) ($row['db_position'] ?? ''))),
+            'db_squads' => is_array($row['db_squads'] ?? null)
+                ? array_values(array_map('strval', $row['db_squads']))
+                : [],
+            'db_foreign_id' => trim((string) ($row['db_foreign_id'] ?? '')),
+            'playerteam_player_position' => $roster['playerteam_player_position'],
+            'playerteam_player_price' => $roster['playerteam_player_price'],
+            'playerteam_status' => $roster['playerteam_status'],
+            'playerteam_date_transfer' => $roster['playerteam_date_transfer'],
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $almost
+     * @return array<string, mixed>
+     */
+    private function resolveAlmostRowToDraft(array $almost, int $teamId, int $leagueId): array
+    {
+        if ($almost['use_existing']) {
+            $playerId = (int) $almost['db_player_id'];
+            $squadRow = Playerteam::query()
+                ->where('playerteam_player_id', $playerId)
+                ->where('playerteam_team_id', $teamId)
+                ->where('playerteam_league_id', $leagueId)
+                ->first();
+
+            return $this->normalizeAutoDraftRow([
+                'player_id' => $playerId,
+                'playerteam_id' => $squadRow !== null ? (int) $squadRow->playerteam_id : 0,
+                'is_new' => false,
+                'on_squad' => $squadRow !== null,
+                'player_fname' => $almost['db_fname'],
+                'player_lname' => $almost['db_lname'],
+                'player_nationality' => $almost['db_nationality'],
+                'player_foreign_id' => $almost['db_foreign_id'],
+                'playerteam_player_position' => $almost['playerteam_player_position'],
+                'playerteam_player_price' => $almost['playerteam_player_price'],
+                'playerteam_status' => $almost['playerteam_status'],
+                'playerteam_date_transfer' => $almost['playerteam_date_transfer'],
+                'json_number' => $almost['json_number'],
+                'json_name' => $almost['json_name'],
+            ]);
+        }
+
+        return $this->normalizeAutoDraftRow([
+            'player_id' => 0,
+            'playerteam_id' => 0,
+            'is_new' => true,
+            'on_squad' => false,
+            'player_fname' => $almost['json_fname'],
+            'player_lname' => $almost['json_lname'],
+            'player_nationality' => $almost['json_nationality'],
+            'player_foreign_id' => '',
+            'playerteam_player_position' => $almost['playerteam_player_position'],
+            'playerteam_player_price' => $almost['playerteam_player_price'],
+            'playerteam_status' => $almost['playerteam_status'],
+            'playerteam_date_transfer' => $almost['playerteam_date_transfer'],
+            'json_number' => $almost['json_number'],
+            'json_name' => $almost['json_name'],
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    private function normalizeAutoDraftRow(array $row): array
+    {
+        $roster = $this->normalizeRosterInput($row);
+        $onSquad = ((string) ($row['on_squad'] ?? '0') === '1' || ($row['on_squad'] ?? false) === true);
+        $isNew = ! $onSquad && (
+            ((string) ($row['is_new'] ?? '0') === '1' || ($row['is_new'] ?? false) === true)
+            || (int) ($row['player_id'] ?? 0) <= 0
+        );
+
+        return [
+            'player_id' => (int) ($row['player_id'] ?? 0),
+            'playerteam_id' => (int) ($row['playerteam_id'] ?? 0),
+            'is_new' => $isNew,
+            'on_squad' => $onSquad,
+            'player_fname' => trim((string) ($row['player_fname'] ?? '')),
+            'player_lname' => trim((string) ($row['player_lname'] ?? '')),
+            'player_nationality' => strtoupper(trim((string) ($row['player_nationality'] ?? ''))),
+            'player_status' => 1,
+            'player_status_description' => '',
+            'player_foreign_id' => trim((string) ($row['player_foreign_id'] ?? '')),
+            'playerteam_player_position' => $roster['playerteam_player_position'],
+            'playerteam_player_price' => $roster['playerteam_player_price'],
+            'playerteam_status' => $roster['playerteam_status'],
+            'playerteam_date_transfer' => $roster['playerteam_date_transfer'],
+            'json_number' => (int) ($row['json_number'] ?? 0),
+            'json_name' => trim((string) ($row['json_name'] ?? '')),
+        ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $draft
+     * @return list<array<string, mixed>>
+     */
+    private function sortAutoDraftByPosition(array $draft): array
+    {
+        $order = ['g' => 0, 'd' => 1, 'm' => 2, 's' => 3];
+        usort($draft, static function (array $a, array $b) use ($order): int {
+            $posA = $order[(string) ($a['playerteam_player_position'] ?? '')] ?? 99;
+            $posB = $order[(string) ($b['playerteam_player_position'] ?? '')] ?? 99;
+            if ($posA !== $posB) {
+                return $posA <=> $posB;
+            }
+
+            return ((int) ($a['json_number'] ?? 0)) <=> ((int) ($b['json_number'] ?? 0));
+        });
+
+        return array_values($draft);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $almost
+     * @return list<array<string, mixed>>
+     */
+    private function sortAlmostDraftByPosition(array $almost): array
+    {
+        $order = ['g' => 0, 'd' => 1, 'm' => 2, 's' => 3];
+        usort($almost, static function (array $a, array $b) use ($order): int {
+            $posA = $order[(string) ($a['playerteam_player_position'] ?? $a['json_position'] ?? '')] ?? 99;
+            $posB = $order[(string) ($b['playerteam_player_position'] ?? $b['json_position'] ?? '')] ?? 99;
+            if ($posA !== $posB) {
+                return $posA <=> $posB;
+            }
+
+            return ((int) ($a['json_number'] ?? 0)) <=> ((int) ($b['json_number'] ?? 0));
+        });
+
+        return array_values($almost);
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     */
+    private function autoDraftLabel(array $row, int $index): string
+    {
+        $name = trim((string) ($row['json_name'] ?? ''));
+        if ($name === '') {
+            $name = trim((string) ($row['player_fname'] ?? '').' '.(string) ($row['player_lname'] ?? ''));
+        }
+        if ($name !== '') {
+            return $name;
+        }
+
+        return 'Zeile '.($index + 1);
     }
 }

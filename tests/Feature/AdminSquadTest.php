@@ -34,7 +34,7 @@ class AdminSquadTest extends TestCase
         });
 
         $this->mock(AdminSquadService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544, 0, null)->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->with(544, 0, null, 'roster', null)->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -73,6 +73,15 @@ class AdminSquadTest extends TestCase
                     'playerteam_player_position' => 'd',
                     'playerteam_date_transfer' => '2008-01-01',
                 ],
+                'tab' => 'roster',
+                'auto' => [
+                    'analyzed' => false,
+                    'source_name' => '',
+                    'team_id' => 0,
+                    'league_id' => 0,
+                    'fifa_code' => '',
+                    'players' => [],
+                ],
             ]);
         });
 
@@ -93,7 +102,7 @@ class AdminSquadTest extends TestCase
         });
 
         $this->mock(AdminSquadService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544, 3, null)->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->with(544, 3, null, 'roster', null)->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -139,6 +148,15 @@ class AdminSquadTest extends TestCase
                     'playerteam_player_position' => 'd',
                     'playerteam_date_transfer' => '2008-01-01',
                 ],
+                'tab' => 'roster',
+                'auto' => [
+                    'analyzed' => false,
+                    'source_name' => '',
+                    'team_id' => 0,
+                    'league_id' => 0,
+                    'fifa_code' => '',
+                    'players' => [],
+                ],
             ]);
         });
 
@@ -165,7 +183,7 @@ class AdminSquadTest extends TestCase
         });
 
         $this->mock(AdminSquadService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544, 3, null)->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->with(544, 3, null, 'add', null)->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -195,6 +213,15 @@ class AdminSquadTest extends TestCase
                     'playerteam_player_price' => 5,
                     'playerteam_player_position' => 'd',
                     'playerteam_date_transfer' => '2008-01-01',
+                ],
+                'tab' => 'add',
+                'auto' => [
+                    'analyzed' => false,
+                    'source_name' => '',
+                    'team_id' => 0,
+                    'league_id' => 0,
+                    'fifa_code' => '',
+                    'players' => [],
                 ],
             ]);
         });

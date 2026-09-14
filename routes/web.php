@@ -108,6 +108,8 @@ Route::middleware('ffb.admin')->group(function () {
 
     Route::get('/admin/squad', [AdminSquadController::class, 'show'])->name('admin.squad');
     Route::post('/admin/squad', [AdminSquadController::class, 'store'])->name('admin.squad.store');
+    Route::post('/admin/squad/auto/analyze', [AdminSquadController::class, 'analyzeAuto'])->name('admin.squad.auto.analyze');
+    Route::post('/admin/squad/auto', [AdminSquadController::class, 'storeAuto'])->name('admin.squad.auto.store');
     Route::post('/admin/squad/batch-update', [AdminSquadController::class, 'batchUpdate'])->name('admin.squad.batchUpdate');
     Route::put('/admin/squad/{playerteam}', [AdminSquadController::class, 'update'])->name('admin.squad.update');
     Route::delete('/admin/squad/{playerteam}', [AdminSquadController::class, 'destroy'])->name('admin.squad.destroy');
