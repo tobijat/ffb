@@ -111,7 +111,7 @@ class AdminPlayerService
 
     /**
      * @param  array<string, mixed>  $input
-     * @return array{ok: bool, message?: string, errors?: list<string>, form?: array<string, mixed>}
+     * @return array{ok: bool, message?: string, errors?: list<string>, form?: array<string, mixed>, player_id?: int}
      */
     public function create(array $input): array
     {
@@ -121,7 +121,7 @@ class AdminPlayerService
             return ['ok' => false, 'errors' => $errors, 'form' => $form];
         }
 
-        Player::query()->create([
+        $player = Player::query()->create([
             'player_foreign_id' => $form['player_foreign_id'],
             'player_fname' => $form['player_fname'],
             'player_lname' => $form['player_lname'],
@@ -130,7 +130,20 @@ class AdminPlayerService
             'player_status_description' => $form['player_status_description'],
         ]);
 
-        return ['ok' => true, 'message' => 'Spieler erfolgreich hinzugefügt.'];
+        return [
+            'ok' => true,
+            'message' => 'Spieler erfolgreich hinzugefügt.',
+            'player_id' => (int) $player->player_id,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return list<string>
+     */
+    public function validateCreateInput(array $input): array
+    {
+        return $this->validate($this->normalizeInput($input), true);
     }
 
     /**

@@ -2018,3 +2018,139 @@
     text-align: center;
 }
 
+.admin-auto-squad-upload {
+    max-width: 40rem;
+}
+
+.admin-auto-squad-result {
+    margin-top: 1.5rem;
+}
+
+.admin-form.admin-auto-squad-form {
+    max-width: none;
+}
+
+.admin-auto-squad-table-wrap {
+    overflow-x: auto;
+    margin-bottom: 1rem;
+}
+
+.admin-auto-squad-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.admin-auto-squad-table th,
+.admin-auto-squad-table td {
+    padding: 0.35rem 0.4rem;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.admin-auto-squad-table input[type="text"],
+.admin-auto-squad-table input[type="date"],
+.admin-auto-squad-table select {
+    width: 100%;
+    min-width: 4.5rem;
+    max-width: 10rem;
+}
+
+.admin-auto-squad-table select[name*="[player_nationality]"] {
+    min-width: 4.5rem;
+    max-width: 5.5rem;
+}
+
+.admin-auto-squad-table input[name*="[player_fname]"],
+.admin-auto-squad-table input[name*="[player_lname]"] {
+    min-width: 6rem;
+    max-width: 9rem;
+}
+
+.admin-auto-squad-num {
+    white-space: nowrap;
+    color: #666;
+}
+
+.admin-auto-squad-readonly {
+    display: inline-block;
+    max-width: 9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-auto-squad-row.is-new {
+    background: rgba(46, 125, 50, 0.04);
+}
+
+.admin-auto-squad-row.is-on-squad {
+    background: rgba(0, 0, 0, 0.03);
+    opacity: 0.85;
+}
+
+.admin-auto-squad-badge {
+    display: inline-block;
+    margin-left: 0.35rem;
+    padding: 0.1rem 0.35rem;
+    font-size: 0.7rem;
+    line-height: 1.2;
+    color: #555;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 0.2rem;
+    white-space: nowrap;
+}
+
+.admin-auto-squad-actions {
+    width: 2.5rem;
+    text-align: center;
+}
+
+.admin-auto-squad-almost {
+    margin-top: 1.75rem;
+}
+
+.admin-auto-squad-almost h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+}
+
+.admin-auto-squad-almost-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.admin-auto-squad-almost-table th,
+.admin-auto-squad-almost-table td {
+    padding: 0.45rem 0.4rem;
+    vertical-align: top;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.admin-auto-squad-almost-side {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 10rem;
+}
+
+.admin-auto-squad-almost-check label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 600;
+}
+
+.admin-auto-squad-almost-reason {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.75rem;
+}
+
+.admin-auto-squad-almost-table select {
+    width: 100%;
+    min-width: 4.5rem;
+    max-width: 8rem;
+}
+
