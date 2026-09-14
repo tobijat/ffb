@@ -25,6 +25,7 @@ class AdminSquadController extends Controller
         $tab = match ($request->query('tab')) {
             'add' => 'add',
             'auto' => 'auto',
+            'images' => 'images',
             default => 'roster',
         };
         $auto = session('admin_squad_auto');
@@ -43,6 +44,7 @@ class AdminSquadController extends Controller
             is_array($errors) ? $errors : [],
             $tab,
             is_array($auto) ? $auto : null,
+            null,
         );
     }
 
@@ -187,6 +189,69 @@ class AdminSquadController extends Controller
             ->with('admin_message', $result['message'] ?? null);
     }
 
+    public function checkImages(Request $request): View|RedirectResponse
+    {
+        $userId = $this->auth->userId($request);
+        $teamId = (int) $request->input('team_id', 0);
+        $leagueId = (int) $request->input('squad_league_id', 0);
+        /** @var array<int|string, mixed> $lookupNames */
+        $lookupNames = $request->input('lookup_names', []);
+        if (! is_array($lookupNames)) {
+            $lookupNames = [];
+        }
+
+        $result = $this->squad->checkWikimediaImagesForSquadPlayers($teamId, $leagueId, $lookupNames);
+        $redirectQuery = $this->imagesRedirectParams(
+            (int) ($result['team_id'] ?? $teamId),
+            (int) ($result['league_id'] ?? $leagueId),
+        );
+
+        if (! ($result['ok'] ?? false)) {
+            return redirect()
+                ->route('admin.squad', $redirectQuery)
+                ->with('admin_errors', $result['errors'] ?? ['Bilder prüfen fehlgeschlagen.']);
+        }
+
+        // Re-render immediately (no session) so a normal reload starts fresh.
+        return $this->render(
+            $userId,
+            (int) ($result['team_id'] ?? $teamId),
+            (int) ($result['league_id'] ?? $leagueId) > 0 ? (int) ($result['league_id'] ?? $leagueId) : null,
+            [],
+            'images',
+            null,
+            is_array($result['images'] ?? null) ? $result['images'] : null,
+            (string) ($result['message'] ?? ''),
+        );
+    }
+
+    public function applyImages(Request $request): RedirectResponse
+    {
+        $teamId = (int) $request->input('team_id', 0);
+        $leagueId = (int) $request->input('squad_league_id', 0);
+        /** @var list<array<string, mixed>>|array<int, array<string, mixed>> $rows */
+        $rows = $request->input('players', []);
+        if (! is_array($rows)) {
+            $rows = [];
+        }
+
+        $result = $this->squad->applyWikimediaImagesForSquadPlayers($teamId, $leagueId, array_values($rows));
+        $redirectQuery = $this->imagesRedirectParams(
+            (int) ($result['team_id'] ?? $teamId),
+            (int) ($result['league_id'] ?? $leagueId),
+        );
+
+        if (! ($result['ok'] ?? false)) {
+            return redirect()
+                ->route('admin.squad', $redirectQuery)
+                ->with('admin_errors', $result['errors'] ?? ['Bilder übernehmen fehlgeschlagen.']);
+        }
+
+        return redirect()
+            ->route('admin.squad', $redirectQuery)
+            ->with('admin_message', $result['message'] ?? null);
+    }
+
     /**
      * @param  array{team_id?: int}  $result
      * @return array<string, int>
@@ -215,8 +280,21 @@ class AdminSquadController extends Controller
     }
 
     /**
+     * @return array{tab: string, team_id?: int, squad_league_id?: int}
+     */
+    private function imagesRedirectParams(int $teamId, int $leagueId): array
+    {
+        return array_filter([
+            'tab' => 'images',
+            'team_id' => $teamId > 0 ? $teamId : null,
+            'squad_league_id' => $leagueId > 0 ? $leagueId : null,
+        ]);
+    }
+
+    /**
      * @param  list<string>  $errors
      * @param  array<string, mixed>|null  $auto
+     * @param  array<string, mixed>|null  $images
      */
     private function render(
         int $userId,
@@ -225,11 +303,13 @@ class AdminSquadController extends Controller
         array $errors = [],
         string $tab = 'roster',
         ?array $auto = null,
+        ?array $images = null,
+        ?string $answer = null,
     ): View {
         return view('admin.squad', [
-            'data' => $this->squad->pagePayload($userId, $teamId, $squadLeagueId, $tab, $auto),
+            'data' => $this->squad->pagePayload($userId, $teamId, $squadLeagueId, $tab, $auto, $images),
             'errors' => $errors,
-            'answer' => session('admin_message'),
+            'answer' => $answer ?? session('admin_message'),
             'legacyBase' => '/',
         ]);
     }

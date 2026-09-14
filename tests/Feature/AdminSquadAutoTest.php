@@ -9,6 +9,7 @@ use App\Models\Team;
 use App\Services\AdminCenterService;
 use App\Services\AdminPlayerService;
 use App\Services\AdminSquadService;
+use App\Services\WikimediaPlayerImageService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Schema;
@@ -493,7 +494,7 @@ class AdminSquadAutoTest extends TestCase
         $adminCenter = Mockery::mock(AdminCenterService::class);
         $players = new AdminPlayerService($adminCenter);
 
-        return new AdminSquadService($adminCenter, $players);
+        return new AdminSquadService($adminCenter, $players, new WikimediaPlayerImageService);
     }
 
     /**
@@ -564,6 +565,7 @@ class AdminSquadAutoTest extends TestCase
             $table->string('player_nationality')->default('');
             $table->tinyInteger('player_status')->default(1);
             $table->string('player_status_description')->default('');
+            $table->string('player_commons_image')->default('');
         });
 
         Schema::create('ffb_playerteam', function (Blueprint $table) {

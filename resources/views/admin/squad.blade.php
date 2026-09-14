@@ -20,6 +20,7 @@
         $tab = match ($data['tab'] ?? request()->query('tab')) {
             'add' => 'add',
             'auto' => 'auto',
+            'images' => 'images',
             default => 'roster',
         };
         $auto = is_array($data['auto'] ?? null) ? $data['auto'] : [];
@@ -29,6 +30,17 @@
         $autoPlayers = is_array($auto['players'] ?? null) ? $auto['players'] : [];
         $autoAlmost = is_array($auto['almost'] ?? null) ? $auto['almost'] : [];
         $autoHasRows = count($autoPlayers) > 0 || count($autoAlmost) > 0;
+        $images = is_array($data['images'] ?? null) ? $data['images'] : [];
+        $imagesChecked = (bool) ($images['checked'] ?? false);
+        $imagePlayers = is_array($images['players'] ?? null) ? $images['players'] : [];
+        $imagesCheckCount = count(array_filter(
+            $imagePlayers,
+            static fn (array $row): bool => (string) ($row['status'] ?? '') !== 'vorhanden',
+        ));
+        $imagesFoundCount = count(array_filter(
+            $imagePlayers,
+            static fn (array $row): bool => (string) ($row['status'] ?? '') === 'gefunden',
+        ));
         $positionOrder = ['g', 'd', 'm', 's'];
         $grouped = [];
         foreach ($positionOrder as $code) {
@@ -47,6 +59,7 @@
         ], static fn ($v) => $v !== null);
         $addQuery = $rosterQuery + ['tab' => 'add'];
         $autoQuery = $rosterQuery + ['tab' => 'auto'];
+        $imagesQuery = $rosterQuery + ['tab' => 'images'];
         $selectedTeamNat = strtoupper(trim((string) ($selectedTeam['team_nationality'] ?? '')));
     @endphp
 
@@ -56,7 +69,7 @@
         </div>
 
         <form class="admin-league-picker" method="get" action="{{ route('admin.squad') }}">
-            @if (in_array($tab, ['add', 'auto'], true))
+            @if (in_array($tab, ['add', 'auto', 'images'], true))
                 <input type="hidden" name="tab" value="{{ $tab }}">
             @endif
             <label for="squad_league_id">Liga</label>
@@ -123,6 +136,12 @@
                     href="{{ route('admin.squad', $autoQuery) }}"
                 >
                     Auto-Kader
+                </a>
+                <a
+                    class="admin-squad-tab ffb-tab{{ $tab === 'images' ? ' is-active' : '' }}"
+                    href="{{ route('admin.squad', $imagesQuery) }}"
+                >
+                    Auto-Bilder
                 </a>
             </nav>
         @endif
@@ -768,6 +787,123 @@
                 </div>
             @elseif ($autoAnalyzed)
                 <p class="muted">Keine Spieler in der Datei für diesen FIFA-Code.</p>
+            @endif
+        </section>
+    @endif
+
+    @if ($selectedTeamId > 0 && $tab === 'images')
+        <section class="panel admin-main" aria-labelledby="admin-squad-images-title">
+            <div class="section-head">
+                <h2 id="admin-squad-images-title">Auto-Bilder</h2>
+            </div>
+            <p class="hint">
+                Alle Spieler von {{ $selectedTeam['team_label'] ?? 'diesem Team' }} in der gewählten Liga.
+                Namen ohne Bild kannst du vor der Suche anpassen (nur für die Wikimedia-Abfrage, nicht in der DB).
+            </p>
+
+            @if (count($imagePlayers) === 0)
+                <p class="muted">Keine Spieler in diesem Kader.</p>
+            @else
+                <form
+                    class="admin-form admin-squad-images-form"
+                    method="post"
+                    accept-charset="UTF-8"
+                >
+                    @csrf
+                    <input type="hidden" name="team_id" value="{{ $selectedTeamId }}">
+                    <input type="hidden" name="squad_league_id" value="{{ $squadLeagueId }}">
+
+                    <div class="admin-auto-squad-table-wrap">
+                        <table class="admin-auto-squad-table admin-squad-images-table">
+                            <thead>
+                                <tr>
+                                    <th>Bild</th>
+                                    <th>Name (Wikimedia)</th>
+                                    <th>Pos.</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($imagePlayers as $index => $player)
+                                    @php
+                                        $status = (string) ($player['status'] ?? 'wird_geprueft');
+                                        $pictureUrl = trim((string) ($player['picture_url'] ?? ''));
+                                        $lookupName = (string) ($player['lookup_name'] ?? $player['display_name'] ?? '');
+                                        $playerId = (int) ($player['player_id'] ?? 0);
+                                        $isVorhanden = $status === 'vorhanden';
+                                        $showPicture = $pictureUrl !== '' && in_array($status, ['vorhanden', 'gefunden'], true);
+                                    @endphp
+                                    <tr class="status-{{ $status }}">
+                                        <td class="admin-auto-squad-photo">
+                                            @if ($showPicture)
+                                                <img src="{{ $pictureUrl }}" alt="" width="40" height="40" loading="lazy">
+                                            @else
+                                                <span class="muted">—</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($isVorhanden)
+                                                <span class="admin-auto-squad-readonly">{{ $lookupName }}</span>
+                                            @else
+                                                <input type="hidden" name="players[{{ $index }}][player_id]" value="{{ $playerId }}">
+                                                <input type="hidden" name="players[{{ $index }}][commons_file]" value="{{ $player['commons_file'] ?? '' }}">
+                                                <input type="hidden" name="players[{{ $index }}][thumbnail_url]" value="{{ $pictureUrl }}">
+                                                <input
+                                                    type="text"
+                                                    name="lookup_names[{{ $playerId }}]"
+                                                    value="{{ $lookupName }}"
+                                                    maxlength="255"
+                                                    aria-label="Wikimedia-Name {{ $index + 1 }}"
+                                                >
+                                            @endif
+                                        </td>
+                                        <td>{{ strtoupper((string) ($player['playerteam_player_position'] ?? '')) }}</td>
+                                        <td>
+                                            @switch ($status)
+                                                @case ('vorhanden')
+                                                    <span class="admin-auto-squad-badge">vorhanden</span>
+                                                    @break
+                                                @case ('gefunden')
+                                                    <span class="admin-auto-squad-badge is-found">gefunden</span>
+                                                    @break
+                                                @case ('nicht_gefunden')
+                                                    <span class="muted">nicht gefunden</span>
+                                                    @break
+                                                @default
+                                                    <span class="muted">wird geprüft</span>
+                                            @endswitch
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="admin-actions admin-squad-images-actions">
+                        <button
+                            type="submit"
+                            class="admin-submit"
+                            formaction="{{ route('admin.squad.images.check') }}"
+                            @disabled($imagesCheckCount <= 0)
+                        >
+                            Bilder von Wikimedia laden
+                            @if ($imagesCheckCount > 0)
+                                ({{ $imagesCheckCount }})
+                            @endif
+                        </button>
+                        <button
+                            type="submit"
+                            class="admin-submit"
+                            formaction="{{ route('admin.squad.images.apply') }}"
+                            @disabled(! $imagesChecked || $imagesFoundCount <= 0)
+                        >
+                            Bilder übernehmen
+                            @if ($imagesFoundCount > 0)
+                                ({{ $imagesFoundCount }})
+                            @endif
+                        </button>
+                    </div>
+                </form>
             @endif
         </section>
     @endif

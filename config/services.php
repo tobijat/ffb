@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    'wikimedia' => [
+        'sparql_url' => env('WIKIDATA_SPARQL_URL', 'https://query.wikidata.org/sparql'),
+        'commons_api_url' => env('WIKIMEDIA_COMMONS_API_URL', 'https://commons.wikimedia.org/w/api.php'),
+        'user_agent' => env('WIKIMEDIA_USER_AGENT', 'SoccerSportsfan'),
+        'thumbnail_width' => (int) env('WIKIMEDIA_THUMBNAIL_WIDTH', 200),
+        'timeout' => (int) env('WIKIMEDIA_HTTP_TIMEOUT', 30),
+        'debug' => (bool) env('WIKIMEDIA_DEBUG', false),
+        // PHP on Windows often has empty curl.cainfo; point at a Mozilla CA bundle if present.
+        'ca_bundle' => env('WIKIMEDIA_CA_BUNDLE', storage_path('certs/cacert.pem')),
+    ],
+
 ];

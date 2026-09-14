@@ -20,6 +20,7 @@ class Player extends Model
         'player_nationality',
         'player_status',
         'player_status_description',
+        'player_commons_image',
     ];
 
     public function playerteams(): HasMany
