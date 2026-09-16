@@ -108,8 +108,11 @@ return [
     |--------------------------------------------------------------------------
     */
     'elo' => [
-        'url' => env('FFB_ELO_URL', 'http://www.eloratings.net/world.html'),
-        'team_map_url' => env('FFB_ELO_TEAM_MAP_URL', 'http://soccer.sportsfan.at/parserfiles/teams/teams.csv'),
+        // Legacy world.html still accepted; client resolves it to World.tsv.
+        'url' => env('FFB_ELO_URL', 'https://www.eloratings.net/World.tsv'),
+        'teams_url' => env('FFB_ELO_TEAMS_URL', 'https://www.eloratings.net/en.teams.tsv'),
+        // Team ID ↔ Elo English name map (always local; edit resources/data/elo/teams.csv).
+        'team_map_path' => resource_path('data/elo/teams.csv'),
     ],
 
     /*

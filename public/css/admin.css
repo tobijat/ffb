@@ -1015,6 +1015,51 @@
     background: #fff6e8;
 }
 
+.admin-playerprice-limits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    margin: 0 0 1rem;
+}
+
+.admin-playerprice-limits dt {
+    font-size: 9pt;
+    color: #444;
+}
+
+.admin-playerprice-limits dd {
+    margin: 0.15rem 0 0;
+}
+
+.admin-playerprice-checks {
+    margin: 0.75rem 0 1rem;
+    padding-left: 1.25rem;
+}
+
+.admin-playerprice-checks .is-ok {
+    color: #0a5a0a;
+}
+
+.admin-playerprice-checks .is-warn {
+    color: #8a4b00;
+}
+
+.admin-playerprice-skipped ul {
+    margin: 0.25rem 0 1rem;
+    padding-left: 1.25rem;
+    columns: 2;
+    column-gap: 2rem;
+}
+
+.admin-playerprice-preview-table td:nth-child(3),
+.admin-playerprice-preview-table td:nth-child(4),
+.admin-playerprice-preview-table td:nth-child(5),
+.admin-playerprice-preview-table th:nth-child(3),
+.admin-playerprice-preview-table th:nth-child(4),
+.admin-playerprice-preview-table th:nth-child(5) {
+    text-align: right;
+}
+
 .admin-ms-answers {
     margin-top: 0.75rem;
 }

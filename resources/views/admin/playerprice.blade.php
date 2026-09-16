@@ -4,28 +4,70 @@
 
 @section('content')
     @php
+        $leagues = $data['leagues'] ?? [];
+        $priceLeagueId = (int) ($data['price_league_id'] ?? 0);
         $selectedLeague = $data['selected_league'] ?? null;
         $matchrounds = $data['matchrounds'] ?? [];
+        $matchroundId = (int) ($data['matchround_id'] ?? 0);
         $priceMargins = $data['price_margins'] ?? [];
-        $priceOptions = $data['price_options'] ?? range(1, 19);
+        $lineupMaxCredits = (float) ($data['lineup_max_credits'] ?? 100);
+        $lineupMaxPlayersTeam = (int) ($data['lineup_max_players_team'] ?? 3);
+        $lineupLimitsSource = (string) ($data['lineup_limits_source'] ?? 'league');
+        $teamPricePreview = is_array($data['team_price_preview'] ?? null) ? $data['team_price_preview'] : null;
+        $previewTeams = is_array($teamPricePreview['teams'] ?? null) ? $teamPricePreview['teams'] : [];
+        $previewChecks = is_array($teamPricePreview['checks'] ?? null) ? $teamPricePreview['checks'] : [];
+        $previewParams = is_array($teamPricePreview['params'] ?? null) ? $teamPricePreview['params'] : [];
+        $previewForm = is_array($teamPricePreview['form'] ?? null) ? $teamPricePreview['form'] : [];
+        $eloExponent = old('exponent', $previewForm['exponent'] ?? $data['elo_exponent'] ?? 2);
+        $eloDreamTeamRatio = old('dream_team_ratio', $previewForm['dream_team_ratio'] ?? $data['elo_dream_team_ratio'] ?? 1.5);
+        $eloMinPrice = old('min_price', $previewForm['min_price'] ?? $data['elo_min_price'] ?? 1);
         $flashErrors = $errors ?: (session('admin_errors') ?: []);
         $flashDetails = is_array($details ?? null) ? $details : [];
-        $hasLeague = ! empty($selectedLeague);
+        $hasLeague = $priceLeagueId > 0;
+        $tab = ($data['tab'] ?? 'players') === 'teams' ? 'teams' : 'players';
+        $baseQuery = array_filter([
+            'price_league_id' => $hasLeague ? $priceLeagueId : null,
+        ], static fn ($v) => $v !== null);
+        $teamsQuery = array_filter(
+            $baseQuery + [
+                'tab' => 'teams',
+                'matchround_id' => $matchroundId > 0 ? $matchroundId : null,
+            ],
+            static fn ($v) => $v !== null,
+        );
+        $playersQuery = $baseQuery;
+        $limitsSourceLabel = match ($lineupLimitsSource) {
+            'matchround' => 'Spielrunde',
+            'league' => 'Liga',
+            default => 'Standard',
+        };
     @endphp
 
     <section class="panel admin-main" aria-labelledby="admin-playerprice-title">
         <div class="section-head">
-            <h2 id="admin-playerprice-title">PlayerPrice Settings</h2>
+            <h2 id="admin-playerprice-title">Preise</h2>
         </div>
         <p class="hint">
-            Dynamische Spielerpreise und ELO-Basisteampreise für die im Admin-Center ausgewählte Liga
-            (entspricht dem Legacy-Menü „PlayerPrice“ / playerprice2014).
+            Dynamische Spielerpreise und ELO-Teampreise für die gewählte Liga.
         </p>
-        @if ($hasLeague)
-            <p class="muted">Aktive Liga: {{ $selectedLeague['league_title'] }}</p>
-        @else
-            <p class="hint">Bitte zuerst unter <a href="{{ url('/admin') }}">Ligen</a> eine Liga auswählen.</p>
-        @endif
+
+        <form class="admin-league-picker" method="get" action="{{ route('admin.playerprice') }}">
+            @if ($tab === 'teams')
+                <input type="hidden" name="tab" value="teams">
+            @endif
+            <label for="price_league_id">Liga</label>
+            <select id="price_league_id" name="price_league_id" onchange="this.form.submit()">
+                <option value="">— Liga wählen —</option>
+                @foreach ($leagues as $league)
+                    <option value="{{ $league['league_id'] }}" @selected($priceLeagueId === (int) $league['league_id'])>
+                        {{ $league['league_title'] }}
+                    </option>
+                @endforeach
+            </select>
+            <noscript>
+                <button type="submit" class="admin-submit">Anzeigen</button>
+            </noscript>
+        </form>
 
         @if (!empty($flashErrors))
             <div class="account-flash account-flash-error" role="alert">
@@ -50,138 +92,239 @@
                 @endif
             </div>
         @endif
+
+        @if (! $hasLeague)
+            <p class="hint">Wähle oben eine Liga, um Preise zu berechnen.</p>
+        @else
+            <nav class="admin-squad-tabs ffb-tabs" aria-label="Preis-Bereiche">
+                <a
+                    class="admin-squad-tab ffb-tab{{ $tab === 'teams' ? ' is-active' : '' }}"
+                    href="{{ route('admin.playerprice', $teamsQuery) }}"
+                >
+                    Team-Preis
+                </a>
+                <a
+                    class="admin-squad-tab ffb-tab{{ $tab === 'players' ? ' is-active' : '' }}"
+                    href="{{ route('admin.playerprice', $playersQuery) }}"
+                >
+                    Spieler-Preis
+                </a>
+            </nav>
+            <p class="muted">Aktive Liga: {{ $selectedLeague['league_title'] ?? ('#'.$priceLeagueId) }}</p>
+        @endif
     </section>
 
-    <section class="panel admin-main" aria-labelledby="admin-playerprice-dynamic-title">
-        <div class="section-head">
-            <h2 id="admin-playerprice-dynamic-title">Dynamic PlayerPrices v2014</h2>
-        </div>
-        <p class="hint">
-            Berechnet Preis-Margins aus den letzten Spielen und schreibt
-            <code>ffb_playerprice</code> für die gewählte Spielrunde.
-        </p>
-        <form class="admin-form" method="post" action="{{ route('admin.playerprice.setMatchroundPlayerPrices') }}" accept-charset="UTF-8">
-            @csrf
-            <div class="admin-field">
-                <label for="pp_dyn_matchround">calculate for</label>
-                <select id="pp_dyn_matchround" name="matchround_id" @disabled(! $hasLeague)>
-                    <option value="">Select Matchround..</option>
+    @if ($hasLeague && $tab === 'players')
+        <section class="panel admin-main" aria-labelledby="admin-playerprice-dynamic-title">
+            <div class="section-head">
+                <h2 id="admin-playerprice-dynamic-title">Spieler-Preis</h2>
+            </div>
+            <p class="hint">
+                Berechnet Preis-Margins aus den letzten Spielen und schreibt
+                <code>ffb_playerprice</code> für die gewählte Spielrunde (Dynamic PlayerPrices v2014).
+            </p>
+            <form class="admin-form" method="post" action="{{ route('admin.playerprice.setMatchroundPlayerPrices') }}" accept-charset="UTF-8">
+                @csrf
+                <input type="hidden" name="price_league_id" value="{{ $priceLeagueId }}">
+                <input type="hidden" name="tab" value="players">
+                <div class="admin-field">
+                    <label for="pp_dyn_matchround">calculate for</label>
+                    <select id="pp_dyn_matchround" name="matchround_id">
+                        <option value="">Select Matchround..</option>
+                        @foreach ($matchrounds as $round)
+                            <option value="{{ $round['matchround_id'] }}" @selected((string) old('matchround_id') === (string) $round['matchround_id'])>
+                                {{ $round['matchround_title'] }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="admin-field">
+                    <label for="pp_dyn_margin">Price Margin</label>
+                    <select id="pp_dyn_margin" name="price_margin">
+                        <option value="">price margin..</option>
+                        @foreach ($priceMargins as $margin)
+                            <option value="{{ $margin }}" @selected((string) old('price_margin') === (string) $margin)>
+                                {{ $margin }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="admin-actions">
+                    <button type="submit" class="admin-submit" name="set_playerprice_submit" value="1">
+                        Set Player Prices
+                    </button>
+                </div>
+                <p class="hint">(do only click once!)</p>
+            </form>
+        </section>
+    @endif
+
+    @if ($hasLeague && $tab === 'teams')
+        <section class="panel admin-main" aria-labelledby="admin-playerprice-elo-title">
+            <div class="section-head">
+                <h2 id="admin-playerprice-elo-title">ELO Team-Preis</h2>
+            </div>
+            <p class="hint">
+                Berechnet Spieler-Basisteampreise aus ELO-Ratings (eloratings.net).
+                Ohne Spielrunde: alle Liga-Teams. Mit Spielrunde: nur Teams der Runde.
+                Noch keine Speicherung in der Datenbank.
+            </p>
+
+            <dl class="admin-playerprice-limits">
+                <div>
+                    <dt>Max. Credits / Aufstellung</dt>
+                    <dd>
+                        <strong>{{ rtrim(rtrim(number_format($lineupMaxCredits, 1, '.', ''), '0'), '.') }}</strong>
+                        <span class="muted">({{ $limitsSourceLabel }})</span>
+                    </dd>
+                </div>
+                <div>
+                    <dt>Max. Spieler / Team</dt>
+                    <dd>
+                        <strong>{{ $lineupMaxPlayersTeam }}</strong>
+                        <span class="muted">({{ $limitsSourceLabel }})</span>
+                    </dd>
+                </div>
+            </dl>
+
+            <form class="admin-league-picker" method="get" action="{{ route('admin.playerprice') }}">
+                <input type="hidden" name="price_league_id" value="{{ $priceLeagueId }}">
+                <input type="hidden" name="tab" value="teams">
+                <label for="pp_elo_matchround">Spielrunde (optional)</label>
+                <select id="pp_elo_matchround" name="matchround_id" onchange="this.form.submit()">
+                    <option value="">— Alle Teams der Liga —</option>
                     @foreach ($matchrounds as $round)
-                        <option value="{{ $round['matchround_id'] }}" @selected((string) old('matchround_id') === (string) $round['matchround_id'])>
+                        <option value="{{ $round['matchround_id'] }}" @selected($matchroundId === (int) $round['matchround_id'])>
                             {{ $round['matchround_title'] }}
                         </option>
                     @endforeach
                 </select>
-            </div>
-            <div class="admin-field">
-                <label for="pp_dyn_margin">Price Margin</label>
-                <select id="pp_dyn_margin" name="price_margin" @disabled(! $hasLeague)>
-                    <option value="">price margin..</option>
-                    @foreach ($priceMargins as $margin)
-                        <option value="{{ $margin }}" @selected((string) old('price_margin') === (string) $margin)>
-                            {{ $margin }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="admin-actions">
-                <button type="submit" class="admin-submit" name="set_playerprice_submit" value="1" @disabled(! $hasLeague)>
-                    Set Player Prices
-                </button>
-            </div>
-            <p class="hint">(do only click once!)</p>
-        </form>
-    </section>
+                <noscript>
+                    <button type="submit" class="admin-submit">Anzeigen</button>
+                </noscript>
+            </form>
 
-    <section class="panel admin-main admin-playerprice-warn" aria-labelledby="admin-playerprice-elo-game-title">
-        <div class="section-head">
-            <h2 id="admin-playerprice-elo-game-title">ELO BasePrices for League</h2>
-        </div>
-        <p class="hint">
-            Setzt <code>team_avg_price</code> und alle Spieler-Basisteampreise für Teams der aktiven Liga
-            anhand der aktuellen ELO-Rangliste.
-        </p>
-        <form class="admin-form" method="post" action="{{ route('admin.playerprice.setLeagueEloTeamPrices') }}" accept-charset="UTF-8">
-            @csrf
-            <div class="admin-field">
-                <label for="pp_game_max">Max Price</label>
-                <select id="pp_game_max" name="max_price" @disabled(! $hasLeague)>
-                    <option value="">max price..</option>
-                    @foreach ($priceOptions as $price)
-                        <option value="{{ $price }}" @selected((string) old('max_price') === (string) $price)>
-                            {{ $price }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="admin-field">
-                <label for="pp_game_min">Min Price</label>
-                <select id="pp_game_min" name="min_price" @disabled(! $hasLeague)>
-                    <option value="">min price..</option>
-                    @foreach ($priceOptions as $price)
-                        <option value="{{ $price }}" @selected((string) old('min_price') === (string) $price)>
-                            {{ $price }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="admin-actions">
-                <button type="submit" class="admin-submit" name="set_teamprice_for_game_submit" value="1" @disabled(! $hasLeague)>
-                    Set Team prices
-                </button>
-            </div>
-            <p class="hint"><strong>(do only click once!)<br>(do not update during tournament!)</strong></p>
-        </form>
-    </section>
+            <form class="admin-form" method="post" action="{{ route('admin.playerprice.previewEloTeamPrices') }}" accept-charset="UTF-8">
+                @csrf
+                <input type="hidden" name="price_league_id" value="{{ $priceLeagueId }}">
+                <input type="hidden" name="tab" value="teams">
+                <input type="hidden" name="matchround_id" value="{{ $matchroundId > 0 ? $matchroundId : '' }}">
+                <div class="admin-field">
+                    <label for="pp_elo_exponent">Exponent</label>
+                    <input
+                        id="pp_elo_exponent"
+                        type="number"
+                        name="exponent"
+                        value="{{ $eloExponent }}"
+                        min="0.1"
+                        max="10"
+                        step="0.1"
+                        required
+                    >
+                    <p class="hint">Steuert, wie stark starke Teams teurer werden (Standard 2.0).</p>
+                </div>
+                <div class="admin-field">
+                    <label for="pp_elo_dream_ratio">Dream-Team-Ratio</label>
+                    <input
+                        id="pp_elo_dream_ratio"
+                        type="number"
+                        name="dream_team_ratio"
+                        value="{{ $eloDreamTeamRatio }}"
+                        min="0.1"
+                        max="5"
+                        step="0.05"
+                        required
+                    >
+                    <p class="hint">Zielkosten des Dream-Teams als Vielfaches des Budgets (Standard 1.5 = 150%).</p>
+                </div>
+                <div class="admin-field">
+                    <label for="pp_elo_min_price">Mindestpreis</label>
+                    <input
+                        id="pp_elo_min_price"
+                        type="number"
+                        name="min_price"
+                        value="{{ $eloMinPrice }}"
+                        min="0"
+                        max="20"
+                        step="0.1"
+                        required
+                    >
+                    <p class="hint">Preis des schwächsten Teams; stärkere Teams liegen darüber (Standard 1.0).</p>
+                </div>
+                <div class="admin-actions">
+                    <button type="submit" class="admin-submit" name="preview_elo_team_prices" value="1">
+                        Preise berechnen
+                    </button>
+                </div>
+            </form>
 
-    <section class="panel admin-main admin-playerprice-warn" aria-labelledby="admin-playerprice-elo-round-title">
-        <div class="section-head">
-            <h2 id="admin-playerprice-elo-round-title">ELO BasePrices for Matchround</h2>
-        </div>
-        <p class="hint">
-            Wie oben, aber nur für Teams, die in der gewählten Spielrunde Spiele haben.
-        </p>
-        <form class="admin-form" method="post" action="{{ route('admin.playerprice.setMatchroundEloTeamPrices') }}" accept-charset="UTF-8">
-            @csrf
-            <div class="admin-field">
-                <label for="pp_round_matchround">calculate for Teams participating in</label>
-                <select id="pp_round_matchround" name="matchround_id" @disabled(! $hasLeague)>
-                    <option value="">Select Matchround..</option>
-                    @foreach ($matchrounds as $round)
-                        <option value="{{ $round['matchround_id'] }}" @selected((string) old('matchround_id') === (string) $round['matchround_id'])>
-                            {{ $round['matchround_title'] }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="admin-field">
-                <label for="pp_round_max">Max Price</label>
-                <select id="pp_round_max" name="max_price" @disabled(! $hasLeague)>
-                    <option value="">max price..</option>
-                    @foreach ($priceOptions as $price)
-                        <option value="{{ $price }}" @selected((string) old('max_price') === (string) $price)>
-                            {{ $price }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="admin-field">
-                <label for="pp_round_min">Min Price</label>
-                <select id="pp_round_min" name="min_price" @disabled(! $hasLeague)>
-                    <option value="">min price..</option>
-                    @foreach ($priceOptions as $price)
-                        <option value="{{ $price }}" @selected((string) old('min_price') === (string) $price)>
-                            {{ $price }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="admin-actions">
-                <button type="submit" class="admin-submit" name="set_teamprice_for_matchround_submit" value="1" @disabled(! $hasLeague)>
-                    Set Team prices
-                </button>
-            </div>
-            <p class="hint"><strong>(do only click once!)<br>(do not update during tournament!)</strong></p>
-        </form>
-    </section>
+            @if ($teamPricePreview !== null)
+                @php
+                    $skippedTeams = $teamPricePreview['teams_skipped'] ?? [];
+                @endphp
+                @if (count($skippedTeams) > 0)
+                    <div class="admin-playerprice-skipped">
+                        <p class="hint">
+                            {{ count($skippedTeams) }} Team(s) ohne ELO-Zuordnung wurden übersprungen:
+                        </p>
+                        <ul>
+                            @foreach ($skippedTeams as $skipped)
+                                <li>{{ $skipped['team_name'] ?? ('Team #'.($skipped['team_id'] ?? '?')) }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @if ($previewParams !== [])
+                    <p class="muted">
+                        Parameter: Exponent {{ $previewParams['exponent'] ?? '—' }},
+                        Dream-Team-Ratio {{ $previewParams['dream_team_ratio'] ?? '—' }},
+                        Mindestpreis {{ $previewParams['min_price'] ?? '—' }},
+                        Budget {{ $previewParams['budget'] ?? '—' }}
+                    </p>
+                @endif
+
+                @if ($previewChecks !== [])
+                    <ul class="admin-playerprice-checks">
+                        @foreach ($previewChecks as $check)
+                            <li class="{{ ! empty($check['ok']) ? 'is-ok' : 'is-warn' }}">
+                                <strong>{{ $check['id'] ?? 'check' }}:</strong>
+                                {{ $check['message'] ?? '' }}
+                                @if (isset($check['cost']))
+                                    <span class="muted">({{ $check['cost'] }} / Ziel {{ $check['target'] ?? '—' }})</span>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+
+                @if (count($previewTeams) > 0)
+                    <div class="admin-auto-squad-table-wrap">
+                        <table class="admin-auto-squad-table admin-playerprice-preview-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Team</th>
+                                    <th>ELO</th>
+                                    <th>Normalisiert</th>
+                                    <th>Preis / Spieler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($previewTeams as $index => $row)
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $row['team_name'] ?? '' }}</td>
+                                        <td>{{ $row['elo_rating'] ?? '' }}</td>
+                                        <td>{{ $row['normalized'] ?? '' }}</td>
+                                        <td><strong>{{ $row['price'] ?? '' }}</strong></td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            @endif
+        </section>
+    @endif
 @endsection

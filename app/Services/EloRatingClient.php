@@ -2,26 +2,34 @@
 
 namespace App\Services;
 
+use App\Models\Team;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 
 /**
- * Port of legacy modules/administration/ELORating.php.
+ * Loads world Elo ratings from eloratings.net and maps team names to FFB team IDs
+ * via the local resources/data/elo/teams.csv file, with a fallback to exact
+ * local ffb_team.team_name matches.
  *
- * Loads world Elo ratings and maps Elo team names to FFB team IDs via CSV.
+ * The public site is a JS shell; ratings are published as TSV:
+ * - World.tsv (rank + team code + rating …)
+ * - en.teams.tsv (team code → English name / aliases)
  */
 class EloRatingClient
 {
-    private const TEAM_NAME_MAP_URL = 'http://soccer.sportsfan.at/parserfiles/teams/teams.csv';
+    private const DEFAULT_RATINGS_URL = 'https://www.eloratings.net/World.tsv';
+
+    private const DEFAULT_TEAMS_URL = 'https://www.eloratings.net/en.teams.tsv';
 
     /** @var array<int, float|string>|null team_id => elo */
     private ?array $ratings = null;
 
     public function __construct(
         private readonly ?string $eloUrl = null,
-        private readonly ?string $teamMapUrl = null,
-    ) {
-    }
+        private readonly ?string $teamMapPath = null,
+        private readonly ?string $teamsUrl = null,
+    ) {}
 
     public function getEloRatingForTeam(int $teamId): ?float
     {
@@ -74,64 +82,141 @@ class EloRatingClient
      */
     private function loadRatings(): array
     {
-        $mapUrl = $this->teamMapUrl ?? (string) config('ffb.elo.team_map_url', self::TEAM_NAME_MAP_URL);
-        $eloUrl = $this->eloUrl ?? (string) config('ffb.elo.url', 'http://www.eloratings.net/world.html');
+        $mapPath = $this->teamMapPath
+            ?? (string) config('ffb.elo.team_map_path', resource_path('data/elo/teams.csv'));
+        $ratingsUrl = $this->resolveRatingsUrl(
+            $this->eloUrl ?? (string) config('ffb.elo.url', self::DEFAULT_RATINGS_URL),
+        );
+        $teamsUrl = $this->teamsUrl
+            ?? (string) config('ffb.elo.teams_url', self::DEFAULT_TEAMS_URL);
 
-        $teamNameMap = $this->getTeamNameMap($mapUrl);
+        $teamNameMap = $this->getTeamNameMap($mapPath);
+        $codeToNames = $this->getTeamCodeNames($teamsUrl);
 
-        return $this->getEloRatingsFromUrl($eloUrl, $teamNameMap);
+        return $this->getEloRatingsFromTsv($ratingsUrl, $codeToNames, $teamNameMap);
     }
 
     /**
-     * @param  array<string, int>  $teamNameMap
+     * Accept legacy world.html config values and map them to the TSV feed.
+     */
+    private function resolveRatingsUrl(string $url): string
+    {
+        $url = trim($url);
+        if ($url === '') {
+            return self::DEFAULT_RATINGS_URL;
+        }
+
+        $path = strtolower((string) (parse_url($url, PHP_URL_PATH) ?? ''));
+        if (str_ends_with($path, '.tsv')) {
+            return $url;
+        }
+
+        if (str_contains($path, 'world')) {
+            $scheme = parse_url($url, PHP_URL_SCHEME) ?: 'https';
+            $host = parse_url($url, PHP_URL_HOST) ?: 'www.eloratings.net';
+
+            return $scheme.'://'.$host.'/World.tsv';
+        }
+
+        return $url;
+    }
+
+    /**
+     * @param  array<string, list<string>>  $codeToNames
+     * @param  array<string, int>  $teamNameMap  md5(name) => ffb team_id
      * @return array<int, float|string>
      */
-    private function getEloRatingsFromUrl(string $url, array $teamNameMap): array
+    private function getEloRatingsFromTsv(string $url, array $codeToNames, array $teamNameMap): array
     {
-        $content = $this->normalizeString($this->fetch($url));
-
-        $eloTableStartPattern = '<table cellspacing="0" border="border" bordercolor="white" rules="groups" frame="void">';
-        $eloTableEndPattern = '</table>';
-        $eloTableStartPos = strpos($content, $eloTableStartPattern);
-        if ($eloTableStartPos === false) {
-            throw new RuntimeException('ELO table not found at '.$url);
-        }
-        $eloTableStartPos += strlen($eloTableStartPattern);
-
-        $startPos = strpos($content, '<tr><td>', $eloTableStartPos);
-        $endPos = strpos($content, $eloTableEndPattern, $eloTableStartPos);
-        if ($startPos === false || $endPos === false || $endPos <= $startPos) {
-            throw new RuntimeException('ELO table body not found at '.$url);
-        }
-
-        $eloTableHeadings = '<tr class="sh"><td rowspan="2" class="sh">rank</td><td rowspan="2" class="sh">team</td><td rowspan="2" class="sh">rating</td><td colspan="2" class="sh">highest</td><td colspan="2" class="th">1 yr change</td><td colspan="7" class="sh">matches</td><td colspan="2" class="sh">goals</td></tr><tr class="lh"><td class="lh">rank</td><td class="lh">rating</td><td class="lh">rank</td><td class="lh">rating</td><td class="lh">total</td><td class="lh">home</td><td class="lh">away</td><td class="lh">neutral</td><td class="lh">wins</td><td class="lh">losses</td><td class="lh">draws</td><td class="lh">for</td><td class="lh">against</td></tr>';
-
-        $eloTable = substr($content, $startPos, $endPos - $startPos);
-        $eloTable = str_replace($eloTableHeadings, '', $eloTable);
-
-        $teams = array_filter(explode('<tr><td>', $eloTable));
+        $content = $this->fetchRemote($url);
+        $lines = preg_split('/\R/', $content) ?: [];
         $ratings = [];
 
-        foreach ($teams as $team) {
-            $eloName = $this->getTeamNameFromString($team);
-            $key = md5($eloName);
-            if (! array_key_exists($key, $teamNameMap)) {
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '') {
                 continue;
             }
-            $ratings[(int) $teamNameMap[$key]] = $this->getTeamEloFromString($team);
+
+            $parts = explode("\t", $line);
+            if (count($parts) < 4) {
+                continue;
+            }
+
+            $code = trim($parts[2]);
+            $elo = trim($parts[3]);
+            if ($code === '' || ! is_numeric($elo)) {
+                continue;
+            }
+
+            foreach ($codeToNames[$code] ?? [] as $name) {
+                $key = md5($name);
+                if (! array_key_exists($key, $teamNameMap)) {
+                    continue;
+                }
+                $ratings[(int) $teamNameMap[$key]] = $elo;
+                break;
+            }
+        }
+
+        if ($ratings === []) {
+            throw new RuntimeException('No ELO ratings could be mapped from '.$url);
         }
 
         return $ratings;
     }
 
     /**
+     * @return array<string, list<string>> team code => English names / aliases
+     */
+    private function getTeamCodeNames(string $url): array
+    {
+        $content = $this->fetchRemote($url);
+        $lines = preg_split('/\R/', $content) ?: [];
+        $map = [];
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+
+            $parts = explode("\t", $line);
+            $code = trim((string) ($parts[0] ?? ''));
+            if ($code === '' || str_contains($code, '_')) {
+                continue;
+            }
+
+            $names = [];
+            for ($i = 1; $i < count($parts); $i++) {
+                $name = trim($parts[$i]);
+                if ($name !== '') {
+                    $names[] = $name;
+                }
+            }
+            if ($names !== []) {
+                $map[$code] = $names;
+            }
+        }
+
+        if ($map === []) {
+            throw new RuntimeException('ELO team dictionary empty at '.$url);
+        }
+
+        return $map;
+    }
+
+    /**
      * @return array<string, int>
      */
-    private function getTeamNameMap(string $url): array
+    private function getTeamNameMap(string $path): array
     {
-        $content = $this->fetch($url);
+        // Local FFB names first so exact English team_name matches still work if
+        // teams.csv lags; CSV aliases overwrite on conflict.
+        $teamList = $this->localTeamNameMap();
+
+        $content = $this->readLocalFile($path);
         $teams = array_filter(explode(';;', $content));
-        $teamList = [];
         foreach ($teams as $team) {
             $parts = explode(';', $team);
             if (count($parts) < 4) {
@@ -145,46 +230,51 @@ class EloRatingClient
         return $teamList;
     }
 
-    private function getTeamNameFromString(string $string): string
+    /**
+     * Exact team_name → team_id for names that already match eloratings English labels.
+     *
+     * @return array<string, int>
+     */
+    private function localTeamNameMap(): array
     {
-        $parts = explode('<td>', $string);
-        if (! isset($parts[1])) {
-            return '';
-        }
-        $open = strpos($parts[1], '">');
-        $close = strpos($parts[1], '</a>');
-        if ($open === false || $close === false || $close <= $open + 2) {
-            return '';
+        if (! Schema::hasTable('ffb_team')) {
+            return [];
         }
 
-        return substr($parts[1], $open + 2, $close - ($open + 2));
+        $map = [];
+        foreach (Team::query()->get(['team_id', 'team_name']) as $team) {
+            $name = trim((string) $team->team_name);
+            if ($name === '') {
+                continue;
+            }
+            $map[md5($name)] = (int) $team->team_id;
+        }
+
+        return $map;
     }
 
-    private function getTeamEloFromString(string $string): string
+    private function readLocalFile(string $path): string
     {
-        $parts = explode('<td>', $string);
-        if (! isset($parts[2])) {
-            return '0';
-        }
-        $close = strpos($parts[2], '</td>');
-        if ($close === false) {
-            return trim($parts[2]);
+        $path = trim($path);
+        if ($path === '') {
+            throw new RuntimeException('ELO team map path is empty.');
         }
 
-        return substr($parts[2], 0, $close);
+        $contents = @file_get_contents($path);
+        if ($contents === false) {
+            throw new RuntimeException('Failed to read local ELO map at '.$path);
+        }
+
+        return $contents;
     }
 
-    private function normalizeString(string $string): string
+    private function fetchRemote(string $url): string
     {
-        $string = str_replace("\t", '', trim($string));
-        $string = str_replace("\r", '', trim($string));
+        $request = Http::withHeaders([
+            'User-Agent' => 'SoccerSportsfan',
+            'Accept' => 'text/plain,text/tab-separated-values,text/html,*/*',
+        ])->timeout(60);
 
-        return str_replace("\n", '', trim($string));
-    }
-
-    private function fetch(string $url): string
-    {
-        $request = Http::timeout(60);
         if (! config('ffb.http.verify_ssl', true)) {
             $request = $request->withOptions(['verify' => false]);
         }

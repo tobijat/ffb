@@ -18,7 +18,16 @@ class AdminPlayerpriceController extends Controller
 
     public function show(Request $request): View
     {
-        return $this->render($request);
+        $leagueId = (int) $request->query('price_league_id', 0);
+        $matchroundId = (int) $request->query('matchround_id', 0);
+        $tab = $this->resolveTab($request->query('tab'));
+
+        return $this->render(
+            $request,
+            $leagueId > 0 ? $leagueId : null,
+            $tab,
+            $matchroundId > 0 ? $matchroundId : null,
+        );
     }
 
     public function setMatchroundPlayerPrices(Request $request): RedirectResponse
@@ -26,41 +35,54 @@ class AdminPlayerpriceController extends Controller
         $userId = $this->auth->userId($request);
         $result = $this->playerprice->calculatePlayerPricesForMatchround($userId, $request->all());
 
-        return $this->redirectFromResult($result)->withInput($request->only([
+        return $this->redirectFromResult($result, $request)->withInput($request->only([
             'matchround_id',
             'price_margin',
+            'price_league_id',
         ]));
     }
 
-    public function setLeagueEloTeamPrices(Request $request): RedirectResponse
+    public function previewEloTeamPrices(Request $request): View|RedirectResponse
     {
         $userId = $this->auth->userId($request);
-        $result = $this->playerprice->calculateEloTeamPricesForLeague($userId, $request->all());
+        $result = $this->playerprice->previewEloTeamPrices($userId, $request->all());
+        $leagueId = (int) ($result['price_league_id'] ?? $request->input('price_league_id', 0));
+        $matchroundId = (int) ($result['matchround_id'] ?? $request->input('matchround_id', 0));
 
-        return $this->redirectFromResult($result)->withInput($request->only([
-            'max_price',
-            'min_price',
-        ]));
-    }
+        if (! ($result['ok'] ?? false)) {
+            return redirect()
+                ->route('admin.playerprice', array_filter([
+                    'price_league_id' => $leagueId > 0 ? $leagueId : null,
+                    'tab' => 'teams',
+                    'matchround_id' => $matchroundId > 0 ? $matchroundId : null,
+                ], static fn ($v) => $v !== null))
+                ->with('admin_errors', $result['errors'] ?? ['Berechnung fehlgeschlagen.'])
+                ->withInput($request->only(['price_league_id', 'matchround_id', 'exponent', 'dream_team_ratio', 'min_price']));
+        }
 
-    public function setMatchroundEloTeamPrices(Request $request): RedirectResponse
-    {
-        $userId = $this->auth->userId($request);
-        $result = $this->playerprice->calculateEloTeamPricesForMatchround($userId, $request->all());
-
-        return $this->redirectFromResult($result)->withInput($request->only([
-            'matchround_id',
-            'max_price',
-            'min_price',
-        ]));
+        return $this->render(
+            $request,
+            $leagueId > 0 ? $leagueId : null,
+            'teams',
+            $matchroundId > 0 ? $matchroundId : null,
+            is_array($result['preview'] ?? null) ? $result['preview'] : null,
+            (string) ($result['message'] ?? ''),
+        );
     }
 
     /**
-     * @param  array{ok: bool, message?: string, errors?: list<string>, details?: list<string>}  $result
+     * @param  array{ok: bool, message?: string, errors?: list<string>, details?: list<string>, price_league_id?: int, tab?: string, matchround_id?: int}  $result
      */
-    private function redirectFromResult(array $result): RedirectResponse
+    private function redirectFromResult(array $result, Request $request): RedirectResponse
     {
-        $redirect = redirect()->route('admin.playerprice');
+        $leagueId = (int) ($result['price_league_id'] ?? $request->input('price_league_id', 0));
+        $tab = $this->resolveTab($result['tab'] ?? $request->input('tab'));
+        $matchroundId = (int) ($result['matchround_id'] ?? $request->input('matchround_id', 0));
+        $redirect = redirect()->route('admin.playerprice', array_filter([
+            'price_league_id' => $leagueId > 0 ? $leagueId : null,
+            'tab' => $tab !== 'players' ? $tab : null,
+            'matchround_id' => ($tab === 'teams' && $matchroundId > 0) ? $matchroundId : null,
+        ], static fn ($v) => $v !== null));
 
         if (! ($result['ok'] ?? false)) {
             return $redirect->with('admin_errors', $result['errors'] ?? ['Unbekannter Fehler.']);
@@ -71,17 +93,37 @@ class AdminPlayerpriceController extends Controller
             ->with('admin_details', $result['details'] ?? []);
     }
 
-    private function render(Request $request): View
-    {
+    /**
+     * @param  array<string, mixed>|null  $teamPricePreview
+     */
+    private function render(
+        Request $request,
+        ?int $leagueId,
+        string $tab,
+        ?int $matchroundId = null,
+        ?array $teamPricePreview = null,
+        ?string $answer = null,
+    ): View {
         $userId = $this->auth->userId($request);
         $errors = session('admin_errors');
 
         return view('admin.playerprice', [
-            'data' => $this->playerprice->pagePayload($userId),
+            'data' => $this->playerprice->pagePayload(
+                $userId,
+                $leagueId,
+                $tab,
+                $matchroundId,
+                $teamPricePreview,
+            ),
             'errors' => is_array($errors) ? $errors : [],
-            'answer' => session('admin_message'),
+            'answer' => $answer ?? session('admin_message'),
             'details' => session('admin_details') ?: [],
             'legacyBase' => '/',
         ]);
+    }
+
+    private function resolveTab(mixed $tab): string
+    {
+        return $tab === 'teams' ? 'teams' : 'players';
     }
 }
