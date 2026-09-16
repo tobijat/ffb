@@ -21,21 +21,22 @@
         $eloExponent = old('exponent', $previewForm['exponent'] ?? $data['elo_exponent'] ?? 2);
         $eloDreamTeamRatio = old('dream_team_ratio', $previewForm['dream_team_ratio'] ?? $data['elo_dream_team_ratio'] ?? 1.5);
         $eloMinPrice = old('min_price', $previewForm['min_price'] ?? $data['elo_min_price'] ?? 1);
+        $eloMaxCredits = old('max_credits', $previewForm['max_credits'] ?? $lineupMaxCredits);
+        $eloMaxPlayersTeam = old('max_players_team', $previewForm['max_players_team'] ?? $lineupMaxPlayersTeam);
         $flashErrors = $errors ?: (session('admin_errors') ?: []);
         $flashDetails = is_array($details ?? null) ? $details : [];
         $hasLeague = $priceLeagueId > 0;
-        $tab = ($data['tab'] ?? 'players') === 'teams' ? 'teams' : 'players';
+        $tab = ($data['tab'] ?? 'teams') === 'players' ? 'players' : 'teams';
         $baseQuery = array_filter([
             'price_league_id' => $hasLeague ? $priceLeagueId : null,
         ], static fn ($v) => $v !== null);
         $teamsQuery = array_filter(
             $baseQuery + [
-                'tab' => 'teams',
                 'matchround_id' => $matchroundId > 0 ? $matchroundId : null,
             ],
             static fn ($v) => $v !== null,
         );
-        $playersQuery = $baseQuery;
+        $playersQuery = $baseQuery + ['tab' => 'players'];
         $limitsSourceLabel = match ($lineupLimitsSource) {
             'matchround' => 'Spielrunde',
             'league' => 'Liga',
@@ -166,36 +167,27 @@
             </div>
             <p class="hint">
                 Berechnet Spieler-Basisteampreise aus ELO-Ratings (eloratings.net).
-                Ohne Spielrunde: alle Liga-Teams. Mit Spielrunde: nur Teams der Runde.
-                Noch keine Speicherung in der Datenbank.
+                Ohne Spielrunde: alle Liga-Teams; Speichern schreibt in alle zukünftigen Spielrunden der Liga.
+                Mit Spielrunde: nur Teams der Runde; Speichern nur für diese zukünftige Runde.
+                Vergangene Spielrunden sind sichtbar, aber nicht wählbar und werden nicht verändert.
             </p>
-
-            <dl class="admin-playerprice-limits">
-                <div>
-                    <dt>Max. Credits / Aufstellung</dt>
-                    <dd>
-                        <strong>{{ rtrim(rtrim(number_format($lineupMaxCredits, 1, '.', ''), '0'), '.') }}</strong>
-                        <span class="muted">({{ $limitsSourceLabel }})</span>
-                    </dd>
-                </div>
-                <div>
-                    <dt>Max. Spieler / Team</dt>
-                    <dd>
-                        <strong>{{ $lineupMaxPlayersTeam }}</strong>
-                        <span class="muted">({{ $limitsSourceLabel }})</span>
-                    </dd>
-                </div>
-            </dl>
 
             <form class="admin-league-picker" method="get" action="{{ route('admin.playerprice') }}">
                 <input type="hidden" name="price_league_id" value="{{ $priceLeagueId }}">
                 <input type="hidden" name="tab" value="teams">
-                <label for="pp_elo_matchround">Spielrunde (optional)</label>
+                <label for="pp_elo_matchround">Spielrunde</label>
                 <select id="pp_elo_matchround" name="matchround_id" onchange="this.form.submit()">
-                    <option value="">— Alle Teams der Liga —</option>
+                    <option value="">— Auf alle zukünftigen Spielrunden anwenden —</option>
                     @foreach ($matchrounds as $round)
-                        <option value="{{ $round['matchround_id'] }}" @selected($matchroundId === (int) $round['matchround_id'])>
+                        <option
+                            value="{{ $round['matchround_id'] }}"
+                            @selected($matchroundId === (int) $round['matchround_id'])
+                            @disabled(empty($round['is_future']))
+                        >
                             {{ $round['matchround_title'] }}
+                            @if (empty($round['is_future']))
+                                (vergangen)
+                            @endif
                         </option>
                     @endforeach
                 </select>
@@ -203,12 +195,45 @@
                     <button type="submit" class="admin-submit">Anzeigen</button>
                 </noscript>
             </form>
+            <p class="hint">
+                Limits-Vorschlag aus {{ $limitsSourceLabel }}:
+                {{ rtrim(rtrim(number_format($lineupMaxCredits, 1, '.', ''), '0'), '.') }} Credits,
+                max. {{ $lineupMaxPlayersTeam }} Spieler / Team.
+            </p>
 
             <form class="admin-form" method="post" action="{{ route('admin.playerprice.previewEloTeamPrices') }}" accept-charset="UTF-8">
                 @csrf
                 <input type="hidden" name="price_league_id" value="{{ $priceLeagueId }}">
                 <input type="hidden" name="tab" value="teams">
                 <input type="hidden" name="matchround_id" value="{{ $matchroundId > 0 ? $matchroundId : '' }}">
+                <div class="admin-field">
+                    <label for="pp_elo_max_credits">Max. Credits / Aufstellung</label>
+                    <input
+                        id="pp_elo_max_credits"
+                        type="number"
+                        name="max_credits"
+                        value="{{ $eloMaxCredits }}"
+                        min="1"
+                        max="500"
+                        step="0.5"
+                        required
+                    >
+                    <p class="hint">Budget für die Checks (Standard aus {{ $limitsSourceLabel }}).</p>
+                </div>
+                <div class="admin-field">
+                    <label for="pp_elo_max_per_team">Max. Spieler / Team</label>
+                    <input
+                        id="pp_elo_max_per_team"
+                        type="number"
+                        name="max_players_team"
+                        value="{{ $eloMaxPlayersTeam }}"
+                        min="1"
+                        max="11"
+                        step="1"
+                        required
+                    >
+                    <p class="hint">Obergrenze pro Team im Dream-/Check-Lineup (Standard aus {{ $limitsSourceLabel }}).</p>
+                </div>
                 <div class="admin-field">
                     <label for="pp_elo_exponent">Exponent</label>
                     <input
@@ -255,6 +280,17 @@
                     <button type="submit" class="admin-submit" name="preview_elo_team_prices" value="1">
                         Preise berechnen
                     </button>
+                    <button
+                        type="submit"
+                        class="admin-submit"
+                        formaction="{{ route('admin.playerprice.saveEloTeamPrices') }}"
+                        name="save_elo_team_prices"
+                        value="1"
+                        @disabled($teamPricePreview === null)
+                        title="{{ $teamPricePreview === null ? 'Zuerst Preise berechnen' : 'Berechnete Preise speichern' }}"
+                    >
+                        Preise speichern
+                    </button>
                 </div>
             </form>
 
@@ -280,7 +316,8 @@
                         Parameter: Exponent {{ $previewParams['exponent'] ?? '—' }},
                         Dream-Team-Ratio {{ $previewParams['dream_team_ratio'] ?? '—' }},
                         Mindestpreis {{ $previewParams['min_price'] ?? '—' }},
-                        Budget {{ $previewParams['budget'] ?? '—' }}
+                        Budget {{ $previewParams['budget'] ?? '—' }},
+                        Max./Team {{ $previewParams['max_per_team'] ?? '—' }}
                     </p>
                 @endif
 

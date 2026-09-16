@@ -40,10 +40,13 @@ class AdminPlayerpriceTest extends TestCase
         $this->mock(AdminPlayerpriceService::class, function ($mock) {
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, 7, 'players', null, null)
+                ->with(544, 7, 'teams', null, null)
                 ->andReturn($this->payload([
-                    'tab' => 'players',
+                    'tab' => 'teams',
                     'matchround_id' => 0,
+                    'lineup_max_credits' => 100.0,
+                    'lineup_max_players_team' => 3,
+                    'lineup_limits_source' => 'league',
                 ]));
         });
 
@@ -53,8 +56,31 @@ class AdminPlayerpriceTest extends TestCase
             ->assertSee('Preise', false)
             ->assertSee('Spieler-Preis', false)
             ->assertSee('Team-Preis', false)
-            ->assertSee('Set Player Prices', false)
+            ->assertSee('ELO Team-Preis', false)
             ->assertSee('Bundesliga Test', false)
+            ->assertDontSee('Set Player Prices', false);
+    }
+
+    public function test_playerprice_players_tab_shows_matchround_form(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminPlayerpriceService::class, function ($mock) {
+            $mock->shouldReceive('pagePayload')
+                ->once()
+                ->with(544, 7, 'players', null, null)
+                ->andReturn($this->payload([
+                    'tab' => 'players',
+                    'matchround_id' => 0,
+                ]));
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->get('/admin/playerprice?price_league_id=7&tab=players')
+            ->assertOk()
+            ->assertSee('Set Player Prices', false)
             ->assertDontSee('ELO Team-Preis', false);
     }
 
@@ -83,12 +109,99 @@ class AdminPlayerpriceTest extends TestCase
             ->assertSee('ELO Team-Preis', false)
             ->assertSee('Max. Credits / Aufstellung', false)
             ->assertSee('Max. Spieler / Team', false)
+            ->assertSee('name="max_credits"', false)
+            ->assertSee('name="max_players_team"', false)
+            ->assertSee('value="100"', false)
+            ->assertSee('value="3"', false)
             ->assertSee('Exponent', false)
             ->assertSee('Dream-Team-Ratio', false)
             ->assertSee('Mindestpreis', false)
             ->assertSee('Preise berechnen', false)
+            ->assertSee('Preise speichern', false)
+            ->assertSee('disabled', false)
+            ->assertSee('Auf alle zukünftigen Spielrunden anwenden', false)
             ->assertDontSee('Set Player Prices', false)
             ->assertDontSee('ELO BasePrices for League', false);
+    }
+
+    public function test_playerprice_teams_tab_enables_save_after_preview(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $preview = [
+            'teams' => [
+                [
+                    'team_id' => 1,
+                    'team_name' => 'Brazil',
+                    'elo_rating' => 2100,
+                    'normalized' => 1.0,
+                    'raw_weight' => 1.0,
+                    'price' => 18.5,
+                ],
+            ],
+            'checks' => [],
+            'params' => [],
+            'form' => [
+                'max_credits' => 100.0,
+                'max_players_team' => 3,
+                'exponent' => 2.0,
+                'dream_team_ratio' => 1.5,
+                'min_price' => 1.0,
+            ],
+            'teams_skipped' => [],
+        ];
+
+        $this->mock(AdminPlayerpriceService::class, function ($mock) use ($preview) {
+            $mock->shouldReceive('previewEloTeamPrices')
+                ->once()
+                ->andReturn([
+                    'ok' => true,
+                    'message' => 'ELO Team-Preise berechnet (Vorschau, nicht gespeichert).',
+                    'price_league_id' => 7,
+                    'matchround_id' => 0,
+                    'tab' => 'teams',
+                    'preview' => $preview,
+                ]);
+
+            $mock->shouldReceive('pagePayload')
+                ->once()
+                ->andReturn($this->payload([
+                    'tab' => 'teams',
+                    'matchrounds' => [
+                        ['matchround_id' => 1, 'matchround_title' => 'Past Round', 'is_future' => false],
+                        ['matchround_id' => 2, 'matchround_title' => 'Future Round', 'is_future' => true],
+                    ],
+                    'team_price_preview' => $preview,
+                ]));
+        });
+
+        $html = $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->post('/admin/playerprice/elo-team-prices/preview', [
+                'price_league_id' => 7,
+                'tab' => 'teams',
+            ])
+            ->assertOk()
+            ->assertSee('Past Round', false)
+            ->assertSee('(vergangen)', false)
+            ->assertSee('Future Round', false)
+            ->assertSee('Auf alle zukünftigen Spielrunden anwenden', false)
+            ->getContent();
+
+        $this->assertSame(1, preg_match(
+            '/<button\b[^>]*\bname="save_elo_team_prices"[^>]*>/',
+            $html,
+            $saveButton,
+        ));
+        $this->assertStringNotContainsString('disabled', $saveButton[0]);
+
+        $this->assertSame(1, preg_match(
+            '/<option\b[^>]*\bvalue="1"[^>]*>/',
+            $html,
+            $pastOption,
+        ));
+        $this->assertStringContainsString('disabled', $pastOption[0]);
     }
 
     public function test_set_matchround_player_prices_posts_and_flashes_result(): void
@@ -116,7 +229,7 @@ class AdminPlayerpriceTest extends TestCase
                 'matchround_id' => 3,
                 'price_margin' => 2,
             ])
-            ->assertRedirect(route('admin.playerprice', ['price_league_id' => 7]))
+            ->assertRedirect(route('admin.playerprice', ['price_league_id' => 7, 'tab' => 'players']))
             ->assertSessionHas('admin_message', 'Dynamic PlayerPrices aktualisiert.')
             ->assertSessionHas('admin_details', ['Price updated: 11: 8.5']);
     }
@@ -162,6 +275,8 @@ class AdminPlayerpriceTest extends TestCase
                 'budget' => 100.0,
             ],
             'form' => [
+                'max_credits' => 100.0,
+                'max_players_team' => 3,
                 'exponent' => 2.0,
                 'dream_team_ratio' => 1.5,
                 'min_price' => 1.0,
@@ -237,6 +352,8 @@ class AdminPlayerpriceTest extends TestCase
                 'budget' => 100.0,
             ],
             'form' => [
+                'max_credits' => 100.0,
+                'max_players_team' => 3,
                 'exponent' => 2.0,
                 'dream_team_ratio' => 1.5,
                 'min_price' => 1.0,
@@ -361,9 +478,9 @@ class AdminPlayerpriceTest extends TestCase
             'leagues' => [
                 ['league_id' => 7, 'league_title' => 'Bundesliga Test'],
             ],
-            'tab' => 'players',
+            'tab' => 'teams',
             'matchrounds' => [
-                ['matchround_id' => 3, 'matchround_title' => 'Runde 1'],
+                ['matchround_id' => 3, 'matchround_title' => 'Runde 1', 'is_future' => true],
             ],
             'matchround_id' => 0,
             'lineup_max_credits' => 100.0,
