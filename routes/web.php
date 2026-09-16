@@ -135,6 +135,7 @@ Route::middleware('ffb.admin')->group(function () {
     Route::get('/admin/playerprice', [AdminPlayerpriceController::class, 'show'])->name('admin.playerprice');
     Route::post('/admin/playerprice/matchround-player-prices', [AdminPlayerpriceController::class, 'setMatchroundPlayerPrices'])->name('admin.playerprice.setMatchroundPlayerPrices');
     Route::post('/admin/playerprice/elo-team-prices/preview', [AdminPlayerpriceController::class, 'previewEloTeamPrices'])->name('admin.playerprice.previewEloTeamPrices');
+    Route::post('/admin/playerprice/elo-team-prices/save', [AdminPlayerpriceController::class, 'saveEloTeamPrices'])->name('admin.playerprice.saveEloTeamPrices');
 
     Route::get('/admin/mailservice', [AdminMailserviceController::class, 'show'])->name('admin.mailservice');
     Route::get('/admin/mailservice/matchrounds', [AdminMailserviceController::class, 'matchrounds'])->name('admin.mailservice.matchrounds');
