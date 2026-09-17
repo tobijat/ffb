@@ -615,7 +615,10 @@
             const opt = document.createElement('option');
             opt.value = String(index);
             opt.className = 'ffb-select-' + (index % 2);
-            opt.textContent = team.team_name + ' (Preis: ' + team.team_avg_price + ')';
+            opt.textContent =
+                team.team_price != null && team.team_price !== ''
+                    ? team.team_name + ' (Preis: ' + team.team_price + ')'
+                    : team.team_name;
             teamSelect.appendChild(opt);
         });
         teamSelect.disabled = teams.length === 0;

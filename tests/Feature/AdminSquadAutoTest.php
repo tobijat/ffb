@@ -524,7 +524,6 @@ class AdminSquadAutoTest extends TestCase
             'team_foreign_id' => '',
             'team_name' => 'Czech Republic',
             'team_nationality' => $nationality,
-            'team_avg_price' => 5,
             'team_num_players' => 0,
             'team_status' => 1,
         ]);
@@ -552,7 +551,6 @@ class AdminSquadAutoTest extends TestCase
             $table->string('team_foreign_id')->default('');
             $table->string('team_name')->default('');
             $table->string('team_nationality')->default('');
-            $table->double('team_avg_price')->default(5);
             $table->integer('team_num_players')->default(0);
             $table->tinyInteger('team_status')->default(1);
         });

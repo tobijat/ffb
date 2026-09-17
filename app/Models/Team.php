@@ -18,7 +18,6 @@ class Team extends Model
         'team_foreign_id',
         'team_name',
         'team_nationality',
-        'team_avg_price',
         'team_num_players',
         'team_status',
     ];

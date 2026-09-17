@@ -7,7 +7,6 @@
     $mode = $data['mode'];
     $items = $data['items'];
     $icons = $data['icons'];
-    $prices = $data['prices'];
     $tab = ($data['tab'] ?? 'manual') === 'auto' ? 'auto' : 'manual';
     $auto = $data['auto'] ?? ['analyzed' => false, 'source_name' => '', 'present' => [], 'missing' => []];
     $selectedSymbol = $data['selected_symbol'] ?? null;
@@ -137,7 +136,6 @@
                                                 <tr>
                                                     <th>Teamname *</th>
                                                     <th>Symbol</th>
-                                                    <th>Preis</th>
                                                     <th>Status</th>
                                                 </tr>
                                             </thead>
@@ -163,21 +161,6 @@
                                                                 placeholder="z. B. ger"
                                                                 aria-label="Symbol {{ $index + 1 }}"
                                                             >
-                                                        </td>
-                                                        <td>
-                                                            <select
-                                                                name="teams[{{ $index }}][team_price]"
-                                                                aria-label="Preis {{ $index + 1 }}"
-                                                            >
-                                                                @foreach ($prices as $price)
-                                                                    <option
-                                                                        value="{{ $price }}"
-                                                                        @selected((int) ($missing['team_price'] ?? 5) === (int) $price)
-                                                                    >
-                                                                        {{ $price }}
-                                                                    </option>
-                                                                @endforeach
-                                                            </select>
                                                         </td>
                                                         <td>
                                                             <select
@@ -222,17 +205,6 @@
             <div class="admin-field">
                 <label for="team_name">* Teamname</label>
                 <input id="team_name" type="text" name="team_name" value="{{ $form['team_name'] }}" maxlength="255" required>
-            </div>
-
-            <div class="admin-field">
-                <label for="team_price">Standardpreis</label>
-                <select id="team_price" name="team_price">
-                    @foreach ($prices as $price)
-                        <option value="{{ $price }}" @selected((int) $form['team_price'] === (int) $price)>
-                            {{ $price }}
-                        </option>
-                    @endforeach
-                </select>
             </div>
 
             <div class="admin-field">
@@ -411,7 +383,6 @@
                             <img class="ffb-flag ffb-flag-img" src="{{ $item['flag_url'] }}" alt="" width="20" height="15" loading="lazy">
                         @endif
                         <span class="muted">#{{ $item['team_id'] }}</span>
-                        <span class="muted">Preis {{ $item['team_price'] }}</span>
                         @if ($item['team_nationality'] !== '')
                             <span class="muted">{{ $item['team_icon_label'] }}</span>
                         @endif

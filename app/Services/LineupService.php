@@ -10,6 +10,7 @@ use App\Models\Playerprice;
 use App\Models\Playerstats;
 use App\Models\Playerteam;
 use App\Models\Team;
+use App\Models\Teamprice;
 use App\Models\UserDetails;
 use App\Models\Userscore;
 use App\Models\Userteam;
@@ -155,17 +156,32 @@ class LineupService
 
         $teams = [];
         if ($teamIds !== []) {
+            $pricesByTeamId = Teamprice::query()
+                ->where('teamprice_matchround_id', (int) $round->matchround_id)
+                ->whereIn('teamprice_team_id', $teamIds)
+                ->pluck('teamprice_price', 'teamprice_team_id')
+                ->all();
+
             $teams = Team::query()
                 ->whereIn('team_id', $teamIds)
                 ->orderBy('team_name')
                 ->get()
-                ->map(fn (Team $t) => [
-                    'team_id' => (int) $t->team_id,
-                    'team_name' => (string) $t->team_name,
-                    'team_nationality' => (string) $t->team_nationality,
-                    'team_status' => (int) ($t->team_status ?? 0),
-                    'team_avg_price' => round((float) ($t->team_avg_price ?? 0), 1),
-                ])
+                ->map(function (Team $t) use ($pricesByTeamId): array {
+                    $teamId = (int) $t->team_id;
+                    $row = [
+                        'team_id' => $teamId,
+                        'team_name' => (string) $t->team_name,
+                        'team_nationality' => (string) $t->team_nationality,
+                        'team_status' => (int) ($t->team_status ?? 0),
+                        'team_price' => null,
+                    ];
+
+                    if (array_key_exists($teamId, $pricesByTeamId)) {
+                        $row['team_price'] = round((float) $pricesByTeamId[$teamId], 1);
+                    }
+
+                    return $row;
+                })
                 ->all();
         }
 
