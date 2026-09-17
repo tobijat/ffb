@@ -105,10 +105,10 @@
                 </div>
 
                 <fieldset class="admin-fieldset" id="matchround-lineup-overrides" data-lineup-defaults='@json($data['league_lineup_defaults'] ?? [])'>
-                    <legend>Aufstellungs-Overrides</legend>
+                    <legend>Aufstellungslimits</legend>
                     <p class="hint">Optional: eigene Limits für diese Spielrunde. Sonst gelten die Liga-Defaults.</p>
-                    <div class="admin-field">
-                        <label>
+                    <div class="admin-lineup-override-toggle">
+                        <label for="lineup_options_enabled">
                             <input
                                 type="checkbox"
                                 id="lineup_options_enabled"
@@ -116,7 +116,7 @@
                                 value="1"
                                 @checked((int) ($form['lineup_options_enabled'] ?? 0) === 1)
                             >
-                            Eigene Aufstellungslimits verwenden
+                            Aufstellungslimits für diese Spielrunde überschreiben
                         </label>
                     </div>
                     @php
