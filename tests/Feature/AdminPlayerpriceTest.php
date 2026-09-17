@@ -40,7 +40,7 @@ class AdminPlayerpriceTest extends TestCase
         $this->mock(AdminPlayerpriceService::class, function ($mock) {
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, 7, 'teams', null, null)
+                ->with(544, null, 'teams', null, null)
                 ->andReturn($this->payload([
                     'tab' => 'teams',
                     'matchround_id' => 0,
@@ -51,13 +51,14 @@ class AdminPlayerpriceTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->get('/admin/playerprice?price_league_id=7')
+            ->get('/admin/playerprice')
             ->assertOk()
             ->assertSee('Preise', false)
             ->assertSee('Spieler-Preis', false)
             ->assertSee('Team-Preis', false)
             ->assertSee('ELO Team-Preis', false)
             ->assertSee('Bundesliga Test', false)
+            ->assertSee('Liga: Bundesliga Test', false)
             ->assertDontSee('Set Player Prices', false);
     }
 
@@ -70,7 +71,7 @@ class AdminPlayerpriceTest extends TestCase
         $this->mock(AdminPlayerpriceService::class, function ($mock) {
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, 7, 'players', null, null)
+                ->with(544, null, 'players', null, null)
                 ->andReturn($this->payload([
                     'tab' => 'players',
                     'matchround_id' => 0,
@@ -78,7 +79,7 @@ class AdminPlayerpriceTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->get('/admin/playerprice?price_league_id=7&tab=players')
+            ->get('/admin/playerprice?tab=players')
             ->assertOk()
             ->assertSee('Set Player Prices', false)
             ->assertDontSee('ELO Team-Preis', false);
@@ -93,7 +94,7 @@ class AdminPlayerpriceTest extends TestCase
         $this->mock(AdminPlayerpriceService::class, function ($mock) {
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, 7, 'teams', null, null)
+                ->with(544, null, 'teams', null, null)
                 ->andReturn($this->payload([
                     'tab' => 'teams',
                     'matchround_id' => 0,
@@ -104,7 +105,7 @@ class AdminPlayerpriceTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->get('/admin/playerprice?price_league_id=7&tab=teams')
+            ->get('/admin/playerprice?tab=teams')
             ->assertOk()
             ->assertSee('ELO Team-Preis', false)
             ->assertSee('Max. Credits / Aufstellung', false)

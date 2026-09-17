@@ -72,8 +72,7 @@ class AdminMatchroundTest extends TestCase
             ->get('/admin/matchrounds')
             ->assertOk()
             ->assertSee('Spielrunden', false)
-            ->assertSee('Liga wählen', false)
-            ->assertSee('Wähle oben eine Liga', false)
+            ->assertSee('Bitte zuerst unter', false)
             ->assertDontSee('name="matchround_title"', false);
     }
 
@@ -126,6 +125,7 @@ class AdminMatchroundTest extends TestCase
         });
 
         $this->mock(AdminMatchroundService::class, function ($mock) {
+            $mock->shouldReceive('defaultLeagueId')->once()->with(544)->andReturn(26);
             $mock->shouldReceive('pagePayload')->once()->with(544, 26, null, 'create')->andReturn([
                 'user' => [
                     'user_id' => 544,
@@ -161,7 +161,7 @@ class AdminMatchroundTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->get('/admin/matchrounds?league_id=26')
+            ->get('/admin/matchrounds')
             ->assertOk()
             ->assertSee('Testliga', false)
             ->assertSee('Runde 1', false)
@@ -172,7 +172,7 @@ class AdminMatchroundTest extends TestCase
             ->assertSee('Max. Spieler vom selben Team', false)
             ->assertSee('Min. Spieler als Goalie', false)
             ->assertSee('name="lineup_options_enabled"', false)
-            ->assertSee('disabled', false);
+            ->assertSee('Liga: Testliga', false);
     }
 
     public function test_matchrounds_store_redirects_with_game_and_prefill(): void

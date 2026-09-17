@@ -19,10 +19,7 @@ class AdminMatchController extends Controller
     public function show(Request $request): View
     {
         $userId = $this->auth->userId($request);
-        $leagueId = (int) $request->query('league_id', 0);
-        if ($leagueId <= 0) {
-            $leagueId = $this->matches->defaultLeagueId($userId);
-        }
+        $leagueId = $this->matches->defaultLeagueId($userId);
         $errors = session('admin_errors');
         $prefill = session('admin_match_prefill');
         $tab = $request->query('tab') === 'auto' ? 'auto' : 'manual';

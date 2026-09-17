@@ -94,17 +94,12 @@ class AdminPlayerpriceService
     }
 
     /**
-     * Resolve league for price actions: explicit form/query id, else admin-center selection.
+     * Resolve league for price actions from the admin-center / start-page selection.
      *
      * @param  array<string, mixed>  $input
      */
     public function resolveLeagueIdFromInput(int $userId, array $input): int
     {
-        $fromInput = (int) ($input['price_league_id'] ?? 0);
-        if ($fromInput > 0 && League::query()->whereKey($fromInput)->exists()) {
-            return $fromInput;
-        }
-
         return $this->adminCenter->selectedLeagueId($userId);
     }
 
@@ -760,10 +755,6 @@ class AdminPlayerpriceService
      */
     private function resolvePriceLeagueId(?int $priceLeagueId, array $shell): int
     {
-        if ($priceLeagueId !== null && $priceLeagueId > 0) {
-            return League::query()->whereKey($priceLeagueId)->exists() ? $priceLeagueId : 0;
-        }
-
         $userId = (int) ($shell['user']['user_id'] ?? 0);
         if ($userId > 0) {
             $fromAdmin = $this->adminCenter->selectedLeagueId($userId);

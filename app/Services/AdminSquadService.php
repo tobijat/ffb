@@ -1375,10 +1375,6 @@ class AdminSquadService
      */
     private function resolveSquadLeagueId(?int $squadLeagueId, array $shell): int
     {
-        if ($squadLeagueId !== null && $squadLeagueId > 0) {
-            return League::query()->whereKey($squadLeagueId)->exists() ? $squadLeagueId : 0;
-        }
-
         $userId = (int) ($shell['user']['user_id'] ?? 0);
         if ($userId > 0) {
             $fromAdmin = $this->adminCenter->selectedLeagueId($userId);

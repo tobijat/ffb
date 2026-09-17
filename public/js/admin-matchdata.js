@@ -14,7 +14,6 @@
     const symbols = imagesBase + 'symbols/';
     const undoIcon = symbols + 'change.png';
 
-    const leagueSelect = document.getElementById('admin-mp-league');
     const roundSelect = document.getElementById('admin-mp-round');
     const matchSelect = document.getElementById('admin-mp-match');
     const resultEl = document.getElementById('admin-mp-result');
@@ -869,14 +868,6 @@
             refreshSavebar();
         }
     }
-
-    leagueSelect.addEventListener('change', () => {
-        const id = leagueSelect.value;
-        if (!id) return;
-        const url = new URL(window.location.href);
-        url.searchParams.set('league_id', id);
-        window.location.href = url.toString();
-    });
 
     roundSelect.addEventListener('change', () => loadRoundData(roundSelect.value));
 

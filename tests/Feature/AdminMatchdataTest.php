@@ -69,7 +69,7 @@ class AdminMatchdataTest extends TestCase
             ->get('/admin/matchdata')
             ->assertOk()
             ->assertSee('Spieldaten')
-            ->assertSee('Liga')
+            ->assertSee('Liga: Testliga')
             ->assertSee('Spieldaten laden')
             ->assertSee('Änderungen speichern (0)');
     }

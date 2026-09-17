@@ -20,7 +20,6 @@ class AdminSquadController extends Controller
     {
         $userId = $this->auth->userId($request);
         $teamId = (int) $request->query('team_id', 0);
-        $leagueId = (int) $request->query('squad_league_id', 0);
         $errors = session('admin_errors');
         $tab = match ($request->query('tab')) {
             'add' => 'add',
@@ -31,8 +30,7 @@ class AdminSquadController extends Controller
         $auto = session('admin_squad_auto');
         if (is_array($auto)) {
             $autoTeamId = (int) ($auto['team_id'] ?? 0);
-            $autoLeagueId = (int) ($auto['league_id'] ?? 0);
-            if ($autoTeamId !== $teamId || ($leagueId > 0 && $autoLeagueId !== $leagueId)) {
+            if ($autoTeamId !== $teamId) {
                 $auto = null;
             }
         }
@@ -40,7 +38,7 @@ class AdminSquadController extends Controller
         return $this->render(
             $userId,
             $teamId,
-            $leagueId > 0 ? $leagueId : null,
+            null,
             is_array($errors) ? $errors : [],
             $tab,
             is_array($auto) ? $auto : null,

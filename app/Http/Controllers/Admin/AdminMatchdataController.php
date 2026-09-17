@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\AdminCenterService;
 use App\Services\AdminMatchdataService;
 use App\Services\FfbAuth;
 use App\Services\WeltfussballProxyService;
@@ -17,17 +16,12 @@ class AdminMatchdataController extends Controller
     public function __construct(
         private readonly FfbAuth $auth,
         private readonly AdminMatchdataService $matchdata,
-        private readonly AdminCenterService $adminCenter,
         private readonly WeltfussballProxyService $wfProxy,
     ) {}
 
     public function show(Request $request): View
     {
         $userId = $this->auth->userId($request);
-
-        if ($request->filled('league_id')) {
-            $this->adminCenter->selectLeague((int) $request->input('league_id'));
-        }
 
         return view('admin.matchdata', [
             'data' => $this->matchdata->pagePayload($userId),
