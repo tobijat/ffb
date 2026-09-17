@@ -120,7 +120,7 @@ class AdminSquadController extends Controller
         $result = $this->squad->analyzeSquadsFile(
             $teamId,
             $leagueId,
-            $request->file('squads_json'),
+            $request->input('squads_json'),
         );
 
         $redirectQuery = $this->autoRedirectParams($teamId, $leagueId);

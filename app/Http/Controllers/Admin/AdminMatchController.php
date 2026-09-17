@@ -119,7 +119,7 @@ class AdminMatchController extends Controller
         $leagueId = (int) $request->input('league_id', 0);
         $result = $this->matches->analyzeMatchroundsFile(
             $leagueId,
-            $request->file('matchrounds_json'),
+            $request->input('matchrounds_json'),
         );
 
         $redirectQuery = ['tab' => 'auto'];
@@ -161,6 +161,10 @@ class AdminMatchController extends Controller
 
         if (! ($result['ok'] ?? false)) {
             if (isset($result['auto']) && is_array($result['auto'])) {
+                $previous = session('admin_matches_auto');
+                if (is_array($previous) && isset($previous['present']) && is_array($previous['present'])) {
+                    $result['auto']['present'] = $previous['present'];
+                }
                 session(['admin_matches_auto' => $result['auto']]);
             }
 

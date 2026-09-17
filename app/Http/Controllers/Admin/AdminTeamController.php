@@ -110,7 +110,7 @@ class AdminTeamController extends Controller
 
     public function analyzeAuto(Request $request): RedirectResponse
     {
-        $result = $this->teams->analyzeMatchroundsFile($request->file('matchrounds_json'));
+        $result = $this->teams->analyzeMatchroundsFile($request->input('matchrounds_json'));
 
         if (! ($result['ok'] ?? false)) {
             return redirect()

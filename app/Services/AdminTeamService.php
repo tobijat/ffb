@@ -47,6 +47,7 @@ class AdminTeamService
             'mode' => $mode === 'update' ? 'update' : 'create',
             'tab' => $tab === 'auto' ? 'auto' : 'manual',
             'auto' => $auto ?? $this->emptyAutoState(),
+            'matchplan_files' => $tab === 'auto' ? $this->matchplanJsonOptions() : [],
         ];
     }
 
@@ -243,7 +244,7 @@ class AdminTeamService
     }
 
     /**
-     * Parse a matchrounds JSON upload and compare team names against the database.
+     * Compare teams from a Spielplan JSON file in public/data/match against ffb_team.
      *
      * @return array{
      *     ok: bool,
@@ -252,9 +253,9 @@ class AdminTeamService
      *     message?: string
      * }
      */
-    public function analyzeMatchroundsFile(?UploadedFile $file): array
+    public function analyzeMatchroundsFile(?string $storedFileName): array
     {
-        $parsed = $this->parseMatchroundsUpload($file);
+        $parsed = $this->parseMatchroundsStoredFile($storedFileName);
         if (! ($parsed['ok'] ?? false)) {
             return ['ok' => false, 'errors' => $parsed['errors'] ?? ['Analyse fehlgeschlagen.']];
         }
@@ -276,25 +277,22 @@ class AdminTeamService
     }
 
     /**
-     * Decode and validate a Spielplan JSON upload.
+     * Parse a spielplan JSON file from public/data/match (basename only; no path traversal).
      *
-     * @return array{ok: bool, errors?: list<string>, data?: array<string, mixed>, source_name?: string}
+     * @return array{ok: true, data: array<string, mixed>, source_name: string}|array{ok: false, errors: list<string>}
      */
-    public function parseMatchroundsUpload(?UploadedFile $file): array
+    public function parseMatchroundsStoredFile(?string $fileName): array
     {
-        if ($file === null) {
-            return ['ok' => false, 'errors' => ['Bitte eine JSON-Datei auswählen.']];
+        $path = $this->resolveMatchplanPath($fileName);
+        if ($path === null) {
+            return ['ok' => false, 'errors' => ['Bitte eine JSON-Datei aus public/data/match wählen.']];
         }
 
-        if (! $file->isValid()) {
-            return ['ok' => false, 'errors' => ['Upload fehlgeschlagen.']];
-        }
-
-        if ($file->getSize() > 2 * 1024 * 1024) {
+        if (filesize($path) > 2 * 1024 * 1024) {
             return ['ok' => false, 'errors' => ['JSON-Datei darf maximal 2 MB groß sein.']];
         }
 
-        $raw = @file_get_contents($file->getRealPath() ?: '');
+        $raw = @file_get_contents($path);
         if (! is_string($raw) || $raw === '') {
             return ['ok' => false, 'errors' => ['JSON-Datei konnte nicht gelesen werden.']];
         }
@@ -311,8 +309,65 @@ class AdminTeamService
         return [
             'ok' => true,
             'data' => $data,
-            'source_name' => (string) $file->getClientOriginalName(),
+            'source_name' => basename($path),
         ];
+    }
+
+    /**
+     * @return list<array{name: string, label: string}>
+     */
+    public function matchplanJsonOptions(): array
+    {
+        $dir = public_path('data/match');
+        if (! is_dir($dir)) {
+            return [];
+        }
+
+        $names = [];
+        foreach (scandir($dir) ?: [] as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            if (! str_ends_with(strtolower($entry), '.json')) {
+                continue;
+            }
+            if (! is_file($dir.DIRECTORY_SEPARATOR.$entry)) {
+                continue;
+            }
+            $names[] = $entry;
+        }
+
+        natcasesort($names);
+
+        return array_values(array_map(
+            static fn (string $name): array => ['name' => $name, 'label' => $name],
+            $names,
+        ));
+    }
+
+    private function resolveMatchplanPath(?string $fileName): ?string
+    {
+        $fileName = basename(str_replace(["\0", '\\', '/'], '', trim((string) $fileName)));
+        if ($fileName === '' || ! str_ends_with(strtolower($fileName), '.json')) {
+            return null;
+        }
+
+        $dir = realpath(public_path('data/match'));
+        if ($dir === false || ! is_dir($dir)) {
+            return null;
+        }
+
+        $path = realpath($dir.DIRECTORY_SEPARATOR.$fileName);
+        if ($path === false || ! is_file($path)) {
+            return null;
+        }
+
+        $dirPrefix = strtolower($dir.DIRECTORY_SEPARATOR);
+        if (! str_starts_with(strtolower($path), $dirPrefix) && strtolower($path) !== strtolower($dir)) {
+            return null;
+        }
+
+        return $path;
     }
 
     /**

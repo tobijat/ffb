@@ -102,6 +102,7 @@ class AdminSquadService
             'hint' => 'Position und Preis gelten pro Liga.',
             'tab' => $resolvedTab,
             'auto' => $auto ?? $this->emptyAutoState(),
+            'squad_files' => $resolvedTab === 'auto' ? $this->squadJsonOptions() : [],
             'images' => $imageState,
         ];
     }
@@ -396,7 +397,7 @@ class AdminSquadService
      *     auto?: array{analyzed: bool, source_name: string, team_id: int, league_id: int, fifa_code: string, players: list<array<string, mixed>>}
      * }
      */
-    public function analyzeSquadsFile(int $teamId, int $leagueId, ?UploadedFile $file): array
+    public function analyzeSquadsFile(int $teamId, int $leagueId, ?string $storedFileName): array
     {
         if ($teamId <= 0) {
             return ['ok' => false, 'errors' => ['Bitte zuerst ein Team wählen.'], 'team_id' => 0, 'league_id' => $leagueId];
@@ -423,7 +424,7 @@ class AdminSquadService
             ];
         }
 
-        $parsed = $this->parseSquadsUpload($file);
+        $parsed = $this->parseSquadsStoredFile($storedFileName);
         if (! ($parsed['ok'] ?? false)) {
             return [
                 'ok' => false,
@@ -1612,23 +1613,22 @@ class AdminSquadService
     }
 
     /**
-     * @return array{ok: bool, errors?: list<string>, data?: list<mixed>, source_name?: string}
+     * Parse a squad JSON file from public/data/squad (basename only; no path traversal).
+     *
+     * @return array{ok: true, data: list<mixed>, source_name: string}|array{ok: false, errors: list<string>}
      */
-    private function parseSquadsUpload(?UploadedFile $file): array
+    public function parseSquadsStoredFile(?string $fileName): array
     {
-        if ($file === null) {
-            return ['ok' => false, 'errors' => ['Bitte eine JSON-Datei auswählen.']];
+        $path = $this->resolveSquadPath($fileName);
+        if ($path === null) {
+            return ['ok' => false, 'errors' => ['Bitte eine JSON-Datei aus public/data/squad wählen.']];
         }
 
-        if (! $file->isValid()) {
-            return ['ok' => false, 'errors' => ['Upload fehlgeschlagen.']];
-        }
-
-        if ($file->getSize() > 2 * 1024 * 1024) {
+        if (filesize($path) > 2 * 1024 * 1024) {
             return ['ok' => false, 'errors' => ['JSON-Datei darf maximal 2 MB groß sein.']];
         }
 
-        $raw = @file_get_contents($file->getRealPath() ?: '');
+        $raw = @file_get_contents($path);
         if (! is_string($raw) || $raw === '') {
             return ['ok' => false, 'errors' => ['JSON-Datei konnte nicht gelesen werden.']];
         }
@@ -1645,8 +1645,65 @@ class AdminSquadService
         return [
             'ok' => true,
             'data' => $data,
-            'source_name' => (string) $file->getClientOriginalName(),
+            'source_name' => basename($path),
         ];
+    }
+
+    /**
+     * @return list<array{name: string, label: string}>
+     */
+    public function squadJsonOptions(): array
+    {
+        $dir = public_path('data/squad');
+        if (! is_dir($dir)) {
+            return [];
+        }
+
+        $names = [];
+        foreach (scandir($dir) ?: [] as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            if (! str_ends_with(strtolower($entry), '.json')) {
+                continue;
+            }
+            if (! is_file($dir.DIRECTORY_SEPARATOR.$entry)) {
+                continue;
+            }
+            $names[] = $entry;
+        }
+
+        natcasesort($names);
+
+        return array_values(array_map(
+            static fn (string $name): array => ['name' => $name, 'label' => $name],
+            $names,
+        ));
+    }
+
+    private function resolveSquadPath(?string $fileName): ?string
+    {
+        $fileName = basename(str_replace(["\0", '\\', '/'], '', trim((string) $fileName)));
+        if ($fileName === '' || ! str_ends_with(strtolower($fileName), '.json')) {
+            return null;
+        }
+
+        $dir = realpath(public_path('data/squad'));
+        if ($dir === false || ! is_dir($dir)) {
+            return null;
+        }
+
+        $path = realpath($dir.DIRECTORY_SEPARATOR.$fileName);
+        if ($path === false || ! is_file($path)) {
+            return null;
+        }
+
+        $dirPrefix = strtolower($dir.DIRECTORY_SEPARATOR);
+        if (! str_starts_with(strtolower($path), $dirPrefix) && strtolower($path) !== strtolower($dir)) {
+            return null;
+        }
+
+        return $path;
     }
 
     /**

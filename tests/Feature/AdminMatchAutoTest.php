@@ -10,7 +10,7 @@ use App\Services\AdminCenterService;
 use App\Services\AdminMatchService;
 use App\Services\AdminTeamService;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Mockery;
 use PHPUnit\Framework\Attributes\Test;
@@ -18,6 +18,9 @@ use Tests\TestCase;
 
 class AdminMatchAutoTest extends TestCase
 {
+    /** @var list<string> */
+    private array $tempMatchplanFiles = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -26,6 +29,13 @@ class AdminMatchAutoTest extends TestCase
 
     protected function tearDown(): void
     {
+        foreach ($this->tempMatchplanFiles as $path) {
+            if (is_file($path)) {
+                @unlink($path);
+            }
+        }
+        $this->tempMatchplanFiles = [];
+
         Schema::dropIfExists('ffb_match');
         Schema::dropIfExists('ffb_matchround');
         Schema::dropIfExists('ffb_team');
@@ -103,7 +113,7 @@ class AdminMatchAutoTest extends TestCase
     }
 
     #[Test]
-    public function analyze_hides_matches_already_in_database(): void
+    public function analyze_splits_present_and_missing_matches(): void
     {
         $leagueId = $this->seedLeagueWithRound();
         $roundId = (int) Matchround::query()->value('matchround_id');
@@ -166,10 +176,12 @@ class AdminMatchAutoTest extends TestCase
 
         $this->assertTrue($result['ok']);
         $this->assertCount(1, $result['auto']['matches']);
+        $this->assertCount(1, $result['auto']['present']);
         $this->assertSame((int) $otherHome->team_id, $result['auto']['matches'][0]['match_hometeam_id']);
         $this->assertSame((int) $otherGuest->team_id, $result['auto']['matches'][0]['match_guestteam_id']);
-        $this->assertStringContainsString('1 Spiel bereit zum Anlegen', $result['message']);
-        $this->assertStringContainsString('1 bereits vorhanden und ausgeblendet', $result['message']);
+        $this->assertSame('Niederlande', $result['auto']['present'][0]['home_name']);
+        $this->assertSame('Deutschland', $result['auto']['present'][0]['guest_name']);
+        $this->assertSame('1 neue Spiele, 1 bereits vorhanden.', $result['message']);
     }
 
     #[Test]
@@ -351,12 +363,17 @@ class AdminMatchAutoTest extends TestCase
     /**
      * @param  array<string, mixed>  $payload
      */
-    private function jsonFile(array $payload): UploadedFile
+    private function jsonFile(array $payload): string
     {
-        return UploadedFile::fake()->createWithContent(
-            'plan.json',
-            json_encode($payload, JSON_THROW_ON_ERROR),
-        );
+        $dir = public_path('data/match');
+        File::ensureDirectoryExists($dir);
+
+        $name = '_test_plan_'.uniqid('', true).'.json';
+        $path = $dir.DIRECTORY_SEPARATOR.$name;
+        file_put_contents($path, json_encode($payload, JSON_THROW_ON_ERROR));
+        $this->tempMatchplanFiles[] = $path;
+
+        return $name;
     }
 
     private function seedLeagueWithRound(): int

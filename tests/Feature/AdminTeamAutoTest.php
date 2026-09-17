@@ -6,7 +6,7 @@ use App\Models\Team;
 use App\Services\AdminCenterService;
 use App\Services\AdminTeamService;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Mockery;
 use PHPUnit\Framework\Attributes\Test;
@@ -14,6 +14,9 @@ use Tests\TestCase;
 
 class AdminTeamAutoTest extends TestCase
 {
+    /** @var list<string> */
+    private array $tempMatchplanFiles = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -22,6 +25,13 @@ class AdminTeamAutoTest extends TestCase
 
     protected function tearDown(): void
     {
+        foreach ($this->tempMatchplanFiles as $path) {
+            if (is_file($path)) {
+                @unlink($path);
+            }
+        }
+        $this->tempMatchplanFiles = [];
+
         Schema::dropIfExists('ffb_teamfid');
         Schema::dropIfExists('ffb_team');
         parent::tearDown();
@@ -38,20 +48,17 @@ class AdminTeamAutoTest extends TestCase
             'team_status' => 1,
         ]);
 
-        $file = UploadedFile::fake()->createWithContent(
-            'nations.json',
-            json_encode([
-                'spieltage' => [
-                    [
-                        'spieltag' => 1,
-                        'spiele' => [
-                            ['datum' => '2026-09-24', 'heim' => 'Niederlande', 'gast' => 'Deutschland'],
-                            ['datum' => '2026-09-24', 'heim' => 'Kosovo', 'gast' => 'Irland'],
-                        ],
+        $file = $this->jsonFile([
+            'spieltage' => [
+                [
+                    'spieltag' => 1,
+                    'spiele' => [
+                        ['datum' => '2026-09-24', 'heim' => 'Niederlande', 'gast' => 'Deutschland'],
+                        ['datum' => '2026-09-24', 'heim' => 'Kosovo', 'gast' => 'Irland'],
                     ],
                 ],
-            ], JSON_THROW_ON_ERROR),
-        );
+            ],
+        ]);
 
         $result = $this->service()->analyzeMatchroundsFile($file);
 
@@ -107,6 +114,22 @@ class AdminTeamAutoTest extends TestCase
         $adminCenter = Mockery::mock(AdminCenterService::class);
 
         return new AdminTeamService($adminCenter);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function jsonFile(array $payload): string
+    {
+        $dir = public_path('data/match');
+        File::ensureDirectoryExists($dir);
+
+        $name = '_test_teams_plan_'.uniqid('', true).'.json';
+        $path = $dir.DIRECTORY_SEPARATOR.$name;
+        file_put_contents($path, json_encode($payload, JSON_THROW_ON_ERROR));
+        $this->tempMatchplanFiles[] = $path;
+
+        return $name;
     }
 
     private function createSchema(): void

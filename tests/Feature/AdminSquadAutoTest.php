@@ -11,7 +11,7 @@ use App\Services\AdminPlayerService;
 use App\Services\AdminSquadService;
 use App\Services\WikimediaPlayerImageService;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Mockery;
 use PHPUnit\Framework\Attributes\Test;
@@ -19,6 +19,9 @@ use Tests\TestCase;
 
 class AdminSquadAutoTest extends TestCase
 {
+    /** @var list<string> */
+    private array $tempSquadFiles = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -27,6 +30,13 @@ class AdminSquadAutoTest extends TestCase
 
     protected function tearDown(): void
     {
+        foreach ($this->tempSquadFiles as $path) {
+            if (is_file($path)) {
+                @unlink($path);
+            }
+        }
+        $this->tempSquadFiles = [];
+
         Schema::dropIfExists('ffb_playerteam');
         Schema::dropIfExists('ffb_player');
         Schema::dropIfExists('ffb_team');
@@ -500,12 +510,17 @@ class AdminSquadAutoTest extends TestCase
     /**
      * @param  list<array<string, mixed>>  $payload
      */
-    private function jsonFile(array $payload): UploadedFile
+    private function jsonFile(array $payload): string
     {
-        return UploadedFile::fake()->createWithContent(
-            'squads.json',
-            json_encode($payload, JSON_THROW_ON_ERROR),
-        );
+        $dir = public_path('data/squad');
+        File::ensureDirectoryExists($dir);
+
+        $name = '_test_squad_'.uniqid('', true).'.json';
+        $path = $dir.DIRECTORY_SEPARATOR.$name;
+        file_put_contents($path, json_encode($payload, JSON_THROW_ON_ERROR));
+        $this->tempSquadFiles[] = $path;
+
+        return $name;
     }
 
     /**
