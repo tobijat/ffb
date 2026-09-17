@@ -114,6 +114,19 @@
     opacity: 1;
 }
 
+.admin-lineup-override-toggle {
+    margin: 0 0 10px;
+}
+
+.admin-lineup-override-toggle label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font-size: 10pt;
+    margin: 0;
+}
+
 .admin-league-list-body {
     display: flex;
     gap: 10px;
