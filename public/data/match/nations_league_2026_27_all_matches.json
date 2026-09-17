@@ -1,0 +1,814 @@
+{
+  "spieltage": [
+    {
+      "spieltag": 1,
+      "spiele": [
+        {
+          "datum": "2026-09-24",
+          "heim": "Niederlande",
+          "gast": "Deutschland"
+        },
+        {
+          "datum": "2026-09-24",
+          "heim": "Serbien",
+          "gast": "Griechenland"
+        },
+        {
+          "datum": "2026-09-24",
+          "heim": "Norwegen",
+          "gast": "Dänemark"
+        },
+        {
+          "datum": "2026-09-24",
+          "heim": "Portugal",
+          "gast": "Wales"
+        },
+        {
+          "datum": "2026-09-24",
+          "heim": "Österreich",
+          "gast": "Israel"
+        },
+        {
+          "datum": "2026-09-24",
+          "heim": "Kosovo",
+          "gast": "Irland"
+        },
+        {
+          "datum": "2026-09-24",
+          "heim": "Andorra",
+          "gast": "Malta"
+        },
+        {
+          "datum": "2026-09-24",
+          "heim": "Liechtenstein",
+          "gast": "Litauen"
+        },
+        {
+          "datum": "2026-09-25",
+          "heim": "Italien",
+          "gast": "Belgien"
+        },
+        {
+          "datum": "2026-09-25",
+          "heim": "Türkei",
+          "gast": "Frankreich"
+        },
+        {
+          "datum": "2026-09-25",
+          "heim": "Georgien",
+          "gast": "Nordirland"
+        },
+        {
+          "datum": "2026-09-25",
+          "heim": "Ungarn",
+          "gast": "Ukraine"
+        },
+        {
+          "datum": "2026-09-25",
+          "heim": "Polen",
+          "gast": "Bosnien und Herzegowina"
+        },
+        {
+          "datum": "2026-09-25",
+          "heim": "Schweden",
+          "gast": "Rumänien"
+        },
+        {
+          "datum": "2026-09-25",
+          "heim": "Armenien",
+          "gast": "Lettland"
+        },
+        {
+          "datum": "2026-09-25",
+          "heim": "Montenegro",
+          "gast": "Zypern"
+        },
+        {
+          "datum": "2026-09-26",
+          "heim": "Tschechien",
+          "gast": "Kroatien"
+        },
+        {
+          "datum": "2026-09-26",
+          "heim": "England",
+          "gast": "Spanien"
+        },
+        {
+          "datum": "2026-09-26",
+          "heim": "Slowenien",
+          "gast": "Schottland"
+        },
+        {
+          "datum": "2026-09-26",
+          "heim": "Nordmazedonien",
+          "gast": "Schweiz"
+        },
+        {
+          "datum": "2026-09-26",
+          "heim": "San Marino",
+          "gast": "Finnland"
+        },
+        {
+          "datum": "2026-09-26",
+          "heim": "Albanien",
+          "gast": "Belarus"
+        },
+        {
+          "datum": "2026-09-26",
+          "heim": "Färöer",
+          "gast": "Kasachstan"
+        },
+        {
+          "datum": "2026-09-26",
+          "heim": "Slowakei",
+          "gast": "Republik Moldau"
+        },
+        {
+          "datum": "2026-09-26",
+          "heim": "Bulgarien",
+          "gast": "Luxemburg"
+        },
+        {
+          "datum": "2026-09-26",
+          "heim": "Island",
+          "gast": "Estland"
+        }
+      ]
+    },
+    {
+      "spieltag": 2,
+      "spiele": [
+        {
+          "datum": "2026-09-27",
+          "heim": "Serbien",
+          "gast": "Niederlande"
+        },
+        {
+          "datum": "2026-09-27",
+          "heim": "Deutschland",
+          "gast": "Griechenland"
+        },
+        {
+          "datum": "2026-09-27",
+          "heim": "Dänemark",
+          "gast": "Wales"
+        },
+        {
+          "datum": "2026-09-27",
+          "heim": "Norwegen",
+          "gast": "Portugal"
+        },
+        {
+          "datum": "2026-09-27",
+          "heim": "Österreich",
+          "gast": "Kosovo"
+        },
+        {
+          "datum": "2026-09-27",
+          "heim": "Israel",
+          "gast": "Irland"
+        },
+        {
+          "datum": "2026-09-27",
+          "heim": "Gibraltar",
+          "gast": "Andorra"
+        },
+        {
+          "datum": "2026-09-27",
+          "heim": "Litauen",
+          "gast": "Aserbaidschan"
+        },
+        {
+          "datum": "2026-09-28",
+          "heim": "Belgien",
+          "gast": "Frankreich"
+        },
+        {
+          "datum": "2026-09-28",
+          "heim": "Türkei",
+          "gast": "Italien"
+        },
+        {
+          "datum": "2026-09-28",
+          "heim": "Georgien",
+          "gast": "Ukraine"
+        },
+        {
+          "datum": "2026-09-28",
+          "heim": "Nordirland",
+          "gast": "Ungarn"
+        },
+        {
+          "datum": "2026-09-28",
+          "heim": "Rumänien",
+          "gast": "Bosnien und Herzegowina"
+        },
+        {
+          "datum": "2026-09-28",
+          "heim": "Schweden",
+          "gast": "Polen"
+        },
+        {
+          "datum": "2026-09-28",
+          "heim": "Armenien",
+          "gast": "Montenegro"
+        },
+        {
+          "datum": "2026-09-28",
+          "heim": "Lettland",
+          "gast": "Zypern"
+        },
+        {
+          "datum": "2026-09-29",
+          "heim": "Tschechien",
+          "gast": "England"
+        },
+        {
+          "datum": "2026-09-29",
+          "heim": "Spanien",
+          "gast": "Kroatien"
+        },
+        {
+          "datum": "2026-09-29",
+          "heim": "Schottland",
+          "gast": "Schweiz"
+        },
+        {
+          "datum": "2026-09-29",
+          "heim": "Slowenien",
+          "gast": "Nordmazedonien"
+        },
+        {
+          "datum": "2026-09-29",
+          "heim": "Finnland",
+          "gast": "Belarus"
+        },
+        {
+          "datum": "2026-09-29",
+          "heim": "San Marino",
+          "gast": "Albanien"
+        },
+        {
+          "datum": "2026-09-29",
+          "heim": "Republik Moldau",
+          "gast": "Färöer"
+        },
+        {
+          "datum": "2026-09-29",
+          "heim": "Slowakei",
+          "gast": "Kasachstan"
+        },
+        {
+          "datum": "2026-09-29",
+          "heim": "Bulgarien",
+          "gast": "Estland"
+        },
+        {
+          "datum": "2026-09-29",
+          "heim": "Luxemburg",
+          "gast": "Island"
+        }
+      ]
+    },
+    {
+      "spieltag": 3,
+      "spiele": [
+        {
+          "datum": "2026-10-01",
+          "heim": "Deutschland",
+          "gast": "Serbien"
+        },
+        {
+          "datum": "2026-10-01",
+          "heim": "Griechenland",
+          "gast": "Niederlande"
+        },
+        {
+          "datum": "2026-10-01",
+          "heim": "Dänemark",
+          "gast": "Portugal"
+        },
+        {
+          "datum": "2026-10-01",
+          "heim": "Wales",
+          "gast": "Norwegen"
+        },
+        {
+          "datum": "2026-10-01",
+          "heim": "Israel",
+          "gast": "Kosovo"
+        },
+        {
+          "datum": "2026-10-01",
+          "heim": "Irland",
+          "gast": "Österreich"
+        },
+        {
+          "datum": "2026-10-01",
+          "heim": "Malta",
+          "gast": "Gibraltar"
+        },
+        {
+          "datum": "2026-10-01",
+          "heim": "Aserbaidschan",
+          "gast": "Liechtenstein"
+        },
+        {
+          "datum": "2026-10-02",
+          "heim": "Belgien",
+          "gast": "Türkei"
+        },
+        {
+          "datum": "2026-10-02",
+          "heim": "Frankreich",
+          "gast": "Italien"
+        },
+        {
+          "datum": "2026-10-02",
+          "heim": "Ungarn",
+          "gast": "Georgien"
+        },
+        {
+          "datum": "2026-10-02",
+          "heim": "Ukraine",
+          "gast": "Nordirland"
+        },
+        {
+          "datum": "2026-10-02",
+          "heim": "Bosnien und Herzegowina",
+          "gast": "Schweden"
+        },
+        {
+          "datum": "2026-10-02",
+          "heim": "Polen",
+          "gast": "Rumänien"
+        },
+        {
+          "datum": "2026-10-02",
+          "heim": "Zypern",
+          "gast": "Armenien"
+        },
+        {
+          "datum": "2026-10-02",
+          "heim": "Lettland",
+          "gast": "Montenegro"
+        },
+        {
+          "datum": "2026-10-02",
+          "heim": "Kasachstan",
+          "gast": "Republik Moldau"
+        },
+        {
+          "datum": "2026-10-02",
+          "heim": "Färöer",
+          "gast": "Slowakei"
+        },
+        {
+          "datum": "2026-10-03",
+          "heim": "Kroatien",
+          "gast": "England"
+        },
+        {
+          "datum": "2026-10-03",
+          "heim": "Spanien",
+          "gast": "Tschechien"
+        },
+        {
+          "datum": "2026-10-03",
+          "heim": "Nordmazedonien",
+          "gast": "Schottland"
+        },
+        {
+          "datum": "2026-10-03",
+          "heim": "Schweiz",
+          "gast": "Slowenien"
+        },
+        {
+          "datum": "2026-10-03",
+          "heim": "Finnland",
+          "gast": "Albanien"
+        },
+        {
+          "datum": "2026-10-03",
+          "heim": "Belarus",
+          "gast": "San Marino"
+        },
+        {
+          "datum": "2026-10-03",
+          "heim": "Estland",
+          "gast": "Luxemburg"
+        },
+        {
+          "datum": "2026-10-03",
+          "heim": "Island",
+          "gast": "Bulgarien"
+        }
+      ]
+    },
+    {
+      "spieltag": 4,
+      "spiele": [
+        {
+          "datum": "2026-10-04",
+          "heim": "Griechenland",
+          "gast": "Deutschland"
+        },
+        {
+          "datum": "2026-10-04",
+          "heim": "Niederlande",
+          "gast": "Serbien"
+        },
+        {
+          "datum": "2026-10-04",
+          "heim": "Portugal",
+          "gast": "Norwegen"
+        },
+        {
+          "datum": "2026-10-04",
+          "heim": "Wales",
+          "gast": "Dänemark"
+        },
+        {
+          "datum": "2026-10-04",
+          "heim": "Kosovo",
+          "gast": "Österreich"
+        },
+        {
+          "datum": "2026-10-04",
+          "heim": "Irland",
+          "gast": "Israel"
+        },
+        {
+          "datum": "2026-10-04",
+          "heim": "Malta",
+          "gast": "Andorra"
+        },
+        {
+          "datum": "2026-10-04",
+          "heim": "Aserbaidschan",
+          "gast": "Litauen"
+        },
+        {
+          "datum": "2026-10-05",
+          "heim": "Frankreich",
+          "gast": "Belgien"
+        },
+        {
+          "datum": "2026-10-05",
+          "heim": "Italien",
+          "gast": "Türkei"
+        },
+        {
+          "datum": "2026-10-05",
+          "heim": "Nordirland",
+          "gast": "Georgien"
+        },
+        {
+          "datum": "2026-10-05",
+          "heim": "Ukraine",
+          "gast": "Ungarn"
+        },
+        {
+          "datum": "2026-10-05",
+          "heim": "Bosnien und Herzegowina",
+          "gast": "Polen"
+        },
+        {
+          "datum": "2026-10-05",
+          "heim": "Rumänien",
+          "gast": "Schweden"
+        },
+        {
+          "datum": "2026-10-05",
+          "heim": "Zypern",
+          "gast": "Lettland"
+        },
+        {
+          "datum": "2026-10-05",
+          "heim": "Montenegro",
+          "gast": "Armenien"
+        },
+        {
+          "datum": "2026-10-06",
+          "heim": "Kroatien",
+          "gast": "Spanien"
+        },
+        {
+          "datum": "2026-10-06",
+          "heim": "England",
+          "gast": "Tschechien"
+        },
+        {
+          "datum": "2026-10-06",
+          "heim": "Schottland",
+          "gast": "Slowenien"
+        },
+        {
+          "datum": "2026-10-06",
+          "heim": "Schweiz",
+          "gast": "Nordmazedonien"
+        },
+        {
+          "datum": "2026-10-06",
+          "heim": "Albanien",
+          "gast": "San Marino"
+        },
+        {
+          "datum": "2026-10-06",
+          "heim": "Belarus",
+          "gast": "Finnland"
+        },
+        {
+          "datum": "2026-10-06",
+          "heim": "Kasachstan",
+          "gast": "Färöer"
+        },
+        {
+          "datum": "2026-10-06",
+          "heim": "Republik Moldau",
+          "gast": "Slowakei"
+        },
+        {
+          "datum": "2026-10-06",
+          "heim": "Estland",
+          "gast": "Island"
+        },
+        {
+          "datum": "2026-10-06",
+          "heim": "Luxemburg",
+          "gast": "Bulgarien"
+        }
+      ]
+    },
+    {
+      "spieltag": 5,
+      "spiele": [
+        {
+          "datum": "2026-11-12",
+          "heim": "Türkei",
+          "gast": "Belgien"
+        },
+        {
+          "datum": "2026-11-12",
+          "heim": "Italien",
+          "gast": "Frankreich"
+        },
+        {
+          "datum": "2026-11-12",
+          "heim": "Tschechien",
+          "gast": "Spanien"
+        },
+        {
+          "datum": "2026-11-12",
+          "heim": "England",
+          "gast": "Kroatien"
+        },
+        {
+          "datum": "2026-11-12",
+          "heim": "Albanien",
+          "gast": "Finnland"
+        },
+        {
+          "datum": "2026-11-12",
+          "heim": "San Marino",
+          "gast": "Belarus"
+        },
+        {
+          "datum": "2026-11-12",
+          "heim": "Armenien",
+          "gast": "Zypern"
+        },
+        {
+          "datum": "2026-11-12",
+          "heim": "Montenegro",
+          "gast": "Lettland"
+        },
+        {
+          "datum": "2026-11-13",
+          "heim": "Niederlande",
+          "gast": "Griechenland"
+        },
+        {
+          "datum": "2026-11-13",
+          "heim": "Serbien",
+          "gast": "Deutschland"
+        },
+        {
+          "datum": "2026-11-13",
+          "heim": "Schottland",
+          "gast": "Nordmazedonien"
+        },
+        {
+          "datum": "2026-11-13",
+          "heim": "Slowenien",
+          "gast": "Schweiz"
+        },
+        {
+          "datum": "2026-11-13",
+          "heim": "Republik Moldau",
+          "gast": "Kasachstan"
+        },
+        {
+          "datum": "2026-11-13",
+          "heim": "Slowakei",
+          "gast": "Färöer"
+        },
+        {
+          "datum": "2026-11-13",
+          "heim": "Bulgarien",
+          "gast": "Island"
+        },
+        {
+          "datum": "2026-11-13",
+          "heim": "Luxemburg",
+          "gast": "Estland"
+        },
+        {
+          "datum": "2026-11-13",
+          "heim": "Andorra",
+          "gast": "Gibraltar"
+        },
+        {
+          "datum": "2026-11-13",
+          "heim": "Liechtenstein",
+          "gast": "Aserbaidschan"
+        },
+        {
+          "datum": "2026-11-14",
+          "heim": "Norwegen",
+          "gast": "Wales"
+        },
+        {
+          "datum": "2026-11-14",
+          "heim": "Portugal",
+          "gast": "Dänemark"
+        },
+        {
+          "datum": "2026-11-14",
+          "heim": "Georgien",
+          "gast": "Ungarn"
+        },
+        {
+          "datum": "2026-11-14",
+          "heim": "Nordirland",
+          "gast": "Ukraine"
+        },
+        {
+          "datum": "2026-11-14",
+          "heim": "Kosovo",
+          "gast": "Israel"
+        },
+        {
+          "datum": "2026-11-14",
+          "heim": "Österreich",
+          "gast": "Irland"
+        },
+        {
+          "datum": "2026-11-14",
+          "heim": "Rumänien",
+          "gast": "Polen"
+        },
+        {
+          "datum": "2026-11-14",
+          "heim": "Schweden",
+          "gast": "Bosnien und Herzegowina"
+        }
+      ]
+    },
+    {
+      "spieltag": 6,
+      "spiele": [
+        {
+          "datum": "2026-11-15",
+          "heim": "Belgien",
+          "gast": "Italien"
+        },
+        {
+          "datum": "2026-11-15",
+          "heim": "Frankreich",
+          "gast": "Türkei"
+        },
+        {
+          "datum": "2026-11-15",
+          "heim": "Kroatien",
+          "gast": "Tschechien"
+        },
+        {
+          "datum": "2026-11-15",
+          "heim": "Spanien",
+          "gast": "England"
+        },
+        {
+          "datum": "2026-11-15",
+          "heim": "Belarus",
+          "gast": "Albanien"
+        },
+        {
+          "datum": "2026-11-15",
+          "heim": "Finnland",
+          "gast": "San Marino"
+        },
+        {
+          "datum": "2026-11-15",
+          "heim": "Zypern",
+          "gast": "Montenegro"
+        },
+        {
+          "datum": "2026-11-15",
+          "heim": "Lettland",
+          "gast": "Armenien"
+        },
+        {
+          "datum": "2026-11-16",
+          "heim": "Deutschland",
+          "gast": "Niederlande"
+        },
+        {
+          "datum": "2026-11-16",
+          "heim": "Griechenland",
+          "gast": "Serbien"
+        },
+        {
+          "datum": "2026-11-16",
+          "heim": "Nordmazedonien",
+          "gast": "Slowenien"
+        },
+        {
+          "datum": "2026-11-16",
+          "heim": "Schweiz",
+          "gast": "Schottland"
+        },
+        {
+          "datum": "2026-11-16",
+          "heim": "Färöer",
+          "gast": "Republik Moldau"
+        },
+        {
+          "datum": "2026-11-16",
+          "heim": "Kasachstan",
+          "gast": "Slowakei"
+        },
+        {
+          "datum": "2026-11-16",
+          "heim": "Estland",
+          "gast": "Bulgarien"
+        },
+        {
+          "datum": "2026-11-16",
+          "heim": "Island",
+          "gast": "Luxemburg"
+        },
+        {
+          "datum": "2026-11-16",
+          "heim": "Gibraltar",
+          "gast": "Malta"
+        },
+        {
+          "datum": "2026-11-16",
+          "heim": "Litauen",
+          "gast": "Liechtenstein"
+        },
+        {
+          "datum": "2026-11-17",
+          "heim": "Dänemark",
+          "gast": "Norwegen"
+        },
+        {
+          "datum": "2026-11-17",
+          "heim": "Wales",
+          "gast": "Portugal"
+        },
+        {
+          "datum": "2026-11-17",
+          "heim": "Ungarn",
+          "gast": "Nordirland"
+        },
+        {
+          "datum": "2026-11-17",
+          "heim": "Ukraine",
+          "gast": "Georgien"
+        },
+        {
+          "datum": "2026-11-17",
+          "heim": "Israel",
+          "gast": "Österreich"
+        },
+        {
+          "datum": "2026-11-17",
+          "heim": "Irland",
+          "gast": "Kosovo"
+        },
+        {
+          "datum": "2026-11-17",
+          "heim": "Bosnien und Herzegowina",
+          "gast": "Rumänien"
+        },
+        {
+          "datum": "2026-11-17",
+          "heim": "Polen",
+          "gast": "Schweden"
+        }
+      ]
+    }
+  ]
+}

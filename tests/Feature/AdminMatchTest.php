@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Services\AdminMatchService;
 use App\Services\FfbAdminAccess;
 use App\Services\FfbAuth;
-use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class AdminMatchTest extends TestCase
@@ -74,6 +73,7 @@ class AdminMatchTest extends TestCase
                     'analyzed' => false,
                     'source_name' => '',
                     'league_id' => 0,
+                    'present' => [],
                     'matches' => [],
                 ],
             ]);
@@ -144,6 +144,7 @@ class AdminMatchTest extends TestCase
                     'analyzed' => false,
                     'source_name' => '',
                     'league_id' => 0,
+                    'present' => [],
                     'matches' => [],
                 ],
             ]);
@@ -262,7 +263,11 @@ class AdminMatchTest extends TestCase
                     'analyzed' => false,
                     'source_name' => '',
                     'league_id' => 26,
+                    'present' => [],
                     'matches' => [],
+                ],
+                'matchplan_files' => [
+                    ['name' => 'nations_league_2026_27.json', 'label' => 'nations_league_2026_27.json'],
                 ],
             ]);
         });
@@ -272,6 +277,8 @@ class AdminMatchTest extends TestCase
             ->assertOk()
             ->assertSee('Auto-Matches', false)
             ->assertSee('name="matchrounds_json"', false)
+            ->assertSee('nations_league_2026_27.json', false)
+            ->assertSee('spieltage', false)
             ->assertSee('Spiele prüfen', false)
             ->assertDontSee('Hinzufügen', false);
     }
@@ -283,14 +290,15 @@ class AdminMatchTest extends TestCase
         });
 
         $this->mock(AdminMatchService::class, function ($mock) {
-            $mock->shouldReceive('analyzeMatchroundsFile')->once()->andReturn([
+            $mock->shouldReceive('analyzeMatchroundsFile')->once()->with(26, 'plan.json')->andReturn([
                 'ok' => true,
-                'message' => '1 Spiel bereit zum Anlegen.',
+                'message' => '1 neue Spiele, 0 bereits vorhanden.',
                 'league_id' => 26,
                 'auto' => [
                     'analyzed' => true,
                     'source_name' => 'plan.json',
                     'league_id' => 26,
+                    'present' => [],
                     'matches' => [
                         [
                             'match_round' => 12,
@@ -307,27 +315,13 @@ class AdminMatchTest extends TestCase
             ]);
         });
 
-        $file = UploadedFile::fake()->createWithContent(
-            'plan.json',
-            json_encode([
-                'spieltage' => [
-                    [
-                        'spieltag' => 1,
-                        'spiele' => [
-                            ['datum' => '2026-09-24', 'heim' => 'Niederlande', 'gast' => 'Deutschland'],
-                        ],
-                    ],
-                ],
-            ], JSON_THROW_ON_ERROR),
-        );
-
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->post('/admin/matches/auto/analyze', [
                 'league_id' => 26,
-                'matchrounds_json' => $file,
+                'matchrounds_json' => 'plan.json',
             ])
             ->assertRedirect(route('admin.matches', ['tab' => 'auto', 'league_id' => 26]))
-            ->assertSessionHas('admin_message', '1 Spiel bereit zum Anlegen.')
+            ->assertSessionHas('admin_message', '1 neue Spiele, 0 bereits vorhanden.')
             ->assertSessionHas('admin_matches_auto.matches.0.home_name', 'Niederlande');
     }
 
@@ -351,6 +345,7 @@ class AdminMatchTest extends TestCase
                 'analyzed' => true,
                 'source_name' => 'plan.json',
                 'league_id' => 26,
+                'present' => [],
                 'matches' => [],
             ],
         ])

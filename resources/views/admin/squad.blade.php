@@ -471,10 +471,13 @@
                 @endif
             </p>
 
+            @php
+                $squadFiles = is_array($data['squad_files'] ?? null) ? $data['squad_files'] : [];
+            @endphp
+
             <form
                 class="admin-form admin-auto-squad-upload"
                 method="post"
-                enctype="multipart/form-data"
                 action="{{ route('admin.squad.auto.analyze') }}"
                 accept-charset="UTF-8"
             >
@@ -483,23 +486,44 @@
                 <input type="hidden" name="squad_league_id" value="{{ $squadLeagueId }}">
                 <div class="admin-field">
                     <label for="squads_json">Kader-JSON</label>
-                    <input
-                        id="squads_json"
-                        type="file"
-                        name="squads_json"
-                        accept=".json,application/json"
-                        required
-                    >
+                    <select id="squads_json" name="squads_json" required @disabled($squadFiles === [])>
+                        <option value="">— JSON-Datei wählen —</option>
+                        @foreach ($squadFiles as $file)
+                            <option value="{{ $file['name'] }}">{{ $file['label'] }}</option>
+                        @endforeach
+                    </select>
                     <p class="hint">
-                        JSON-Array mit <code>fifa_code</code> und <code>players[]</code>
-                        (<code>(name, pos, number)</code>. Max. 2&nbsp;MB.
+                        Dateien aus <code>public/data/squad/*.json</code>.
                         Es wird der Kader zum FIFA-Code des gewählten Teams geladen.
+                        Erwartete Struktur:
                     </p>
+                    <pre class="hint admin-json-hint">[
+  {
+    "name": "Czech Republic",
+    "fifa_code": "CZE",
+    "players": [
+      {
+        "number": 1,
+        "pos": "GK",
+        "name": "Matěj Kovář"
+      },
+      {
+        "number": 10,
+        "pos": "FW",
+        "name": "Patrik Schick"
+      }
+    ]
+  }
+]</pre>
                 </div>
                 <div class="admin-actions">
-                    <button type="submit" class="admin-submit">Kader prüfen</button>
+                    <button type="submit" class="admin-submit" @disabled($squadFiles === [])>Kader prüfen</button>
                 </div>
             </form>
+
+            @if ($squadFiles === [])
+                <p class="hint">Noch keine JSON-Dateien unter <code>public/data/squad</code> gefunden.</p>
+            @endif
 
             @if ($autoAnalyzed && $autoHasRows)
                 <div class="admin-auto-squad-result">

@@ -58,31 +58,57 @@
         @endif
 
         @if ($tab === 'auto')
+            @php
+                $matchplanFiles = is_array($data['matchplan_files'] ?? null) ? $data['matchplan_files'] : [];
+            @endphp
+
             <form
                 class="admin-form admin-auto-teams-upload"
                 method="post"
-                enctype="multipart/form-data"
                 action="{{ route('admin.teams.auto.analyze') }}"
                 accept-charset="UTF-8"
             >
                 @csrf
                 <div class="admin-field">
                     <label for="matchrounds_json">Spielplan-JSON</label>
-                    <input
-                        id="matchrounds_json"
-                        type="file"
-                        name="matchrounds_json"
-                        accept=".json,application/json"
-                        required
-                    >
+                    <select id="matchrounds_json" name="matchrounds_json" required @disabled($matchplanFiles === [])>
+                        <option value="">— JSON-Datei wählen —</option>
+                        @foreach ($matchplanFiles as $file)
+                            <option value="{{ $file['name'] }}">{{ $file['label'] }}</option>
+                        @endforeach
+                    </select>
                     <p class="hint">
-                        JSON mit <code>spieltage[].spiele[].heim</code> / <code>gast</code>. Max. 2&nbsp;MB.
+                        Dateien aus <code>public/data/match/*.json</code>.
+                        Erwartete Struktur:
                     </p>
+                    <pre class="hint admin-json-hint">{
+  "spieltage": [
+    {
+      "spieltag": 1,
+      "spiele": [
+        {
+          "datum": "2026-09-24",
+          "heim": "Niederlande",
+          "gast": "Deutschland"
+        },
+        {
+          "datum": "2026-09-24",
+          "heim": "Serbien",
+          "gast": "Griechenland"
+        }
+      ]
+    }
+  ]
+}</pre>
                 </div>
                 <div class="admin-actions">
-                    <button type="submit" class="admin-submit">Teams prüfen</button>
+                    <button type="submit" class="admin-submit" @disabled($matchplanFiles === [])>Teams prüfen</button>
                 </div>
             </form>
+
+            @if ($matchplanFiles === [])
+                <p class="hint">Noch keine JSON-Dateien unter <code>public/data/match</code> gefunden.</p>
+            @endif
 
             @if ($autoAnalyzed)
                 <div class="admin-auto-teams-result">

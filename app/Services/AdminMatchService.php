@@ -9,7 +9,6 @@ use App\Models\Playerstats;
 use App\Models\Team;
 use App\Support\Flag;
 use DateTimeImmutable;
-use Illuminate\Http\UploadedFile;
 
 class AdminMatchService
 {
@@ -65,11 +64,12 @@ class AdminMatchService
             'mode' => $mode === 'update' ? 'update' : 'create',
             'tab' => $tab === 'auto' ? 'auto' : 'manual',
             'auto' => $auto ?? $this->emptyAutoState(),
+            'matchplan_files' => $tab === 'auto' ? $this->teams->matchplanJsonOptions() : [],
         ];
     }
 
     /**
-     * @return array{analyzed: bool, source_name: string, league_id: int, matches: list<array<string, mixed>>}
+     * @return array{analyzed: bool, source_name: string, league_id: int, present: list<array<string, mixed>>, matches: list<array<string, mixed>>}
      */
     public function emptyAutoState(): array
     {
@@ -77,6 +77,7 @@ class AdminMatchService
             'analyzed' => false,
             'source_name' => '',
             'league_id' => 0,
+            'present' => [],
             'matches' => [],
         ];
     }
@@ -231,17 +232,17 @@ class AdminMatchService
     }
 
     /**
-     * Build editable Auto-Matches draft rows from a Spielplan JSON upload.
+     * Build editable Auto-Matches draft rows from a JSON file in public/data/match.
      *
      * @return array{
      *     ok: bool,
      *     errors?: list<string>,
-     *     auto?: array{analyzed: bool, source_name: string, league_id: int, matches: list<array<string, mixed>>},
+     *     auto?: array{analyzed: bool, source_name: string, league_id: int, present: list<array<string, mixed>>, matches: list<array<string, mixed>>},
      *     message?: string,
      *     league_id?: int
      * }
      */
-    public function analyzeMatchroundsFile(int $leagueId, ?UploadedFile $file): array
+    public function analyzeMatchroundsFile(int $leagueId, ?string $storedFileName): array
     {
         if ($leagueId <= 0) {
             return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga wählen.'], 'league_id' => 0];
@@ -251,7 +252,7 @@ class AdminMatchService
             return ['ok' => false, 'errors' => ['Liga nicht gefunden.'], 'league_id' => $leagueId];
         }
 
-        $parsed = $this->teams->parseMatchroundsUpload($file);
+        $parsed = $this->teams->parseMatchroundsStoredFile($storedFileName);
         if (! ($parsed['ok'] ?? false)) {
             return [
                 'ok' => false,
@@ -304,7 +305,7 @@ class AdminMatchService
 
         $teamIds = $this->teams->teamIdsByName();
         $draft = [];
-        $skippedExisting = 0;
+        $present = [];
         $unmappedSpieltage = [];
 
         $spieltage = $data['spieltage'];
@@ -365,8 +366,18 @@ class AdminMatchService
                     'match_guestteam_id' => $guestId,
                     'match_status' => '',
                 ];
-                if ($this->identicalMatchExists($candidate)) {
-                    $skippedExisting++;
+                $existingId = $this->identicalMatchId($candidate);
+                if ($existingId !== null) {
+                    $present[] = [
+                        'match_id' => $existingId,
+                        'match_round' => $matchroundId,
+                        'match_date' => $date,
+                        'match_hometeam_id' => $homeId,
+                        'match_guestteam_id' => $guestId,
+                        'home_name' => $homeName,
+                        'guest_name' => $guestName,
+                        'spieltag' => $spieltag,
+                    ];
 
                     continue;
                 }
@@ -391,24 +402,12 @@ class AdminMatchService
             ];
         }
 
-        if ($draft === [] && $skippedExisting === 0) {
+        if ($draft === [] && $present === []) {
             return [
                 'ok' => false,
                 'errors' => ['In der JSON-Datei wurden keine gültigen Spiele gefunden.'],
                 'league_id' => $leagueId,
             ];
-        }
-
-        $parts = [];
-        if (count($draft) === 1) {
-            $parts[] = '1 Spiel bereit zum Anlegen';
-        } elseif (count($draft) > 1) {
-            $parts[] = count($draft).' Spiele bereit zum Anlegen';
-        }
-        if ($skippedExisting === 1) {
-            $parts[] = '1 bereits vorhanden und ausgeblendet';
-        } elseif ($skippedExisting > 1) {
-            $parts[] = $skippedExisting.' bereits vorhanden und ausgeblendet';
         }
 
         return [
@@ -418,9 +417,10 @@ class AdminMatchService
                 'analyzed' => true,
                 'source_name' => $sourceName,
                 'league_id' => $leagueId,
+                'present' => $present,
                 'matches' => $draft,
             ],
-            'message' => implode(', ', $parts).'.',
+            'message' => count($draft).' neue Spiele, '.count($present).' bereits vorhanden.',
         ];
     }
 
@@ -434,7 +434,7 @@ class AdminMatchService
      *     message?: string,
      *     errors?: list<string>,
      *     league_id?: int,
-     *     auto?: array{analyzed: bool, source_name: string, league_id: int, matches: list<array<string, mixed>>}
+     *     auto?: array{analyzed: bool, source_name: string, league_id: int, present: list<array<string, mixed>>, matches: list<array<string, mixed>>}
      * }
      */
     public function createMatchesFromDraft(array $matches, int $leagueId, string $sourceName = ''): array
@@ -471,6 +471,7 @@ class AdminMatchService
                     'analyzed' => true,
                     'source_name' => $sourceName,
                     'league_id' => $leagueId,
+                    'present' => [],
                     'matches' => [],
                 ],
             ];
@@ -522,6 +523,7 @@ class AdminMatchService
                     'analyzed' => true,
                     'source_name' => $sourceName,
                     'league_id' => $leagueId,
+                    'present' => [],
                     'matches' => $failedDrafts,
                 ],
             ];
@@ -825,21 +827,31 @@ class AdminMatchService
      */
     private function identicalMatchExists(array $form): bool
     {
+        return $this->identicalMatchId($form) !== null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $form
+     */
+    private function identicalMatchId(array $form): ?int
+    {
         if (
             $form['match_round'] === null
             || $form['match_date'] === ''
             || $form['match_hometeam_id'] === null
             || $form['match_guestteam_id'] === null
         ) {
-            return false;
+            return null;
         }
 
-        return MatchGame::query()
+        $matchId = MatchGame::query()
             ->where('match_round', (int) $form['match_round'])
             ->where('match_date', $form['match_date'].' 00:00:00')
             ->where('match_hometeam_id', (int) $form['match_hometeam_id'])
             ->where('match_guestteam_id', (int) $form['match_guestteam_id'])
-            ->exists();
+            ->value('match_id');
+
+        return $matchId !== null ? (int) $matchId : null;
     }
 
     /**

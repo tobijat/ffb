@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Services\AdminTeamService;
 use App\Services\FfbAdminAccess;
 use App\Services\FfbAuth;
-use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class AdminTeamTest extends TestCase
@@ -275,6 +274,9 @@ class AdminTeamTest extends TestCase
                     'present' => [],
                     'missing' => [],
                 ],
+                'matchplan_files' => [
+                    ['name' => 'nations_league_2026_27.json', 'label' => 'nations_league_2026_27.json'],
+                ],
             ]);
         });
 
@@ -283,6 +285,8 @@ class AdminTeamTest extends TestCase
             ->assertOk()
             ->assertSee('Auto-Teams', false)
             ->assertSee('name="matchrounds_json"', false)
+            ->assertSee('nations_league_2026_27.json', false)
+            ->assertSee('spieltage', false)
             ->assertSee('Teams prüfen', false)
             ->assertDontSee('name="team_name"', false);
     }
@@ -294,7 +298,7 @@ class AdminTeamTest extends TestCase
         });
 
         $this->mock(AdminTeamService::class, function ($mock) {
-            $mock->shouldReceive('analyzeMatchroundsFile')->once()->andReturn([
+            $mock->shouldReceive('analyzeMatchroundsFile')->once()->with('nations.json')->andReturn([
                 'ok' => true,
                 'message' => '1 neue Teams, 1 bereits vorhanden.',
                 'auto' => [
@@ -319,23 +323,9 @@ class AdminTeamTest extends TestCase
             ]);
         });
 
-        $file = UploadedFile::fake()->createWithContent(
-            'nations.json',
-            json_encode([
-                'spieltage' => [
-                    [
-                        'spieltag' => 1,
-                        'spiele' => [
-                            ['datum' => '2026-09-24', 'heim' => 'Deutschland', 'gast' => 'Kosovo'],
-                        ],
-                    ],
-                ],
-            ], JSON_THROW_ON_ERROR),
-        );
-
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->post('/admin/teams/auto/analyze', [
-                'matchrounds_json' => $file,
+                'matchrounds_json' => 'nations.json',
             ])
             ->assertRedirect(route('admin.teams', ['tab' => 'auto']))
             ->assertSessionHas('admin_message', '1 neue Teams, 1 bereits vorhanden.')
