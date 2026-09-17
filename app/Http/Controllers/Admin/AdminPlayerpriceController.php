@@ -18,13 +18,12 @@ class AdminPlayerpriceController extends Controller
 
     public function show(Request $request): View
     {
-        $leagueId = (int) $request->query('price_league_id', 0);
         $matchroundId = (int) $request->query('matchround_id', 0);
         $tab = $this->resolveTab($request->query('tab'));
 
         return $this->render(
             $request,
-            $leagueId > 0 ? $leagueId : null,
+            null,
             $tab,
             $matchroundId > 0 ? $matchroundId : null,
         );

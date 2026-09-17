@@ -3,7 +3,7 @@
 @section('title', 'Spieldaten')
 
 @push('scripts')
-    <script src="{{ url('js/admin-matchdata.js') }}?v=14" defer></script>
+    <script src="{{ url('js/admin-matchdata.js') }}?v=15" defer></script>
 @endpush
 
 @section('content')
@@ -32,18 +32,25 @@
             <h2 id="admin-matchdata-title">Spieldaten</h2>
         </div>
 
+        @php
+            $selectedLeagueTitle = (string) ($data['selected_league']['league_title'] ?? '');
+            if ($selectedLeagueTitle === '') {
+                foreach ($leagues as $league) {
+                    if ((int) $league['league_id'] === $selectedLeagueId) {
+                        $selectedLeagueTitle = (string) $league['league_title'];
+                        break;
+                    }
+                }
+            }
+        @endphp
+
+        @if ($selectedLeagueId <= 0)
+            <p class="hint">Bitte zuerst unter <a href="{{ url('/admin') }}">Ligen</a> eine Liga auswählen.</p>
+        @else
+            <p class="muted">Liga: {{ $selectedLeagueTitle }}</p>
+        @endif
+
         <div class="admin-mp-select-row">
-            <div class="admin-mp-select-field">
-                <label for="admin-mp-league">Liga</label>
-                <select id="admin-mp-league" class="admin-mp-select">
-                    <option value="">— Liga wählen —</option>
-                    @foreach ($leagues as $league)
-                        <option value="{{ $league['league_id'] }}" @selected($selectedLeagueId === (int) $league['league_id'])>
-                            {{ $league['league_title'] }}@if (!empty($league['league_archive'])) (Archiv)@endif
-                        </option>
-                    @endforeach
-                </select>
-            </div>
             <div class="admin-mp-select-field">
                 <label for="admin-mp-round">Spielrunde</label>
                 <select id="admin-mp-round" class="admin-mp-select" @disabled($selectedLeagueId <= 0)>
@@ -58,9 +65,7 @@
             </div>
         </div>
 
-        @if ($selectedLeagueId <= 0)
-            <p class="hint">Wähle oben eine Liga, um Spielerpunkte zu erfassen.</p>
-        @else
+        @if ($selectedLeagueId > 0)
             <p class="hint">Punkte-Modus: <strong>{{ $pointsmode }}</strong></p>
         @endif
 

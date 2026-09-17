@@ -19,10 +19,7 @@ class AdminMatchroundController extends Controller
     public function show(Request $request): View
     {
         $userId = $this->auth->userId($request);
-        $leagueId = (int) $request->query('league_id', 0);
-        if ($leagueId <= 0) {
-            $leagueId = $this->matchrounds->defaultLeagueId($userId);
-        }
+        $leagueId = $this->matchrounds->defaultLeagueId($userId);
         $errors = session('admin_errors');
         $prefill = session('admin_matchround_prefill');
 

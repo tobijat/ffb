@@ -49,26 +49,8 @@
             <h2 id="admin-playerprice-title">Preise</h2>
         </div>
         <p class="hint">
-            Dynamische Spielerpreise und ELO-Teampreise für die gewählte Liga.
+            Dynamische Spielerpreise und ELO-Teampreise für die im Admin-Center ausgewählte Liga.
         </p>
-
-        <form class="admin-league-picker" method="get" action="{{ route('admin.playerprice') }}">
-            @if ($tab === 'teams')
-                <input type="hidden" name="tab" value="teams">
-            @endif
-            <label for="price_league_id">Liga</label>
-            <select id="price_league_id" name="price_league_id" onchange="this.form.submit()">
-                <option value="">— Liga wählen —</option>
-                @foreach ($leagues as $league)
-                    <option value="{{ $league['league_id'] }}" @selected($priceLeagueId === (int) $league['league_id'])>
-                        {{ $league['league_title'] }}
-                    </option>
-                @endforeach
-            </select>
-            <noscript>
-                <button type="submit" class="admin-submit">Anzeigen</button>
-            </noscript>
-        </form>
 
         @if (!empty($flashErrors))
             <div class="account-flash account-flash-error" role="alert">
@@ -95,8 +77,9 @@
         @endif
 
         @if (! $hasLeague)
-            <p class="hint">Wähle oben eine Liga, um Preise zu berechnen.</p>
+            <p class="hint">Bitte zuerst unter <a href="{{ url('/admin') }}">Ligen</a> eine Liga auswählen.</p>
         @else
+            <p class="muted">Liga: {{ $selectedLeague['league_title'] ?? ('#'.$priceLeagueId) }}</p>
             <nav class="admin-squad-tabs ffb-tabs" aria-label="Preis-Bereiche">
                 <a
                     class="admin-squad-tab ffb-tab{{ $tab === 'teams' ? ' is-active' : '' }}"
@@ -111,7 +94,6 @@
                     Spieler-Preis
                 </a>
             </nav>
-            <p class="muted">Aktive Liga: {{ $selectedLeague['league_title'] ?? ('#'.$priceLeagueId) }}</p>
         @endif
     </section>
 

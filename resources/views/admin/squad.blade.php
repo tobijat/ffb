@@ -68,19 +68,31 @@
             <h2 id="admin-squad-title">Kader</h2>
         </div>
 
+        @php
+            $squadLeagueTitle = (string) ($data['selected_league']['league_title'] ?? '');
+            if ($squadLeagueTitle === '') {
+                foreach ($leagues as $league) {
+                    if ((int) $league['league_id'] === $squadLeagueId) {
+                        $squadLeagueTitle = (string) $league['league_title'];
+                        break;
+                    }
+                }
+            }
+        @endphp
+
+        @if ($squadLeagueId <= 0)
+            <p class="hint">Bitte zuerst unter <a href="{{ url('/admin') }}">Ligen</a> eine Liga auswählen.</p>
+        @else
+            <p class="muted">Liga: {{ $squadLeagueTitle }}</p>
+        @endif
+
         <form class="admin-league-picker" method="get" action="{{ route('admin.squad') }}">
             @if (in_array($tab, ['add', 'auto', 'images'], true))
                 <input type="hidden" name="tab" value="{{ $tab }}">
             @endif
-            <label for="squad_league_id">Liga</label>
-            <select id="squad_league_id" name="squad_league_id" onchange="this.form.submit()">
-                <option value="">— Liga wählen —</option>
-                @foreach ($leagues as $league)
-                    <option value="{{ $league['league_id'] }}" @selected($squadLeagueId === (int) $league['league_id'])>
-                        {{ $league['league_title'] }}
-                    </option>
-                @endforeach
-            </select>
+            @if ($squadLeagueId > 0)
+                <input type="hidden" name="squad_league_id" value="{{ $squadLeagueId }}">
+            @endif
             <label for="team_id">Team</label>
             <select id="team_id" name="team_id" onchange="this.form.submit()" @disabled($squadLeagueId <= 0)>
                 <option value="">— Team wählen —</option>

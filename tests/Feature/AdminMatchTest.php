@@ -84,8 +84,7 @@ class AdminMatchTest extends TestCase
             ->assertOk()
             ->assertSee('Spiele', false)
             ->assertSee('Auto-Matches', false)
-            ->assertSee('Liga wählen', false)
-            ->assertSee('Wähle oben eine Liga', false)
+            ->assertSee('Bitte zuerst unter', false)
             ->assertDontSee('name="match_hometeam_id"', false);
     }
 
@@ -96,6 +95,7 @@ class AdminMatchTest extends TestCase
         });
 
         $this->mock(AdminMatchService::class, function ($mock) {
+            $mock->shouldReceive('defaultLeagueId')->once()->with(544)->andReturn(26);
             $mock->shouldReceive('pagePayload')->once()->andReturn([
                 'user' => [
                     'user_id' => 544,
@@ -150,7 +150,7 @@ class AdminMatchTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->get('/admin/matches?league_id=26')
+            ->get('/admin/matches')
             ->assertOk()
             ->assertSee('Testliga', false)
             ->assertSee('Heim FC', false)
@@ -158,7 +158,8 @@ class AdminMatchTest extends TestCase
             ->assertSee('type="date"', false)
             ->assertSee('name="match_hometeam_id"', false)
             ->assertDontSee('match_homescore', false)
-            ->assertSee('Hinzufügen', false);
+            ->assertSee('Hinzufügen', false)
+            ->assertSee('Liga: Testliga', false);
     }
 
     public function test_matches_store_redirects_with_game_and_prefill(): void
@@ -225,6 +226,7 @@ class AdminMatchTest extends TestCase
         });
 
         $this->mock(AdminMatchService::class, function ($mock) {
+            $mock->shouldReceive('defaultLeagueId')->once()->with(544)->andReturn(26);
             $mock->shouldReceive('pagePayload')->once()->andReturn([
                 'user' => [
                     'user_id' => 544,
@@ -266,7 +268,7 @@ class AdminMatchTest extends TestCase
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->get('/admin/matches?tab=auto&league_id=26')
+            ->get('/admin/matches?tab=auto')
             ->assertOk()
             ->assertSee('Auto-Matches', false)
             ->assertSee('name="matchrounds_json"', false)

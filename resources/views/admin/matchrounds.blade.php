@@ -18,21 +18,6 @@
             <h2 id="admin-matchrounds-title">Spielrunden</h2>
         </div>
 
-        <form class="admin-league-picker" method="get" action="{{ route('admin.matchrounds') }}">
-            <label for="league_id">Liga</label>
-            <select id="league_id" name="league_id" onchange="this.form.submit()">
-                <option value="">— Liga wählen —</option>
-                @foreach ($leagues as $league)
-                    <option value="{{ $league['league_id'] }}" @selected($selectedLeagueId === (int) $league['league_id'])>
-                        {{ $league['league_title'] }}@if ($league['league_archive']) (Archiv)@endif
-                    </option>
-                @endforeach
-            </select>
-            <noscript>
-                <button type="submit" class="admin-submit">Anzeigen</button>
-            </noscript>
-        </form>
-
         @if (!empty($flashErrors))
             <div class="account-flash account-flash-error" role="alert">
                 <strong>Es sind Fehler aufgetreten:</strong>
@@ -51,9 +36,9 @@
         @endif
 
         @if ($selectedLeagueId <= 0)
-            <p class="hint">Wähle oben eine Liga, um deren Spielrunden zu verwalten.</p>
+            <p class="hint">Bitte zuerst unter <a href="{{ url('/admin') }}">Ligen</a> eine Liga auswählen.</p>
         @else
-            <p class="hint">Liga: <strong>{{ $selectedLeagueTitle }}</strong></p>
+            <p class="muted">Liga: {{ $selectedLeagueTitle }}</p>
 
             <form
                 class="admin-form"
