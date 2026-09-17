@@ -135,7 +135,7 @@
                     @foreach ([
                         ['options_lineup_min_g', 'Min. Spieler als Goalie', 'options_lineup_max_g', 'Max. Spieler als Goalie'],
                         ['options_lineup_min_d', 'Min. Spieler in Abwehr', 'options_lineup_max_d', 'Max. Spieler in Abwehr'],
-                        ['options_lineup_min_m', 'Min. Spieler inMittelfeld', 'options_lineup_max_m', 'Max. Spieler in Mittelfeld'],
+                        ['options_lineup_min_m', 'Min. Spieler in Mittelfeld', 'options_lineup_max_m', 'Max. Spieler in Mittelfeld'],
                         ['options_lineup_min_s', 'Min. Spieler in Angriff', 'options_lineup_max_s', 'Max. Spieler in Angriff'],
                     ] as [$minName, $minLabel, $maxName, $maxLabel])
                         <div class="admin-option-field">

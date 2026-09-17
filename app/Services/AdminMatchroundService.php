@@ -14,6 +14,7 @@ class AdminMatchroundService
 {
     public function __construct(
         private readonly AdminCenterService $adminCenter,
+        private readonly LineupOptionsResolver $lineupOptions,
     ) {}
 
     /**
@@ -34,6 +35,7 @@ class AdminMatchroundService
      *     selected_league_title: string|null,
      *     items: list<array<string, mixed>>,
      *     form: array<string, mixed>,
+     *     league_lineup_defaults: array<string, int|float>,
      *     mode: string
      * }
      */
@@ -54,6 +56,7 @@ class AdminMatchroundService
         $form['matchround_league_id'] = $selectedLeagueId > 0
             ? $selectedLeagueId
             : (int) ($form['matchround_league_id'] ?? 0);
+        $form = $this->withDisplayLineupOptions($form, (int) $form['matchround_league_id']);
 
         return [
             'user' => $shell['user'],
@@ -64,6 +67,7 @@ class AdminMatchroundService
             'selected_league_title' => $selectedTitle,
             'items' => $selectedLeagueId > 0 ? $this->listItems($selectedLeagueId) : [],
             'form' => $form,
+            'league_lineup_defaults' => $this->lineupOptionsFormForLeague((int) $form['matchround_league_id']),
             'mode' => $mode === 'update' ? 'update' : 'create',
         ];
     }
@@ -81,7 +85,7 @@ class AdminMatchroundService
             'matchround_startdate' => '',
             'matchround_enddate' => '',
             'lineup_options_enabled' => 0,
-            ...$this->emptyLineupOptionsForm(),
+            ...$this->lineupOptionsFormForLeague($leagueId),
         ];
     }
 
@@ -96,15 +100,16 @@ class AdminMatchroundService
         }
 
         $override = $item->options;
+        $leagueId = (int) $item->matchround_league_id;
         $form = [
             'matchround_id' => (int) $item->matchround_id,
-            'matchround_league_id' => (int) $item->matchround_league_id,
+            'matchround_league_id' => $leagueId,
             'matchround_title' => (string) $item->matchround_title,
             'matchround_status' => (int) $item->matchround_status,
             'matchround_startdate' => $this->toDatetimeLocalValue((string) $item->matchround_startdate),
             'matchround_enddate' => $this->toDatetimeLocalValue((string) $item->matchround_enddate),
             'lineup_options_enabled' => $override ? 1 : 0,
-            ...$this->emptyLineupOptionsForm(),
+            ...$this->lineupOptionsFormForLeague($leagueId),
         ];
 
         if ($override) {
@@ -114,7 +119,7 @@ class AdminMatchroundService
         }
 
         return [
-            'league_id' => (int) $item->matchround_league_id,
+            'league_id' => $leagueId,
             'form' => $form,
         ];
     }
@@ -442,6 +447,45 @@ class AdminMatchroundService
     }
 
     /**
+     * @return array<string, int|float>
+     */
+    private function lineupOptionsFormForLeague(int $leagueId): array
+    {
+        $resolved = $this->lineupOptions->forLeague($leagueId);
+        $form = [];
+        foreach ($this->lineupOptionKeys() as $key) {
+            $short = str_replace('matchround_options_', '', $key);
+            $form[$key] = $resolved[$short];
+        }
+
+        return $form;
+    }
+
+    /**
+     * When overrides are off (or values missing after a disabled-field post), show league defaults.
+     *
+     * @param  array<string, mixed>  $form
+     * @return array<string, mixed>
+     */
+    private function withDisplayLineupOptions(array $form, int $leagueId): array
+    {
+        $defaults = $this->lineupOptionsFormForLeague($leagueId);
+        $enabled = (int) ($form['lineup_options_enabled'] ?? 0) === 1;
+
+        if (! $enabled) {
+            return [...$form, ...$defaults];
+        }
+
+        foreach ($defaults as $key => $value) {
+            if (! array_key_exists($key, $form) || $form[$key] === '' || $form[$key] === null) {
+                $form[$key] = $value;
+            }
+        }
+
+        return $form;
+    }
+
+    /**
      * @param  array<string, mixed>  $form
      */
     private function syncLineupOptions(int $matchroundId, array $form): void
@@ -487,13 +531,17 @@ class AdminMatchroundService
         $nextStart = $end;
         $nextEnd = $nextStart->modify('+'.$durationSeconds.' seconds');
 
+        $leagueId = (int) $form['matchround_league_id'];
+
         return [
             'matchround_id' => '',
-            'matchround_league_id' => (int) $form['matchround_league_id'],
+            'matchround_league_id' => $leagueId,
             'matchround_title' => $this->bumpTitle((string) $form['matchround_title']),
             'matchround_status' => (int) $form['matchround_status'],
             'matchround_startdate' => $nextStart->format('Y-m-d\TH:00'),
             'matchround_enddate' => $nextEnd->format('Y-m-d\TH:00'),
+            'lineup_options_enabled' => 0,
+            ...$this->lineupOptionsFormForLeague($leagueId),
         ];
     }
 
