@@ -144,7 +144,6 @@ class UserteamSlotCharacterizationTest extends TestCase
             'team_id' => 10,
             'team_name' => 'Alpha',
             'team_status' => 1,
-            'team_avg_price' => 5,
             'team_num_players' => 0,
             'team_foreign_id' => '',
             'team_nationality' => 'aut',

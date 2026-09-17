@@ -69,14 +69,12 @@ class AdminTeamTest extends TestCase
                 ],
                 'selected_symbol' => null,
                 'uses_icon_picker' => true,
-                'prices' => range(1, 15),
                 'items' => [
                     [
                         'team_id' => 3,
                         'team_name' => 'Rapid',
                         'team_nationality' => 'aut',
                         'team_icon_label' => 'Österreich',
-                        'team_price' => 8,
                         'team_status' => 1,
                         'flag_url' => '/images/ffb/flags/aut.gif',
                         'teamfid_fid_tm' => '170',
@@ -92,7 +90,6 @@ class AdminTeamTest extends TestCase
                     'team_name' => '',
                     'team_nationality' => '',
                     'team_icon_key' => '',
-                    'team_price' => 5,
                     'team_status' => 1,
                     'teamfid_fid_tm' => '',
                     'teamfid_name_tm' => '',
@@ -123,6 +120,7 @@ class AdminTeamTest extends TestCase
             ->assertSee('team_shirt_file', false)
             ->assertSee('wernberg', false)
             ->assertDontSee('Wird für Flaggen', false)
+            ->assertDontSee('Standardpreis', false)
             ->assertSee('transfermarkt.at', false)
             ->assertSee('Hinzufügen', false);
     }
@@ -139,7 +137,6 @@ class AdminTeamTest extends TestCase
                 'team_name' => 'Oesterreich',
                 'team_nationality' => 'aut',
                 'team_icon_key' => '',
-                'team_price' => 5,
                 'team_status' => 1,
                 'teamfid_fid_tm' => '',
                 'teamfid_name_tm' => '',
@@ -168,7 +165,6 @@ class AdminTeamTest extends TestCase
                     'shirt_path_hint' => 'shirts/7/aut.png',
                 ],
                 'uses_icon_picker' => false,
-                'prices' => range(1, 15),
                 'items' => [],
                 'form' => $form,
                 'mode' => 'update',
@@ -211,7 +207,6 @@ class AdminTeamTest extends TestCase
             ->post('/admin/teams', [
                 'team_name' => 'Austria Wien',
                 'team_nationality' => 'aut',
-                'team_price' => 7,
                 'team_status' => 1,
                 'teamfid_fid_tm' => '14',
                 'teamfid_name_tm' => 'fk-austria-wien',
@@ -260,14 +255,12 @@ class AdminTeamTest extends TestCase
                 'icons' => [],
                 'selected_symbol' => null,
                 'uses_icon_picker' => true,
-                'prices' => range(1, 15),
                 'items' => [],
                 'form' => [
                     'team_id' => '',
                     'team_name' => '',
                     'team_nationality' => '',
                     'team_icon_key' => '',
-                    'team_price' => 5,
                     'team_status' => 1,
                     'teamfid_fid_tm' => '',
                     'teamfid_name_tm' => '',
@@ -312,7 +305,6 @@ class AdminTeamTest extends TestCase
                             'team_id' => 1,
                             'team_name' => 'Deutschland',
                             'team_nationality' => 'ger',
-                            'team_price' => 5,
                             'team_status' => 1,
                         ],
                     ],
@@ -320,7 +312,6 @@ class AdminTeamTest extends TestCase
                         [
                             'team_name' => 'Kosovo',
                             'team_nationality' => 'rks',
-                            'team_price' => 5,
                             'team_status' => 1,
                         ],
                     ],
@@ -374,7 +365,6 @@ class AdminTeamTest extends TestCase
                     [
                         'team_name' => 'Kosovo',
                         'team_nationality' => 'rks',
-                        'team_price' => 5,
                         'team_status' => 1,
                     ],
                 ],
@@ -386,7 +376,6 @@ class AdminTeamTest extends TestCase
                     [
                         'team_name' => 'Kosovo',
                         'team_nationality' => 'rks',
-                        'team_price' => 5,
                         'team_status' => 1,
                     ],
                 ],

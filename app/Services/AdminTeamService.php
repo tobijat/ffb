@@ -42,7 +42,6 @@ class AdminTeamService
             'icons' => $this->iconOptions($selectedKey),
             'selected_symbol' => $this->selectedSymbol($selectedKey, $teamId),
             'uses_icon_picker' => ! $this->isMappedNation($selectedKey),
-            'prices' => range(1, 15),
             'items' => $this->listItems(),
             'form' => $form,
             'mode' => $mode === 'update' ? 'update' : 'create',
@@ -74,7 +73,6 @@ class AdminTeamService
             'team_name' => '',
             'team_nationality' => '',
             'team_icon_key' => '',
-            'team_price' => 5,
             'team_status' => 1,
             'teamfid_fid_tm' => '',
             'teamfid_name_tm' => '',
@@ -101,7 +99,6 @@ class AdminTeamService
             'team_name' => (string) $item->team_name,
             'team_nationality' => $icon,
             'team_icon_key' => '',
-            'team_price' => (int) $item->team_avg_price,
             'team_status' => (int) (bool) $item->team_status,
             'teamfid_fid_tm' => (string) ($fid?->teamfid_fid_tm ?? ''),
             'teamfid_name_tm' => (string) ($fid?->teamfid_name_tm ?? ''),
@@ -142,7 +139,6 @@ class AdminTeamService
                 'team_foreign_id' => '',
                 'team_name' => $form['team_name'],
                 'team_nationality' => $form['team_nationality'],
-                'team_avg_price' => (int) $form['team_price'],
                 'team_num_players' => 0,
                 'team_status' => (int) $form['team_status'],
             ]);
@@ -202,7 +198,6 @@ class AdminTeamService
         DB::transaction(function () use ($item, $form) {
             $item->team_name = $form['team_name'];
             $item->team_nationality = $form['team_nationality'];
-            $item->team_avg_price = (int) $form['team_price'];
             $item->team_status = (int) $form['team_status'];
             $item->save();
 
@@ -428,7 +423,6 @@ class AdminTeamService
                 $drafts[] = [
                     'team_name' => $form['team_name'],
                     'team_nationality' => $form['team_nationality'],
-                    'team_price' => (int) $form['team_price'],
                     'team_status' => (int) $form['team_status'],
                 ];
 
@@ -441,7 +435,6 @@ class AdminTeamService
                 $drafts[] = [
                     'team_name' => $prepared['form']['team_name'],
                     'team_nationality' => $prepared['form']['team_nationality'],
-                    'team_price' => (int) $prepared['form']['team_price'],
                     'team_status' => (int) $prepared['form']['team_status'],
                 ];
 
@@ -452,7 +445,6 @@ class AdminTeamService
             $drafts[] = [
                 'team_name' => $prepared['form']['team_name'],
                 'team_nationality' => $prepared['form']['team_nationality'],
-                'team_price' => (int) $prepared['form']['team_price'],
                 'team_status' => (int) $prepared['form']['team_status'],
                 '_form' => $prepared['form'],
             ];
@@ -497,7 +489,6 @@ class AdminTeamService
                     'team_foreign_id' => '',
                     'team_name' => $form['team_name'],
                     'team_nationality' => $form['team_nationality'],
-                    'team_avg_price' => (int) $form['team_price'],
                     'team_num_players' => 0,
                     'team_status' => (int) $form['team_status'],
                 ]);
@@ -522,7 +513,7 @@ class AdminTeamService
     {
         $existing = Team::query()
             ->orderBy('team_name')
-            ->get(['team_id', 'team_name', 'team_nationality', 'team_avg_price', 'team_status']);
+            ->get(['team_id', 'team_name', 'team_nationality', 'team_status']);
 
         $byName = [];
         foreach ($existing as $team) {
@@ -543,7 +534,6 @@ class AdminTeamService
                     'team_id' => (int) $team->team_id,
                     'team_name' => (string) $team->team_name,
                     'team_nationality' => $this->normalizeIconKey((string) ($team->team_nationality ?? '')),
-                    'team_price' => (int) $team->team_avg_price,
                     'team_status' => (int) (bool) $team->team_status,
                 ];
 
@@ -553,7 +543,6 @@ class AdminTeamService
             $missing[] = [
                 'team_name' => $name,
                 'team_nationality' => $this->suggestNationality($name),
-                'team_price' => 5,
                 'team_status' => 1,
             ];
         }
@@ -710,7 +699,6 @@ class AdminTeamService
                     'team_name' => (string) $item->team_name,
                     'team_nationality' => $icon,
                     'team_icon_label' => $icon !== '' ? ($countries[$upper] ?? $icon) : '',
-                    'team_price' => (int) $item->team_avg_price,
                     'team_status' => (int) (bool) $item->team_status,
                     'flag_url' => $icon !== '' ? Flag::imageUrl($icon) : null,
                     'flag_html' => $icon !== '' ? Flag::html($icon) : '',
@@ -791,20 +779,11 @@ class AdminTeamService
             $foe = 'https://vereine.oefb.at/'.ltrim($foe, '/');
         }
 
-        $price = (int) ($input['team_price'] ?? 5);
-        if ($price < 1) {
-            $price = 1;
-        }
-        if ($price > 15) {
-            $price = 15;
-        }
-
         return [
             'team_id' => (string) ($input['team_id'] ?? ''),
             'team_name' => trim((string) ($input['team_name'] ?? '')),
             'team_nationality' => $this->normalizeIconKey((string) ($input['team_nationality'] ?? '')),
             'team_icon_key' => $this->normalizeIconKey((string) ($input['team_icon_key'] ?? '')),
-            'team_price' => $price,
             'team_status' => ((string) ($input['team_status'] ?? '1') === '0') ? 0 : 1,
             'teamfid_fid_tm' => trim((string) ($input['teamfid_fid_tm'] ?? '')),
             'teamfid_name_tm' => trim((string) ($input['teamfid_name_tm'] ?? '')),
