@@ -104,13 +104,14 @@
                     </select>
                 </div>
 
-                <fieldset class="admin-fieldset">
+                <fieldset class="admin-fieldset" id="matchround-lineup-overrides" data-lineup-defaults='@json($data['league_lineup_defaults'] ?? [])'>
                     <legend>Aufstellungs-Overrides</legend>
                     <p class="hint">Optional: eigene Limits für diese Spielrunde. Sonst gelten die Liga-Defaults.</p>
                     <div class="admin-field">
                         <label>
                             <input
                                 type="checkbox"
+                                id="lineup_options_enabled"
                                 name="lineup_options_enabled"
                                 value="1"
                                 @checked((int) ($form['lineup_options_enabled'] ?? 0) === 1)
@@ -118,23 +119,56 @@
                             Eigene Aufstellungslimits verwenden
                         </label>
                     </div>
+                    @php
+                        $lineupEnabled = (int) ($form['lineup_options_enabled'] ?? 0) === 1;
+                    @endphp
                     <div class="admin-option-grid">
                         @foreach ([
-                            'matchround_options_lineup_max_players' => 'Max. Spieler',
-                            'matchround_options_lineup_max_credits' => 'Max. Credits',
-                            'matchround_options_lineup_max_players_team' => 'Max. pro Team',
-                            'matchround_options_lineup_min_g' => 'Min. TW',
-                            'matchround_options_lineup_max_g' => 'Max. TW',
-                            'matchround_options_lineup_min_d' => 'Min. AB',
-                            'matchround_options_lineup_max_d' => 'Max. AB',
-                            'matchround_options_lineup_min_m' => 'Min. MF',
-                            'matchround_options_lineup_max_m' => 'Max. MF',
-                            'matchround_options_lineup_min_s' => 'Min. ST',
-                            'matchround_options_lineup_max_s' => 'Max. ST',
+                            'matchround_options_lineup_max_players' => 'Max. Spieler / Aufstellung',
+                            'matchround_options_lineup_max_credits' => 'Max. Credits / Aufstellung',
+                            'matchround_options_lineup_max_players_team' => 'Max. Spieler vom selben Team',
                         ] as $name => $label)
                             <div class="admin-option-field">
                                 <label for="{{ $name }}">{{ $label }}</label>
-                                <input id="{{ $name }}" type="number" name="{{ $name }}" value="{{ $form[$name] ?? '' }}">
+                                <input
+                                    id="{{ $name }}"
+                                    type="number"
+                                    name="{{ $name }}"
+                                    value="{{ $form[$name] ?? '' }}"
+                                    data-lineup-field
+                                    @disabled(! $lineupEnabled)
+                                >
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="admin-lineup-pos-grid">
+                        @foreach ([
+                            ['matchround_options_lineup_min_g', 'Min. Spieler als Goalie', 'matchround_options_lineup_max_g', 'Max. Spieler als Goalie'],
+                            ['matchround_options_lineup_min_d', 'Min. Spieler in Abwehr', 'matchround_options_lineup_max_d', 'Max. Spieler in Abwehr'],
+                            ['matchround_options_lineup_min_m', 'Min. Spieler in Mittelfeld', 'matchround_options_lineup_max_m', 'Max. Spieler in Mittelfeld'],
+                            ['matchround_options_lineup_min_s', 'Min. Spieler in Angriff', 'matchround_options_lineup_max_s', 'Max. Spieler in Angriff'],
+                        ] as [$minName, $minLabel, $maxName, $maxLabel])
+                            <div class="admin-option-field">
+                                <label for="{{ $minName }}">{{ $minLabel }}</label>
+                                <input
+                                    id="{{ $minName }}"
+                                    type="number"
+                                    name="{{ $minName }}"
+                                    value="{{ $form[$minName] ?? '' }}"
+                                    data-lineup-field
+                                    @disabled(! $lineupEnabled)
+                                >
+                            </div>
+                            <div class="admin-option-field">
+                                <label for="{{ $maxName }}">{{ $maxLabel }}</label>
+                                <input
+                                    id="{{ $maxName }}"
+                                    type="number"
+                                    name="{{ $maxName }}"
+                                    value="{{ $form[$maxName] ?? '' }}"
+                                    data-lineup-field
+                                    @disabled(! $lineupEnabled)
+                                >
                             </div>
                         @endforeach
                     </div>
@@ -190,3 +224,34 @@
         </section>
     @endif
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    var fieldset = document.getElementById('matchround-lineup-overrides');
+    var checkbox = document.getElementById('lineup_options_enabled');
+    if (!fieldset || !checkbox) {
+        return;
+    }
+
+    var defaults = {};
+    try {
+        defaults = JSON.parse(fieldset.getAttribute('data-lineup-defaults') || '{}') || {};
+    } catch (e) {
+        defaults = {};
+    }
+
+    function applyEnabledState() {
+        var enabled = checkbox.checked;
+        fieldset.querySelectorAll('[data-lineup-field]').forEach(function (input) {
+            input.disabled = !enabled;
+            if (!enabled && Object.prototype.hasOwnProperty.call(defaults, input.name)) {
+                input.value = defaults[input.name];
+            }
+        });
+    }
+
+    checkbox.addEventListener('change', applyEnabledState);
+})();
+</script>
+@endpush

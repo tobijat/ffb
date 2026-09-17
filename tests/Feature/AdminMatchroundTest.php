@@ -167,7 +167,12 @@ class AdminMatchroundTest extends TestCase
             ->assertSee('Runde 1', false)
             ->assertSee('type="datetime-local"', false)
             ->assertSee('name="matchround_startdate"', false)
-            ->assertSee('Hinzufügen', false);
+            ->assertSee('Hinzufügen', false)
+            ->assertSee('Max. Spieler / Aufstellung', false)
+            ->assertSee('Max. Spieler vom selben Team', false)
+            ->assertSee('Min. Spieler als Goalie', false)
+            ->assertSee('name="lineup_options_enabled"', false)
+            ->assertSee('disabled', false);
     }
 
     public function test_matchrounds_store_redirects_with_game_and_prefill(): void
