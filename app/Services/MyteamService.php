@@ -2,10 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\LeagueOptions;
 use App\Models\MatchGame;
 use App\Models\Matchround;
-use App\Models\Playerprice;
 use App\Models\Playerstats;
 use App\Models\Playerteam;
 use App\Models\Userteam;
@@ -276,8 +274,6 @@ class MyteamService
                     'num_matches' => $numMatches,
                     'score_per_player' => $numPlayers > 0 ? round($score / $numPlayers, 2) : 0.0,
                     'credits_per_point' => $score > 0 ? round($credits / $score, 1) : 0.0,
-                    'top_of_round' => $this->extremeOfRound($matchroundId, (int) $matchround->matchround_league_id, top: true),
-                    'flop_of_round' => $this->extremeOfRound($matchroundId, (int) $matchround->matchround_league_id, top: false),
                 ],
             ],
         ];
@@ -373,79 +369,6 @@ class MyteamService
             'score_d' => $scoreD,
             'score_m' => $scoreM,
             'score_s' => $scoreS,
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>|null
-     */
-    private function extremeOfRound(int $matchroundId, int $leagueId, bool $top): ?array
-    {
-        $options = LeagueOptions::query()->where('options_league_id', $leagueId)->first();
-        $pointsMode = (string) ($options?->options_league_pointsmode ?: 'new');
-        $hasPrices = Playerprice::query()->where('playerprice_matchround_id', $matchroundId)->exists();
-        $useDynamic = $pointsMode !== 'old' && $hasPrices;
-
-        if ($useDynamic) {
-            $query = Playerstats::query()
-                ->select('ffb_playerstats.*')
-                ->join(
-                    'ffb_playerprice',
-                    'ffb_playerstats.playerstats_playerteam_id',
-                    '=',
-                    'ffb_playerprice.playerprice_playerteam_id'
-                )
-                ->where('ffb_playerstats.playerstats_matchround_id', $matchroundId)
-                ->where('ffb_playerprice.playerprice_matchround_id', $matchroundId)
-                ->with(['playerteam.player', 'playerteam.team']);
-
-            if ($top) {
-                $query->orderByDesc('ffb_playerstats.playerstats_score')
-                    ->orderBy('ffb_playerprice.playerprice_price');
-            } else {
-                $query->orderBy('ffb_playerstats.playerstats_score')
-                    ->orderByDesc('ffb_playerprice.playerprice_price');
-            }
-
-            $stat = $query->first();
-        } else {
-            $query = Playerstats::query()
-                ->select('ffb_playerstats.*')
-                ->join(
-                    'ffb_playerteam',
-                    'ffb_playerstats.playerstats_playerteam_id',
-                    '=',
-                    'ffb_playerteam.playerteam_id'
-                )
-                ->where('ffb_playerstats.playerstats_matchround_id', $matchroundId)
-                ->with(['playerteam.player', 'playerteam.team']);
-
-            if ($top) {
-                $query->orderByDesc('ffb_playerstats.playerstats_score')
-                    ->orderBy('ffb_playerteam.playerteam_player_price');
-            } else {
-                $query->orderBy('ffb_playerstats.playerstats_score')
-                    ->orderByDesc('ffb_playerteam.playerteam_player_price');
-            }
-
-            $stat = $query->first();
-        }
-
-        if (! $stat || ! $stat->playerteam || ! $stat->playerteam->player || ! $stat->playerteam->team) {
-            return null;
-        }
-
-        $player = $stat->playerteam->player;
-        $team = $stat->playerteam->team;
-        $prefix = $top ? 'top' : 'flop';
-
-        return [
-            $prefix.'_player_name' => trim($player->player_fname.' '.$player->player_lname),
-            $prefix.'_playerteam_id' => (int) $stat->playerstats_playerteam_id,
-            $prefix.'_team_id' => (int) $stat->playerteam->playerteam_team_id,
-            $prefix.'_team_name' => (string) $team->team_name,
-            $prefix.'_team_nationality' => (string) $team->team_nationality,
-            $prefix.'_score' => (int) $stat->playerstats_score,
         ];
     }
 }

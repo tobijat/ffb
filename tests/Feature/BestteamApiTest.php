@@ -66,6 +66,7 @@ class BestteamApiTest extends TestCase
             $mock->shouldReceive('bestTeam')->once()->with(280, 'top')->andReturn([
                 'ok' => true,
                 'data' => [
+                    'available' => true,
                     'matchround_id' => 280,
                     'type' => 'top',
                     'userteam' => [
@@ -88,8 +89,33 @@ class BestteamApiTest extends TestCase
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->getJson('/api/bestteam/team?matchround_id=280&type=top')
             ->assertOk()
+            ->assertJsonPath('data.available', true)
             ->assertJsonPath('data.userteam.userteam_score', 88)
             ->assertJsonPath('data.players.0.player_lname', 'Muster');
+    }
+
+    public function test_team_returns_unavailable_when_not_stored(): void
+    {
+        $this->actingAsFfbUser();
+
+        $this->mock(BestteamService::class, function ($mock) {
+            $mock->shouldReceive('bestTeam')->once()->with(280, 'flop')->andReturn([
+                'ok' => true,
+                'data' => [
+                    'available' => false,
+                    'matchround_id' => 280,
+                    'type' => 'flop',
+                    'userteam' => null,
+                    'players' => [],
+                ],
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->getJson('/api/bestteam/team?matchround_id=280&type=flop')
+            ->assertOk()
+            ->assertJsonPath('data.available', false)
+            ->assertJsonPath('data.players', []);
     }
 
     public function test_round_stats_returns_payload(): void

@@ -21,7 +21,6 @@ class Playerteam extends Model
         'playerteam_league_id',
         'playerteam_player_picture',
         'playerteam_status',
-        'playerteam_player_price',
         'playerteam_player_position',
         'playerteam_date_transfer',
     ];

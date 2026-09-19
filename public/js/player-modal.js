@@ -93,7 +93,7 @@
         );
     }
 
-    function renderPlayerTabs(playerteamId, pricemode, active) {
+    function renderPlayerTabs(playerteamId, hasPlayerprices, active) {
         let html =
             '<button type="button" class="ffb-tab' +
             (active === 'info' ? ' is-active' : '') +
@@ -105,7 +105,7 @@
             '" data-ffb-player-tab="graphic" data-id="' +
             playerteamId +
             '">Grafik</button>';
-        if (pricemode === 'dynamic') {
+        if (hasPlayerprices) {
             html +=
                 '<button type="button" class="ffb-tab' +
                 (active === 'price' ? ' is-active' : '') +
@@ -923,7 +923,10 @@
         }
 
         const data = lastPlayerData;
-        const activeTab = tab === 'price' || tab === 'graphic' ? tab : 'info';
+        const hasPlayerprices = !!data.has_playerprices;
+        const activeTab = tab === 'price' && hasPlayerprices
+            ? 'price'
+            : (tab === 'graphic' ? 'graphic' : 'info');
 
         if (activeTab === 'graphic') {
             if (selectedLeagueId <= 0) {
@@ -938,7 +941,7 @@
             );
             setModal(
                 renderPlayerHead(data.player),
-                renderPlayerTabs(playerteamId, data.pricemode, 'graphic'),
+                renderPlayerTabs(playerteamId, hasPlayerprices, 'graphic'),
                 renderPlayerChartShell('graphic', data.player.player_name)
             );
             const canvas = document.querySelector('.ffb-player-chart-canvas');
@@ -961,7 +964,7 @@
             );
             setModal(
                 renderPlayerHead(data.player),
-                renderPlayerTabs(playerteamId, data.pricemode, 'price'),
+                renderPlayerTabs(playerteamId, hasPlayerprices, 'price'),
                 renderPlayerChartShell('price', data.player.player_name)
             );
             const canvas = document.querySelector('.ffb-player-chart-canvas');
@@ -973,7 +976,7 @@
 
         setModal(
             renderPlayerHead(data.player),
-            renderPlayerTabs(playerteamId, data.pricemode, 'info'),
+            renderPlayerTabs(playerteamId, hasPlayerprices, 'info'),
             renderPlayerInfoBody(data, showAll)
         );
     }

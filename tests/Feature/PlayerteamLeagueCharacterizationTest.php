@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\Playerteam;
 use App\Services\AdminCenterService;
 use App\Services\AdminDbCleanupService;
+use App\Services\AdminPlayerService;
 use App\Services\AdminSquadService;
 use App\Services\PlayerteamLeagueInventoryService;
+use App\Services\WikimediaPlayerImageService;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use PHPUnit\Framework\Attributes\Test;
@@ -37,7 +39,6 @@ class PlayerteamLeagueCharacterizationTest extends TestCase
             'squad_league_id' => 1,
             'player_ids' => [1],
             'playerteam_status' => 1,
-            'playerteam_player_price' => 5,
             'playerteam_player_position' => 'd',
             'playerteam_date_transfer' => '2020-01-01',
         ]);
@@ -48,7 +49,6 @@ class PlayerteamLeagueCharacterizationTest extends TestCase
             'squad_league_id' => 1,
             'player_ids' => [1],
             'playerteam_status' => 1,
-            'playerteam_player_price' => 5,
             'playerteam_player_position' => 'm',
             'playerteam_date_transfer' => '2020-01-01',
         ]);
@@ -74,7 +74,6 @@ class PlayerteamLeagueCharacterizationTest extends TestCase
             'squad_league_id' => 1,
             'player_ids' => [1],
             'playerteam_status' => 1,
-            'playerteam_player_price' => 5,
             'playerteam_player_position' => 'd',
             'playerteam_date_transfer' => '2020-01-01',
         ])['ok']);
@@ -84,7 +83,6 @@ class PlayerteamLeagueCharacterizationTest extends TestCase
             'squad_league_id' => 1,
             'player_ids' => [1],
             'playerteam_status' => 1,
-            'playerteam_player_price' => 5,
             'playerteam_player_position' => 'd',
             'playerteam_date_transfer' => '2020-01-01',
         ])['ok']);
@@ -222,7 +220,6 @@ class PlayerteamLeagueCharacterizationTest extends TestCase
             'playerteam_league_id' => 1,
             'playerteam_player_picture' => '',
             'playerteam_status' => 1,
-            'playerteam_player_price' => 5,
             'playerteam_player_position' => 'd',
             'playerteam_date_transfer' => '2020-01-01 00:00:00',
         ]);
@@ -241,6 +238,8 @@ class PlayerteamLeagueCharacterizationTest extends TestCase
         ])->byDefault();
         $adminCenter->shouldReceive('selectedLeagueId')->andReturn(1)->byDefault();
 
-        return new AdminSquadService($adminCenter);
+        $players = new AdminPlayerService($adminCenter);
+
+        return new AdminSquadService($adminCenter, $players, new WikimediaPlayerImageService);
     }
 }

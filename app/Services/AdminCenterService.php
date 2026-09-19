@@ -183,6 +183,13 @@ class AdminCenterService
                 'image_dir' => 'images/admin/navigation/',
             ],
             [
+                'symbol' => 'nav_topflop.png',
+                'name' => 'Top&Flop',
+                'link' => '/admin/extremeteam',
+                'style' => 'big',
+                'image_dir' => 'images/ffb/navigation/',
+            ],
+            [
                 'symbol' => 'nav_mail.png',
                 'name' => 'Mail',
                 'link' => '/admin/mailservice',

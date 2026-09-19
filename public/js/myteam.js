@@ -11,6 +11,7 @@
     const selectedUserEl = document.getElementById('selected-user');
     const teamScoreEl = document.getElementById('team-score');
     const teamPriceEl = document.getElementById('team-price');
+    const teamCreditsEl = document.getElementById('team-credits');
     const matchlistEl = document.getElementById('matchlist');
     const profileLinkEl = document.getElementById('user-profile-link');
     const pitchMessageEl = document.getElementById('pitch-message');
@@ -169,6 +170,9 @@
         });
         teamScoreEl.textContent = '–';
         teamPriceEl.textContent = '–';
+        if (teamCreditsEl) {
+            teamCreditsEl.hidden = true;
+        }
         selectedUserEl.textContent = '';
     }
 
@@ -357,42 +361,6 @@
         }
         let html = '<div class="stats-block">';
         html += '<div class="stats-heading">-- Spielrunden Statistik --</div>';
-
-        if (stats.top_of_round) {
-            const top = stats.top_of_round;
-            html += '<div class="stats-subheading"><u>Der TOP Spieler der Runde</u></div>';
-            html +=
-                '<div class="stats-highlight"><img src="' +
-                symbolUrl('stats_top.png') +
-                '" alt="" width="16" height="16"> ' +
-                '<a href="#" data-modal="player" data-id="' +
-                top.top_playerteam_id +
-                '"><b>' +
-                escapeHtml(top.top_player_name) +
-                '</b></a> (<em>' +
-                escapeHtml(top.top_team_name) +
-                '</em>, ' +
-                Number(top.top_score) +
-                ' Punkte)</div>';
-        }
-
-        if (stats.flop_of_round) {
-            const flop = stats.flop_of_round;
-            html += '<div class="stats-subheading"><u>Der FLOP Spieler der Runde</u></div>';
-            html +=
-                '<div class="stats-highlight"><img src="' +
-                symbolUrl('stats_flop.png') +
-                '" alt="" width="16" height="16"> ' +
-                '<a href="#" data-modal="player" data-id="' +
-                flop.flop_playerteam_id +
-                '"><b>' +
-                escapeHtml(flop.flop_player_name) +
-                '</b></a> (<em>' +
-                escapeHtml(flop.flop_team_name) +
-                '</em>, ' +
-                Number(flop.flop_score) +
-                ' Punkte)</div>';
-        }
 
         html += '<div class="stats-subheading"><u>Statistik</u></div>';
         html += statsRow('symbol_user.png', 'Teilnehmer:', Number(stats.num_users) + ' Mitspieler');
@@ -584,7 +552,18 @@
         }
 
         teamScoreEl.textContent = String(data.userteam.userteam_score ?? 0);
-        teamPriceEl.textContent = Number(data.userteam.userteam_price || 0).toFixed(1);
+        const teamPrice = Number(data.userteam.userteam_price || 0);
+        if (teamCreditsEl) {
+            if (teamPrice > 0) {
+                teamCreditsEl.hidden = false;
+                teamPriceEl.textContent = teamPrice.toFixed(1);
+            } else {
+                teamCreditsEl.hidden = true;
+                teamPriceEl.textContent = '–';
+            }
+        } else {
+            teamPriceEl.textContent = teamPrice.toFixed(1);
+        }
 
         const buckets = { g: '', d: '', m: '', s: '' };
         (data.players || []).forEach(function (player) {

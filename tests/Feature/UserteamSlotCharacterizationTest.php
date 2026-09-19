@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\Userteam;
 use App\Services\AdminCenterService;
+use App\Services\AdminPlayerService;
 use App\Services\AdminSquadService;
 use App\Services\PlayerPopupService;
 use App\Services\UserteamSlotBackfillService;
+use App\Services\WikimediaPlayerImageService;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use PHPUnit\Framework\Attributes\Test;
@@ -168,7 +170,6 @@ class UserteamSlotCharacterizationTest extends TestCase
             'playerteam_league_id' => 1,
             'playerteam_player_picture' => '',
             'playerteam_status' => 1,
-            'playerteam_player_price' => 5,
             'playerteam_player_position' => 'd',
             'playerteam_date_transfer' => '2020-01-01 00:00:00',
         ]);
@@ -184,6 +185,8 @@ class UserteamSlotCharacterizationTest extends TestCase
             'selected_league_id' => 1,
         ])->byDefault();
 
-        return new AdminSquadService($adminCenter);
+        $players = new AdminPlayerService($adminCenter);
+
+        return new AdminSquadService($adminCenter, $players, new WikimediaPlayerImageService);
     }
 }

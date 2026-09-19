@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/start.css?v=20">
     <link rel="stylesheet" href="css/dashboard.css?v=11">
     <link rel="stylesheet" href="css/modal.css?v=9">
-    <link rel="stylesheet" href="css/myteam.css?v=9">
+    <link rel="stylesheet" href="css/myteam.css?v=10">
 </head>
 <body class="dash-body">
     @php
@@ -49,7 +49,7 @@
                         </div>
                     </div>
                     <p class="myteam-user" id="selected-user"></p>
-                    <div class="myteam-stat myteam-stat-credits">
+                    <div class="myteam-stat myteam-stat-credits" id="team-credits" hidden>
                         <img
                             src="{{ $legacyBase }}images/ffb/symbols/symbol_credits.png"
                             alt=""
@@ -123,7 +123,7 @@
         };
     </script>
     <script src="js/modal.js?v=8" defer></script>
-    <script src="js/player-modal.js?v=6" defer></script>
-    <script src="js/myteam.js?v=6" defer></script>
+    <script src="js/player-modal.js?v=7" defer></script>
+    <script src="js/myteam.js?v=9" defer></script>
 </body>
 </html>

@@ -212,7 +212,6 @@ class WikimediaPlayerImageServiceTest extends TestCase
             'playerteam_league_id' => (int) $league->league_id,
             'playerteam_player_picture' => '',
             'playerteam_status' => 1,
-            'playerteam_player_price' => 5,
             'playerteam_player_position' => 'd',
             'playerteam_date_transfer' => '2008-01-01 00:00:00',
         ]);
@@ -299,7 +298,6 @@ class WikimediaPlayerImageServiceTest extends TestCase
             'playerteam_league_id' => (int) $league->league_id,
             'playerteam_player_picture' => '',
             'playerteam_status' => 1,
-            'playerteam_player_price' => 5,
             'playerteam_player_position' => 'd',
             'playerteam_date_transfer' => '2008-01-01 00:00:00',
         ]);
@@ -385,7 +383,6 @@ class WikimediaPlayerImageServiceTest extends TestCase
             $table->unsignedInteger('playerteam_league_id');
             $table->string('playerteam_player_picture')->default('');
             $table->tinyInteger('playerteam_status')->default(1);
-            $table->integer('playerteam_player_price')->default(5);
             $table->string('playerteam_player_position', 1)->default('d');
             $table->string('playerteam_date_transfer')->nullable();
         });

@@ -308,42 +308,6 @@
         let html = '<div class="stats-block">';
         html += '<div class="stats-heading">-- Spielrunden Statistik --</div>';
 
-        if (stats.top_of_round) {
-            const top = stats.top_of_round;
-            html += '<div class="stats-subheading"><u>Der TOP Spieler der Runde</u></div>';
-            html +=
-                '<div class="stats-highlight"><img src="' +
-                symbolUrl('stats_top.png') +
-                '" alt="" width="16" height="16"> ' +
-                '<a href="#" data-modal="player" data-id="' +
-                top.top_playerteam_id +
-                '"><b>' +
-                escapeHtml(top.top_player_name) +
-                '</b></a> (<em>' +
-                escapeHtml(top.top_team_name) +
-                '</em>, ' +
-                Number(top.top_score) +
-                ' Punkte)</div>';
-        }
-
-        if (stats.flop_of_round) {
-            const flop = stats.flop_of_round;
-            html += '<div class="stats-subheading"><u>Der FLOP Spieler der Runde</u></div>';
-            html +=
-                '<div class="stats-highlight"><img src="' +
-                symbolUrl('stats_flop.png') +
-                '" alt="" width="16" height="16"> ' +
-                '<a href="#" data-modal="player" data-id="' +
-                flop.flop_playerteam_id +
-                '"><b>' +
-                escapeHtml(flop.flop_player_name) +
-                '</b></a> (<em>' +
-                escapeHtml(flop.flop_team_name) +
-                '</em>, ' +
-                Number(flop.flop_score) +
-                ' Punkte)</div>';
-        }
-
         html += '<div class="stats-subheading"><u>Statistik</u></div>';
         html += statsRow('symbol_user.png', 'Teilnehmer:', Number(stats.num_users) + ' Mitspieler');
         html += statsRow('stats_point.png', 'Anzahl Spiele:', Number(stats.num_matches) + ' Spiele');
@@ -517,6 +481,15 @@
                 teamCache[key] = data;
             }
             if (currentRound() !== round || teamType !== (data.type || teamType)) {
+                return;
+            }
+            if (data.available === false) {
+                clearPitch();
+                setPitchMessage(
+                    teamType === 'flop'
+                        ? 'Flop-Team der Runde noch nicht verfügbar'
+                        : 'Top-Team der Runde noch nicht verfügbar'
+                );
                 return;
             }
             renderTeam(data);

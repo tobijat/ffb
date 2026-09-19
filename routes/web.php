@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountPageController;
 use App\Http\Controllers\Admin\AdminAwardsController;
 use App\Http\Controllers\Admin\AdminCenterController;
 use App\Http\Controllers\Admin\AdminDbCleanupController;
+use App\Http\Controllers\Admin\AdminExtremeteamController;
 use App\Http\Controllers\Admin\AdminLeagueController;
 use App\Http\Controllers\Admin\AdminMailserviceController;
 use App\Http\Controllers\Admin\AdminMatchController;
@@ -136,6 +137,9 @@ Route::middleware('ffb.admin')->group(function () {
     Route::post('/admin/playerprice/matchround-player-prices', [AdminPlayerpriceController::class, 'setMatchroundPlayerPrices'])->name('admin.playerprice.setMatchroundPlayerPrices');
     Route::post('/admin/playerprice/elo-team-prices/preview', [AdminPlayerpriceController::class, 'previewEloTeamPrices'])->name('admin.playerprice.previewEloTeamPrices');
     Route::post('/admin/playerprice/elo-team-prices/save', [AdminPlayerpriceController::class, 'saveEloTeamPrices'])->name('admin.playerprice.saveEloTeamPrices');
+
+    Route::get('/admin/extremeteam', [AdminExtremeteamController::class, 'show'])->name('admin.extremeteam');
+    Route::post('/admin/extremeteam/populate', [AdminExtremeteamController::class, 'populate'])->name('admin.extremeteam.populate');
 
     Route::get('/admin/mailservice', [AdminMailserviceController::class, 'show'])->name('admin.mailservice');
     Route::get('/admin/mailservice/matchrounds', [AdminMailserviceController::class, 'matchrounds'])->name('admin.mailservice.matchrounds');

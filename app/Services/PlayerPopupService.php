@@ -167,6 +167,7 @@ class PlayerPopupService
                     ),
                 ],
                 'pricemode' => $priceMode,
+                'has_playerprices' => $this->playerHasPlayerpricesInLeague($ptIds, $leagueId),
                 'stats' => [
                     'num_lineups' => $numLineups,
                     'sum_score' => $score,
@@ -755,9 +756,6 @@ class PlayerPopupService
             ];
         }
 
-        $ptNear = $this->teamForPlayerAndRound($allRounds->first(), $ptIds);
-        $lastPrice = (float) ($ptNear?->playerteam_player_price ?? $playerteam->playerteam_player_price ?? 0);
-
         $roundIds = $allRounds->pluck('matchround_id')->map(fn ($id) => (int) $id)->all();
         $prices = Playerprice::query()
             ->whereIn('playerprice_matchround_id', $roundIds)
@@ -769,24 +767,17 @@ class PlayerPopupService
         foreach ($allRounds as $round) {
             $roundId = (int) $round->matchround_id;
             $row = $prices->get($roundId)?->first();
-            if ($row) {
-                $lastPrice = (float) $row->playerprice_price;
-                $points[] = [
-                    'matchround_id' => $roundId,
-                    'matchround_title' => (string) $round->matchround_title,
-                    'price' => (float) $row->playerprice_price,
-                    'power' => (float) $row->playerprice_player_power,
-                    'av_power' => (float) $row->playerprice_av_power,
-                ];
-            } else {
-                $points[] = [
-                    'matchround_id' => $roundId,
-                    'matchround_title' => (string) $round->matchround_title,
-                    'price' => $lastPrice,
-                    'power' => 0.0,
-                    'av_power' => 0.0,
-                ];
+            if (! $row) {
+                continue;
             }
+
+            $points[] = [
+                'matchround_id' => $roundId,
+                'matchround_title' => (string) $round->matchround_title,
+                'price' => (float) $row->playerprice_price,
+                'power' => (float) $row->playerprice_player_power,
+                'av_power' => (float) $row->playerprice_av_power,
+            ];
         }
 
         return [
@@ -860,5 +851,25 @@ class PlayerPopupService
                 (int) $playerteam->playerteam_player_id,
             ),
         ];
+    }
+
+    /**
+     * @param  list<int>  $playerteamIds
+     */
+    private function playerHasPlayerpricesInLeague(array $playerteamIds, int $leagueId): bool
+    {
+        if ($playerteamIds === [] || $leagueId <= 0) {
+            return false;
+        }
+
+        return Playerprice::query()
+            ->whereIn('playerprice_playerteam_id', $playerteamIds)
+            ->whereIn(
+                'playerprice_matchround_id',
+                Matchround::query()
+                    ->where('matchround_league_id', $leagueId)
+                    ->select('matchround_id'),
+            )
+            ->exists();
     }
 }

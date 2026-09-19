@@ -11,6 +11,7 @@ use App\Models\Playerteam;
 use App\Models\Team;
 use App\Models\Teamprice;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -129,12 +130,37 @@ class AdminPlayerpriceService
             return ['ok' => false, 'errors' => ['Ungültige Spielrunde für die aktive Liga.']];
         }
 
+        $teamList = $this->teamIdsForMatchround($matchroundId);
+        if ($teamList === []) {
+            return [
+                'ok' => false,
+                'errors' => ['Für diese Spielrunde wurden keine Teams gefunden.'],
+                'price_league_id' => $leagueId,
+                'tab' => 'players',
+            ];
+        }
+
+        $teamPricesByTeamId = $this->teamPricesForMatchround($teamList, $matchroundId);
+        $missingTeamIds = array_values(array_diff($teamList, array_keys($teamPricesByTeamId)));
+        if ($missingTeamIds !== []) {
+            return [
+                'ok' => false,
+                'errors' => [
+                    'Nicht alle Teams der ausgewählten Spielrunde haben einen Teampreis. Bitte zuerst die Teampreise befüllen (Tab Teams).',
+                ],
+                'price_league_id' => $leagueId,
+                'tab' => 'players',
+            ];
+        }
+
         try {
             $details = [];
-            $teamList = $this->teamIdsForMatchround($matchroundId);
             foreach ($teamList as $teamId) {
                 $margins = $this->calculatePlayerPriceMarginsForTeam($teamId, $priceMargin, $leagueId);
-                array_push($details, ...$this->updatePlayerPrices($margins, $matchroundId));
+                array_push(
+                    $details,
+                    ...$this->updatePlayerPrices($margins, $matchroundId, $teamPricesByTeamId),
+                );
             }
 
             return [
@@ -963,20 +989,52 @@ class AdminPlayerpriceService
     }
 
     /**
+     * @param  list<int>  $teamIds
+     * @return array<int, float> team_id => teamprice_price
+     */
+    private function teamPricesForMatchround(array $teamIds, int $matchroundId): array
+    {
+        if ($teamIds === []) {
+            return [];
+        }
+
+        return Teamprice::query()
+            ->where('teamprice_matchround_id', $matchroundId)
+            ->whereIn('teamprice_team_id', $teamIds)
+            ->get(['teamprice_team_id', 'teamprice_price'])
+            ->mapWithKeys(static fn (Teamprice $row): array => [
+                (int) $row->teamprice_team_id => (float) $row->teamprice_price,
+            ])
+            ->all();
+    }
+
+    /**
      * @param  array<int, float>  $playerPriceMargins
+     * @param  array<int, float>  $teamPricesByTeamId
      * @return list<string>
      */
-    private function updatePlayerPrices(array $playerPriceMargins, int $matchroundId): array
-    {
+    private function updatePlayerPrices(
+        array $playerPriceMargins,
+        int $matchroundId,
+        array $teamPricesByTeamId,
+    ): array {
         $details = [];
 
-        DB::transaction(function () use ($playerPriceMargins, $matchroundId, &$details) {
+        DB::transaction(function () use ($playerPriceMargins, $matchroundId, $teamPricesByTeamId, &$details) {
             foreach ($playerPriceMargins as $playerteamId => $priceMargin) {
                 $pt = Playerteam::query()->find($playerteamId);
                 if (! $pt) {
                     continue;
                 }
-                $basePrice = (float) $pt->playerteam_player_price;
+
+                $teamId = (int) $pt->playerteam_team_id;
+                if (! array_key_exists($teamId, $teamPricesByTeamId)) {
+                    throw new RuntimeException(
+                        'Teampreis fehlt für Team '.$teamId.'. Bitte zuerst die Teampreise befüllen (Tab Teams).'
+                    );
+                }
+
+                $basePrice = (float) $teamPricesByTeamId[$teamId];
                 $price = $basePrice + (float) $priceMargin;
 
                 $playerprice = Playerprice::query()
