@@ -618,7 +618,7 @@
 
 .admin-squad-grid {
     display: grid;
-    grid-template-columns: 3.2rem minmax(9rem, 1.4fr) 4.2rem 4.2rem 5.5rem 8.5rem;
+    grid-template-columns: 3.2rem minmax(9rem, 1.4fr) 4.2rem 5.5rem 8.5rem;
     gap: 6px 8px;
     align-items: center;
     padding: 6px;
@@ -911,14 +911,13 @@
         grid-template-columns: 3.2rem 1fr;
         grid-template-areas:
             "photo name"
-            "pos price"
-            "status date";
+            "pos status"
+            "date date";
     }
 
     .admin-squad-photo-cell { grid-area: photo; }
     .admin-squad-name-cell { grid-area: name; }
     .admin-squad-field-pos { grid-area: pos; }
-    .admin-squad-field-price { grid-area: price; }
     .admin-squad-field-status { grid-area: status; }
     .admin-squad-field-date { grid-area: date; }
 }

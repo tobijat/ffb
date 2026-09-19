@@ -135,7 +135,6 @@ class AdminDbCleanupService
             $groups[$key]['entries'][] = [
                 'playerteam_id' => (int) $row->playerteam_id,
                 'playerteam_status' => (int) $row->playerteam_status ? 1 : 0,
-                'playerteam_player_price' => (int) $row->playerteam_player_price,
                 'playerteam_player_position' => (string) $row->playerteam_player_position,
                 'playerteam_date_transfer' => $transfer ? date('Y-m-d', $transfer) : '',
                 'playerteam_player_picture' => trim((string) ($row->playerteam_player_picture ?? '')),

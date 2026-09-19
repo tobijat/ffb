@@ -45,7 +45,6 @@ class PlayerteamLeagueInventoryTest extends TestCase
             'playerteam_team_id' => 5,
             'playerteam_player_picture' => '',
             'playerteam_status' => 1,
-            'playerteam_player_price' => 5,
             'playerteam_player_position' => 'd',
             'playerteam_date_transfer' => '2020-01-01 00:00:00',
         ]);
@@ -55,7 +54,6 @@ class PlayerteamLeagueInventoryTest extends TestCase
             'playerteam_team_id' => 5,
             'playerteam_player_picture' => '',
             'playerteam_status' => 1,
-            'playerteam_player_price' => 5,
             'playerteam_player_position' => 'm',
             'playerteam_date_transfer' => '2020-01-01 00:00:00',
         ]);
@@ -122,7 +120,6 @@ class PlayerteamLeagueInventoryTest extends TestCase
             $table->integer('playerteam_team_id');
             $table->string('playerteam_player_picture')->nullable();
             $table->integer('playerteam_status')->default(1);
-            $table->double('playerteam_player_price')->default(0);
             $table->string('playerteam_player_position')->nullable();
             $table->timestamp('playerteam_date_transfer')->nullable();
         });

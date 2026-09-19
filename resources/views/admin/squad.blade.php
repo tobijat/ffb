@@ -11,7 +11,6 @@
         $selectedTeam = $data['selected_team'];
         $items = $data['items'];
         $countries = $data['countries'];
-        $prices = $data['prices'];
         $positions = $data['positions'];
         $defaults = $data['defaults'];
         $rosterActiveCount = (int) ($data['roster_active_count'] ?? 0);
@@ -211,7 +210,6 @@
                                     <th scope="col" class="admin-squad-col-photo">Bild</th>
                                     <th scope="col">Spieler</th>
                                     <th scope="col">Pos.</th>
-                                    <th scope="col">Preis</th>
                                     <th scope="col">Status</th>
                                     <th scope="col">Transfer</th>
                                 </tr>
@@ -223,7 +221,7 @@
                                 @endif
                                 <tbody class="admin-squad-group" data-group-total="{{ count($group) }}">
                                     <tr class="admin-squad-group-head">
-                                        <th colspan="6" scope="colgroup">
+                                        <th colspan="5" scope="colgroup">
                                             {{ $positions[$posCode] ?? strtoupper($posCode) }}
                                             <span class="admin-squad-count admin-squad-group-count">{{ count($group) }}</span>
                                         </th>
@@ -235,12 +233,11 @@
                                             data-status="{{ (int) $item['playerteam_status'] === 1 ? 'active' : 'inactive' }}"
                                             data-playerteam-id="{{ $ptId }}"
                                             data-initial-position="{{ $item['playerteam_player_position'] }}"
-                                            data-initial-price="{{ (int) $item['playerteam_player_price'] }}"
                                             data-initial-status="{{ (int) $item['playerteam_status'] }}"
                                             data-initial-transfer="{{ $item['playerteam_date_transfer'] }}"
                                             data-initial-picture="{{ $item['picture_url'] }}"
                                         >
-                                            <td colspan="6" class="admin-squad-player-cell">
+                                            <td colspan="5" class="admin-squad-player-cell">
                                                 <div class="admin-squad-grid">
                                                     <div class="admin-squad-photo-cell">
                                                         <img
@@ -283,15 +280,6 @@
                                                         <select name="items[{{ $ptId }}][playerteam_player_position]" aria-label="Position" data-field="position">
                                                             @foreach ($positions as $code => $label)
                                                                 <option value="{{ $code }}" @selected($item['playerteam_player_position'] === $code)>{{ strtoupper($code) }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                    </label>
-
-                                                    <label class="admin-squad-compact admin-squad-field-price">
-                                                        <span class="visually-hidden">Preis</span>
-                                                        <select name="items[{{ $ptId }}][playerteam_player_price]" aria-label="Preis" data-field="price">
-                                                            @foreach ($prices as $price)
-                                                                <option value="{{ $price }}" @selected((int) $item['playerteam_player_price'] === (int) $price)>{{ $price }}</option>
                                                             @endforeach
                                                         </select>
                                                     </label>
@@ -360,7 +348,6 @@
                 id="squad-batch-form"
                 accept-charset="UTF-8"
                 data-legacy-base="{{ $legacyBase }}"
-                data-prices='@json($prices)'
                 data-positions='@json($positions)'
             >
                 @csrf
@@ -387,14 +374,6 @@
                                 <select id="batch_pos" aria-label="Standard-Position">
                                     @foreach ($positions as $code => $label)
                                         <option value="{{ $code }}" @selected($defaults['playerteam_player_position'] === $code)>{{ strtoupper($code) }}</option>
-                                    @endforeach
-                                </select>
-                            </label>
-                            <label class="admin-squad-compact">
-                                <span>Preis</span>
-                                <select id="batch_price" aria-label="Standard-Preis">
-                                    @foreach ($prices as $price)
-                                        <option value="{{ $price }}" @selected((int) $defaults['playerteam_player_price'] === (int) $price)>{{ $price }}</option>
                                     @endforeach
                                 </select>
                             </label>
@@ -555,7 +534,6 @@
                                             <th>Nat.</th>
                                             <th>TM-ID</th>
                                             <th>Pos. *</th>
-                                            <th>Preis *</th>
                                             <th>Kader-Status</th>
                                             <th></th>
                                         </tr>
@@ -657,13 +635,6 @@
                                                     </select>
                                                 </td>
                                                 <td>
-                                                    <select name="players[{{ $index }}][playerteam_player_price]" required aria-label="Preis {{ $index + 1 }}">
-                                                        @foreach ($prices as $price)
-                                                            <option value="{{ $price }}" @selected((int) ($player['playerteam_player_price'] ?? 5) === (int) $price)>{{ $price }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </td>
-                                                <td>
                                                     <select name="players[{{ $index }}][playerteam_status]" aria-label="Kader-Status {{ $index + 1 }}">
                                                         <option value="1" @selected((int) ($player['playerteam_status'] ?? 1) === 1)>aktiv</option>
                                                         <option value="0" @selected((int) ($player['playerteam_status'] ?? 1) === 0)>inaktiv</option>
@@ -701,7 +672,6 @@
                                                 <th>JSON</th>
                                                 <th>Datenbank</th>
                                                 <th>Pos. *</th>
-                                                <th>Preis *</th>
                                                 <th>Kader-Status</th>
                                                 <th></th>
                                             </tr>
@@ -777,13 +747,6 @@
                                                         <select name="almost[{{ $index }}][playerteam_player_position]" required aria-label="Position Ähnlichkeit {{ $index + 1 }}">
                                                             @foreach ($positions as $code => $label)
                                                                 <option value="{{ $code }}" @selected(($row['playerteam_player_position'] ?? '') === $code)>{{ strtoupper($code) }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                    </td>
-                                                    <td>
-                                                        <select name="almost[{{ $index }}][playerteam_player_price]" required aria-label="Preis Ähnlichkeit {{ $index + 1 }}">
-                                                            @foreach ($prices as $price)
-                                                                <option value="{{ $price }}" @selected((int) ($row['playerteam_player_price'] ?? 5) === (int) $price)>{{ $price }}</option>
                                                             @endforeach
                                                         </select>
                                                     </td>
@@ -1030,7 +993,6 @@
         function isRowEdited(row) {
             if (fieldValue(row, 'picture') === '1') return true;
             return fieldValue(row, 'position') !== String(row.getAttribute('data-initial-position') || '')
-                || fieldValue(row, 'price') !== String(row.getAttribute('data-initial-price') || '')
                 || fieldValue(row, 'status') !== String(row.getAttribute('data-initial-status') || '')
                 || fieldValue(row, 'transfer') !== String(row.getAttribute('data-initial-transfer') || '');
         }
@@ -1056,14 +1018,12 @@
 
         function restoreRow(row) {
             const position = fieldEl(row, 'position');
-            const price = fieldEl(row, 'price');
             const status = fieldEl(row, 'status');
             const transfer = fieldEl(row, 'transfer');
             const picture = fieldEl(row, 'picture');
             const preview = row.querySelector('[data-field="picture-preview"]');
 
             if (position) position.value = String(row.getAttribute('data-initial-position') || '');
-            if (price) price.value = String(row.getAttribute('data-initial-price') || '');
             if (status) status.value = String(row.getAttribute('data-initial-status') || '');
             if (transfer) transfer.value = String(row.getAttribute('data-initial-transfer') || '');
             if (picture) picture.value = '';
@@ -1262,12 +1222,10 @@
     /** @type {Map<number, object>} */
     const selected = new Map();
 
-    let pickPrices = [];
     let pickPositions = {};
     let pickLegacyBase = '/';
     if (batchForm) {
         pickLegacyBase = batchForm.getAttribute('data-legacy-base') || '/';
-        try { pickPrices = JSON.parse(batchForm.getAttribute('data-prices') || '[]') || []; } catch (e) { pickPrices = []; }
         try { pickPositions = JSON.parse(batchForm.getAttribute('data-positions') || '{}') || {}; } catch (e) { pickPositions = {}; }
     }
 
@@ -1283,7 +1241,6 @@
     function getDefaults() {
         return {
             position: String((document.getElementById('batch_pos') || {}).value || 'd'),
-            price: String((document.getElementById('batch_price') || {}).value || '5'),
             status: String((document.getElementById('batch_status') || {}).value || '1'),
             transfer: String((document.getElementById('batch_transfer') || {}).value || '2008-01-01'),
         };
@@ -1295,16 +1252,6 @@
             html += '<option value="' + escapeHtml(code) + '"'
                 + (String(selectedCode) === String(code) ? ' selected' : '')
                 + '>' + escapeHtml(String(code).toUpperCase()) + '</option>';
-        });
-        return html;
-    }
-
-    function priceOptionsHtml(selectedPrice) {
-        let html = '';
-        pickPrices.forEach(function (price) {
-            html += '<option value="' + escapeHtml(price) + '"'
-                + (String(selectedPrice) === String(price) ? ' selected' : '')
-                + '>' + escapeHtml(price) + '</option>';
         });
         return html;
     }
@@ -1367,12 +1314,6 @@
                         '</select>' +
                     '</label>' +
                     '<label class="admin-squad-compact">' +
-                        '<span class="visually-hidden">Preis</span>' +
-                        '<select name="items[' + id + '][playerteam_player_price]" aria-label="Preis" data-field="price">' +
-                            priceOptionsHtml(entry.price) +
-                        '</select>' +
-                    '</label>' +
-                    '<label class="admin-squad-compact">' +
                         '<span class="visually-hidden">Status</span>' +
                         '<select name="items[' + id + '][playerteam_status]" aria-label="Status" data-field="status">' +
                             '<option value="1"' + (String(entry.status) === '1' ? ' selected' : '') + '>aktiv</option>' +
@@ -1413,7 +1354,6 @@
             flag_html: String(item.flag_html || ''),
             tm_url: String(item.tm_url || ''),
             position: defaults.position,
-            price: defaults.price,
             status: defaults.status,
             transfer: defaults.transfer,
         };

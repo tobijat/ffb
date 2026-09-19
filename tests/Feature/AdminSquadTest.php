@@ -55,9 +55,8 @@ class AdminSquadTest extends TestCase
                 'leagues' => [
                     ['league_id' => 1, 'league_title' => 'WM 2026'],
                 ],
-                'hint' => 'Position und Preis gelten pro Liga.',
+                'hint' => 'Position gilt pro Liga.',
                 'countries' => ['AUT' => 'Österreich'],
-                'prices' => range(1, 15),
                 'positions' => ['g' => 'Tor', 'd' => 'Abwehr', 'm' => 'Mittelfeld', 's' => 'Angriff'],
                 'teams' => [
                     ['team_id' => 3, 'team_label' => 'Rapid (AUT)'],
@@ -69,7 +68,6 @@ class AdminSquadTest extends TestCase
                 'per_page' => 100,
                 'defaults' => [
                     'playerteam_status' => 1,
-                    'playerteam_player_price' => 5,
                     'playerteam_player_position' => 'd',
                     'playerteam_date_transfer' => '2008-01-01',
                 ],
@@ -115,9 +113,8 @@ class AdminSquadTest extends TestCase
                 'leagues' => [
                     ['league_id' => 1, 'league_title' => 'WM 2026'],
                 ],
-                'hint' => 'Position und Preis gelten pro Liga.',
+                'hint' => 'Position gilt pro Liga.',
                 'countries' => ['AUT' => 'Österreich'],
-                'prices' => range(1, 15),
                 'positions' => ['g' => 'Tor', 'd' => 'Abwehr', 'm' => 'Mittelfeld', 's' => 'Angriff'],
                 'teams' => [
                     ['team_id' => 3, 'team_label' => 'Rapid (AUT)'],
@@ -133,7 +130,6 @@ class AdminSquadTest extends TestCase
                         'player_nationality' => 'AUT',
                         'player_flag_url' => '/images/ffb/flags/aut.gif',
                         'playerteam_status' => 1,
-                        'playerteam_player_price' => 8,
                         'playerteam_player_position' => 's',
                         'playerteam_date_transfer' => '2008-01-01',
                         'picture_url' => '/images/ffb/players/image_na.gif',
@@ -144,7 +140,6 @@ class AdminSquadTest extends TestCase
                 'per_page' => 100,
                 'defaults' => [
                     'playerteam_status' => 1,
-                    'playerteam_player_price' => 5,
                     'playerteam_player_position' => 'd',
                     'playerteam_date_transfer' => '2008-01-01',
                 ],
@@ -173,7 +168,8 @@ class AdminSquadTest extends TestCase
             ->assertSee('id="squad-save-all"', false)
             ->assertSee('admin-squad-undo-btn', false)
             ->assertSee('Zum Löschen vormerken', false)
-            ->assertDontSee('Auswahl übernehmen', false);
+            ->assertDontSee('Auswahl übernehmen', false)
+            ->assertDontSee('playerteam_player_price', false);
     }
 
     public function test_squad_add_tab_wires_async_player_search(): void
@@ -196,9 +192,8 @@ class AdminSquadTest extends TestCase
                 'leagues' => [
                     ['league_id' => 1, 'league_title' => 'WM 2026'],
                 ],
-                'hint' => 'Position und Preis gelten pro Liga.',
+                'hint' => 'Position gilt pro Liga.',
                 'countries' => ['AUT' => 'Österreich'],
-                'prices' => range(1, 15),
                 'positions' => ['g' => 'Tor', 'd' => 'Abwehr', 'm' => 'Mittelfeld', 's' => 'Angriff'],
                 'teams' => [
                     ['team_id' => 3, 'team_label' => 'Rapid (AUT)'],
@@ -210,7 +205,6 @@ class AdminSquadTest extends TestCase
                 'per_page' => 100,
                 'defaults' => [
                     'playerteam_status' => 1,
-                    'playerteam_player_price' => 5,
                     'playerteam_player_position' => 'd',
                     'playerteam_date_transfer' => '2008-01-01',
                 ],
@@ -292,13 +286,11 @@ class AdminSquadTest extends TestCase
                 'items' => [
                     99 => [
                         'playerteam_status' => 1,
-                        'playerteam_player_price' => 5,
                         'playerteam_player_position' => 'd',
                         'playerteam_date_transfer' => '2008-01-01',
                     ],
                     100 => [
                         'playerteam_status' => 0,
-                        'playerteam_player_price' => 8,
                         'playerteam_player_position' => 's',
                         'playerteam_date_transfer' => '2010-01-01',
                     ],
@@ -328,7 +320,6 @@ class AdminSquadTest extends TestCase
                 'items' => [
                     44 => [
                         'playerteam_status' => 1,
-                        'playerteam_player_price' => 9,
                         'playerteam_player_position' => 's',
                         'playerteam_date_transfer' => '2008-01-01',
                     ],

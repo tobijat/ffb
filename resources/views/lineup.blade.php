@@ -95,7 +95,7 @@
         };
     </script>
     <script src="js/modal.js?v=8" defer></script>
-    <script src="js/player-modal.js?v=6" defer></script>
+    <script src="js/player-modal.js?v=7" defer></script>
     <script src="js/lineup.js?v=4" defer></script>
 </body>
 </html>

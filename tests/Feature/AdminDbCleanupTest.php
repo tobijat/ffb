@@ -62,7 +62,6 @@ class AdminDbCleanupTest extends TestCase
                             [
                                 'playerteam_id' => 44,
                                 'playerteam_status' => 1,
-                                'playerteam_player_price' => 8,
                                 'playerteam_player_position' => 's',
                                 'playerteam_date_transfer' => '2008-01-01',
                                 'playerteam_player_picture' => '44.jpg',
@@ -70,7 +69,6 @@ class AdminDbCleanupTest extends TestCase
                             [
                                 'playerteam_id' => 99,
                                 'playerteam_status' => 0,
-                                'playerteam_player_price' => 5,
                                 'playerteam_player_position' => 'm',
                                 'playerteam_date_transfer' => '2010-06-01',
                                 'playerteam_player_picture' => '',

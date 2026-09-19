@@ -79,6 +79,11 @@ class LineupService
             return ['ok' => false, 'status' => 404, 'error' => 'Keine Lineup-Optionen gefunden.'];
         }
 
+        $dynamicError = $this->requireDynamicPriceMode($leagueOptions);
+        if ($dynamicError !== null) {
+            return $dynamicError;
+        }
+
         $resolved = $matchroundId > 0
             ? $this->lineupOptions->forMatchround($matchroundId)
             : $this->lineupOptions->forLeague($leagueId);
@@ -97,7 +102,7 @@ class LineupService
                 'lineup_max_d' => $resolved['lineup_max_d'],
                 'lineup_max_m' => $resolved['lineup_max_m'],
                 'lineup_max_s' => $resolved['lineup_max_s'],
-                'game_pricemode' => (string) ($leagueOptions?->options_league_pricemode ?: 'constant'),
+                'game_pricemode' => 'dynamic',
                 'source' => $resolved['source'],
             ],
         ];
@@ -113,6 +118,12 @@ class LineupService
         $leagueId = $this->selectedLeagueId($userId);
         if ($leagueId <= 0) {
             return ['ok' => false, 'status' => 422, 'error' => 'Kein Spiel ausgewählt.'];
+        }
+
+        $leagueOptions = LeagueOptions::query()->where('options_league_id', $leagueId)->first();
+        $dynamicError = $this->requireDynamicPriceMode($leagueOptions);
+        if ($dynamicError !== null) {
+            return $dynamicError;
         }
 
         $league = League::query()->find($leagueId);
@@ -238,7 +249,10 @@ class LineupService
         $options = $leagueId > 0
             ? LeagueOptions::query()->where('options_league_id', $leagueId)->first()
             : null;
-        $priceMode = (string) ($options?->options_league_pricemode ?: 'constant');
+        $dynamicError = $this->requireDynamicPriceMode($options);
+        if ($dynamicError !== null) {
+            return $dynamicError;
+        }
 
         $playerteams = Playerteam::query()
             ->with(['player', 'team'])
@@ -246,18 +260,22 @@ class LineupService
             ->where('playerteam_status', 1)
             ->when($leagueId > 0, fn ($q) => $q->forLeague($leagueId))
             ->orderBy('playerteam_player_position')
-            ->orderByDesc('playerteam_player_price')
-            ->get();
+            ->get()
+            ->keyBy(fn (Playerteam $pt): int => (int) $pt->playerteam_id);
 
-        // Secondary sort by name (legacy joins player for lname/fname).
-        $playerteams = $playerteams->sort(function (Playerteam $a, Playerteam $b) {
+        $ptIds = $playerteams->keys()->map(fn ($id) => (int) $id)->all();
+        $prices = $this->resolvePlayerPrices($ptIds, $matchroundId, $playerteams);
+
+        $playerteams = $playerteams->sort(function (Playerteam $a, Playerteam $b) use ($prices) {
             $pos = strcmp((string) $a->playerteam_player_position, (string) $b->playerteam_player_position);
             if ($pos !== 0) {
                 return $pos;
             }
-            $price = ((float) $b->playerteam_player_price) <=> ((float) $a->playerteam_player_price);
-            if ($price !== 0) {
-                return $price;
+            $priceA = (float) ($prices->get((int) $a->playerteam_id) ?? 0);
+            $priceB = (float) ($prices->get((int) $b->playerteam_id) ?? 0);
+            $priceCmp = $priceB <=> $priceA;
+            if ($priceCmp !== 0) {
+                return $priceCmp;
             }
             $ln = strcasecmp((string) ($a->player?->player_lname ?? ''), (string) ($b->player?->player_lname ?? ''));
             if ($ln !== 0) {
@@ -267,18 +285,14 @@ class LineupService
             return strcasecmp((string) ($a->player?->player_fname ?? ''), (string) ($b->player?->player_fname ?? ''));
         })->values();
 
-        $ptIds = $playerteams->pluck('playerteam_id')->map(fn ($id) => (int) $id)->all();
-        $dynamicPrices = $this->dynamicPrices($ptIds, $matchroundId, $priceMode);
-
         $players = [];
         foreach ($playerteams as $pt) {
             if (! $pt->player || ! $pt->team) {
                 continue;
             }
             $ptId = (int) $pt->playerteam_id;
-            $price = (float) $pt->playerteam_player_price;
-            if ($priceMode === 'dynamic' && $dynamicPrices->has($ptId)) {
-                $price = (float) $dynamicPrices->get($ptId);
+            if (! $prices->has($ptId)) {
+                continue;
             }
 
             $grade = $this->grades->gradeForPlayerteam($ptId);
@@ -296,7 +310,7 @@ class LineupService
                 'playerteam_team_nationality' => (string) $pt->team->team_nationality,
                 'playerteam_player_position' => (string) $pt->playerteam_player_position,
                 'playerteam_player_picture' => (string) ($pt->playerteam_player_picture ?: ''),
-                'playerteam_player_price' => $price,
+                'playerteam_player_price' => (float) $prices->get($ptId),
                 'player_grade' => $grade['player_grade'],
                 'player_trend' => $grade['player_trend'],
             ];
@@ -330,9 +344,6 @@ class LineupService
             ];
         }
 
-        $matchround = Matchround::query()->find($matchroundId);
-        $priceMode = $this->priceModeForMatchround($matchround);
-
         $userteam = Userteam::query()
             ->where('userteam_user_id', $userId)
             ->where('userteam_matchround_id', $matchroundId)
@@ -355,7 +366,7 @@ class LineupService
             ->get()
             ->keyBy('playerteam_id');
 
-        $dynamicPrices = $this->dynamicPrices($slotIds, $matchroundId, $priceMode);
+        $prices = $this->resolvePlayerPrices($slotIds, $matchroundId, $playerteams);
         $scores = $this->scoresForRound($slotIds, $matchroundId);
 
         $players = [];
@@ -364,11 +375,6 @@ class LineupService
             $pt = $playerteams->get($playerteamId);
             if (! $pt || ! $pt->player || ! $pt->team) {
                 continue;
-            }
-
-            $price = $pt->playerteam_player_price;
-            if ($priceMode === 'dynamic' && $dynamicPrices->has($playerteamId)) {
-                $price = $dynamicPrices->get($playerteamId);
             }
 
             $players[] = [
@@ -386,7 +392,7 @@ class LineupService
                 'playerteam_player_position' => (string) $pt->playerteam_player_position,
                 'playerteam_player_picture' => (string) ($pt->playerteam_player_picture ?: ''),
                 'playerteam_status' => (int) ($pt->playerteam_status ? 1 : 0),
-                'playerteam_player_price' => (float) $price,
+                'playerteam_player_price' => (float) ($prices->get($playerteamId) ?? 0),
                 'playerstats_score' => (int) ($scores->get($playerteamId) ?? 0),
             ];
         }
@@ -441,7 +447,11 @@ class LineupService
             ->where('options_league_id', $matchround->matchround_league_id)
             ->first();
 
-        $priceMode = $options?->options_league_pricemode ?: 'constant';
+        $dynamicError = $this->requireDynamicPriceMode($options);
+        if ($dynamicError !== null) {
+            return $dynamicError;
+        }
+
         $leagueId = (int) $matchround->matchround_league_id;
         $playerteams = Playerteam::query()
             ->with(['player', 'team'])
@@ -462,13 +472,19 @@ class LineupService
             }
         }
 
-        $dynamicPrices = $this->dynamicPrices($ids, $matchroundId, $priceMode);
-        $validationError = $this->validateAgainstOptions($ids, $playerteams, $dynamicPrices, $priceMode, $lineupRules);
+        $prices = $this->resolvePlayerPrices($ids, $matchroundId, $playerteams);
+        foreach ($ids as $id) {
+            if (! $prices->has($id)) {
+                return $this->fail(422, 'Invalid lineup: Spielerpreis fehlt (Playerprice/Teamprice) für diese Spielrunde.');
+            }
+        }
+
+        $validationError = $this->validateAgainstOptions($ids, $playerteams, $prices, $lineupRules);
         if ($validationError !== null) {
             return $this->fail(422, $validationError);
         }
 
-        $sumPrice = $this->sumPrices($ids, $playerteams, $dynamicPrices, $priceMode);
+        $sumPrice = $this->sumPrices($ids, $prices);
         $created = false;
 
         DB::transaction(function () use ($userId, $matchroundId, $ids, $sumPrice, $matchround, &$created) {
@@ -554,7 +570,7 @@ class LineupService
     /**
      * @param  list<int>  $ids
      * @param  Collection<int, Playerteam>  $playerteams
-     * @param  Collection<int, float|int|string>  $dynamicPrices
+     * @param  Collection<int, float|int|string>  $prices
      * @param  array{
      *     lineup_max_players: int,
      *     lineup_max_credits: float,
@@ -572,8 +588,7 @@ class LineupService
     private function validateAgainstOptions(
         array $ids,
         Collection $playerteams,
-        Collection $dynamicPrices,
-        string $priceMode,
+        Collection $prices,
         array $options,
     ): ?string {
         $maxPlayers = (int) ($options['lineup_max_players'] ?: 11);
@@ -625,7 +640,7 @@ class LineupService
         }
 
         $maxCredits = (float) $options['lineup_max_credits'];
-        $sumPrice = $this->sumPrices($ids, $playerteams, $dynamicPrices, $priceMode);
+        $sumPrice = $this->sumPrices($ids, $prices);
         if ($sumPrice > $maxCredits) {
             return "Invalid lineup: total price {$sumPrice} exceeds credit limit {$maxCredits}";
         }
@@ -642,8 +657,6 @@ class LineupService
             ? $this->lineupOptions->forMatchround($matchroundId)
             : $this->lineupOptions->forLeague($leagueId);
 
-        $leagueOptions = LeagueOptions::query()->where('options_league_id', $leagueId)->first();
-
         return [
             'lineup_max_players' => $resolved['lineup_max_players'],
             'lineup_max_credits' => $resolved['lineup_max_credits'],
@@ -656,30 +669,20 @@ class LineupService
             'lineup_max_d' => $resolved['lineup_max_d'],
             'lineup_max_m' => $resolved['lineup_max_m'],
             'lineup_max_s' => $resolved['lineup_max_s'],
-            'game_pricemode' => (string) ($leagueOptions?->options_league_pricemode ?: 'constant'),
+            'game_pricemode' => 'dynamic',
             'source' => $resolved['source'],
         ];
     }
 
     /**
      * @param  list<int>  $ids
-     * @param  Collection<int, Playerteam>  $playerteams
-     * @param  Collection<int, float|int|string>  $dynamicPrices
+     * @param  Collection<int, float|int|string>  $prices
      */
-    private function sumPrices(
-        array $ids,
-        Collection $playerteams,
-        Collection $dynamicPrices,
-        string $priceMode,
-    ): float {
+    private function sumPrices(array $ids, Collection $prices): float
+    {
         $sum = 0.0;
         foreach ($ids as $id) {
-            $pt = $playerteams->get($id);
-            $price = $pt?->playerteam_player_price ?? 0;
-            if ($priceMode === 'dynamic' && $dynamicPrices->has($id)) {
-                $price = $dynamicPrices->get($id);
-            }
-            $sum += (float) $price;
+            $sum += (float) ($prices->get($id) ?? 0);
         }
 
         return round($sum, 1);
@@ -711,34 +714,68 @@ class LineupService
         ];
     }
 
-    private function priceModeForMatchround(?Matchround $matchround): string
+    /**
+     * @return array{ok: false, status: int, error: string}|null
+     */
+    private function requireDynamicPriceMode(?LeagueOptions $options): ?array
     {
-        if (! $matchround) {
-            return 'constant';
+        $mode = (string) ($options?->options_league_pricemode ?: 'constant');
+        if ($mode !== 'dynamic') {
+            return $this->fail(422, 'Aufstellungen erfordern das dynamische Preismodell.');
         }
 
-        $options = LeagueOptions::query()
-            ->where('options_league_id', $matchround->matchround_league_id)
-            ->first();
-
-        return $options?->options_league_pricemode ?: 'constant';
+        return null;
     }
 
     /**
+     * Resolve lineup credits: ffb_playerprice, else ffb_teamprice for the player's team.
+     *
      * @param  list<int>  $playerteamIds
-     * @return Collection<int, float|int|string>
+     * @param  Collection<int, Playerteam>  $playerteams
+     * @return Collection<int, float>
      */
-    private function dynamicPrices(array $playerteamIds, int $matchroundId, string $priceMode): Collection
+    private function resolvePlayerPrices(array $playerteamIds, int $matchroundId, Collection $playerteams): Collection
     {
-        if ($priceMode !== 'dynamic' || $playerteamIds === []) {
+        if ($playerteamIds === [] || $matchroundId <= 0) {
             return collect();
         }
 
-        return Playerprice::query()
+        $fromPlayer = Playerprice::query()
             ->where('playerprice_matchround_id', $matchroundId)
             ->whereIn('playerprice_playerteam_id', $playerteamIds)
             ->get()
-            ->mapWithKeys(fn ($row) => [(int) $row->playerprice_playerteam_id => $row->playerprice_price]);
+            ->mapWithKeys(fn ($row) => [(int) $row->playerprice_playerteam_id => (float) $row->playerprice_price]);
+
+        $teamIds = $playerteams
+            ->map(fn (Playerteam $pt): int => (int) $pt->playerteam_team_id)
+            ->filter(fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        $fromTeam = $teamIds === []
+            ? collect()
+            : Teamprice::query()
+                ->where('teamprice_matchround_id', $matchroundId)
+                ->whereIn('teamprice_team_id', $teamIds)
+                ->get()
+                ->mapWithKeys(fn ($row) => [(int) $row->teamprice_team_id => (float) $row->teamprice_price]);
+
+        $resolved = collect();
+        foreach ($playerteamIds as $ptId) {
+            if ($fromPlayer->has($ptId)) {
+                $resolved->put($ptId, (float) $fromPlayer->get($ptId));
+
+                continue;
+            }
+
+            $teamId = (int) ($playerteams->get($ptId)?->playerteam_team_id ?? 0);
+            if ($teamId > 0 && $fromTeam->has($teamId)) {
+                $resolved->put($ptId, (float) $fromTeam->get($teamId));
+            }
+        }
+
+        return $resolved;
     }
 
     /**

@@ -135,7 +135,6 @@ class AdminSquadAutoTest extends TestCase
             'playerteam_league_id' => $leagueId,
             'playerteam_player_picture' => '',
             'playerteam_status' => 1,
-            'playerteam_player_price' => 8,
             'playerteam_player_position' => 'm',
             'playerteam_date_transfer' => '2008-01-01 00:00:00',
         ]);
@@ -166,7 +165,7 @@ class AdminSquadAutoTest extends TestCase
         $this->assertFalse($byName['Matěj Kovář']['on_squad']);
         $this->assertTrue($byName['Tomáš Holeš']['on_squad']);
         $this->assertSame('m', $byName['Tomáš Holeš']['playerteam_player_position']);
-        $this->assertSame(8, $byName['Tomáš Holeš']['playerteam_player_price']);
+        $this->assertArrayNotHasKey('playerteam_player_price', $byName['Tomáš Holeš']);
     }
 
     #[Test]
@@ -219,7 +218,6 @@ class AdminSquadAutoTest extends TestCase
                 'player_status_description' => '',
                 'player_foreign_id' => '',
                 'playerteam_player_position' => 'g',
-                'playerteam_player_price' => 7,
                 'playerteam_status' => 1,
                 'playerteam_date_transfer' => '2008-01-01',
                 'json_name' => 'Matěj Kovář',
@@ -234,7 +232,6 @@ class AdminSquadAutoTest extends TestCase
                 'player_status_description' => '',
                 'player_foreign_id' => '',
                 'playerteam_player_position' => 'd',
-                'playerteam_player_price' => 6,
                 'playerteam_status' => 1,
                 'playerteam_date_transfer' => '2008-01-01',
                 'json_name' => 'Tomáš Holeš',
@@ -261,14 +258,12 @@ class AdminSquadAutoTest extends TestCase
             'playerteam_team_id' => $teamId,
             'playerteam_league_id' => $leagueId,
             'playerteam_player_position' => 'g',
-            'playerteam_player_price' => 7,
         ]);
         $this->assertDatabaseHas('ffb_playerteam', [
             'playerteam_player_id' => (int) $existing->player_id,
             'playerteam_team_id' => $teamId,
             'playerteam_league_id' => $leagueId,
             'playerteam_player_position' => 'd',
-            'playerteam_player_price' => 6,
         ]);
     }
 
@@ -292,7 +287,6 @@ class AdminSquadAutoTest extends TestCase
             'playerteam_league_id' => $leagueId,
             'playerteam_player_picture' => '',
             'playerteam_status' => 1,
-            'playerteam_player_price' => 8,
             'playerteam_player_position' => 'm',
             'playerteam_date_transfer' => '2008-01-01 00:00:00',
         ]);
@@ -309,7 +303,6 @@ class AdminSquadAutoTest extends TestCase
                 'player_status_description' => '',
                 'player_foreign_id' => '',
                 'playerteam_player_position' => 'g',
-                'playerteam_player_price' => 7,
                 'playerteam_status' => 1,
                 'playerteam_date_transfer' => '2008-01-01',
                 'json_name' => 'Matěj Kovář',
@@ -326,7 +319,6 @@ class AdminSquadAutoTest extends TestCase
                 'player_status_description' => '',
                 'player_foreign_id' => '',
                 'playerteam_player_position' => 'd',
-                'playerteam_player_price' => 9,
                 'playerteam_status' => 0,
                 'playerteam_date_transfer' => '2008-01-01',
                 'json_name' => 'Tomáš Holeš',
@@ -341,7 +333,6 @@ class AdminSquadAutoTest extends TestCase
         $this->assertDatabaseHas('ffb_playerteam', [
             'playerteam_id' => (int) $playerteam->playerteam_id,
             'playerteam_player_position' => 'd',
-            'playerteam_player_price' => 9,
             'playerteam_status' => 0,
         ]);
     }
@@ -382,7 +373,6 @@ class AdminSquadAutoTest extends TestCase
             'playerteam_league_id' => $leagueId,
             'playerteam_player_picture' => '',
             'playerteam_status' => 1,
-            'playerteam_player_price' => 5,
             'playerteam_player_position' => 'g',
             'playerteam_date_transfer' => '2008-01-01 00:00:00',
         ]);
@@ -450,7 +440,6 @@ class AdminSquadAutoTest extends TestCase
                 'db_squads' => [],
                 'db_foreign_id' => '',
                 'playerteam_player_position' => 'g',
-                'playerteam_player_price' => 6,
                 'playerteam_status' => 1,
                 'playerteam_date_transfer' => '2008-01-01',
             ],
@@ -462,7 +451,6 @@ class AdminSquadAutoTest extends TestCase
             'playerteam_player_id' => (int) $existing->player_id,
             'playerteam_team_id' => $teamId,
             'playerteam_player_position' => 'g',
-            'playerteam_player_price' => 6,
         ]);
 
         Playerteam::query()->delete();
@@ -484,7 +472,6 @@ class AdminSquadAutoTest extends TestCase
                 'db_squads' => [],
                 'db_foreign_id' => '',
                 'playerteam_player_position' => 'g',
-                'playerteam_player_price' => 7,
                 'playerteam_status' => 1,
                 'playerteam_date_transfer' => '2008-01-01',
             ],
@@ -588,7 +575,6 @@ class AdminSquadAutoTest extends TestCase
             $table->unsignedInteger('playerteam_league_id');
             $table->string('playerteam_player_picture')->default('');
             $table->tinyInteger('playerteam_status')->default(1);
-            $table->integer('playerteam_player_price')->default(5);
             $table->string('playerteam_player_position', 1)->default('d');
             $table->string('playerteam_date_transfer')->nullable();
         });

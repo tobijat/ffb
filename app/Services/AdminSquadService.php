@@ -77,7 +77,6 @@ class AdminSquadService
             'squad_league_id' => $leagueId,
             'leagues' => $this->leagueOptions(),
             'countries' => $this->countryOptions(),
-            'prices' => range(1, 15),
             'positions' => [
                 'g' => 'Tor',
                 'd' => 'Abwehr',
@@ -95,11 +94,10 @@ class AdminSquadService
             'per_page' => AdminPlayerService::PER_PAGE,
             'defaults' => [
                 'playerteam_status' => 1,
-                'playerteam_player_price' => 5,
                 'playerteam_player_position' => 'd',
                 'playerteam_date_transfer' => self::DEFAULT_TRANSFER,
             ],
-            'hint' => 'Position und Preis gelten pro Liga.',
+            'hint' => 'Position gilt pro Liga.',
             'tab' => $resolvedTab,
             'auto' => $auto ?? $this->emptyAutoState(),
             'squad_files' => $resolvedTab === 'auto' ? $this->squadJsonOptions() : [],
@@ -359,7 +357,6 @@ class AdminSquadService
                     'lookup_name' => $displayName,
                     'player_nationality' => (string) ($item['player_nationality'] ?? ''),
                     'playerteam_player_position' => (string) ($item['playerteam_player_position'] ?? ''),
-                    'playerteam_player_price' => (int) ($item['playerteam_player_price'] ?? 0),
                     'player_commons_image' => (string) ($commonsByPlayerId[$playerId] ?? ''),
                     'commons_file' => '',
                     'picture_url' => (string) ($item['picture_url'] ?? ''),
@@ -464,7 +461,6 @@ class AdminSquadService
                 'playerteam_id',
                 'playerteam_player_id',
                 'playerteam_player_position',
-                'playerteam_player_price',
                 'playerteam_status',
                 'playerteam_date_transfer',
             ])
@@ -549,7 +545,6 @@ class AdminSquadService
                     'db_squads' => [],
                     'db_foreign_id' => (string) ($existing->player_foreign_id ?? ''),
                     'playerteam_player_position' => $position,
-                    'playerteam_player_price' => 5,
                     'playerteam_status' => 1,
                     'playerteam_date_transfer' => self::DEFAULT_TRANSFER,
                 ];
@@ -588,9 +583,6 @@ class AdminSquadService
                 'playerteam_player_position' => $squadRow !== null
                     ? (string) $squadRow->playerteam_player_position
                     : $position,
-                'playerteam_player_price' => $squadRow !== null
-                    ? (int) $squadRow->playerteam_player_price
-                    : 5,
                 'playerteam_status' => $squadRow !== null
                     ? (int) $squadRow->playerteam_status
                     : 1,
@@ -858,7 +850,6 @@ class AdminSquadService
             $playerIds[] = $playerId;
             $items[$playerId] = [
                 'playerteam_status' => $row['playerteam_status'],
-                'playerteam_player_price' => $row['playerteam_player_price'],
                 'playerteam_player_position' => $row['playerteam_player_position'],
                 'playerteam_date_transfer' => $row['playerteam_date_transfer'],
             ];
@@ -1122,7 +1113,6 @@ class AdminSquadService
         $teamId = (int) $item->playerteam_team_id;
 
         $item->playerteam_status = (int) $form['playerteam_status'];
-        $item->playerteam_player_price = (int) $form['playerteam_player_price'];
         $item->playerteam_player_position = $form['playerteam_player_position'];
         $item->playerteam_date_transfer = $form['playerteam_date_transfer'].' 00:00:00';
 
@@ -1286,7 +1276,6 @@ class AdminSquadService
                     'playerteam_league_id' => $leagueId,
                     'playerteam_player_picture' => '',
                     'playerteam_status' => (int) $form['playerteam_status'],
-                    'playerteam_player_price' => (int) $form['playerteam_player_price'],
                     'playerteam_player_position' => $form['playerteam_player_position'],
                     'playerteam_date_transfer' => $form['playerteam_date_transfer'].' 00:00:00',
                 ]);
@@ -1414,16 +1403,11 @@ class AdminSquadService
             ->where('playerteam_team_id', $teamId)
             ->where('playerteam_league_id', $leagueId)
             ->orderBy('playerteam_player_position')
-            ->orderByDesc('playerteam_player_price')
             ->get()
             ->sort(function (Playerteam $a, Playerteam $b) {
                 $pos = strcmp((string) $a->playerteam_player_position, (string) $b->playerteam_player_position);
                 if ($pos !== 0) {
                     return $pos;
-                }
-                $price = ((float) $b->playerteam_player_price) <=> ((float) $a->playerteam_player_price);
-                if ($price !== 0) {
-                    return $price;
                 }
                 $ln = strcasecmp((string) ($a->player?->player_lname ?? ''), (string) ($b->player?->player_lname ?? ''));
                 if ($ln !== 0) {
@@ -1450,7 +1434,6 @@ class AdminSquadService
                     'player_flag_url' => $nat !== '' ? Flag::imageUrl($nat) : null,
                     'player_flag_html' => $nat !== '' ? Flag::html($nat) : '',
                     'playerteam_status' => (int) $item->playerteam_status ? 1 : 0,
-                    'playerteam_player_price' => (int) $item->playerteam_player_price,
                     'playerteam_player_position' => (string) $item->playerteam_player_position,
                     'playerteam_date_transfer' => $transfer ? date('Y-m-d', $transfer) : self::DEFAULT_TRANSFER,
                     'playerteam_league_id' => (int) $item->playerteam_league_id,
@@ -1475,14 +1458,6 @@ class AdminSquadService
             $date = self::DEFAULT_TRANSFER;
         }
 
-        $price = (int) ($input['playerteam_player_price'] ?? 5);
-        if ($price < 1) {
-            $price = 1;
-        }
-        if ($price > 15) {
-            $price = 15;
-        }
-
         $position = strtolower(trim((string) ($input['playerteam_player_position'] ?? 'd')));
         if (! in_array($position, self::POSITIONS, true)) {
             $position = 'd';
@@ -1490,7 +1465,6 @@ class AdminSquadService
 
         return [
             'playerteam_status' => ((string) ($input['playerteam_status'] ?? '1') === '0') ? 0 : 1,
-            'playerteam_player_price' => $price,
             'playerteam_player_position' => $position,
             'playerteam_date_transfer' => $date,
         ];
@@ -2014,7 +1988,6 @@ class AdminSquadService
                 : [],
             'db_foreign_id' => trim((string) ($row['db_foreign_id'] ?? '')),
             'playerteam_player_position' => $roster['playerteam_player_position'],
-            'playerteam_player_price' => $roster['playerteam_player_price'],
             'playerteam_status' => $roster['playerteam_status'],
             'playerteam_date_transfer' => $roster['playerteam_date_transfer'],
         ];
@@ -2044,7 +2017,6 @@ class AdminSquadService
                 'player_nationality' => $almost['db_nationality'],
                 'player_foreign_id' => $almost['db_foreign_id'],
                 'playerteam_player_position' => $almost['playerteam_player_position'],
-                'playerteam_player_price' => $almost['playerteam_player_price'],
                 'playerteam_status' => $almost['playerteam_status'],
                 'playerteam_date_transfer' => $almost['playerteam_date_transfer'],
                 'json_number' => $almost['json_number'],
@@ -2062,7 +2034,6 @@ class AdminSquadService
             'player_nationality' => $almost['json_nationality'],
             'player_foreign_id' => '',
             'playerteam_player_position' => $almost['playerteam_player_position'],
-            'playerteam_player_price' => $almost['playerteam_player_price'],
             'playerteam_status' => $almost['playerteam_status'],
             'playerteam_date_transfer' => $almost['playerteam_date_transfer'],
             'json_number' => $almost['json_number'],
@@ -2095,7 +2066,6 @@ class AdminSquadService
             'player_status_description' => '',
             'player_foreign_id' => trim((string) ($row['player_foreign_id'] ?? '')),
             'playerteam_player_position' => $roster['playerteam_player_position'],
-            'playerteam_player_price' => $roster['playerteam_player_price'],
             'playerteam_status' => $roster['playerteam_status'],
             'playerteam_date_transfer' => $roster['playerteam_date_transfer'],
             'json_number' => (int) ($row['json_number'] ?? 0),

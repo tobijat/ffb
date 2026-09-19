@@ -208,11 +208,6 @@ class MyteamApiTest extends TestCase
                         'num_users' => 10,
                         'num_matches' => 8,
                         'goals' => 22,
-                        'top_of_round' => [
-                            'top_player_name' => 'Max Muster',
-                            'top_playerteam_id' => 55,
-                            'top_score' => 12,
-                        ],
                     ],
                 ],
             ]);
@@ -221,7 +216,6 @@ class MyteamApiTest extends TestCase
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->getJson('/api/myteam/stats/round?matchround_id=280')
             ->assertOk()
-            ->assertJsonPath('data.stats.num_users', 10)
-            ->assertJsonPath('data.stats.top_of_round.top_player_name', 'Max Muster');
+            ->assertJsonPath('data.stats.num_users', 10);
     }
 }

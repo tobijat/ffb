@@ -57,7 +57,6 @@
                                     <tr>
                                         <th scope="col">playerteam_id</th>
                                         <th scope="col">Pos.</th>
-                                        <th scope="col">Preis</th>
                                         <th scope="col">Status</th>
                                         <th scope="col">Transfer</th>
                                         <th scope="col">Bild</th>
@@ -70,7 +69,6 @@
                                             <td>{{ strtoupper($entry['playerteam_player_position']) }}
                                                 <span class="muted">({{ $positions[$entry['playerteam_player_position']] ?? $entry['playerteam_player_position'] }})</span>
                                             </td>
-                                            <td>{{ $entry['playerteam_player_price'] }}</td>
                                             <td>{{ (int) $entry['playerteam_status'] === 1 ? 'aktiv' : 'inaktiv' }}</td>
                                             <td>{{ $entry['playerteam_date_transfer'] !== '' ? $entry['playerteam_date_transfer'] : '—' }}</td>
                                             <td>{{ $entry['playerteam_player_picture'] !== '' ? $entry['playerteam_player_picture'] : '—' }}</td>

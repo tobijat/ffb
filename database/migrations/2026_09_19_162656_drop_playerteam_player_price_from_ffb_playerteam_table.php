@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Adds nullable playerteam_league_id (later filled and tightened to NOT NULL
- * with unique indexes in a one-time historical remapping step).
+ * Legacy static roster price; dynamic pricing uses ffb_playerprice / ffb_teamprice.
+ * API JSON still exposes playerteam_player_price as a computed field.
  */
 return new class extends Migration
 {
@@ -16,9 +16,9 @@ return new class extends Migration
             return;
         }
 
-        if (! Schema::hasColumn('ffb_playerteam', 'playerteam_league_id')) {
+        if (Schema::hasColumn('ffb_playerteam', 'playerteam_player_price')) {
             Schema::table('ffb_playerteam', function (Blueprint $table) {
-                $table->integer('playerteam_league_id')->nullable()->after('playerteam_team_id');
+                $table->dropColumn('playerteam_player_price');
             });
         }
     }
@@ -29,9 +29,9 @@ return new class extends Migration
             return;
         }
 
-        if (Schema::hasColumn('ffb_playerteam', 'playerteam_league_id')) {
+        if (! Schema::hasColumn('ffb_playerteam', 'playerteam_player_price')) {
             Schema::table('ffb_playerteam', function (Blueprint $table) {
-                $table->dropColumn('playerteam_league_id');
+                $table->double('playerteam_player_price')->default(5)->after('playerteam_status');
             });
         }
     }

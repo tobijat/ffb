@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\League;
+use App\Models\LeagueOptions;
 use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\Team;
@@ -47,6 +48,11 @@ class LineupTeamPriceTest extends TestCase
             'league_symbol' => '',
             'league_archive' => 0,
         ], 'league_id');
+
+        LeagueOptions::query()->insert([
+            'options_league_id' => $leagueId,
+            'options_league_pricemode' => 'dynamic',
+        ]);
 
         UserDetails::query()->insert([
             'user_id' => 544,
@@ -118,6 +124,7 @@ class LineupTeamPriceTest extends TestCase
         Schema::create('ffb_league_options', function (Blueprint $table) {
             $table->increments('options_id');
             $table->integer('options_league_id')->default(0);
+            $table->string('options_league_pricemode')->default('dynamic');
         });
 
         Schema::create('ffb_matchround', function (Blueprint $table) {

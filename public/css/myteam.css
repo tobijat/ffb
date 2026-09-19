@@ -44,6 +44,11 @@
     gap: 6px;
 }
 
+.myteam-stat[hidden],
+.myteam-stat-credits[hidden] {
+    display: none !important;
+}
+
 .myteam-stat-score {
     justify-self: start;
 }

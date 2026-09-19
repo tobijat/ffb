@@ -266,6 +266,7 @@ class PopupApiTest extends TestCase
                 'player_picture_url' => '/images/ffb/players/image_na.gif',
             ],
             'pricemode' => 'dynamic',
+            'has_playerprices' => true,
             'stats' => [
                 'num_lineups' => 12,
                 'sum_score' => 40,

@@ -104,7 +104,6 @@ trait CreatesLegacyFfbSchema
             }
             $table->string('playerteam_player_picture')->nullable();
             $table->tinyInteger('playerteam_status')->default(1);
-            $table->double('playerteam_player_price')->default(0);
             $table->string('playerteam_player_position')->default('m');
             $table->timestamp('playerteam_date_transfer')->nullable();
         });
