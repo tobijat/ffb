@@ -29,6 +29,8 @@ class AdminPlayerpriceService
 
     private const DEFAULT_MIN_PRICE = 1.0;
 
+    private const DEFAULT_OPPONENT_WEIGHT = 0.25;
+
     public function __construct(
         private readonly AdminCenterService $adminCenter,
         private readonly EloRatingClient $eloRating,
@@ -37,6 +39,7 @@ class AdminPlayerpriceService
 
     /**
      * @param  array<string, mixed>|null  $teamPricePreview
+     * @param  array<string, mixed>|null  $performancePreview
      * @return array<string, mixed>
      */
     public function pagePayload(
@@ -45,10 +48,15 @@ class AdminPlayerpriceService
         string $tab = 'teams',
         ?int $matchroundId = null,
         ?array $teamPricePreview = null,
+        ?array $performancePreview = null,
     ): array {
         $shell = $this->adminCenter->shellPayload($userId);
         $leagueId = $this->resolvePriceLeagueId($priceLeagueId, $shell);
-        $resolvedTab = $tab === 'players' ? 'players' : 'teams';
+        $resolvedTab = match ($tab) {
+            'players' => 'players',
+            'performance' => 'performance',
+            default => 'teams',
+        };
         $selectedLeague = $leagueId > 0
             ? $this->leagueOption($leagueId)
             : null;
@@ -68,6 +76,11 @@ class AdminPlayerpriceService
                 ? $this->lineupOptions->forMatchround($resolvedMatchroundId)
                 : $this->lineupOptions->forLeague($leagueId))
             : $this->lineupOptions->forLeague(0);
+
+        $performanceHasTeamprices = false;
+        if ($resolvedTab === 'performance' && $resolvedMatchroundId > 0) {
+            $performanceHasTeamprices = $this->matchroundHasCompleteTeamprices($resolvedMatchroundId);
+        }
 
         return [
             'user' => $shell['user'],
@@ -91,6 +104,9 @@ class AdminPlayerpriceService
             'elo_min_price' => self::DEFAULT_MIN_PRICE,
             'price_margins' => $this->priceMargins(),
             'team_price_preview' => $teamPricePreview,
+            'performance_preview' => $performancePreview,
+            'performance_has_teamprices' => $performanceHasTeamprices,
+            'performance_opponent_weight' => self::DEFAULT_OPPONENT_WEIGHT,
         ];
     }
 
@@ -173,6 +189,385 @@ class AdminPlayerpriceService
         } catch (Throwable $e) {
             return ['ok' => false, 'errors' => [$e->getMessage()], 'price_league_id' => $leagueId, 'tab' => 'players'];
         }
+    }
+
+    /**
+     * Preview round_performance for all players who played in a matchround (no DB writes).
+     *
+     * Per position, players with minutes > 0 are ranked by points (0 = worst, n−1 = best).
+     * Ties share the average of the ranks they would occupy. Then
+     * round_performance = (rank / (n − 1)) * 2 − 1, or 0 when n = 1.
+     *
+     * Optionally adjusts by opponent teamprice strength when include_opponent_strength is set
+     * and complete teamprices exist for the matchround.
+     *
+     * @param  array<string, mixed>  $input
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     price_league_id?: int,
+     *     matchround_id?: int,
+     *     tab?: string,
+     *     preview?: array{
+     *         matchround_id: int,
+     *         include_opponent_strength: bool,
+     *         opponent_weight: float,
+     *         positions: array<string, array{sample_size: int}>,
+     *         players: list<array{
+     *             playerstats_id: int,
+     *             playerteam_id: int,
+     *             player_name: string,
+     *             team_name: string,
+     *             position: string,
+     *             points: float,
+     *             rank: float,
+     *             raw_round_performance: float,
+     *             opponent_factor: float|null,
+     *             round_performance: float
+     *         }>
+     *     }
+     * }
+     */
+    public function previewMatchroundPerformance(int $userId, array $input): array
+    {
+        $leagueId = $this->resolveLeagueIdFromInput($userId, $input);
+        if ($leagueId <= 0) {
+            return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga auswählen.'], 'tab' => 'performance'];
+        }
+
+        $matchroundId = (int) ($input['matchround_id'] ?? 0);
+        if ($matchroundId <= 0) {
+            return [
+                'ok' => false,
+                'errors' => ['Bitte eine Spielrunde wählen.'],
+                'price_league_id' => $leagueId,
+                'tab' => 'performance',
+            ];
+        }
+        if (! $this->matchroundBelongsToLeague($matchroundId, $leagueId)) {
+            return [
+                'ok' => false,
+                'errors' => ['Ungültige Spielrunde für die aktive Liga.'],
+                'price_league_id' => $leagueId,
+                'tab' => 'performance',
+            ];
+        }
+
+        $includeOpponentStrength = $this->truthyInput($input['include_opponent_strength'] ?? null);
+        $opponentWeight = isset($input['opponent_weight']) && $input['opponent_weight'] !== ''
+            ? (float) $input['opponent_weight']
+            : self::DEFAULT_OPPONENT_WEIGHT;
+
+        /** @var array<int, float> $teamPricesByTeamId */
+        $teamPricesByTeamId = [];
+        $minTeamPrice = 0.0;
+        $maxTeamPrice = 0.0;
+        /** @var array<int, array{home: int, guest: int}> $matchesById */
+        $matchesById = [];
+
+        if ($includeOpponentStrength) {
+            if (! $this->matchroundHasCompleteTeamprices($matchroundId)) {
+                return [
+                    'ok' => false,
+                    'errors' => [
+                        'Gegnerstärke benötigt vollständige Teampreise für alle Teams dieser Spielrunde (Tab Teams).',
+                    ],
+                    'price_league_id' => $leagueId,
+                    'matchround_id' => $matchroundId,
+                    'tab' => 'performance',
+                ];
+            }
+
+            $teamIds = $this->teamIdsForMatchround($matchroundId);
+            $teamPricesByTeamId = $this->teamPricesForMatchround($teamIds, $matchroundId);
+            $priceValues = array_values($teamPricesByTeamId);
+            $minTeamPrice = min($priceValues);
+            $maxTeamPrice = max($priceValues);
+
+            $matchesById = MatchGame::query()
+                ->where('match_round', $matchroundId)
+                ->get(['match_id', 'match_hometeam_id', 'match_guestteam_id'])
+                ->mapWithKeys(static fn (MatchGame $match): array => [
+                    (int) $match->match_id => [
+                        'home' => (int) $match->match_hometeam_id,
+                        'guest' => (int) $match->match_guestteam_id,
+                    ],
+                ])
+                ->all();
+        }
+
+        $rows = Playerstats::query()
+            ->join('ffb_playerteam', 'ffb_playerteam.playerteam_id', '=', 'ffb_playerstats.playerstats_playerteam_id')
+            ->join('ffb_player', 'ffb_player.player_id', '=', 'ffb_playerteam.playerteam_player_id')
+            ->join('ffb_team', 'ffb_team.team_id', '=', 'ffb_playerteam.playerteam_team_id')
+            ->where('ffb_playerstats.playerstats_matchround_id', $matchroundId)
+            ->where('ffb_playerstats.playerstats_minutes', '>', 0)
+            ->orderBy('ffb_playerteam.playerteam_player_position')
+            ->orderBy('ffb_team.team_name')
+            ->orderBy('ffb_player.player_lname')
+            ->orderBy('ffb_player.player_fname')
+            ->get([
+                'ffb_playerstats.playerstats_id',
+                'ffb_playerstats.playerstats_playerteam_id',
+                'ffb_playerstats.playerstats_match_id',
+                'ffb_playerstats.playerstats_score',
+                'ffb_playerteam.playerteam_player_position',
+                'ffb_playerteam.playerteam_team_id',
+                'ffb_player.player_fname',
+                'ffb_player.player_lname',
+                'ffb_team.team_name',
+            ]);
+
+        /** @var array<string, list<object>> $rowsByPosition */
+        $rowsByPosition = [];
+        foreach ($rows as $row) {
+            $position = strtolower(trim((string) $row->playerteam_player_position));
+            if ($position === '') {
+                continue;
+            }
+            $rowsByPosition[$position][] = $row;
+        }
+
+        /** @var array<string, array{sample_size: int}> $positions */
+        $positions = [];
+        /** @var array<int, array{rank: float, round_performance: float}> $byStatsId */
+        $byStatsId = [];
+
+        foreach ($rowsByPosition as $position => $positionRows) {
+            $n = count($positionRows);
+            $positions[$position] = ['sample_size' => $n];
+
+            usort(
+                $positionRows,
+                static fn (object $a, object $b): int => ((float) $a->playerstats_score) <=> ((float) $b->playerstats_score)
+            );
+
+            $i = 0;
+            while ($i < $n) {
+                $j = $i;
+                $points = (float) $positionRows[$i]->playerstats_score;
+                while ($j + 1 < $n && (float) $positionRows[$j + 1]->playerstats_score === $points) {
+                    $j++;
+                }
+
+                $tieCount = $j - $i + 1;
+                $rankSum = 0.0;
+                for ($r = $i; $r <= $j; $r++) {
+                    $rankSum += $r;
+                }
+                $rank = $rankSum / $tieCount;
+                $roundPerformance = $n === 1
+                    ? 0.0
+                    : ($rank / ($n - 1)) * 2 - 1;
+
+                for ($r = $i; $r <= $j; $r++) {
+                    $byStatsId[(int) $positionRows[$r]->playerstats_id] = [
+                        'rank' => $rank,
+                        'round_performance' => $roundPerformance,
+                    ];
+                }
+
+                $i = $j + 1;
+            }
+        }
+
+        $priceSpan = $maxTeamPrice - $minTeamPrice;
+        $players = [];
+        foreach ($rows as $row) {
+            $position = strtolower(trim((string) $row->playerteam_player_position));
+            if ($position === '') {
+                continue;
+            }
+
+            $statsId = (int) $row->playerstats_id;
+            $ranked = $byStatsId[$statsId] ?? ['rank' => 0.0, 'round_performance' => 0.0];
+            $rawPerformance = (float) $ranked['round_performance'];
+            $opponentFactor = null;
+            $roundPerformance = $rawPerformance;
+
+            if ($includeOpponentStrength) {
+                $opponentFactor = $this->opponentFactorForPlayer(
+                    (int) $row->playerteam_team_id,
+                    (int) ($row->playerstats_match_id ?? 0),
+                    $matchesById,
+                    $teamPricesByTeamId,
+                    $priceSpan,
+                );
+                $roundPerformance = max(
+                    -1.0,
+                    min(1.0, $rawPerformance + ($opponentWeight * $opponentFactor)),
+                );
+            }
+
+            $fname = trim((string) $row->player_fname);
+            $lname = trim((string) $row->player_lname);
+            $players[] = [
+                'playerstats_id' => $statsId,
+                'playerteam_id' => (int) $row->playerstats_playerteam_id,
+                'player_name' => trim($fname.' '.$lname),
+                'team_name' => (string) $row->team_name,
+                'position' => $position,
+                'points' => (float) $row->playerstats_score,
+                'rank' => round((float) $ranked['rank'], 3),
+                'raw_round_performance' => round($rawPerformance, 3),
+                'opponent_factor' => $opponentFactor === null ? null : round($opponentFactor, 3),
+                'round_performance' => round($roundPerformance, 3),
+            ];
+        }
+
+        $message = $includeOpponentStrength
+            ? 'Matchround-Performance berechnet (Vorschau, nicht gespeichert; inkl. Gegnerstärke).'
+            : 'Matchround-Performance berechnet (Vorschau, nicht gespeichert).';
+
+        return [
+            'ok' => true,
+            'message' => $message,
+            'price_league_id' => $leagueId,
+            'matchround_id' => $matchroundId,
+            'tab' => 'performance',
+            'preview' => [
+                'matchround_id' => $matchroundId,
+                'include_opponent_strength' => $includeOpponentStrength,
+                'opponent_weight' => $opponentWeight,
+                'positions' => $positions,
+                'players' => $players,
+            ],
+        ];
+    }
+
+    /**
+     * Recompute matchround performance (same options as preview) and persist to
+     * ffb_playerstats.playerstats_round_performance.
+     *
+     * @param  array<string, mixed>  $input
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     details?: list<string>,
+     *     price_league_id?: int,
+     *     matchround_id?: int,
+     *     tab?: string,
+     *     preview?: array<string, mixed>
+     * }
+     */
+    public function saveMatchroundPerformance(int $userId, array $input): array
+    {
+        $built = $this->previewMatchroundPerformance($userId, $input);
+        if (! ($built['ok'] ?? false)) {
+            return $built;
+        }
+
+        $preview = $built['preview'] ?? [];
+        /** @var list<array{playerstats_id: int, round_performance: float, player_name?: string}> $players */
+        $players = is_array($preview['players'] ?? null) ? $preview['players'] : [];
+        $matchroundId = (int) ($built['matchround_id'] ?? 0);
+        $leagueId = (int) ($built['price_league_id'] ?? 0);
+
+        if ($players === []) {
+            return [
+                'ok' => false,
+                'errors' => ['Keine Spieler-Performance zum Speichern vorhanden.'],
+                'price_league_id' => $leagueId,
+                'matchround_id' => $matchroundId,
+                'tab' => 'performance',
+                'preview' => $preview,
+            ];
+        }
+
+        $details = [];
+        try {
+            DB::transaction(function () use ($players, &$details): void {
+                foreach ($players as $row) {
+                    $statsId = (int) ($row['playerstats_id'] ?? 0);
+                    if ($statsId <= 0) {
+                        continue;
+                    }
+                    $value = round((float) ($row['round_performance'] ?? 0), 3);
+                    Playerstats::query()
+                        ->whereKey($statsId)
+                        ->update(['playerstats_round_performance' => $value]);
+                    $details[] = ($row['player_name'] ?? ('#'.$statsId)).': '.$value;
+                }
+            });
+        } catch (Throwable $e) {
+            return [
+                'ok' => false,
+                'errors' => [$e->getMessage()],
+                'price_league_id' => $leagueId,
+                'matchround_id' => $matchroundId,
+                'tab' => 'performance',
+                'preview' => $preview,
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'message' => sprintf(
+                'Matchround-Performance gespeichert: %d Spieler.',
+                count($details),
+            ),
+            'details' => $details,
+            'price_league_id' => $leagueId,
+            'matchround_id' => $matchroundId,
+            'tab' => 'performance',
+            'preview' => $preview,
+        ];
+    }
+
+    /**
+     * @param  array<int, array{home: int, guest: int}>  $matchesById
+     * @param  array<int, float>  $teamPricesByTeamId
+     */
+    private function opponentFactorForPlayer(
+        int $playerTeamId,
+        int $matchId,
+        array $matchesById,
+        array $teamPricesByTeamId,
+        float $priceSpan,
+    ): float {
+        if ($matchId <= 0 || $priceSpan == 0.0 || ! isset($matchesById[$matchId])) {
+            return 0.0;
+        }
+
+        $match = $matchesById[$matchId];
+        if ($playerTeamId === $match['home']) {
+            $opponentTeamId = $match['guest'];
+        } elseif ($playerTeamId === $match['guest']) {
+            $opponentTeamId = $match['home'];
+        } else {
+            return 0.0;
+        }
+
+        if (! isset($teamPricesByTeamId[$playerTeamId], $teamPricesByTeamId[$opponentTeamId])) {
+            return 0.0;
+        }
+
+        return ($teamPricesByTeamId[$opponentTeamId] - $teamPricesByTeamId[$playerTeamId]) / $priceSpan;
+    }
+
+    private function matchroundHasCompleteTeamprices(int $matchroundId): bool
+    {
+        $teamIds = $this->teamIdsForMatchround($matchroundId);
+        if ($teamIds === []) {
+            return false;
+        }
+
+        $prices = $this->teamPricesForMatchround($teamIds, $matchroundId);
+
+        return count($prices) === count($teamIds);
+    }
+
+    private function truthyInput(mixed $value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        $normalized = strtolower(trim((string) $value));
+
+        return in_array($normalized, ['1', 'true', 'on', 'yes'], true);
     }
 
     public function previewEloTeamPrices(int $userId, array $input): array
@@ -275,6 +670,191 @@ class AdminPlayerpriceService
             'price_league_id' => $leagueId,
             'matchround_id' => $matchroundId,
             'tab' => 'teams',
+            'preview' => $preview,
+        ];
+    }
+
+    /**
+     * One-time / historical backfill: compute Elo team prices for a league (same formula as
+     * Team-Preis) and write ffb_teamprice for every matchround — including past rounds.
+     *
+     * @param  array{
+     *     max_credits?: float|int|string|null,
+     *     max_players_team?: float|int|string|null,
+     *     exponent?: float|int|string|null,
+     *     dream_team_ratio?: float|int|string|null,
+     *     min_price?: float|int|string|null
+     * }  $input
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     details?: list<string>,
+     *     league_id?: int,
+     *     matchround_ids?: list<int>,
+     *     team_count?: int,
+     *     skipped_teams?: list<array{team_id: int, team_name: string}>,
+     *     preview?: array<string, mixed>,
+     *     dry_run?: bool
+     * }
+     */
+    public function backfillHistoricalLeagueTeamPrices(
+        int $leagueId,
+        EloRatingClient $eloRating,
+        array $input = [],
+        bool $execute = false,
+    ): array {
+        if ($leagueId <= 0 || ! League::query()->whereKey($leagueId)->exists()) {
+            return ['ok' => false, 'errors' => ['Liga nicht gefunden.']];
+        }
+
+        $matchroundIds = Matchround::query()
+            ->where('matchround_league_id', $leagueId)
+            ->orderBy('matchround_startdate')
+            ->pluck('matchround_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+
+        if ($matchroundIds === []) {
+            return [
+                'ok' => false,
+                'errors' => ['Keine Spielrunden in dieser Liga.'],
+                'league_id' => $leagueId,
+            ];
+        }
+
+        $teamIds = $this->teamIdsForGame($leagueId);
+        if ($teamIds === []) {
+            return [
+                'ok' => false,
+                'errors' => ['Keine Teams für die Liga gefunden.'],
+                'league_id' => $leagueId,
+            ];
+        }
+
+        $limits = $this->lineupOptions->forLeague($leagueId);
+        $defaultBudget = (float) $limits['lineup_max_credits'];
+        $defaultMaxPerTeam = max(1, (int) $limits['lineup_max_players_team']);
+        $squadSize = max(1, (int) ($limits['lineup_max_players'] ?? self::SQUAD_SIZE));
+
+        $budget = $this->resolveFloatInput($input['max_credits'] ?? null, $defaultBudget);
+        $maxPerTeam = max(1, $this->resolveIntInput($input['max_players_team'] ?? null, $defaultMaxPerTeam));
+        $exponent = $this->resolveFloatInput($input['exponent'] ?? null, self::DEFAULT_EXPONENT);
+        $dreamTeamRatio = $this->resolveFloatInput($input['dream_team_ratio'] ?? null, self::DEFAULT_DREAM_TEAM_RATIO);
+        $minPrice = $this->resolveFloatInput($input['min_price'] ?? null, self::DEFAULT_MIN_PRICE);
+
+        try {
+            $eloRows = $eloRating->ratingsForTeamList($teamIds);
+        } catch (Throwable $e) {
+            return ['ok' => false, 'errors' => [$e->getMessage()], 'league_id' => $leagueId];
+        }
+
+        if ($eloRows === []) {
+            return [
+                'ok' => false,
+                'errors' => ['Keine ELO-Ratings für die Teams gefunden.'],
+                'league_id' => $leagueId,
+            ];
+        }
+
+        $mappedIds = array_map('intval', array_column($eloRows, 'team_id'));
+        $missingIds = array_values(array_diff(array_map('intval', $teamIds), $mappedIds));
+        $names = Team::query()
+            ->whereIn('team_id', array_values(array_unique([...$mappedIds, ...$missingIds])))
+            ->pluck('team_name', 'team_id')
+            ->all();
+
+        $teamsWithElo = [];
+        foreach ($eloRows as $row) {
+            $teamId = (int) $row['team_id'];
+            $teamsWithElo[] = [
+                'team_id' => $teamId,
+                'team_name' => (string) ($names[$teamId] ?? ('Team #'.$teamId)),
+                'elo_rating' => (float) $row['elo_rating'],
+            ];
+        }
+
+        $skippedTeams = [];
+        foreach ($missingIds as $missingId) {
+            $skippedTeams[] = [
+                'team_id' => $missingId,
+                'team_name' => (string) ($names[$missingId] ?? ('Team #'.$missingId)),
+            ];
+        }
+        usort($skippedTeams, static fn (array $a, array $b): int => strcasecmp($a['team_name'], $b['team_name']));
+
+        $preview = $this->computeEloTeamPricePreview(
+            $teamsWithElo,
+            $budget,
+            $maxPerTeam,
+            $squadSize,
+            $exponent,
+            $dreamTeamRatio,
+            $minPrice,
+        );
+        $preview['teams_skipped'] = $skippedTeams;
+        $preview['form'] = [
+            'max_credits' => $budget,
+            'max_players_team' => $maxPerTeam,
+            'exponent' => $exponent,
+            'dream_team_ratio' => $dreamTeamRatio,
+            'min_price' => $minPrice,
+        ];
+
+        /** @var array<int, float> $pricesByTeamId */
+        $pricesByTeamId = [];
+        foreach ($preview['teams'] ?? [] as $row) {
+            $teamId = (int) ($row['team_id'] ?? 0);
+            if ($teamId <= 0) {
+                continue;
+            }
+            $pricesByTeamId[$teamId] = (float) ($row['price'] ?? 0);
+        }
+
+        if ($pricesByTeamId === []) {
+            return [
+                'ok' => false,
+                'errors' => ['Keine Team-Preise berechnet.'],
+                'league_id' => $leagueId,
+                'preview' => $preview,
+            ];
+        }
+
+        $details = [];
+        if ($execute) {
+            try {
+                $details = $this->persistTeamPrices($pricesByTeamId, $matchroundIds);
+            } catch (Throwable $e) {
+                return [
+                    'ok' => false,
+                    'errors' => [$e->getMessage()],
+                    'league_id' => $leagueId,
+                    'preview' => $preview,
+                ];
+            }
+        } else {
+            foreach ($matchroundIds as $matchroundId) {
+                foreach ($pricesByTeamId as $teamId => $price) {
+                    $details[] = 'Team '.$teamId.' / Runde '.$matchroundId.': '.$price;
+                }
+            }
+        }
+
+        return [
+            'ok' => true,
+            'dry_run' => ! $execute,
+            'message' => sprintf(
+                '%s: %d Team(s) × %d Spielrunde(n)%s.',
+                $execute ? 'ELO Team-Preise gespeichert' : 'Dry-run ELO Team-Preise',
+                count($pricesByTeamId),
+                count($matchroundIds),
+                $skippedTeams === [] ? '' : (', '.count($skippedTeams).' ohne ELO übersprungen'),
+            ),
+            'details' => $details,
+            'league_id' => $leagueId,
+            'matchround_ids' => $matchroundIds,
+            'team_count' => count($pricesByTeamId),
+            'skipped_teams' => $skippedTeams,
             'preview' => $preview,
         ];
     }
