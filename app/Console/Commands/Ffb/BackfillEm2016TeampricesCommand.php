@@ -8,7 +8,7 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
-#[Signature('ffb:backfill-em2016-teamprices {--execute : Persist ffb_teamprice rows (default dry-run)} {--elo-url=http://www.eloratings.net/2015.tsv : Elo ratings TSV URL} {--league-id=25 : League to backfill}')]
+#[Signature('ffb:backfill-em2016-teamprices {--execute : Persist ffb_teamprice rows (default dry-run)} {--elo-url=http://www.eloratings.net/2015.tsv : Elo ratings TSV URL} {--league-id=25 : League to backfill} {--min-price=1 : Minimum team price for the weakest team}')]
 #[Description('Backfill ffb_teamprice for EM 2016 (or another league) using Elo Team-Preis logic')]
 class BackfillEm2016TeampricesCommand extends Command
 {
@@ -17,13 +17,16 @@ class BackfillEm2016TeampricesCommand extends Command
         $execute = (bool) $this->option('execute');
         $leagueId = (int) $this->option('league-id');
         $eloUrl = (string) $this->option('elo-url');
+        $minPrice = (float) $this->option('min-price');
 
         $this->info($execute
-            ? "Executing teamprice backfill for league {$leagueId} from {$eloUrl}..."
-            : "Dry-run teamprice backfill for league {$leagueId} from {$eloUrl}...");
+            ? "Executing teamprice backfill for league {$leagueId} from {$eloUrl} (min_price={$minPrice})..."
+            : "Dry-run teamprice backfill for league {$leagueId} from {$eloUrl} (min_price={$minPrice})...");
 
         $elo = new EloRatingClient($eloUrl);
-        $result = $playerprice->backfillHistoricalLeagueTeamPrices($leagueId, $elo, [], $execute);
+        $result = $playerprice->backfillHistoricalLeagueTeamPrices($leagueId, $elo, [
+            'min_price' => $minPrice,
+        ], $execute);
 
         if (! ($result['ok'] ?? false)) {
             foreach ($result['errors'] ?? ['Unbekannter Fehler.'] as $error) {

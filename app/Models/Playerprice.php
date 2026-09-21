@@ -19,6 +19,7 @@ class Playerprice extends Model
         'playerprice_price',
         'playerprice_player_power',
         'playerprice_av_power',
+        'playerprice_recent_performance',
     ];
 
     public function playerteam(): BelongsTo

@@ -9,7 +9,6 @@
         $selectedLeague = $data['selected_league'] ?? null;
         $matchrounds = $data['matchrounds'] ?? [];
         $matchroundId = (int) ($data['matchround_id'] ?? 0);
-        $priceMargins = $data['price_margins'] ?? [];
         $lineupMaxCredits = (float) ($data['lineup_max_credits'] ?? 100);
         $lineupMaxPlayersTeam = (int) ($data['lineup_max_players_team'] ?? 3);
         $lineupLimitsSource = (string) ($data['lineup_limits_source'] ?? 'league');
@@ -26,6 +25,26 @@
             'opponent_weight',
             $performancePreview['opponent_weight'] ?? ($data['performance_opponent_weight'] ?? 0.25),
         );
+        $recentPreview = is_array($data['recent_performance_preview'] ?? null) ? $data['recent_performance_preview'] : null;
+        $recentPlayers = is_array($recentPreview['players'] ?? null) ? $recentPreview['players'] : [];
+        $recentPriorRounds = is_array($recentPreview['prior_matchrounds'] ?? null) ? $recentPreview['prior_matchrounds'] : [];
+        $recentLookbackRounds = old(
+            'lookback_rounds',
+            $recentPreview['lookback_rounds'] ?? ($data['recent_lookback_rounds'] ?? 5),
+        );
+        $recentDecayFactor = old(
+            'decay_factor',
+            $recentPreview['decay_factor'] ?? ($data['recent_decay_factor'] ?? 0.7),
+        );
+        $recentMaxPriceAdjustment = old(
+            'max_price_adjustment',
+            $recentPreview['max_price_adjustment'] ?? ($data['recent_max_price_adjustment'] ?? 2),
+        );
+        $recentIncludeExternal = (string) old(
+            'include_external_rounds',
+            ($recentPreview['include_external_rounds'] ?? false) ? '1' : '0',
+        ) === '1';
+        $recentSavePlayerPrices = (string) old('save_player_prices', '0') === '1';
         $previewTeams = is_array($teamPricePreview['teams'] ?? null) ? $teamPricePreview['teams'] : [];
         $previewChecks = is_array($teamPricePreview['checks'] ?? null) ? $teamPricePreview['checks'] : [];
         $previewParams = is_array($teamPricePreview['params'] ?? null) ? $teamPricePreview['params'] : [];
@@ -39,8 +58,8 @@
         $flashDetails = is_array($details ?? null) ? $details : [];
         $hasLeague = $priceLeagueId > 0;
         $tab = match ($data['tab'] ?? 'teams') {
-            'players' => 'players',
             'performance' => 'performance',
+            'recent' => 'recent',
             default => 'teams',
         };
         $baseQuery = array_filter([
@@ -52,10 +71,16 @@
             ],
             static fn ($v) => $v !== null,
         );
-        $playersQuery = $baseQuery + ['tab' => 'players'];
         $performanceQuery = array_filter(
             $baseQuery + [
                 'tab' => 'performance',
+                'matchround_id' => $matchroundId > 0 ? $matchroundId : null,
+            ],
+            static fn ($v) => $v !== null,
+        );
+        $recentQuery = array_filter(
+            $baseQuery + [
+                'tab' => 'recent',
                 'matchround_id' => $matchroundId > 0 ? $matchroundId : null,
             ],
             static fn ($v) => $v !== null,
@@ -73,7 +98,7 @@
             <h2 id="admin-playerprice-title">Preise</h2>
         </div>
         <p class="hint">
-            Dynamische Spielerpreise und ELO-Teampreise für die im Admin-Center ausgewählte Liga.
+            Spielerpreise und ELO-Teampreise für die im Admin-Center ausgewählte Liga.
         </p>
 
         @if (!empty($flashErrors))
@@ -112,65 +137,20 @@
                     Team-Preis
                 </a>
                 <a
-                    class="admin-squad-tab ffb-tab{{ $tab === 'players' ? ' is-active' : '' }}"
-                    href="{{ route('admin.playerprice', $playersQuery) }}"
-                >
-                    Spieler-Preis
-                </a>
-                <a
                     class="admin-squad-tab ffb-tab{{ $tab === 'performance' ? ' is-active' : '' }}"
                     href="{{ route('admin.playerprice', $performanceQuery) }}"
                 >
                     Spieler-Performance
                 </a>
+                <a
+                    class="admin-squad-tab ffb-tab{{ $tab === 'recent' ? ' is-active' : '' }}"
+                    href="{{ route('admin.playerprice', $recentQuery) }}"
+                >
+                    Recent Performance
+                </a>
             </nav>
         @endif
     </section>
-
-    @if ($hasLeague && $tab === 'players')
-        <section class="panel admin-main" aria-labelledby="admin-playerprice-dynamic-title">
-            <div class="section-head">
-                <h2 id="admin-playerprice-dynamic-title">Spieler-Preis</h2>
-            </div>
-            <p class="hint">
-                Berechnet Preis-Margins aus den letzten Spielen und schreibt
-                <code>ffb_playerprice</code> für die gewählte Spielrunde (Dynamic PlayerPrices v2014).
-            </p>
-            <form class="admin-form" method="post" action="{{ route('admin.playerprice.setMatchroundPlayerPrices') }}" accept-charset="UTF-8">
-                @csrf
-                <input type="hidden" name="price_league_id" value="{{ $priceLeagueId }}">
-                <input type="hidden" name="tab" value="players">
-                <div class="admin-field">
-                    <label for="pp_dyn_matchround">calculate for</label>
-                    <select id="pp_dyn_matchround" name="matchround_id">
-                        <option value="">Select Matchround..</option>
-                        @foreach ($matchrounds as $round)
-                            <option value="{{ $round['matchround_id'] }}" @selected((string) old('matchround_id') === (string) $round['matchround_id'])>
-                                {{ $round['matchround_title'] }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="admin-field">
-                    <label for="pp_dyn_margin">Price Margin</label>
-                    <select id="pp_dyn_margin" name="price_margin">
-                        <option value="">price margin..</option>
-                        @foreach ($priceMargins as $margin)
-                            <option value="{{ $margin }}" @selected((string) old('price_margin') === (string) $margin)>
-                                {{ $margin }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="admin-actions">
-                    <button type="submit" class="admin-submit" name="set_playerprice_submit" value="1">
-                        Set Player Prices
-                    </button>
-                </div>
-                <p class="hint">(do only click once!)</p>
-            </form>
-        </section>
-    @endif
 
     @if ($hasLeague && $tab === 'performance')
         <section class="panel admin-main" aria-labelledby="admin-playerprice-performance-title">
@@ -320,6 +300,219 @@
                                             <td>{{ $row['opponent_factor'] ?? '' }}</td>
                                         @endif
                                         <td><strong>{{ $row['round_performance'] ?? '' }}</strong></td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            @endif
+        </section>
+    @endif
+
+    @if ($hasLeague && $tab === 'recent')
+        <section class="panel admin-main" aria-labelledby="admin-playerprice-recent-title">
+            <div class="section-head">
+                <h2 id="admin-playerprice-recent-title">Recent Performance</h2>
+            </div>
+            <p class="hint">
+                Gewichteter Durchschnitt der
+                <code>playerstats_round_performance</code> aus bis zu LOOKBACK_ROUNDS
+                Spielrunden vor der gewählten Runde (Decay newest-first).
+                Voraussetzung: alle Einsätze (Minuten &gt; 0) der gewählten Runde haben eine
+                gespeicherte round_performance, und alle Teams der Runde haben Teampreise.
+                Nur Kaderspieler von Teams mit Match in der gewählten Runde. Vorschau schreibt
+                noch nichts in <code>ffb_playerprice</code>.
+            </p>
+
+            <form class="admin-league-picker" method="get" action="{{ route('admin.playerprice') }}">
+                <input type="hidden" name="price_league_id" value="{{ $priceLeagueId }}">
+                <input type="hidden" name="tab" value="recent">
+                <label for="pp_recent_matchround_pick">Spielrunde</label>
+                <select id="pp_recent_matchround_pick" name="matchround_id" onchange="this.form.submit()">
+                    <option value="">Spielrunde wählen…</option>
+                    @foreach ($matchrounds as $round)
+                        <option
+                            value="{{ $round['matchround_id'] }}"
+                            @selected($matchroundId === (int) $round['matchround_id'])
+                        >
+                            {{ $round['matchround_title'] }}
+                        </option>
+                    @endforeach
+                </select>
+                <noscript>
+                    <button type="submit" class="admin-submit">Anzeigen</button>
+                </noscript>
+            </form>
+
+            @if ($matchroundId > 0)
+                <form class="admin-form" method="post" action="{{ route('admin.playerprice.previewRecentPerformance') }}" accept-charset="UTF-8">
+                    @csrf
+                    <input type="hidden" name="price_league_id" value="{{ $priceLeagueId }}">
+                    <input type="hidden" name="tab" value="recent">
+                    <input type="hidden" name="matchround_id" value="{{ $matchroundId }}">
+
+                    <div class="admin-field">
+                        <label for="pp_recent_lookback">LOOKBACK_ROUNDS</label>
+                        <input
+                            id="pp_recent_lookback"
+                            type="number"
+                            name="lookback_rounds"
+                            value="{{ $recentLookbackRounds }}"
+                            min="1"
+                            max="50"
+                            step="1"
+                            required
+                        >
+                        <p class="hint">Anzahl vorheriger Spielrunden (Standard 5).</p>
+                    </div>
+                    <div class="admin-field">
+                        <label for="pp_recent_decay">DECAY_FACTOR</label>
+                        <input
+                            id="pp_recent_decay"
+                            type="number"
+                            name="decay_factor"
+                            value="{{ $recentDecayFactor }}"
+                            min="0"
+                            max="1"
+                            step="0.05"
+                            required
+                        >
+                        <p class="hint">Gewichte: decay^i, i=0 neueste Vor-Runde (Standard 0.7).</p>
+                    </div>
+                    <div class="admin-field">
+                        <label for="pp_recent_max_adj">MAX_PRICE_ADJUSTMENT</label>
+                        <input
+                            id="pp_recent_max_adj"
+                            type="number"
+                            name="max_price_adjustment"
+                            value="{{ $recentMaxPriceAdjustment }}"
+                            min="0"
+                            max="20"
+                            step="0.1"
+                            required
+                        >
+                        <p class="hint">
+                            Preis-Anpassung = recent_performance × MAX_PRICE_ADJUSTMENT (Standard 2.0).
+                            Spielerpreis = max(1.0, Teampreis + Anpassung), gerundet auf 1/10.
+                        </p>
+                    </div>
+                    <div class="admin-field">
+                        <input type="hidden" name="include_external_rounds" value="0">
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="include_external_rounds"
+                                value="1"
+                                @checked($recentIncludeExternal)
+                            >
+                            Ligaübergreifende Vor-Runden einbeziehen
+                        </label>
+                        <p class="hint">
+                            Wenn die Liga weniger als LOOKBACK_ROUNDS Vor-Runden hat: frühere
+                            Spielrunden derselben Teams aus anderen Ligen ergänzen (chronologisch,
+                            nur Runden mit vollständiger round_performance).
+                        </p>
+                    </div>
+
+                    <div class="admin-field">
+                        <input type="hidden" name="save_player_prices" value="0">
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="save_player_prices"
+                                value="1"
+                                @checked($recentSavePlayerPrices)
+                            >
+                            Spielerpreise speichern
+                        </label>
+                        <p class="hint">
+                            Speichern schreibt immer
+                            <code>playerprice_recent_performance</code>.
+                            Mit Haken zusätzlich <code>playerprice_price</code>.
+                        </p>
+                    </div>
+
+                    <div class="admin-actions">
+                        <button type="submit" class="admin-submit" name="preview_recent_performance" value="1">
+                            Recent-Performance &amp; Spielerpreis berechnen
+                        </button>
+                        <button
+                            type="submit"
+                            class="admin-submit"
+                            formaction="{{ route('admin.playerprice.saveRecentPerformance') }}"
+                            name="save_recent_performance"
+                            value="1"
+                            @disabled($recentPreview === null)
+                            title="{{ $recentPreview === null ? 'Zuerst berechnen' : 'Berechnete Werte speichern' }}"
+                        >
+                            Speichern
+                        </button>
+                    </div>
+                </form>
+            @endif
+
+            @if ($recentPreview !== null)
+                <p class="muted">
+                    Lookback={{ $recentPreview['lookback_rounds'] ?? '—' }},
+                    Decay={{ $recentPreview['decay_factor'] ?? '—' }},
+                    MaxAdj={{ $recentPreview['max_price_adjustment'] ?? '—' }},
+                    Prior-Runden={{ count($recentPreview['prior_matchround_ids'] ?? []) }},
+                    Weights=[{{ implode(', ', $recentPreview['weights'] ?? []) }}]
+                    @if (! empty($recentPreview['include_external_rounds']))
+                        · ligaübergreifend
+                    @endif
+                </p>
+
+                @if ($recentPlayers === [])
+                    <p class="muted">Keine aktiven Kaderspieler in dieser Liga gefunden.</p>
+                @else
+                    <div class="admin-auto-squad-table-wrap">
+                        <table class="admin-auto-squad-table admin-playerprice-preview-table admin-playerprice-recent-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Spieler</th>
+                                    <th>Team</th>
+                                    <th>Pos.</th>
+                                    @foreach ($recentPriorRounds as $prior)
+                                        <th
+                                            class="admin-playerprice-rp-col"
+                                            title="{{ $prior['matchround_title'] ?? ('#'.($prior['matchround_id'] ?? '')) }}{{ ! empty($prior['external']) ? ' (ligaübergreifend)' : '' }}"
+                                        >
+                                            {{ $prior['weight'] ?? '' }}
+                                        </th>
+                                    @endforeach
+                                    @if ($recentPriorRounds === [])
+                                        <th class="admin-playerprice-rp-col"></th>
+                                    @endif
+                                    <th>recent</th>
+                                    <th>n</th>
+                                    <th class="admin-playerprice-rp-col">adj</th>
+                                    <th class="admin-playerprice-rp-col">price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($recentPlayers as $index => $row)
+                                    @php
+                                        $rpValues = is_array($row['round_performance'] ?? null)
+                                            ? $row['round_performance']
+                                            : [];
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $row['player_name'] ?? '' }}</td>
+                                        <td>{{ $row['team_name'] ?? '' }}</td>
+                                        <td>{{ strtoupper((string) ($row['position'] ?? '')) }}</td>
+                                        @forelse ($recentPriorRounds as $slot => $prior)
+                                            <td class="admin-playerprice-rp-col">{{ $rpValues[$slot] ?? '-' }}</td>
+                                        @empty
+                                            <td class="admin-playerprice-rp-col">-</td>
+                                        @endforelse
+                                        <td class="admin-playerprice-rp-col"><strong>{{ $row['recent_performance'] ?? '' }}</strong></td>
+                                        <td class="admin-playerprice-rp-col">{{ $row['rounds_played'] ?? 0 }}</td>
+                                        <td class="admin-playerprice-rp-col">{{ $row['price_adjustment'] ?? '' }}</td>
+                                        <td class="admin-playerprice-rp-col"><strong>{{ $row['player_price'] ?? '' }}</strong></td>
                                     </tr>
                                 @endforeach
                             </tbody>

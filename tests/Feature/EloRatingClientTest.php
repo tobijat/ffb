@@ -136,7 +136,7 @@ class EloRatingClientTest extends TestCase
     {
         file_put_contents(
             $this->mapPath,
-            "10;Argentinien;ARG;Argentina;;\n70;Nordmazedonien;MKD;North Macedonia;;\n",
+            "10;Argentinien;ARG;Argentina;;\n70;Nordmazedonien;MKD;North Macedonia;;\n70;Nordmazedonien;MKD;Macedonia;;\n",
         );
 
         Http::fake([
@@ -144,20 +144,30 @@ class EloRatingClientTest extends TestCase
                 "1\t1\tAR\t2173\t1\n2\t2\tNM\t1589\t2\n",
                 200,
             ),
+            'www.eloratings.net/2014.tsv' => Http::response(
+                "1\t1\tAR\t2000\t1\n89\t89\tMK\t1481\t2\n",
+                200,
+            ),
             'www.eloratings.net/en.teams.tsv' => Http::response(
-                "AR\tArgentina\nNM\tNorth Macedonia\tN Macedonia\n",
+                "AR\tArgentina\nNM\tNorth Macedonia\tN Macedonia\nMK\tMacedonia\n",
                 200,
             ),
         ]);
 
-        $client = new EloRatingClient(
+        $modern = new EloRatingClient(
             'https://www.eloratings.net/World.tsv',
             $this->mapPath,
             'https://www.eloratings.net/en.teams.tsv',
         );
+        $this->assertSame(2173.0, $modern->getEloRatingForTeam(10));
+        $this->assertSame(1589.0, $modern->getEloRatingForTeam(70));
 
-        $this->assertSame(2173.0, $client->getEloRatingForTeam(10));
-        $this->assertSame(1589.0, $client->getEloRatingForTeam(70));
+        $historical = new EloRatingClient(
+            'http://www.eloratings.net/2014.tsv',
+            $this->mapPath,
+            'https://www.eloratings.net/en.teams.tsv',
+        );
+        $this->assertSame(1481.0, $historical->getEloRatingForTeam(70));
         Http::assertNotSent(fn ($request): bool => str_contains($request->url(), 'teams.csv'));
     }
 }

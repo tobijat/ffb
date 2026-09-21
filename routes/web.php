@@ -134,9 +134,10 @@ Route::middleware('ffb.admin')->group(function () {
     Route::post('/admin/score/user-scores', [AdminScoreController::class, 'setUserScores'])->name('admin.score.setUserScores');
 
     Route::get('/admin/playerprice', [AdminPlayerpriceController::class, 'show'])->name('admin.playerprice');
-    Route::post('/admin/playerprice/matchround-player-prices', [AdminPlayerpriceController::class, 'setMatchroundPlayerPrices'])->name('admin.playerprice.setMatchroundPlayerPrices');
     Route::post('/admin/playerprice/matchround-performance/preview', [AdminPlayerpriceController::class, 'previewMatchroundPerformance'])->name('admin.playerprice.previewMatchroundPerformance');
     Route::post('/admin/playerprice/matchround-performance/save', [AdminPlayerpriceController::class, 'saveMatchroundPerformance'])->name('admin.playerprice.saveMatchroundPerformance');
+    Route::post('/admin/playerprice/recent-performance/preview', [AdminPlayerpriceController::class, 'previewRecentPerformance'])->name('admin.playerprice.previewRecentPerformance');
+    Route::post('/admin/playerprice/recent-performance/save', [AdminPlayerpriceController::class, 'saveRecentPerformance'])->name('admin.playerprice.saveRecentPerformance');
     Route::post('/admin/playerprice/elo-team-prices/preview', [AdminPlayerpriceController::class, 'previewEloTeamPrices'])->name('admin.playerprice.previewEloTeamPrices');
     Route::post('/admin/playerprice/elo-team-prices/save', [AdminPlayerpriceController::class, 'saveEloTeamPrices'])->name('admin.playerprice.saveEloTeamPrices');
 

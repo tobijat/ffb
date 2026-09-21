@@ -40,7 +40,7 @@ class AdminPlayerpriceTest extends TestCase
         $this->mock(AdminPlayerpriceService::class, function ($mock) {
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, null, 'teams', null, null, null)
+                ->with(544, null, 'teams', null, null, null, null)
                 ->andReturn($this->payload([
                     'tab' => 'teams',
                     'matchround_id' => 0,
@@ -54,16 +54,17 @@ class AdminPlayerpriceTest extends TestCase
             ->get('/admin/playerprice')
             ->assertOk()
             ->assertSee('Preise', false)
-            ->assertSee('Spieler-Preis', false)
             ->assertSee('Spieler-Performance', false)
+            ->assertSee('Recent Performance', false)
             ->assertSee('Team-Preis', false)
             ->assertSee('ELO Team-Preis', false)
             ->assertSee('Bundesliga Test', false)
             ->assertSee('Liga: Bundesliga Test', false)
+            ->assertDontSee('Spieler-Preis', false)
             ->assertDontSee('Set Player Prices', false);
     }
 
-    public function test_playerprice_players_tab_shows_matchround_form(): void
+    public function test_removed_players_tab_falls_back_to_teams(): void
     {
         $this->mock(FfbAdminAccess::class, function ($mock) {
             $mock->shouldReceive('isAdmin')->andReturn(true);
@@ -72,9 +73,9 @@ class AdminPlayerpriceTest extends TestCase
         $this->mock(AdminPlayerpriceService::class, function ($mock) {
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, null, 'players', null, null, null)
+                ->with(544, null, 'teams', null, null, null, null)
                 ->andReturn($this->payload([
-                    'tab' => 'players',
+                    'tab' => 'teams',
                     'matchround_id' => 0,
                 ]));
         });
@@ -82,8 +83,9 @@ class AdminPlayerpriceTest extends TestCase
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->get('/admin/playerprice?tab=players')
             ->assertOk()
-            ->assertSee('Set Player Prices', false)
-            ->assertDontSee('ELO Team-Preis', false);
+            ->assertSee('ELO Team-Preis', false)
+            ->assertDontSee('Spieler-Preis', false)
+            ->assertDontSee('Set Player Prices', false);
     }
 
     public function test_playerprice_teams_tab_shows_elo_preview_form(): void
@@ -95,7 +97,7 @@ class AdminPlayerpriceTest extends TestCase
         $this->mock(AdminPlayerpriceService::class, function ($mock) {
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, null, 'teams', null, null, null)
+                ->with(544, null, 'teams', null, null, null, null)
                 ->andReturn($this->payload([
                     'tab' => 'teams',
                     'matchround_id' => 0,
@@ -122,7 +124,6 @@ class AdminPlayerpriceTest extends TestCase
             ->assertSee('Preise speichern', false)
             ->assertSee('disabled', false)
             ->assertSee('Auf alle zukünftigen Spielrunden anwenden', false)
-            ->assertDontSee('Set Player Prices', false)
             ->assertDontSee('ELO BasePrices for League', false);
     }
 
@@ -206,36 +207,6 @@ class AdminPlayerpriceTest extends TestCase
         $this->assertStringContainsString('disabled', $pastOption[0]);
     }
 
-    public function test_set_matchround_player_prices_posts_and_flashes_result(): void
-    {
-        $this->mock(FfbAdminAccess::class, function ($mock) {
-            $mock->shouldReceive('isAdmin')->andReturn(true);
-        });
-
-        $this->mock(AdminPlayerpriceService::class, function ($mock) {
-            $mock->shouldReceive('calculatePlayerPricesForMatchround')
-                ->once()
-                ->with(544, Mockery::type('array'))
-                ->andReturn([
-                    'ok' => true,
-                    'message' => 'Dynamic PlayerPrices aktualisiert.',
-                    'details' => ['Price updated: 11: 8.5'],
-                    'price_league_id' => 7,
-                    'tab' => 'players',
-                ]);
-        });
-
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->post('/admin/playerprice/matchround-player-prices', [
-                'price_league_id' => 7,
-                'matchround_id' => 3,
-                'price_margin' => 2,
-            ])
-            ->assertRedirect(route('admin.playerprice', ['price_league_id' => 7, 'tab' => 'players']))
-            ->assertSessionHas('admin_message', 'Dynamic PlayerPrices aktualisiert.')
-            ->assertSessionHas('admin_details', ['Price updated: 11: 8.5']);
-    }
-
     public function test_preview_elo_team_prices_renders_result_table(): void
     {
         $this->mock(FfbAdminAccess::class, function ($mock) {
@@ -304,7 +275,7 @@ class AdminPlayerpriceTest extends TestCase
 
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, 7, 'teams', null, $preview, null)
+                ->with(544, 7, 'teams', null, $preview, null, null)
                 ->andReturn($this->payload([
                     'tab' => 'teams',
                     'matchround_id' => 0,
@@ -491,11 +462,14 @@ class AdminPlayerpriceTest extends TestCase
             'elo_exponent' => 2.0,
             'elo_dream_team_ratio' => 1.5,
             'elo_min_price' => 1.0,
-            'price_margins' => [0.5, 1, 1.5, 2, 2.5, 3],
             'team_price_preview' => null,
             'performance_preview' => null,
             'performance_has_teamprices' => false,
             'performance_opponent_weight' => 0.25,
+            'recent_performance_preview' => null,
+            'recent_lookback_rounds' => 5,
+            'recent_decay_factor' => 0.7,
+            'recent_max_price_adjustment' => 2.0,
         ], $overrides);
     }
 }

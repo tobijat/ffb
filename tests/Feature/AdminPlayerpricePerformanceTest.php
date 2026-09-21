@@ -53,7 +53,7 @@ class AdminPlayerpricePerformanceTest extends TestCase
         $this->mock(AdminPlayerpriceService::class, function ($mock) {
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, null, 'performance', null, null, null)
+                ->with(544, null, 'performance', null, null, null, null)
                 ->andReturn([
                     'user' => [
                         'user_id' => 544,
@@ -82,7 +82,6 @@ class AdminPlayerpricePerformanceTest extends TestCase
                     'elo_exponent' => 2.0,
                     'elo_dream_team_ratio' => 1.5,
                     'elo_min_price' => 1.0,
-                    'price_margins' => [],
                     'team_price_preview' => null,
                     'performance_preview' => null,
                     'performance_has_teamprices' => false,
@@ -96,7 +95,7 @@ class AdminPlayerpricePerformanceTest extends TestCase
             ->assertSee('Spieler-Performance', false)
             ->assertSee('Spielrunde', false)
             ->assertDontSee('Matchround-Performance berechnen', false)
-            ->assertDontSee('Set Player Prices', false)
+            ->assertDontSee('Spieler-Preis', false)
             ->assertDontSee('ELO Team-Preis', false);
     }
 
@@ -470,7 +469,6 @@ class AdminPlayerpricePerformanceTest extends TestCase
                     'elo_exponent' => 2.0,
                     'elo_dream_team_ratio' => 1.5,
                     'elo_min_price' => 1.0,
-                    'price_margins' => [],
                     'team_price_preview' => null,
                     'performance_preview' => null,
                     'performance_has_teamprices' => true,
@@ -570,7 +568,6 @@ class AdminPlayerpricePerformanceTest extends TestCase
                     'elo_exponent' => 2.0,
                     'elo_dream_team_ratio' => 1.5,
                     'elo_min_price' => 1.0,
-                    'price_margins' => [],
                     'team_price_preview' => null,
                     'performance_preview' => $preview,
                     'performance_has_teamprices' => true,
