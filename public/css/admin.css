@@ -1103,6 +1103,21 @@
     text-align: right;
 }
 
+.admin-playerprice-recent-table .admin-playerprice-rp-col {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    padding-left: 0.35rem;
+    padding-right: 0.35rem;
+    min-width: 2.5rem;
+}
+
+.admin-playerprice-recent-table thead .admin-playerprice-rp-col {
+    padding-top: 0.15rem;
+    padding-bottom: 0.15rem;
+    border-bottom-width: 1px;
+}
+
 .admin-ms-answers {
     margin-top: 0.75rem;
 }
