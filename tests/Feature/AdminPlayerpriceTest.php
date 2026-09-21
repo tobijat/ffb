@@ -40,7 +40,7 @@ class AdminPlayerpriceTest extends TestCase
         $this->mock(AdminPlayerpriceService::class, function ($mock) {
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, null, 'teams', null, null)
+                ->with(544, null, 'teams', null, null, null)
                 ->andReturn($this->payload([
                     'tab' => 'teams',
                     'matchround_id' => 0,
@@ -55,6 +55,7 @@ class AdminPlayerpriceTest extends TestCase
             ->assertOk()
             ->assertSee('Preise', false)
             ->assertSee('Spieler-Preis', false)
+            ->assertSee('Spieler-Performance', false)
             ->assertSee('Team-Preis', false)
             ->assertSee('ELO Team-Preis', false)
             ->assertSee('Bundesliga Test', false)
@@ -71,7 +72,7 @@ class AdminPlayerpriceTest extends TestCase
         $this->mock(AdminPlayerpriceService::class, function ($mock) {
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, null, 'players', null, null)
+                ->with(544, null, 'players', null, null, null)
                 ->andReturn($this->payload([
                     'tab' => 'players',
                     'matchround_id' => 0,
@@ -94,7 +95,7 @@ class AdminPlayerpriceTest extends TestCase
         $this->mock(AdminPlayerpriceService::class, function ($mock) {
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, null, 'teams', null, null)
+                ->with(544, null, 'teams', null, null, null)
                 ->andReturn($this->payload([
                     'tab' => 'teams',
                     'matchround_id' => 0,
@@ -303,7 +304,7 @@ class AdminPlayerpriceTest extends TestCase
 
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, 7, 'teams', null, $preview)
+                ->with(544, 7, 'teams', null, $preview, null)
                 ->andReturn($this->payload([
                     'tab' => 'teams',
                     'matchround_id' => 0,
@@ -492,6 +493,9 @@ class AdminPlayerpriceTest extends TestCase
             'elo_min_price' => 1.0,
             'price_margins' => [0.5, 1, 1.5, 2, 2.5, 3],
             'team_price_preview' => null,
+            'performance_preview' => null,
+            'performance_has_teamprices' => false,
+            'performance_opponent_weight' => 0.25,
         ], $overrides);
     }
 }
