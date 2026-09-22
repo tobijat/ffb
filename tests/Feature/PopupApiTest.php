@@ -440,8 +440,7 @@ class PopupApiTest extends TestCase
                             'matchround_id' => 1,
                             'matchround_title' => 'R1',
                             'price' => 4.5,
-                            'power' => 3.2,
-                            'av_power' => 2.1,
+                            'round_performance' => 0.5,
                         ],
                     ],
                 ],
@@ -451,6 +450,7 @@ class PopupApiTest extends TestCase
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->getJson('/api/popups/player/55/prices?league_id=26')
             ->assertOk()
-            ->assertJsonPath('data.points.0.price', 4.5);
+            ->assertJsonPath('data.points.0.price', 4.5)
+            ->assertJsonPath('data.points.0.round_performance', 0.5);
     }
 }

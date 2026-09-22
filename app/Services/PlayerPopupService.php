@@ -715,7 +715,9 @@ class PlayerPopupService
     }
 
     /**
-     * Price / power series for Preisverlauf (dynamic pricing games).
+     * Price / round-performance series for Preisverlauf (dynamic pricing games).
+     *
+     * Leistungskurve uses playerstats_round_performance (−1 = 0%, +1 = 100%).
      *
      * @return array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}
      */
@@ -763,6 +765,22 @@ class PlayerPopupService
             ->get()
             ->groupBy(fn (Playerprice $p) => (int) $p->playerprice_matchround_id);
 
+        /** @var array<int, float> $performanceByRound */
+        $performanceByRound = [];
+        foreach (
+            Playerstats::query()
+                ->whereIn('playerstats_matchround_id', $roundIds)
+                ->whereIn('playerstats_playerteam_id', $ptIds)
+                ->whereNotNull('playerstats_round_performance')
+                ->orderByDesc('playerstats_id')
+                ->get(['playerstats_matchround_id', 'playerstats_round_performance']) as $stat
+        ) {
+            $roundId = (int) $stat->playerstats_matchround_id;
+            if (! array_key_exists($roundId, $performanceByRound)) {
+                $performanceByRound[$roundId] = (float) $stat->playerstats_round_performance;
+            }
+        }
+
         $points = [];
         foreach ($allRounds as $round) {
             $roundId = (int) $round->matchround_id;
@@ -771,12 +789,15 @@ class PlayerPopupService
                 continue;
             }
 
+            $roundPerformance = $performanceByRound[$roundId] ?? null;
+
             $points[] = [
                 'matchround_id' => $roundId,
                 'matchround_title' => (string) $round->matchround_title,
                 'price' => (float) $row->playerprice_price,
-                'power' => (float) $row->playerprice_player_power,
-                'av_power' => (float) $row->playerprice_av_power,
+                'round_performance' => $roundPerformance !== null
+                    ? round($roundPerformance, 3)
+                    : null,
             ];
         }
 
