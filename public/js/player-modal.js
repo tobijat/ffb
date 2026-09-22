@@ -304,8 +304,7 @@
             caption =
                 '<div class="ffb-player-caption">' +
                 '<div><span class="cap-curve"></span> Preiskurve / <b>Ø - - -</b></div>' +
-                '<div><span class="cap-red"></span> Leistungskurve / <b style="color:#c00">Ø - - -</b></div>' +
-                '<div><span class="cap-avg">Ø</span> Leistung selbe Position</div></div>';
+                '<div><span class="cap-red"></span> Leistungskurve / <b style="color:#c00">Ø - - -</b></div></div>';
         } else {
             caption =
                 '<div class="ffb-player-caption">' +
@@ -607,15 +606,13 @@
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         let sumPrice = 0;
-        let sumPower = 0;
+        let sumPowerPct = 0;
+        let powerCount = 0;
         const xyPrice = [];
         const xyPower = [];
 
         for (let index = 0; index < count; index++) {
             const elem = points[index];
-            const avNorm = Math.round(Number(elem.av_power) / (scoreDelimiter / 100));
-            ctx.fillStyle = 'rgba(175, 240, 240, 0.55)';
-            ctx.fillRect(index * colLen - colLen + 1, baseline - avNorm, colLen - 2, avNorm);
 
             ctx.strokeStyle = '#646464';
             ctx.setLineDash([2, 2]);
@@ -626,12 +623,9 @@
             ctx.setLineDash([]);
 
             sumPrice += Number(elem.price) || 0;
-            sumPower += Number(elem.power) || 0;
 
             const priceNorm = Math.round(Number(elem.price) / (scoreDelimiter / 100));
-            const powerNorm = Math.round(Number(elem.power) / (scoreDelimiter / 100));
             xyPrice.push([colLen * index, priceNorm]);
-            xyPower.push([colLen * index, powerNorm]);
 
             const marginBlack = index % 2 === 0 ? -10 : 2;
             const marginRed = index % 2 === 0 ? 2 : -10;
@@ -642,17 +636,34 @@
                 index * colLen + 2,
                 baseline - priceNorm + marginBlack + 8
             );
+
+            if (elem.round_performance == null || elem.round_performance === '') {
+                continue;
+            }
+
+            const rp = Math.max(-1, Math.min(1, Number(elem.round_performance)));
+            const powerPct = Math.round(((rp + 1) / 2) * 100);
+            sumPowerPct += powerPct;
+            powerCount += 1;
+            xyPower.push([colLen * index, powerPct]);
+
             ctx.fillStyle = '#d20000';
             ctx.fillText(
-                Number(elem.power).toFixed(1),
+                String(powerPct) + '%',
                 index * colLen + 2,
-                baseline - powerNorm + marginRed + 8
+                baseline - powerPct + marginRed + 8
             );
+        }
+
+        if (xyPower.length === 1) {
+            ctx.fillStyle = '#d20000';
+            ctx.beginPath();
+            ctx.arc(xyPower[0][0], baseline - xyPower[0][1], 3, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         if (count > 1) {
             const yPrice = kubSplineY(xyPrice, colLen);
-            const yPower = kubSplineY(xyPower, colLen);
             ctx.lineWidth = 2;
             ctx.strokeStyle = '#000';
             ctx.beginPath();
@@ -666,32 +677,52 @@
             }
             ctx.stroke();
 
-            ctx.strokeStyle = '#d20000';
-            ctx.beginPath();
-            for (let i = 0; i < yPower.length; i++) {
-                const y = baseline - yPower[i];
-                if (i === 0) {
-                    ctx.moveTo(i, y);
+            if (xyPower.length > 1) {
+                ctx.strokeStyle = '#d20000';
+                ctx.beginPath();
+                if (xyPower.length === count) {
+                    const yPower = kubSplineY(xyPower, colLen);
+                    for (let i = 0; i < yPower.length; i++) {
+                        const y = baseline - yPower[i];
+                        if (i === 0) {
+                            ctx.moveTo(i, y);
+                        } else {
+                            ctx.lineTo(i, y);
+                        }
+                    }
                 } else {
-                    ctx.lineTo(i, y);
+                    for (let i = 0; i < xyPower.length; i++) {
+                        const x = xyPower[i][0];
+                        const y = baseline - xyPower[i][1];
+                        if (i === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    }
                 }
+                ctx.stroke();
             }
-            ctx.stroke();
             ctx.lineWidth = 1;
 
             const avPriceY = Math.round(baseline - sumPrice / count / (scoreDelimiter / 100));
-            const avPowerY = Math.round(baseline - sumPower / count / (scoreDelimiter / 100));
             for (let i = 0; i < imgLength; i += 10) {
                 ctx.strokeStyle = '#000';
                 ctx.beginPath();
                 ctx.moveTo(i, avPriceY);
                 ctx.lineTo(i + 2, avPriceY);
                 ctx.stroke();
-                ctx.strokeStyle = '#d20000';
-                ctx.beginPath();
-                ctx.moveTo(i, avPowerY);
-                ctx.lineTo(i + 2, avPowerY);
-                ctx.stroke();
+            }
+
+            if (powerCount > 0) {
+                const avPowerY = Math.round(baseline - sumPowerPct / powerCount);
+                for (let i = 0; i < imgLength; i += 10) {
+                    ctx.strokeStyle = '#d20000';
+                    ctx.beginPath();
+                    ctx.moveTo(i, avPowerY);
+                    ctx.lineTo(i + 2, avPowerY);
+                    ctx.stroke();
+                }
             }
         }
 
