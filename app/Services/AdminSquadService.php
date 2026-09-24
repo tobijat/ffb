@@ -14,6 +14,8 @@ use DateTimeImmutable;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class AdminSquadService
 {
@@ -180,9 +182,25 @@ class AdminSquadService
             $namesToResolve[] = $lookupName;
         }
 
-        $resolved = $namesToResolve !== []
-            ? $this->wikimediaImages->resolveImagesByPlayerNames($namesToResolve)
-            : [];
+        $resolved = [];
+        $wikimediaTimedOut = false;
+        $wikimediaError = null;
+        if ($namesToResolve !== []) {
+            try {
+                $diagnosis = $this->wikimediaImages->diagnoseImagesByPlayerNames($namesToResolve);
+                $resolved = is_array($diagnosis['resolved'] ?? null) ? $diagnosis['resolved'] : [];
+                $wikimediaTimedOut = (bool) ($diagnosis['timed_out'] ?? false);
+                $sparqlError = trim((string) ($diagnosis['sparql']['error'] ?? ''));
+                if ($sparqlError !== '' && $resolved === []) {
+                    $wikimediaError = $sparqlError;
+                }
+            } catch (Throwable $e) {
+                Log::warning('Wikimedia squad image check failed.', ['error' => $e->getMessage()]);
+                $wikimediaError = $e->getMessage();
+                $wikimediaTimedOut = str_contains(strtolower($e->getMessage()), 'timeout')
+                    || str_contains(strtolower($e->getMessage()), 'timed out');
+            }
+        }
 
         $foundCount = 0;
         $missingCount = 0;
@@ -207,7 +225,11 @@ class AdminSquadService
         }
 
         $parts = [];
-        if ($foundCount === 1) {
+        if ($wikimediaTimedOut) {
+            $parts[] = 'Wikimedia-Timeout — Abfrage abgebrochen';
+        } elseif ($wikimediaError !== null && $foundCount === 0) {
+            $parts[] = 'Wikimedia nicht erreichbar';
+        } elseif ($foundCount === 1) {
             $parts[] = '1 Bild gefunden';
         } elseif ($foundCount > 1) {
             $parts[] = $foundCount.' Bilder gefunden';
@@ -605,6 +627,13 @@ class AdminSquadService
             $almost = $this->enrichAlmostMatchesWithSquads($almost, $leagueId);
         }
 
+        $surplusCount = 0;
+        $surplusRows = $this->surplusActiveSquadDraftRows($onSquadRows, $usedPlayerIds);
+        if ($surplusRows !== []) {
+            $surplusCount = count($surplusRows);
+            $draft = array_merge($draft, $surplusRows);
+        }
+
         $draft = $this->sortAutoDraftByPosition($draft);
         $almost = $this->sortAlmostDraftByPosition($almost);
 
@@ -619,6 +648,11 @@ class AdminSquadService
             $parts[] = 'davon 1 bereits im Kader';
         } elseif ($alreadyOnSquad > 1) {
             $parts[] = 'davon '.$alreadyOnSquad.' bereits im Kader';
+        }
+        if ($surplusCount === 1) {
+            $parts[] = '1 aktiver Kader-Spieler nicht in JSON (Status → inaktiv)';
+        } elseif ($surplusCount > 1) {
+            $parts[] = $surplusCount.' aktive Kader-Spieler nicht in JSON (Status → inaktiv)';
         }
         if (count($almost) === 1) {
             $parts[] = '1 Namens-Ähnlichkeit zur Prüfung';
@@ -1076,7 +1110,7 @@ class AdminSquadService
                 'errors' => [$e->getMessage()],
                 'team_id' => $teamId,
             ];
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return [
                 'ok' => false,
                 'errors' => ['Speichern fehlgeschlagen.'],
@@ -1294,11 +1328,13 @@ class AdminSquadService
     }
 
     /**
-     * @return list<array{team_id: int, team_label: string, team_nationality: string}>
+     * @return list<array{team_id: int, team_label: string, team_nationality: string, active_count: int}>
      */
     private function teamOptions(int $leagueId): array
     {
         $teamIds = [];
+        /** @var array<int, int> $activeCounts */
+        $activeCounts = [];
         if ($leagueId > 0) {
             $teamIds = DB::table('ffb_match as m')
                 ->join('ffb_matchround as mr', 'mr.matchround_id', '=', 'm.match_round')
@@ -1318,6 +1354,15 @@ class AdminSquadService
                 ->map(fn ($id) => (int) $id)
                 ->all();
             $teamIds = array_values(array_unique(array_merge($teamIds, $squadTeamIds)));
+
+            $activeCounts = Playerteam::query()
+                ->where('playerteam_league_id', $leagueId)
+                ->where('playerteam_status', 1)
+                ->groupBy('playerteam_team_id')
+                ->selectRaw('playerteam_team_id, COUNT(*) as active_count')
+                ->pluck('active_count', 'playerteam_team_id')
+                ->map(static fn (mixed $count): int => (int) $count)
+                ->all();
         }
 
         $query = Team::query()->orderBy('team_name');
@@ -1327,7 +1372,7 @@ class AdminSquadService
 
         return $query
             ->get(['team_id', 'team_name', 'team_nationality', 'team_status'])
-            ->map(function (Team $team) {
+            ->map(function (Team $team) use ($activeCounts) {
                 $name = (string) $team->team_name;
                 $nat = trim((string) ($team->team_nationality ?? ''));
                 $label = $nat !== '' ? $name.' ('.$nat.')' : $name;
@@ -1335,10 +1380,13 @@ class AdminSquadService
                     $label .= ' [inaktiv]';
                 }
 
+                $teamId = (int) $team->team_id;
+
                 return [
-                    'team_id' => (int) $team->team_id,
+                    'team_id' => $teamId,
                     'team_label' => $label,
                     'team_nationality' => strtoupper($nat),
+                    'active_count' => (int) ($activeCounts[$teamId] ?? 0),
                 ];
             })
             ->values()
@@ -1514,7 +1562,7 @@ class AdminSquadService
         if ($mime === 'image/jpeg') {
             try {
                 $file->move($dir, $filename);
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 return false;
             }
 
@@ -2059,6 +2107,7 @@ class AdminSquadService
             'playerteam_id' => (int) ($row['playerteam_id'] ?? 0),
             'is_new' => $isNew,
             'on_squad' => $onSquad,
+            'not_in_json' => ((string) ($row['not_in_json'] ?? '0') === '1' || ($row['not_in_json'] ?? false) === true),
             'player_fname' => trim((string) ($row['player_fname'] ?? '')),
             'player_lname' => trim((string) ($row['player_lname'] ?? '')),
             'player_nationality' => strtoupper(trim((string) ($row['player_nationality'] ?? ''))),
@@ -2074,6 +2123,85 @@ class AdminSquadService
     }
 
     /**
+     * Active squad members for team×league who were not matched from the JSON.
+     * Preselected as inactive so saving aligns the active roster with the JSON.
+     *
+     * @param  Collection<int, Playerteam>  $onSquadRows  keyed by player_id
+     * @param  array<int, true>  $usedPlayerIds
+     * @return list<array<string, mixed>>
+     */
+    private function surplusActiveSquadDraftRows(Collection $onSquadRows, array $usedPlayerIds): array
+    {
+        /** @var list<int> $surplusPlayerIds */
+        $surplusPlayerIds = [];
+        foreach ($onSquadRows as $playerId => $squadRow) {
+            $playerId = (int) $playerId;
+            if ($playerId <= 0 || isset($usedPlayerIds[$playerId])) {
+                continue;
+            }
+            if ((int) $squadRow->playerteam_status !== 1) {
+                continue;
+            }
+            $surplusPlayerIds[] = $playerId;
+        }
+
+        if ($surplusPlayerIds === []) {
+            return [];
+        }
+
+        $players = Player::query()
+            ->whereIn('player_id', $surplusPlayerIds)
+            ->get([
+                'player_id',
+                'player_fname',
+                'player_lname',
+                'player_nationality',
+                'player_foreign_id',
+            ])
+            ->keyBy(static fn (Player $player): int => (int) $player->player_id);
+
+        $draft = [];
+        foreach ($surplusPlayerIds as $playerId) {
+            $squadRow = $onSquadRows->get($playerId);
+            $player = $players->get($playerId);
+            if ($squadRow === null || $player === null) {
+                continue;
+            }
+
+            $transfer = self::DEFAULT_TRANSFER;
+            $transferTs = strtotime((string) $squadRow->playerteam_date_transfer);
+            if ($transferTs) {
+                $transfer = date('Y-m-d', $transferTs);
+            }
+
+            $fname = (string) $player->player_fname;
+            $lname = (string) $player->player_lname;
+            $displayName = trim($fname.' '.$lname);
+
+            $draft[] = [
+                'player_id' => $playerId,
+                'playerteam_id' => (int) $squadRow->playerteam_id,
+                'is_new' => false,
+                'on_squad' => true,
+                'not_in_json' => true,
+                'player_fname' => $fname,
+                'player_lname' => $lname,
+                'player_nationality' => strtoupper(trim((string) ($player->player_nationality ?? ''))),
+                'player_status' => 1,
+                'player_status_description' => '',
+                'player_foreign_id' => (string) ($player->player_foreign_id ?? ''),
+                'playerteam_player_position' => (string) $squadRow->playerteam_player_position,
+                'playerteam_status' => 0,
+                'playerteam_date_transfer' => $transfer,
+                'json_number' => 0,
+                'json_name' => $displayName,
+            ];
+        }
+
+        return $draft;
+    }
+
+    /**
      * @param  list<array<string, mixed>>  $draft
      * @return list<array<string, mixed>>
      */
@@ -2085,6 +2213,12 @@ class AdminSquadService
             $posB = $order[(string) ($b['playerteam_player_position'] ?? '')] ?? 99;
             if ($posA !== $posB) {
                 return $posA <=> $posB;
+            }
+
+            $surplusA = ! empty($a['not_in_json']) ? 1 : 0;
+            $surplusB = ! empty($b['not_in_json']) ? 1 : 0;
+            if ($surplusA !== $surplusB) {
+                return $surplusA <=> $surplusB;
             }
 
             return ((int) ($a['json_number'] ?? 0)) <=> ((int) ($b['json_number'] ?? 0));

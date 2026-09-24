@@ -97,7 +97,7 @@
                 <option value="">— Team wählen —</option>
                 @foreach ($teams as $team)
                     <option value="{{ $team['team_id'] }}" @selected($selectedTeamId === (int) $team['team_id'])>
-                        {{ $team['team_label'] }}
+                        {{ $team['team_label'] }} ({{ (int) ($team['active_count'] ?? 0) }})
                     </option>
                 @endforeach
             </select>
@@ -448,6 +448,8 @@
                 @if ($selectedTeamNat !== '')
                     · FIFA-Code: <strong>{{ $selectedTeamNat }}</strong>
                 @endif
+                · Aktive Kader-Spieler, die nicht in der JSON stehen, erscheinen mit Status
+                <strong>inaktiv</strong> und werden beim Speichern deaktiviert.
             </p>
 
             @php
@@ -543,9 +545,12 @@
                                             @php
                                                 $isNew = (bool) ($player['is_new'] ?? false);
                                                 $onSquad = (bool) ($player['on_squad'] ?? false);
+                                                $notInJson = (bool) ($player['not_in_json'] ?? false);
                                                 $playerId = (int) ($player['player_id'] ?? 0);
                                                 $rowClass = 'admin-auto-squad-row';
-                                                if ($onSquad) {
+                                                if ($notInJson) {
+                                                    $rowClass .= ' is-not-in-json is-on-squad';
+                                                } elseif ($onSquad) {
                                                     $rowClass .= ' is-on-squad';
                                                 } elseif ($isNew) {
                                                     $rowClass .= ' is-new';
@@ -559,14 +564,20 @@
                                                     <input type="hidden" name="players[{{ $index }}][playerteam_id]" value="{{ (int) ($player['playerteam_id'] ?? 0) }}">
                                                     <input type="hidden" name="players[{{ $index }}][is_new]" value="{{ $isNew ? '1' : '0' }}">
                                                     <input type="hidden" name="players[{{ $index }}][on_squad]" value="{{ $onSquad ? '1' : '0' }}">
+                                                    <input type="hidden" name="players[{{ $index }}][not_in_json]" value="{{ $notInJson ? '1' : '0' }}">
                                                     <input type="hidden" name="players[{{ $index }}][json_number]" value="{{ $player['json_number'] ?? 0 }}">
                                                     <input type="hidden" name="players[{{ $index }}][json_name]" value="{{ $player['json_name'] ?? '' }}">
                                                     <input type="hidden" name="players[{{ $index }}][player_status]" value="1">
                                                     <input type="hidden" name="players[{{ $index }}][player_status_description]" value="">
                                                     <input type="hidden" name="players[{{ $index }}][playerteam_date_transfer]" value="{{ $player['playerteam_date_transfer'] ?? $defaults['playerteam_date_transfer'] }}">
-                                                    {{ $player['json_number'] ?? '' }}
-                                                    @if ($onSquad)
-                                                        <span class="admin-auto-squad-badge" title="Bereits im Kader">im Kader</span>
+                                                    @if ($notInJson)
+                                                        <span class="muted">—</span>
+                                                        <span class="admin-auto-squad-badge" title="Aktiv im Kader, aber nicht in der JSON-Datei">nicht in JSON</span>
+                                                    @else
+                                                        {{ $player['json_number'] ?? '' }}
+                                                        @if ($onSquad)
+                                                            <span class="admin-auto-squad-badge" title="Bereits im Kader">im Kader</span>
+                                                        @endif
                                                     @endif
                                                 </td>
                                                 <td>

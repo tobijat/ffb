@@ -12,6 +12,7 @@ use App\Services\AdminSquadService;
 use App\Services\WikimediaPlayerImageService;
 use App\Support\PlayerPicture;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
@@ -200,6 +201,27 @@ class AdminSquadImagesTest extends TestCase
                 && str_contains($titles, '|');
         });
         $this->assertSame(1, $commonsCalls);
+    }
+
+    #[Test]
+    public function check_survives_wikimedia_timeout_without_500(): void
+    {
+        Http::swap(new Factory);
+        Http::fake(function () {
+            throw new ConnectionException(
+                'cURL error 28: Operation timed out after 10001 milliseconds'
+            );
+        });
+
+        [$teamId, $leagueId] = $this->seedTeamAndLeague('cze');
+        $this->createActivePlayer($teamId, $leagueId, 'Matěj', 'Kovář', 'g', false);
+
+        $result = $this->service()->checkWikimediaImagesForSquadPlayers($teamId, $leagueId);
+
+        $this->assertTrue($result['ok']);
+        $this->assertStringContainsString('Timeout', $result['message'] ?? '');
+        $this->assertTrue($result['images']['checked'] ?? false);
+        $this->assertSame('nicht_gefunden', $result['images']['players'][0]['status'] ?? null);
     }
 
     private function service(): AdminSquadService

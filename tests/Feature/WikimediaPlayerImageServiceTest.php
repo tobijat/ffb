@@ -9,6 +9,7 @@ use App\Models\Team;
 use App\Services\WikimediaPlayerImageService;
 use App\Support\PlayerPicture;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
@@ -339,6 +340,23 @@ class WikimediaPlayerImageServiceTest extends TestCase
         imagedestroy($image);
 
         return (string) ob_get_clean();
+    }
+
+    #[Test]
+    public function diagnose_returns_empty_resolved_on_sparql_timeout(): void
+    {
+        Http::fake(function () {
+            throw new ConnectionException(
+                'cURL error 28: Operation timed out after 10001 milliseconds'
+            );
+        });
+
+        $diagnosis = (new WikimediaPlayerImageService)->diagnoseImagesByPlayerNames(['Álex Grimaldo']);
+
+        $this->assertTrue($diagnosis['timed_out']);
+        $this->assertSame([], $diagnosis['resolved']);
+        $this->assertNotEmpty($diagnosis['sparql']['error']);
+        $this->assertSame([], (new WikimediaPlayerImageService)->resolveImagesByPlayerNames(['Álex Grimaldo']));
     }
 
     private function createSchema(): void
