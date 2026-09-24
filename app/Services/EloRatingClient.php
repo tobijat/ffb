@@ -31,6 +31,26 @@ class EloRatingClient
         private readonly ?string $teamsUrl = null,
     ) {}
 
+    /**
+     * Historical / year snapshot feed: http://www.eloratings.net/<year>.tsv
+     */
+    public static function ratingsUrlForYear(int $year): string
+    {
+        return 'http://www.eloratings.net/'.$year.'.tsv';
+    }
+
+    /**
+     * Client that loads ratings from a specific year TSV (isolated cache).
+     */
+    public function forYear(int $year): self
+    {
+        return new self(
+            self::ratingsUrlForYear($year),
+            $this->teamMapPath,
+            $this->teamsUrl,
+        );
+    }
+
     public function getEloRatingForTeam(int $teamId): ?float
     {
         $ratings = $this->ratings();

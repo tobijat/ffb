@@ -196,6 +196,7 @@ class AdminPlayerpriceController extends Controller
                 ->withInput($request->only([
                     'price_league_id',
                     'matchround_id',
+                    'elo_year',
                     'max_credits',
                     'max_players_team',
                     'exponent',
@@ -233,6 +234,7 @@ class AdminPlayerpriceController extends Controller
                 ->withInput($request->only([
                     'price_league_id',
                     'matchround_id',
+                    'elo_year',
                     'max_credits',
                     'max_players_team',
                     'exponent',

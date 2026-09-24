@@ -16,10 +16,10 @@
         $performancePreview = is_array($data['performance_preview'] ?? null) ? $data['performance_preview'] : null;
         $performancePlayers = is_array($performancePreview['players'] ?? null) ? $performancePreview['players'] : [];
         $performancePositions = is_array($performancePreview['positions'] ?? null) ? $performancePreview['positions'] : [];
-        $performanceHasTeamprices = ! empty($data['performance_has_teamprices']);
+        $performanceHasTeamelos = ! empty($data['performance_has_teamelos']);
         $performanceIncludeOpponent = (string) old(
             'include_opponent_strength',
-            ($performancePreview['include_opponent_strength'] ?? $performanceHasTeamprices) ? '1' : '0',
+            ($performancePreview['include_opponent_strength'] ?? $performanceHasTeamelos) ? '1' : '0',
         ) === '1';
         $performanceOpponentWeight = old(
             'opponent_weight',
@@ -54,6 +54,10 @@
         $eloMinPrice = old('min_price', $previewForm['min_price'] ?? $data['elo_min_price'] ?? 1);
         $eloMaxCredits = old('max_credits', $previewForm['max_credits'] ?? $lineupMaxCredits);
         $eloMaxPlayersTeam = old('max_players_team', $previewForm['max_players_team'] ?? $lineupMaxPlayersTeam);
+        $eloYear = (int) old('elo_year', $previewForm['elo_year'] ?? $data['elo_year'] ?? now()->year);
+        $eloYearOptions = is_array($data['elo_year_options'] ?? null)
+            ? $data['elo_year_options']
+            : range((int) now()->year, 2007);
         $flashErrors = $errors ?: (session('admin_errors') ?: []);
         $flashDetails = is_array($details ?? null) ? $details : [];
         $hasLeague = $priceLeagueId > 0;
@@ -160,7 +164,8 @@
             <p class="hint">
                 Berechnet <code>round_performance</code> aus dem Positions-Rang (0 = schlechteste Punkte,
                 n−1 = beste; bei Gleichstand gemittelter Rang), skaliert auf −1…+1 (gerundet auf 1/1000).
-                Nur Spieler mit Minuten &gt; 0. Speichern schreibt in
+                Der Vergleichspool ist die Position über alle bisherigen und die aktuelle Spielrunde der Liga
+                (nicht nur die Teams der gewählten Runde). Nur Spieler mit Minuten &gt; 0. Speichern schreibt in
                 <code>ffb_playerstats.playerstats_round_performance</code>.
             </p>
 
@@ -191,7 +196,7 @@
                     <input type="hidden" name="tab" value="performance">
                     <input type="hidden" name="matchround_id" value="{{ $matchroundId }}">
 
-                    @if ($performanceHasTeamprices)
+                    @if ($performanceHasTeamelos)
                         <div class="admin-field">
                             <input type="hidden" name="include_opponent_strength" value="0">
                             <label>
@@ -201,10 +206,11 @@
                                     value="1"
                                     @checked($performanceIncludeOpponent)
                                 >
-                                Gegnerstärke (Teampreis) einbeziehen
+                                Gegnerstärke (ELO) einbeziehen
                             </label>
                             <p class="hint">
-                                Passt die Rang-Performance um den relativen Teampreis-Unterschied zum Gegner an.
+                                Passt die Rang-Performance um den relativen ELO-Unterschied zum Gegner an
+                                (skaliert über das ELO-Spektrum aller Liga-Teams in ffb_teamelo, nicht nur der aktuellen Runde).
                             </p>
                         </div>
                         <div class="admin-field">
@@ -222,8 +228,8 @@
                         </div>
                     @else
                         <p class="muted">
-                            Gegnerstärke ist nicht verfügbar: für diese Spielrunde fehlen Teampreise
-                            (oder es gibt keine Teams). Bitte zuerst im Tab Teams befüllen.
+                            Gegnerstärke ist nicht verfügbar: für Teams der Liga fehlen ELO-Werte
+                            in ffb_teamelo. Bitte zuerst im Tab Team-Preis speichern oder Team-Elo backfüllen.
                         </p>
                     @endif
 
@@ -255,6 +261,7 @@
                                 <strong>{{ strtoupper((string) $code) }}</strong>
                                 {{ $positionLabels[$code] ?? $code }}:
                                 n={{ $pos['sample_size'] ?? 0 }}
+                                <span class="muted">(Vergleichspool bis aktuelle Runde)</span>
                             </li>
                         @endforeach
                     </ul>
@@ -570,6 +577,19 @@
                 <input type="hidden" name="tab" value="teams">
                 <input type="hidden" name="matchround_id" value="{{ $matchroundId > 0 ? $matchroundId : '' }}">
                 <div class="admin-field">
+                    <label for="pp_elo_year">ELO-Jahr</label>
+                    <select id="pp_elo_year" name="elo_year" required>
+                        @foreach ($eloYearOptions as $yearOption)
+                            <option value="{{ $yearOption }}" @selected($eloYear === (int) $yearOption)>
+                                {{ $yearOption }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="hint">
+                        Quelle: http://www.eloratings.net/&lt;Jahr&gt;.tsv (2007–aktuelles Jahr).
+                    </p>
+                </div>
+                <div class="admin-field">
                     <label for="pp_elo_max_credits">Max. Credits / Aufstellung</label>
                     <input
                         id="pp_elo_max_credits"
@@ -676,7 +696,8 @@
 
                 @if ($previewParams !== [])
                     <p class="muted">
-                        Parameter: Exponent {{ $previewParams['exponent'] ?? '—' }},
+                        Parameter: ELO-Jahr {{ $previewForm['elo_year'] ?? '—' }},
+                        Exponent {{ $previewParams['exponent'] ?? '—' }},
                         Dream-Team-Ratio {{ $previewParams['dream_team_ratio'] ?? '—' }},
                         Mindestpreis {{ $previewParams['min_price'] ?? '—' }},
                         Budget {{ $previewParams['budget'] ?? '—' }},
