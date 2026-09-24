@@ -37,6 +37,8 @@ class AdminSquadAutoTest extends TestCase
         }
         $this->tempSquadFiles = [];
 
+        Schema::dropIfExists('ffb_match');
+        Schema::dropIfExists('ffb_matchround');
         Schema::dropIfExists('ffb_playerteam');
         Schema::dropIfExists('ffb_player');
         Schema::dropIfExists('ffb_team');
@@ -166,6 +168,179 @@ class AdminSquadAutoTest extends TestCase
         $this->assertTrue($byName['Tomáš Holeš']['on_squad']);
         $this->assertSame('m', $byName['Tomáš Holeš']['playerteam_player_position']);
         $this->assertArrayNotHasKey('playerteam_player_price', $byName['Tomáš Holeš']);
+    }
+
+    #[Test]
+    public function analyze_lists_active_squad_players_missing_from_json_as_inactive(): void
+    {
+        [$teamId, $leagueId] = $this->seedTeamAndLeague('cze');
+
+        $kept = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Tomáš',
+            'player_lname' => 'Holeš',
+            'player_nationality' => 'CZE',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+        $surplus = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Old',
+            'player_lname' => 'Starter',
+            'player_nationality' => 'CZE',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+        $alreadyInactive = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Already',
+            'player_lname' => 'Inactive',
+            'player_nationality' => 'CZE',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+
+        Playerteam::query()->create([
+            'playerteam_player_id' => (int) $kept->player_id,
+            'playerteam_team_id' => $teamId,
+            'playerteam_league_id' => $leagueId,
+            'playerteam_player_picture' => '',
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 'd',
+            'playerteam_date_transfer' => '2008-01-01 00:00:00',
+        ]);
+        $surplusRow = Playerteam::query()->create([
+            'playerteam_player_id' => (int) $surplus->player_id,
+            'playerteam_team_id' => $teamId,
+            'playerteam_league_id' => $leagueId,
+            'playerteam_player_picture' => '',
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 'm',
+            'playerteam_date_transfer' => '2008-01-01 00:00:00',
+        ]);
+        Playerteam::query()->create([
+            'playerteam_player_id' => (int) $alreadyInactive->player_id,
+            'playerteam_team_id' => $teamId,
+            'playerteam_league_id' => $leagueId,
+            'playerteam_player_picture' => '',
+            'playerteam_status' => 0,
+            'playerteam_player_position' => 's',
+            'playerteam_date_transfer' => '2008-01-01 00:00:00',
+        ]);
+
+        $file = $this->jsonFile([
+            [
+                'name' => 'Czech Republic',
+                'fifa_code' => 'CZE',
+                'players' => [
+                    ['number' => 3, 'pos' => 'DF', 'name' => 'Tomáš Holeš'],
+                ],
+            ],
+        ]);
+
+        $result = $this->service()->analyzeSquadsFile($teamId, $leagueId, $file);
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        $this->assertCount(2, $result['auto']['players']);
+        $this->assertStringContainsString('1 aktiver Kader-Spieler nicht in JSON', $result['message']);
+
+        $byPlayerId = [];
+        foreach ($result['auto']['players'] as $row) {
+            $byPlayerId[(int) $row['player_id']] = $row;
+        }
+
+        $this->assertTrue($byPlayerId[(int) $kept->player_id]['on_squad']);
+        $this->assertFalse($byPlayerId[(int) $kept->player_id]['not_in_json'] ?? false);
+        $this->assertSame(1, (int) $byPlayerId[(int) $kept->player_id]['playerteam_status']);
+
+        $this->assertTrue($byPlayerId[(int) $surplus->player_id]['not_in_json']);
+        $this->assertTrue($byPlayerId[(int) $surplus->player_id]['on_squad']);
+        $this->assertSame(0, (int) $byPlayerId[(int) $surplus->player_id]['playerteam_status']);
+        $this->assertSame((int) $surplusRow->playerteam_id, (int) $byPlayerId[(int) $surplus->player_id]['playerteam_id']);
+        $this->assertArrayNotHasKey((int) $alreadyInactive->player_id, $byPlayerId);
+    }
+
+    #[Test]
+    public function create_deactivates_surplus_active_squad_players_from_draft(): void
+    {
+        [$teamId, $leagueId] = $this->seedTeamAndLeague('cze');
+
+        $kept = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Tomáš',
+            'player_lname' => 'Holeš',
+            'player_nationality' => 'CZE',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+        $surplus = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Old',
+            'player_lname' => 'Starter',
+            'player_nationality' => 'CZE',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+
+        $keptRow = Playerteam::query()->create([
+            'playerteam_player_id' => (int) $kept->player_id,
+            'playerteam_team_id' => $teamId,
+            'playerteam_league_id' => $leagueId,
+            'playerteam_player_picture' => '',
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 'd',
+            'playerteam_date_transfer' => '2008-01-01 00:00:00',
+        ]);
+        $surplusRow = Playerteam::query()->create([
+            'playerteam_player_id' => (int) $surplus->player_id,
+            'playerteam_team_id' => $teamId,
+            'playerteam_league_id' => $leagueId,
+            'playerteam_player_picture' => '',
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 'm',
+            'playerteam_date_transfer' => '2008-01-01 00:00:00',
+        ]);
+
+        $result = $this->service()->createSquadFromDraft([
+            [
+                'player_id' => (int) $kept->player_id,
+                'playerteam_id' => (int) $keptRow->playerteam_id,
+                'is_new' => false,
+                'on_squad' => true,
+                'not_in_json' => false,
+                'player_fname' => 'Tomáš',
+                'player_lname' => 'Holeš',
+                'player_nationality' => 'CZE',
+                'playerteam_player_position' => 'd',
+                'playerteam_status' => 1,
+                'playerteam_date_transfer' => '2008-01-01',
+                'json_name' => 'Tomáš Holeš',
+            ],
+            [
+                'player_id' => (int) $surplus->player_id,
+                'playerteam_id' => (int) $surplusRow->playerteam_id,
+                'is_new' => false,
+                'on_squad' => true,
+                'not_in_json' => true,
+                'player_fname' => 'Old',
+                'player_lname' => 'Starter',
+                'player_nationality' => 'CZE',
+                'playerteam_player_position' => 'm',
+                'playerteam_status' => 0,
+                'playerteam_date_transfer' => '2008-01-01',
+                'json_name' => 'Old Starter',
+            ],
+        ], $teamId, $leagueId, 'worldcup.squads.json', 'CZE');
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        $this->assertDatabaseHas('ffb_playerteam', [
+            'playerteam_id' => (int) $keptRow->playerteam_id,
+            'playerteam_status' => 1,
+        ]);
+        $this->assertDatabaseHas('ffb_playerteam', [
+            'playerteam_id' => (int) $surplusRow->playerteam_id,
+            'playerteam_status' => 0,
+        ]);
     }
 
     #[Test]
@@ -486,6 +661,87 @@ class AdminSquadAutoTest extends TestCase
         ]);
     }
 
+    #[Test]
+    public function team_options_include_active_squad_player_counts(): void
+    {
+        [$teamId, $leagueId] = $this->seedTeamAndLeague('cze');
+
+        $emptyTeam = Team::query()->create([
+            'team_foreign_id' => '',
+            'team_name' => 'Empty Squad',
+            'team_nationality' => 'ger',
+            'team_num_players' => 0,
+            'team_status' => 1,
+        ]);
+
+        $this->ensureMatchTables();
+
+        foreach ([['Active', 'One'], ['Active', 'Two'], ['Inactive', 'Three']] as [$fname, $lname]) {
+            $player = Player::query()->create([
+                'player_foreign_id' => '',
+                'player_fname' => $fname,
+                'player_lname' => $lname,
+                'player_nationality' => 'CZE',
+                'player_status' => 1,
+                'player_status_description' => '',
+            ]);
+
+            Playerteam::query()->create([
+                'playerteam_player_id' => (int) $player->player_id,
+                'playerteam_team_id' => $teamId,
+                'playerteam_league_id' => $leagueId,
+                'playerteam_player_picture' => '',
+                'playerteam_status' => $fname === 'Inactive' ? 0 : 1,
+                'playerteam_player_position' => 'd',
+                'playerteam_date_transfer' => '2008-01-01 00:00:00',
+            ]);
+        }
+
+        $inactiveOnly = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Bench',
+            'player_lname' => 'Only',
+            'player_nationality' => 'GER',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+
+        Playerteam::query()->create([
+            'playerteam_player_id' => (int) $inactiveOnly->player_id,
+            'playerteam_team_id' => (int) $emptyTeam->team_id,
+            'playerteam_league_id' => $leagueId,
+            'playerteam_player_picture' => '',
+            'playerteam_status' => 0,
+            'playerteam_player_position' => 'd',
+            'playerteam_date_transfer' => '2008-01-01 00:00:00',
+        ]);
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('shellPayload')->andReturn([
+            'user' => ['user_id' => 544],
+            'navigation' => [],
+            'selected_league' => ['league_id' => $leagueId],
+            'selected_league_id' => $leagueId,
+        ]);
+        $adminCenter->shouldReceive('selectedLeagueId')->andReturn($leagueId);
+
+        $service = new AdminSquadService(
+            $adminCenter,
+            new AdminPlayerService($adminCenter),
+            new WikimediaPlayerImageService
+        );
+
+        $payload = $service->pagePayload(544, $teamId, $leagueId, 'auto');
+
+        $byId = [];
+        foreach ($payload['teams'] as $team) {
+            $byId[(int) $team['team_id']] = $team;
+        }
+
+        $this->assertSame(2, $byId[$teamId]['active_count']);
+        $this->assertSame(0, $byId[(int) $emptyTeam->team_id]['active_count']);
+    }
+
     private function service(): AdminSquadService
     {
         $adminCenter = Mockery::mock(AdminCenterService::class);
@@ -533,8 +789,28 @@ class AdminSquadAutoTest extends TestCase
         return [(int) $team->team_id, (int) $league->league_id];
     }
 
+    private function ensureMatchTables(): void
+    {
+        Schema::dropIfExists('ffb_match');
+        Schema::dropIfExists('ffb_matchround');
+
+        Schema::create('ffb_matchround', function (Blueprint $table) {
+            $table->increments('matchround_id');
+            $table->unsignedInteger('matchround_league_id')->default(0);
+        });
+
+        Schema::create('ffb_match', function (Blueprint $table) {
+            $table->increments('match_id');
+            $table->unsignedInteger('match_round')->default(0);
+            $table->unsignedInteger('match_hometeam_id')->default(0);
+            $table->unsignedInteger('match_guestteam_id')->default(0);
+        });
+    }
+
     private function createSchema(): void
     {
+        Schema::dropIfExists('ffb_match');
+        Schema::dropIfExists('ffb_matchround');
         Schema::dropIfExists('ffb_playerteam');
         Schema::dropIfExists('ffb_player');
         Schema::dropIfExists('ffb_team');

@@ -41,6 +41,9 @@ return [
         'user_agent' => env('WIKIMEDIA_USER_AGENT', 'SoccerSportsfan'),
         'thumbnail_width' => (int) env('WIKIMEDIA_THUMBNAIL_WIDTH', 200),
         'timeout' => (int) env('WIKIMEDIA_HTTP_TIMEOUT', 30),
+        'connect_timeout' => (int) env('WIKIMEDIA_CONNECT_TIMEOUT', 3),
+        // Soft wall-clock budget for one resolve call (must stay under PHP max_execution_time).
+        'time_budget' => (int) env('WIKIMEDIA_TIME_BUDGET', 20),
         'debug' => (bool) env('WIKIMEDIA_DEBUG', false),
         // PHP on Windows often has empty curl.cainfo; point at a Mozilla CA bundle if present.
         'ca_bundle' => env('WIKIMEDIA_CA_BUNDLE', storage_path('certs/cacert.pem')),

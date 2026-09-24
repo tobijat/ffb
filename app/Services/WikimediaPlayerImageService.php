@@ -26,6 +26,8 @@ class WikimediaPlayerImageService
         private readonly ?string $userAgent = null,
         private readonly ?int $thumbnailWidth = null,
         private readonly ?int $timeoutSeconds = null,
+        private readonly ?int $connectTimeoutSeconds = null,
+        private readonly ?int $timeBudgetSeconds = null,
         private readonly ?string $caBundle = null,
     ) {}
 
@@ -53,7 +55,8 @@ class WikimediaPlayerImageService
      *     bindings_count: int,
      *     files: array<string, string>,
      *     thumbnails: array<string, string>,
-     *     resolved: array<string, array{commons_file: string, thumbnail_url: string, wikidata_name: string}>
+     *     resolved: array<string, array{commons_file: string, thumbnail_url: string, wikidata_name: string}>,
+     *     timed_out: bool
      * }
      */
     public function diagnoseImagesByPlayerNames(array $names): array
@@ -83,11 +86,14 @@ class WikimediaPlayerImageService
             'files' => [],
             'thumbnails' => [],
             'resolved' => [],
+            'timed_out' => false,
         ];
 
         if ($unique === []) {
             return $diagnosis;
         }
+
+        $deadline = microtime(true) + $this->timeBudgetSeconds();
 
         $sparql = $this->buildSparql(array_values($unique));
         $diagnosis['sparql']['query'] = $sparql;
@@ -109,11 +115,13 @@ class WikimediaPlayerImageService
             $this->debugLog('Wikidata SPARQL response', $diagnosis['sparql']);
         } catch (ConnectionException $e) {
             $diagnosis['sparql']['error'] = $e->getMessage();
+            $diagnosis['timed_out'] = $this->looksLikeTimeout($e->getMessage());
             Log::warning('Wikidata SPARQL connection failed.', ['error' => $e->getMessage()]);
 
             return $diagnosis;
         } catch (Throwable $e) {
             $diagnosis['sparql']['error'] = $e->getMessage();
+            $diagnosis['timed_out'] = $this->looksLikeTimeout($e->getMessage());
             Log::warning('Wikidata SPARQL request failed.', ['error' => $e->getMessage()]);
 
             return $diagnosis;
@@ -169,11 +177,30 @@ class WikimediaPlayerImageService
             return $diagnosis;
         }
 
+        if (microtime(true) >= $deadline) {
+            $diagnosis['timed_out'] = true;
+            $diagnosis['sparql']['error'] = ($diagnosis['sparql']['error'] ?? null)
+                ?? 'Time budget exceeded before Commons lookup.';
+            Log::warning('Wikimedia resolve aborted: time budget exceeded after SPARQL.');
+
+            return $diagnosis;
+        }
+
         $files = array_values(array_unique(array_values($fileByFoldedName)));
         $thumbnails = [];
         foreach (array_chunk($files, 40) as $chunk) {
+            if (microtime(true) >= $deadline) {
+                $diagnosis['timed_out'] = true;
+                Log::warning('Wikimedia Commons lookup aborted: time budget exceeded.');
+                break;
+            }
+
             $commonsDiag = $this->requestCommonsThumbnails($chunk);
             $diagnosis['commons'][] = $commonsDiag['meta'];
+            if (($commonsDiag['meta']['error'] ?? null) !== null
+                && $this->looksLikeTimeout((string) $commonsDiag['meta']['error'])) {
+                $diagnosis['timed_out'] = true;
+            }
             foreach ($commonsDiag['thumbnails'] as $file => $url) {
                 $thumbnails[$file] = $url;
             }
@@ -204,6 +231,7 @@ class WikimediaPlayerImageService
             'bindings_count' => $diagnosis['bindings_count'],
             'files' => $fileByFoldedName,
             'resolved' => $resolved,
+            'timed_out' => $diagnosis['timed_out'],
         ]);
 
         return $diagnosis;
@@ -652,11 +680,8 @@ class WikimediaPlayerImageService
             'User-Agent' => $this->userAgent(),
             'Accept' => 'application/json',
         ])
-            ->connectTimeout(5)
-            ->timeout($this->timeoutSeconds())
-            ->retry([200, 500], 0, function (Throwable $exception): bool {
-                return $exception instanceof ConnectionException;
-            });
+            ->connectTimeout($this->connectTimeoutSeconds())
+            ->timeout($this->timeoutSeconds());
 
         $caBundle = $this->caBundlePath();
         if ($caBundle !== null) {
@@ -664,6 +689,16 @@ class WikimediaPlayerImageService
         }
 
         return $request;
+    }
+
+    private function looksLikeTimeout(string $message): bool
+    {
+        $normalized = strtolower($message);
+
+        return str_contains($normalized, 'timed out')
+            || str_contains($normalized, 'timeout')
+            || str_contains($normalized, 'curl error 28')
+            || str_contains($normalized, 'operation timed out');
     }
 
     private function caBundlePath(): ?string
@@ -706,8 +741,24 @@ class WikimediaPlayerImageService
     private function timeoutSeconds(): int
     {
         $timeout = $this->timeoutSeconds
-            ?? (int) config('services.wikimedia.timeout', 30);
+            ?? (int) config('services.wikimedia.timeout', 10);
 
-        return $timeout > 0 ? $timeout : 30;
+        return $timeout > 0 ? $timeout : 10;
+    }
+
+    private function connectTimeoutSeconds(): int
+    {
+        $timeout = $this->connectTimeoutSeconds
+            ?? (int) config('services.wikimedia.connect_timeout', 3);
+
+        return $timeout > 0 ? $timeout : 3;
+    }
+
+    private function timeBudgetSeconds(): int
+    {
+        $budget = $this->timeBudgetSeconds
+            ?? (int) config('services.wikimedia.time_budget', 20);
+
+        return $budget > 0 ? $budget : 20;
     }
 }

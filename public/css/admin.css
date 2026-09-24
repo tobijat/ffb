@@ -2235,6 +2235,11 @@
     opacity: 0.85;
 }
 
+.admin-auto-squad-row.is-not-in-json {
+    background: rgba(183, 28, 28, 0.05);
+    opacity: 1;
+}
+
 .admin-auto-squad-badge {
     display: inline-block;
     margin-left: 0.35rem;
