@@ -1,0 +1,3544 @@
+[
+  {
+    "name": "Germany",
+    "fifa_code": "GER",
+    "group": "A2",
+    "league": "League A",
+    "players": [
+      {
+        "number": 1,
+        "pos": "GK",
+        "name": "Marc-André ter Stegen",
+        "club": {
+          "name": "Ajax",
+          "country": "NED"
+        },
+        "date_of_birth": "1992-04-30"
+      },
+      {
+        "number": 2,
+        "pos": "DF",
+        "name": "Yann Bisseck",
+        "club": {
+          "name": "Inter",
+          "country": "ITA"
+        },
+        "date_of_birth": "2000-11-29"
+      },
+      {
+        "number": 3,
+        "pos": "DF",
+        "name": "Max Rosenfelder",
+        "club": {
+          "name": "Freiburg",
+          "country": "GER"
+        },
+        "date_of_birth": "2003-02-10"
+      },
+      {
+        "number": 4,
+        "pos": "DF",
+        "name": "Jonathan Tah",
+        "club": {
+          "name": "Bayern München",
+          "country": "GER"
+        },
+        "date_of_birth": "1996-02-11"
+      },
+      {
+        "number": 5,
+        "pos": "MF",
+        "name": "Yannik Engelhardt",
+        "club": {
+          "name": "Freiburg",
+          "country": "GER"
+        },
+        "date_of_birth": "2001-02-07"
+      },
+      {
+        "number": 6,
+        "pos": "MF",
+        "name": "Joshua Kimmich",
+        "club": {
+          "name": "Bayern München",
+          "country": "GER"
+        },
+        "date_of_birth": "1995-02-08"
+      },
+      {
+        "number": 7,
+        "pos": "FW",
+        "name": "Kai Havertz",
+        "club": {
+          "name": "Arsenal",
+          "country": "ENG"
+        },
+        "date_of_birth": "1999-06-11"
+      },
+      {
+        "number": 8,
+        "pos": "MF",
+        "name": "Felix Nmecha",
+        "club": {
+          "name": "B. Dortmund",
+          "country": "GER"
+        },
+        "date_of_birth": "2000-10-10"
+      },
+      {
+        "number": 9,
+        "pos": "MF",
+        "name": "Kevin Schade",
+        "club": {
+          "name": "Brentford",
+          "country": "ENG"
+        },
+        "date_of_birth": "2001-11-27"
+      },
+      {
+        "number": 10,
+        "pos": "MF",
+        "name": "Jamal Musiala",
+        "club": {
+          "name": "Bayern München",
+          "country": "GER"
+        },
+        "date_of_birth": "2003-02-26"
+      },
+      {
+        "number": 11,
+        "pos": "MF",
+        "name": "Nadiem Amiri",
+        "club": {
+          "name": "Mainz",
+          "country": "GER"
+        },
+        "date_of_birth": "1996-10-27"
+      },
+      {
+        "number": 12,
+        "pos": "GK",
+        "name": "Finn Dahmen",
+        "club": {
+          "name": "Augsburg",
+          "country": "GER"
+        },
+        "date_of_birth": "1998-03-27"
+      },
+      {
+        "number": 13,
+        "pos": "DF",
+        "name": "Philipp Treu",
+        "club": {
+          "name": "Freiburg",
+          "country": "GER"
+        },
+        "date_of_birth": "2000-12-03"
+      },
+      {
+        "number": 14,
+        "pos": "DF",
+        "name": "Josha Vagnoman",
+        "club": {
+          "name": "Stuttgart",
+          "country": "GER"
+        },
+        "date_of_birth": "2000-12-11"
+      },
+      {
+        "number": 15,
+        "pos": "DF",
+        "name": "Nico Schlotterbeck",
+        "club": {
+          "name": "B. Dortmund",
+          "country": "GER"
+        },
+        "date_of_birth": "1999-12-01"
+      },
+      {
+        "number": 16,
+        "pos": "MF",
+        "name": "Anton Stach",
+        "club": {
+          "name": "Leeds",
+          "country": "ENG"
+        },
+        "date_of_birth": "1998-11-15"
+      },
+      {
+        "number": 17,
+        "pos": "MF",
+        "name": "Chris Führich",
+        "club": {
+          "name": "Stuttgart",
+          "country": "GER"
+        },
+        "date_of_birth": "1998-01-09"
+      },
+      {
+        "number": 18,
+        "pos": "DF",
+        "name": "Nathaniel Brown",
+        "club": {
+          "name": "Bayern München",
+          "country": "GER"
+        },
+        "date_of_birth": "2003-06-16"
+      },
+      {
+        "number": 19,
+        "pos": "MF",
+        "name": "Karim Adeyemi",
+        "club": {
+          "name": "Barcelona",
+          "country": "ESP"
+        },
+        "date_of_birth": "2002-01-18"
+      },
+      {
+        "number": 20,
+        "pos": "MF",
+        "name": "Serge Gnabry",
+        "club": {
+          "name": "Bayern München",
+          "country": "GER"
+        },
+        "date_of_birth": "1995-07-14"
+      },
+      {
+        "number": 21,
+        "pos": "GK",
+        "name": "Alexander Nübel",
+        "club": {
+          "name": "Beşiktaş",
+          "country": "TUR"
+        },
+        "date_of_birth": "1996-09-30"
+      },
+      {
+        "number": 22,
+        "pos": "DF",
+        "name": "Hennes Behrens",
+        "club": {
+          "name": "Augsburg",
+          "country": "GER"
+        },
+        "date_of_birth": "2005-01-19"
+      },
+      {
+        "number": 23,
+        "pos": "FW",
+        "name": "Younes Ebnoutalib",
+        "club": {
+          "name": "Frankfurt",
+          "country": "GER"
+        },
+        "date_of_birth": "2003-09-13"
+      }
+    ]
+  },
+  {
+    "name": "Greece",
+    "fifa_code": "GRE",
+    "group": "A2",
+    "league": "League A",
+    "players": [
+      {
+        "number": 1,
+        "pos": "GK",
+        "name": "Odysseas Vlachodimos",
+        "club": {
+          "name": "Sevilla",
+          "country": "ESP"
+        },
+        "date_of_birth": "1994-04-26"
+      },
+      {
+        "number": 2,
+        "pos": "DF",
+        "name": "Giorgos Vagiannidis",
+        "club": {
+          "name": "Sporting CP",
+          "country": "POR"
+        },
+        "date_of_birth": "2001-09-12"
+      },
+      {
+        "number": 3,
+        "pos": "DF",
+        "name": "Konstantinos Koulierakis",
+        "club": {
+          "name": "Roma",
+          "country": "ITA"
+        },
+        "date_of_birth": "2003-11-28"
+      },
+      {
+        "number": 4,
+        "pos": "DF",
+        "name": "Ntinos Mavropanos",
+        "club": {
+          "name": "West Ham",
+          "country": "ENG"
+        },
+        "date_of_birth": "1997-12-11"
+      },
+      {
+        "number": 5,
+        "pos": "DF",
+        "name": "Panagiotis Retsos",
+        "club": {
+          "name": "Olympiacos",
+          "country": "GRE"
+        },
+        "date_of_birth": "1998-08-09"
+      },
+      {
+        "number": 6,
+        "pos": "MF",
+        "name": "Dimitris Kourbelis",
+        "club": {
+          "name": "Asteras",
+          "country": "GRE"
+        },
+        "date_of_birth": "1993-11-02"
+      },
+      {
+        "number": 7,
+        "pos": "FW",
+        "name": "Giorgos Masouras",
+        "club": {
+          "name": "Neom SC",
+          "country": "KSA"
+        },
+        "date_of_birth": "1994-01-01"
+      },
+      {
+        "number": 8,
+        "pos": "FW",
+        "name": "Fotis Ioannidis",
+        "club": {
+          "name": "Sporting CP",
+          "country": "POR"
+        },
+        "date_of_birth": "2000-01-10"
+      },
+      {
+        "number": 9,
+        "pos": "FW",
+        "name": "Tasos Douvikas",
+        "club": {
+          "name": "Como",
+          "country": "ITA"
+        },
+        "date_of_birth": "1999-08-02"
+      },
+      {
+        "number": 10,
+        "pos": "FW",
+        "name": "Christos Tzolis",
+        "club": {
+          "name": "Arsenal",
+          "country": "ENG"
+        },
+        "date_of_birth": "2002-01-30"
+      },
+      {
+        "number": 11,
+        "pos": "FW",
+        "name": "Charalampos Kostoulas",
+        "club": {
+          "name": "Brighton",
+          "country": "ENG"
+        },
+        "date_of_birth": "2007-05-30"
+      },
+      {
+        "number": 12,
+        "pos": "GK",
+        "name": "Kostas Tzolakis",
+        "club": {
+          "name": "Hull",
+          "country": "ENG"
+        },
+        "date_of_birth": "2002-11-08"
+      },
+      {
+        "number": 13,
+        "pos": "GK",
+        "name": "Christos Mandas",
+        "club": {
+          "name": "Lazio",
+          "country": "ITA"
+        },
+        "date_of_birth": "2001-09-17"
+      },
+      {
+        "number": 14,
+        "pos": "FW",
+        "name": "Vangelis Pavlidis",
+        "club": {
+          "name": "Benfica",
+          "country": "POR"
+        },
+        "date_of_birth": "1998-11-21"
+      },
+      {
+        "number": 15,
+        "pos": "MF",
+        "name": "Thanasis Androutsos",
+        "club": {
+          "name": "OFI Crete",
+          "country": "GRE"
+        },
+        "date_of_birth": "1997-05-06"
+      },
+      {
+        "number": 16,
+        "pos": "FW",
+        "name": "Andreas Tetteh",
+        "club": {
+          "name": "Panathinaikos",
+          "country": "GRE"
+        },
+        "date_of_birth": "2001-05-25"
+      },
+      {
+        "number": 17,
+        "pos": "DF",
+        "name": "Manolis Saliakas",
+        "club": {
+          "name": "Olympiacos",
+          "country": "GRE"
+        },
+        "date_of_birth": "1996-09-12"
+      },
+      {
+        "number": 18,
+        "pos": "DF",
+        "name": "Giannis Michailidis",
+        "club": {
+          "name": "PAOK",
+          "country": "GRE"
+        },
+        "date_of_birth": "2000-02-18"
+      },
+      {
+        "number": 19,
+        "pos": "FW",
+        "name": "Konstantinos Karetsas",
+        "club": {
+          "name": "B. Dortmund",
+          "country": "GER"
+        },
+        "date_of_birth": "2007-11-19"
+      },
+      {
+        "number": 20,
+        "pos": "MF",
+        "name": "Christos Zafeiris",
+        "club": {
+          "name": "PAOK",
+          "country": "GRE"
+        },
+        "date_of_birth": "2003-02-23"
+      },
+      {
+        "number": 21,
+        "pos": "DF",
+        "name": "Kostas Tsimikas",
+        "club": {
+          "name": "Liverpool",
+          "country": "ENG"
+        },
+        "date_of_birth": "1996-05-12"
+      },
+      {
+        "number": 22,
+        "pos": "DF",
+        "name": "Giorgos Kiriakopoulos",
+        "club": {
+          "name": "Panathinaikos",
+          "country": "GRE"
+        },
+        "date_of_birth": "1996-02-05"
+      },
+      {
+        "number": 23,
+        "pos": "MF",
+        "name": "Christos Mouzakitis",
+        "club": {
+          "name": "Hull",
+          "country": "ENG"
+        },
+        "date_of_birth": "2006-12-25"
+      }
+    ]
+  },
+  {
+    "name": "Netherlands",
+    "fifa_code": "NED",
+    "group": "A2",
+    "league": "League A",
+    "players": [
+      {
+        "number": 1,
+        "pos": "GK",
+        "name": "Bart Verbruggen",
+        "club": {
+          "name": "Brighton",
+          "country": "ENG"
+        },
+        "date_of_birth": "2002-08-18"
+      },
+      {
+        "number": 2,
+        "pos": "DF",
+        "name": "Lutsharel Geertruida",
+        "club": {
+          "name": "PSV",
+          "country": "NED"
+        },
+        "date_of_birth": "2000-07-18"
+      },
+      {
+        "number": 3,
+        "pos": "DF",
+        "name": "Jorrel Hato",
+        "club": {
+          "name": "Chelsea",
+          "country": "ENG"
+        },
+        "date_of_birth": "2006-03-07"
+      },
+      {
+        "number": 4,
+        "pos": "DF",
+        "name": "Virgil van Dijk",
+        "club": {
+          "name": "Liverpool",
+          "country": "ENG"
+        },
+        "date_of_birth": "1991-07-08"
+      },
+      {
+        "number": 5,
+        "pos": "DF",
+        "name": "Nathan Aké",
+        "club": {
+          "name": "Fenerbahçe",
+          "country": "TUR"
+        },
+        "date_of_birth": "1995-02-18"
+      },
+      {
+        "number": 6,
+        "pos": "DF",
+        "name": "Jan Paul van Hecke",
+        "club": {
+          "name": "Tottenham",
+          "country": "ENG"
+        },
+        "date_of_birth": "2000-06-08"
+      },
+      {
+        "number": 7,
+        "pos": "FW",
+        "name": "Crysencio Summerville",
+        "club": {
+          "name": "Al-Hilal",
+          "country": "KSA"
+        },
+        "date_of_birth": "2001-10-30"
+      },
+      {
+        "number": 8,
+        "pos": "MF",
+        "name": "Ryan Gravenberch",
+        "club": {
+          "name": "Liverpool",
+          "country": "ENG"
+        },
+        "date_of_birth": "2002-05-16"
+      },
+      {
+        "number": 9,
+        "pos": "FW",
+        "name": "Brian Brobbey",
+        "club": {
+          "name": "Sunderland",
+          "country": "ENG"
+        },
+        "date_of_birth": "2002-02-01"
+      },
+      {
+        "number": 10,
+        "pos": "FW",
+        "name": "Noa Lang",
+        "club": {
+          "name": "Napoli",
+          "country": "ITA"
+        },
+        "date_of_birth": "1999-06-17"
+      },
+      {
+        "number": 11,
+        "pos": "FW",
+        "name": "Cody Gakpo",
+        "club": {
+          "name": "Liverpool",
+          "country": "ENG"
+        },
+        "date_of_birth": "1999-05-07"
+      },
+      {
+        "number": 12,
+        "pos": "DF",
+        "name": "Jeremie Frimpong",
+        "club": {
+          "name": "Liverpool",
+          "country": "ENG"
+        },
+        "date_of_birth": "2000-12-10"
+      },
+      {
+        "number": 13,
+        "pos": "GK",
+        "name": "Robin Roefs",
+        "club": {
+          "name": "Sunderland",
+          "country": "ENG"
+        },
+        "date_of_birth": "2003-01-17"
+      },
+      {
+        "number": 14,
+        "pos": "MF",
+        "name": "Tijjani Reijnders",
+        "club": {
+          "name": "Al Qadsiah",
+          "country": "KSA"
+        },
+        "date_of_birth": "1998-07-29"
+      },
+      {
+        "number": 15,
+        "pos": "DF",
+        "name": "Micky van de Ven",
+        "club": {
+          "name": "Tottenham",
+          "country": "ENG"
+        },
+        "date_of_birth": "2001-04-19"
+      },
+      {
+        "number": 16,
+        "pos": "MF",
+        "name": "Guus Til",
+        "club": {
+          "name": "PSV",
+          "country": "NED"
+        },
+        "date_of_birth": "1997-12-22"
+      },
+      {
+        "number": 16,
+        "pos": "MF",
+        "name": "Kenneth Taylor",
+        "club": {
+          "name": "Lazio",
+          "country": "ITA"
+        },
+        "date_of_birth": "2002-05-16"
+      },
+      {
+        "number": 17,
+        "pos": "FW",
+        "name": "Mexx Meerdink",
+        "club": {
+          "name": "AZ Alkmaar",
+          "country": "NED"
+        },
+        "date_of_birth": "2003-07-24"
+      },
+      {
+        "number": 18,
+        "pos": "MF",
+        "name": "Joey Veerman",
+        "club": {
+          "name": "B. Dortmund",
+          "country": "GER"
+        },
+        "date_of_birth": "1998-11-19"
+      },
+      {
+        "number": 19,
+        "pos": "MF",
+        "name": "Quinten Timber",
+        "club": {
+          "name": "Crystal Palace",
+          "country": "ENG"
+        },
+        "date_of_birth": "2001-06-17"
+      },
+      {
+        "number": 20,
+        "pos": "MF",
+        "name": "Teun Koopmeiners",
+        "club": {
+          "name": "Juventus",
+          "country": "ITA"
+        },
+        "date_of_birth": "1998-02-28"
+      },
+      {
+        "number": 21,
+        "pos": "FW",
+        "name": "Ruben van Bommel",
+        "club": {
+          "name": "PSV",
+          "country": "NED"
+        },
+        "date_of_birth": "2004-08-03"
+      },
+      {
+        "number": 22,
+        "pos": "DF",
+        "name": "Denzel Dumfries",
+        "club": {
+          "name": "Real Madrid",
+          "country": "ESP"
+        },
+        "date_of_birth": "1996-04-18"
+      },
+      {
+        "number": 23,
+        "pos": "GK",
+        "name": "Mark Flekken",
+        "club": {
+          "name": "Leverkusen",
+          "country": "GER"
+        },
+        "date_of_birth": "1993-06-13"
+      }
+    ]
+  },
+  {
+    "name": "Serbia",
+    "fifa_code": "SRB",
+    "group": "A2",
+    "league": "League A",
+    "players": [
+      {
+        "number": 1,
+        "pos": "GK",
+        "name": "Djordje Petrović",
+        "club": {
+          "name": "Bournemouth",
+          "country": "ENG"
+        },
+        "date_of_birth": "1999-10-08"
+      },
+      {
+        "number": 2,
+        "pos": "DF",
+        "name": "Kosta Nedeljković",
+        "club": {
+          "name": "Rangers",
+          "country": "SCO"
+        },
+        "date_of_birth": "2005-12-16"
+      },
+      {
+        "number": 2,
+        "pos": "MF",
+        "name": "Petar Sukačev",
+        "club": {
+          "name": "Vojvodina",
+          "country": "SRB"
+        },
+        "date_of_birth": "2005-08-28"
+      },
+      {
+        "number": 3,
+        "pos": "DF",
+        "name": "Strahinja Pavlović",
+        "club": {
+          "name": "Milan",
+          "country": "ITA"
+        },
+        "date_of_birth": "2001-05-24"
+      },
+      {
+        "number": 4,
+        "pos": "DF",
+        "name": "Nikola Milenković",
+        "club": {
+          "name": "Nott'm Forest",
+          "country": "ENG"
+        },
+        "date_of_birth": "1997-10-12"
+      },
+      {
+        "number": 4,
+        "pos": "MF",
+        "name": "Vanja Dragojević",
+        "club": {
+          "name": "Rangers",
+          "country": "SCO"
+        },
+        "date_of_birth": "2006-01-11"
+      },
+      {
+        "number": 5,
+        "pos": "MF",
+        "name": "Nemanja Maksimović",
+        "club": {
+          "name": "Shabab Al Ahli",
+          "country": "UAE"
+        },
+        "date_of_birth": "1995-01-26"
+      },
+      {
+        "number": 6,
+        "pos": "MF",
+        "name": "Nemanja Gudelj",
+        "club": {
+          "name": "Getafe",
+          "country": "ESP"
+        },
+        "date_of_birth": "1991-11-16"
+      },
+      {
+        "number": 7,
+        "pos": "MF",
+        "name": "Aleksandar Stanković",
+        "club": {
+          "name": "Inter",
+          "country": "ITA"
+        },
+        "date_of_birth": "2005-08-03"
+      },
+      {
+        "number": 8,
+        "pos": "FW",
+        "name": "Luka Jović",
+        "club": {
+          "name": "AEK Athens",
+          "country": "GRE"
+        },
+        "date_of_birth": "1997-12-23"
+      },
+      {
+        "number": 9,
+        "pos": "FW",
+        "name": "Dejan Joveljić",
+        "club": {
+          "name": "Seattle Sounders",
+          "country": "USA"
+        },
+        "date_of_birth": "1999-08-07"
+      },
+      {
+        "number": 9,
+        "pos": "FW",
+        "name": "Jovan Milošević",
+        "club": {
+          "name": "Braga",
+          "country": "POR"
+        },
+        "date_of_birth": "2005-07-31"
+      },
+      {
+        "number": 10,
+        "pos": "FW",
+        "name": "Dušan Tadić",
+        "club": {
+          "name": "N.E.C.",
+          "country": "NED"
+        },
+        "date_of_birth": "1988-11-20"
+      },
+      {
+        "number": 11,
+        "pos": "DF",
+        "name": "Filip Kostić",
+        "club": {
+          "name": "PSV",
+          "country": "NED"
+        },
+        "date_of_birth": "1992-11-01"
+      },
+      {
+        "number": 12,
+        "pos": "GK",
+        "name": "Filip Stankovic",
+        "club": {
+          "name": "Venezia",
+          "country": "ITA"
+        },
+        "date_of_birth": "2002-02-25"
+      },
+      {
+        "number": 13,
+        "pos": "DF",
+        "name": "Miloš Veljković",
+        "club": {
+          "name": "Crvena Zvezda",
+          "country": "SRB"
+        },
+        "date_of_birth": "1995-09-26"
+      },
+      {
+        "number": 13,
+        "pos": "DF",
+        "name": "Nikola Simić",
+        "club": {
+          "name": "Partizan",
+          "country": "SRB"
+        },
+        "date_of_birth": "2007-03-30"
+      },
+      {
+        "number": 14,
+        "pos": "FW",
+        "name": "Andrija Živković",
+        "club": {
+          "name": "PAOK",
+          "country": "GRE"
+        },
+        "date_of_birth": "1996-07-11"
+      },
+      {
+        "number": 15,
+        "pos": "DF",
+        "name": "Srđan Babić",
+        "club": {
+          "name": "Spartak Moskva",
+          "country": "RUS"
+        },
+        "date_of_birth": "1996-04-22"
+      },
+      {
+        "number": 16,
+        "pos": "DF",
+        "name": "Strahinja Eraković",
+        "club": {
+          "name": "Samsunspor",
+          "country": "TUR"
+        },
+        "date_of_birth": "2001-01-22"
+      },
+      {
+        "number": 17,
+        "pos": "DF",
+        "name": "Aleksa Terzić",
+        "club": {
+          "name": "Frosinone",
+          "country": "ITA"
+        },
+        "date_of_birth": "1999-08-17"
+      },
+      {
+        "number": 17,
+        "pos": "MF",
+        "name": "Petar Stanić",
+        "club": {
+          "name": "Ludogorets",
+          "country": "BUL"
+        },
+        "date_of_birth": "2001-08-14"
+      },
+      {
+        "number": 18,
+        "pos": "FW",
+        "name": "Mihajlo Cvetković",
+        "club": {
+          "name": "Anderlecht",
+          "country": "BEL"
+        },
+        "date_of_birth": "2007-01-10"
+      },
+      {
+        "number": 19,
+        "pos": "MF",
+        "name": "Vasilije Kostov",
+        "club": {
+          "name": "Crvena Zvezda",
+          "country": "SRB"
+        },
+        "date_of_birth": "2008-05-11"
+      },
+      {
+        "number": 20,
+        "pos": "MF",
+        "name": "Sergej Milinković-Savić",
+        "club": {
+          "name": "Al-Hilal",
+          "country": "KSA"
+        },
+        "date_of_birth": "1995-02-27"
+      },
+      {
+        "number": 21,
+        "pos": "MF",
+        "name": "Lazar Samardžić",
+        "club": {
+          "name": "Atalanta",
+          "country": "ITA"
+        },
+        "date_of_birth": "2002-02-24"
+      },
+      {
+        "number": 22,
+        "pos": "MF",
+        "name": "Saša Lukić",
+        "club": {
+          "name": "Ipswich",
+          "country": "ENG"
+        },
+        "date_of_birth": "1996-08-13"
+      },
+      {
+        "number": 23,
+        "pos": "FW",
+        "name": "Dušan Vlahović",
+        "club": {
+          "name": "Beşiktaş",
+          "country": "TUR"
+        },
+        "date_of_birth": "2000-01-28"
+      },
+      {
+        "number": 23,
+        "pos": "GK",
+        "name": "Vanja Milinković-Savić",
+        "club": {
+          "name": "Napoli",
+          "country": "ITA"
+        },
+        "date_of_birth": "1997-02-20"
+      }
+    ]
+  },
+  {
+    "name": "Denmark",
+    "fifa_code": "DEN",
+    "group": "A4",
+    "league": "League A",
+    "players": [
+      {
+        "number": 1,
+        "pos": "GK",
+        "name": "Andreas Jungdal",
+        "club": {
+          "name": "Westerlo",
+          "country": "BEL"
+        },
+        "date_of_birth": "2002-02-22"
+      },
+      {
+        "number": 2,
+        "pos": "DF",
+        "name": "Joachim Andersen",
+        "club": {
+          "name": "Fulham",
+          "country": "ENG"
+        },
+        "date_of_birth": "1996-05-31"
+      },
+      {
+        "number": 3,
+        "pos": "DF",
+        "name": "Oliver Provstgaard",
+        "club": {
+          "name": "Lazio",
+          "country": "ITA"
+        },
+        "date_of_birth": "2003-06-04"
+      },
+      {
+        "number": 4,
+        "pos": "DF",
+        "name": "Lucas Høgsberg",
+        "club": {
+          "name": "Strasbourg",
+          "country": "FRA"
+        },
+        "date_of_birth": "2006-06-23"
+      },
+      {
+        "number": 5,
+        "pos": "DF",
+        "name": "Joakim Mæhle",
+        "club": {
+          "name": "Wolfsburg",
+          "country": "GER"
+        },
+        "date_of_birth": "1997-05-20"
+      },
+      {
+        "number": 6,
+        "pos": "DF",
+        "name": "Victor Nelsson",
+        "club": {
+          "name": "Nordsjælland",
+          "country": "DEN"
+        },
+        "date_of_birth": "1998-10-14"
+      },
+      {
+        "number": 7,
+        "pos": "MF",
+        "name": "Victor Froholdt",
+        "club": {
+          "name": "Porto",
+          "country": "POR"
+        },
+        "date_of_birth": "2006-02-25"
+      },
+      {
+        "number": 8,
+        "pos": "FW",
+        "name": "Gustav Isaksen",
+        "club": {
+          "name": "Lazio",
+          "country": "ITA"
+        },
+        "date_of_birth": "2001-04-19"
+      },
+      {
+        "number": 9,
+        "pos": "FW",
+        "name": "Rasmus Højlund",
+        "club": {
+          "name": "Napoli",
+          "country": "ITA"
+        },
+        "date_of_birth": "2003-02-04"
+      },
+      {
+        "number": 10,
+        "pos": "MF",
+        "name": "Thomas Jørgensen",
+        "club": {
+          "name": "Toulouse",
+          "country": "FRA"
+        },
+        "date_of_birth": "2005-09-30"
+      },
+      {
+        "number": 11,
+        "pos": "FW",
+        "name": "Adam Daghim",
+        "club": {
+          "name": "Hoffenheim",
+          "country": "GER"
+        },
+        "date_of_birth": "2005-09-28"
+      },
+      {
+        "number": 12,
+        "pos": "MF",
+        "name": "Mads Bidstrup",
+        "club": {
+          "name": "Lyon",
+          "country": "FRA"
+        },
+        "date_of_birth": "2001-02-25"
+      },
+      {
+        "number": 12,
+        "pos": "MF",
+        "name": "Mohamed Daramy",
+        "club": {
+          "name": "Reims",
+          "country": "FRA"
+        },
+        "date_of_birth": "2002-01-07"
+      },
+      {
+        "number": 13,
+        "pos": "DF",
+        "name": "Rasmus Kristensen",
+        "club": {
+          "name": "Midtjylland",
+          "country": "DEN"
+        },
+        "date_of_birth": "1997-07-11"
+      },
+      {
+        "number": 14,
+        "pos": "FW",
+        "name": "Mikkel Damsgaard",
+        "club": {
+          "name": "Brentford",
+          "country": "ENG"
+        },
+        "date_of_birth": "2000-07-03"
+      },
+      {
+        "number": 15,
+        "pos": "DF",
+        "name": "Victor Bak",
+        "club": {
+          "name": "Midtjylland",
+          "country": "DEN"
+        },
+        "date_of_birth": "2003-10-03"
+      },
+      {
+        "number": 16,
+        "pos": "GK",
+        "name": "Mads Hermansen",
+        "club": {
+          "name": "West Ham",
+          "country": "ENG"
+        },
+        "date_of_birth": "2000-07-11"
+      },
+      {
+        "number": 17,
+        "pos": "DF",
+        "name": "Patrick Dorgu",
+        "club": {
+          "name": "Man Utd",
+          "country": "ENG"
+        },
+        "date_of_birth": "2004-10-26"
+      },
+      {
+        "number": 18,
+        "pos": "DF",
+        "name": "Anton Gaaei",
+        "club": {
+          "name": "Ajax",
+          "country": "NED"
+        },
+        "date_of_birth": "2002-11-19"
+      },
+      {
+        "number": 19,
+        "pos": "FW",
+        "name": "Kasper Høgh",
+        "club": {
+          "name": "Celtic",
+          "country": "SCO"
+        },
+        "date_of_birth": "2000-12-06"
+      },
+      {
+        "number": 20,
+        "pos": "MF",
+        "name": "Albert Grønbæk",
+        "club": {
+          "name": "Hamburg",
+          "country": "GER"
+        },
+        "date_of_birth": "2001-05-23"
+      },
+      {
+        "number": 21,
+        "pos": "MF",
+        "name": "Morten Hjulmand",
+        "club": {
+          "name": "Atleti",
+          "country": "ESP"
+        },
+        "date_of_birth": "1999-06-25"
+      },
+      {
+        "number": 22,
+        "pos": "GK",
+        "name": "Filip Jørgensen",
+        "club": {
+          "name": "Strasbourg",
+          "country": "FRA"
+        },
+        "date_of_birth": "2002-04-16"
+      },
+      {
+        "number": 23,
+        "pos": "MF",
+        "name": "Pierre-Emile Højbjerg",
+        "club": {
+          "name": "Marseille",
+          "country": "FRA"
+        },
+        "date_of_birth": "1995-08-05"
+      }
+    ]
+  },
+  {
+    "name": "Norway",
+    "fifa_code": "NOR",
+    "group": "A4",
+    "league": "League A",
+    "players": [
+      {
+        "number": 1,
+        "pos": "GK",
+        "name": "Ørjan Nyland",
+        "club": {
+          "name": "Leipzig",
+          "country": "GER"
+        },
+        "date_of_birth": "1990-09-10"
+      },
+      {
+        "number": 2,
+        "pos": "FW",
+        "name": "Odin Bjørtuft",
+        "club": {
+          "name": "Bodø/Glimt",
+          "country": "NOR"
+        },
+        "date_of_birth": "1998-12-29"
+      },
+      {
+        "number": 3,
+        "pos": "MF",
+        "name": "Kristoffer Ajer",
+        "club": {
+          "name": "Brentford",
+          "country": "ENG"
+        },
+        "date_of_birth": "1998-04-17"
+      },
+      {
+        "number": 4,
+        "pos": "DF",
+        "name": "Leo Østigård",
+        "club": {
+          "name": "Genoa",
+          "country": "ITA"
+        },
+        "date_of_birth": "1999-11-28"
+      },
+      {
+        "number": 5,
+        "pos": "DF",
+        "name": "David Møller Wolfe",
+        "club": {
+          "name": "Hamburg",
+          "country": "GER"
+        },
+        "date_of_birth": "2002-04-23"
+      },
+      {
+        "number": 6,
+        "pos": "MF",
+        "name": "Patrick Berg",
+        "club": {
+          "name": "Bodø/Glimt",
+          "country": "NOR"
+        },
+        "date_of_birth": "1997-11-24"
+      },
+      {
+        "number": 7,
+        "pos": "MF",
+        "name": "Fredrik Aursnes",
+        "club": {
+          "name": "Benfica",
+          "country": "POR"
+        },
+        "date_of_birth": "1995-12-10"
+      },
+      {
+        "number": 8,
+        "pos": "MF",
+        "name": "Sander Berge",
+        "club": {
+          "name": "Fulham",
+          "country": "ENG"
+        },
+        "date_of_birth": "1998-02-14"
+      },
+      {
+        "number": 9,
+        "pos": "FW",
+        "name": "Erling Haaland",
+        "club": {
+          "name": "Man City",
+          "country": "ENG"
+        },
+        "date_of_birth": "2000-07-21"
+      },
+      {
+        "number": 10,
+        "pos": "MF",
+        "name": "Martin Ødegaard",
+        "club": {
+          "name": "Arsenal",
+          "country": "ENG"
+        },
+        "date_of_birth": "1998-12-17"
+      },
+      {
+        "number": 11,
+        "pos": "FW",
+        "name": "Jørgen Strand Larsen",
+        "club": {
+          "name": "Crystal Palace",
+          "country": "ENG"
+        },
+        "date_of_birth": "2000-02-06"
+      },
+      {
+        "number": 12,
+        "pos": "GK",
+        "name": "Sander Tangvik",
+        "club": {
+          "name": "Hamburg",
+          "country": "GER"
+        },
+        "date_of_birth": "2002-11-29"
+      },
+      {
+        "number": 13,
+        "pos": "GK",
+        "name": "Egil Selvik",
+        "club": {
+          "name": "Brest",
+          "country": "FRA"
+        },
+        "date_of_birth": "1997-07-30"
+      },
+      {
+        "number": 14,
+        "pos": "DF",
+        "name": "Julian Ryerson",
+        "club": {
+          "name": "B. Dortmund",
+          "country": "GER"
+        },
+        "date_of_birth": "1997-11-17"
+      },
+      {
+        "number": 15,
+        "pos": "FW",
+        "name": "Ole Didrik Blomberg",
+        "club": {
+          "name": "Bodø/Glimt",
+          "country": "NOR"
+        },
+        "date_of_birth": "2000-06-12"
+      },
+      {
+        "number": 15,
+        "pos": "DF",
+        "name": "Sondre Langås",
+        "club": {
+          "name": "Derby",
+          "country": "ENG"
+        },
+        "date_of_birth": "2001-02-02"
+      },
+      {
+        "number": 16,
+        "pos": "DF",
+        "name": "Marcus Pedersen",
+        "club": {
+          "name": "Olympiacos",
+          "country": "GRE"
+        },
+        "date_of_birth": "2000-07-16"
+      },
+      {
+        "number": 17,
+        "pos": "DF",
+        "name": "Torbjørn Heggem",
+        "club": {
+          "name": "Bologna",
+          "country": "ITA"
+        },
+        "date_of_birth": "1999-01-12"
+      },
+      {
+        "number": 18,
+        "pos": "FW",
+        "name": "Kristian Thorstvedt",
+        "club": {
+          "name": "Sassuolo",
+          "country": "ITA"
+        },
+        "date_of_birth": "1999-03-13"
+      },
+      {
+        "number": 19,
+        "pos": "MF",
+        "name": "Thelo Aasgaard",
+        "club": {
+          "name": "Anderlecht",
+          "country": "BEL"
+        },
+        "date_of_birth": "2002-05-02"
+      },
+      {
+        "number": 20,
+        "pos": "MF",
+        "name": "Antonio Nusa",
+        "club": {
+          "name": "Leipzig",
+          "country": "GER"
+        },
+        "date_of_birth": "2005-04-17"
+      },
+      {
+        "number": 21,
+        "pos": "FW",
+        "name": "Andreas Schjelderup",
+        "club": {
+          "name": "Benfica",
+          "country": "POR"
+        },
+        "date_of_birth": "2004-06-01"
+      },
+      {
+        "number": 22,
+        "pos": "MF",
+        "name": "Oscar Bobb",
+        "club": {
+          "name": "Fulham",
+          "country": "ENG"
+        },
+        "date_of_birth": "2003-07-12"
+      },
+      {
+        "number": 23,
+        "pos": "FW",
+        "name": "Erik Botheim",
+        "club": {
+          "name": "Viking",
+          "country": "NOR"
+        },
+        "date_of_birth": "2000-01-10"
+      }
+    ]
+  },
+  {
+    "name": "Portugal",
+    "fifa_code": "POR",
+    "group": "A4",
+    "league": "League A",
+    "players": [
+      {
+        "number": 1,
+        "pos": "GK",
+        "name": "Diogo Costa",
+        "club": {
+          "name": "Porto",
+          "country": "POR"
+        },
+        "date_of_birth": "1999-09-19"
+      },
+      {
+        "number": 2,
+        "pos": "DF",
+        "name": "Diogo Dalot",
+        "club": {
+          "name": "Man Utd",
+          "country": "ENG"
+        },
+        "date_of_birth": "1999-03-18"
+      },
+      {
+        "number": 3,
+        "pos": "DF",
+        "name": "Rúben Dias",
+        "club": {
+          "name": "Man City",
+          "country": "ENG"
+        },
+        "date_of_birth": "1997-05-14"
+      },
+      {
+        "number": 4,
+        "pos": "DF",
+        "name": "Tomás Araújo",
+        "club": {
+          "name": "Benfica",
+          "country": "POR"
+        },
+        "date_of_birth": "2002-05-16"
+      },
+      {
+        "number": 5,
+        "pos": "DF",
+        "name": "Nuno Tavares",
+        "club": {
+          "name": "Lazio",
+          "country": "ITA"
+        },
+        "date_of_birth": "2000-01-26"
+      },
+      {
+        "number": 6,
+        "pos": "MF",
+        "name": "João Palhinha",
+        "club": {
+          "name": "Benfica",
+          "country": "POR"
+        },
+        "date_of_birth": "1995-07-09"
+      },
+      {
+        "number": 7,
+        "pos": "FW",
+        "name": "Cristiano Ronaldo",
+        "club": {
+          "name": " Al-Nassr",
+          "country": "KSA"
+        },
+        "date_of_birth": "1985-02-05"
+      },
+      {
+        "number": 8,
+        "pos": "MF",
+        "name": "Bruno Fernandes",
+        "club": {
+          "name": "Man Utd",
+          "country": "ENG"
+        },
+        "date_of_birth": "1994-09-08"
+      },
+      {
+        "number": 9,
+        "pos": "FW",
+        "name": "Gonçalo Ramos",
+        "club": {
+          "name": "Milan",
+          "country": "ITA"
+        },
+        "date_of_birth": "2001-06-20"
+      },
+      {
+        "number": 10,
+        "pos": "MF",
+        "name": "Bernardo Silva",
+        "club": {
+          "name": "Real Madrid",
+          "country": "ESP"
+        },
+        "date_of_birth": "1994-08-10"
+      },
+      {
+        "number": 11,
+        "pos": "FW",
+        "name": "João Félix",
+        "club": {
+          "name": " Al-Nassr",
+          "country": "KSA"
+        },
+        "date_of_birth": "1999-11-10"
+      },
+      {
+        "number": 12,
+        "pos": "GK",
+        "name": "Rui Silva",
+        "club": {
+          "name": "Sporting CP",
+          "country": "POR"
+        },
+        "date_of_birth": "1994-02-07"
+      },
+      {
+        "number": 13,
+        "pos": "DF",
+        "name": "Renato Veiga",
+        "club": {
+          "name": "Villarreal",
+          "country": "ESP"
+        },
+        "date_of_birth": "2003-07-29"
+      },
+      {
+        "number": 14,
+        "pos": "FW",
+        "name": "Francisco Conceição",
+        "club": {
+          "name": "Juventus",
+          "country": "ITA"
+        },
+        "date_of_birth": "2002-12-14"
+      },
+      {
+        "number": 14,
+        "pos": "DF",
+        "name": "Gonçalo Inácio",
+        "club": {
+          "name": "Sporting CP",
+          "country": "POR"
+        },
+        "date_of_birth": "2001-08-25"
+      },
+      {
+        "number": 15,
+        "pos": "MF",
+        "name": "João Neves",
+        "club": {
+          "name": "Paris",
+          "country": "FRA"
+        },
+        "date_of_birth": "2004-09-27"
+      },
+      {
+        "number": 16,
+        "pos": "FW",
+        "name": "Francisco Trincão",
+        "club": {
+          "name": "Al Ahli SC",
+          "country": "QAT"
+        },
+        "date_of_birth": "1999-12-29"
+      },
+      {
+        "number": 17,
+        "pos": "FW",
+        "name": "Rafael Leão",
+        "club": {
+          "name": "Galatasaray",
+          "country": "TUR"
+        },
+        "date_of_birth": "1999-06-10"
+      },
+      {
+        "number": 18,
+        "pos": "FW",
+        "name": "Pedro Neto",
+        "club": {
+          "name": "Chelsea",
+          "country": "ENG"
+        },
+        "date_of_birth": "2000-03-09"
+      },
+      {
+        "number": 19,
+        "pos": "DF",
+        "name": "Nuno Mendes",
+        "club": {
+          "name": "Paris",
+          "country": "FRA"
+        },
+        "date_of_birth": "2002-06-19"
+      },
+      {
+        "number": 20,
+        "pos": "DF",
+        "name": "João Cancelo",
+        "club": {
+          "name": "Barcelona",
+          "country": "ESP"
+        },
+        "date_of_birth": "1994-05-27"
+      },
+      {
+        "number": 21,
+        "pos": "MF",
+        "name": "Rúben Neves",
+        "club": {
+          "name": "Al-Hilal",
+          "country": "KSA"
+        },
+        "date_of_birth": "1997-03-13"
+      },
+      {
+        "number": 22,
+        "pos": "GK",
+        "name": "Samuel Soares",
+        "club": {
+          "name": "Benfica",
+          "country": "POR"
+        },
+        "date_of_birth": "2002-06-15"
+      },
+      {
+        "number": 23,
+        "pos": "MF",
+        "name": "Vitinha",
+        "club": {
+          "name": "Paris",
+          "country": "FRA"
+        },
+        "date_of_birth": "2000-02-13"
+      }
+    ]
+  },
+  {
+    "name": "Wales",
+    "fifa_code": "WAL",
+    "group": "A4",
+    "league": "League A",
+    "players": [
+      {
+        "number": 1,
+        "pos": "GK",
+        "name": "David Cornell",
+        "club": {
+          "name": "Preston",
+          "country": "ENG"
+        },
+        "date_of_birth": "1991-03-28"
+      },
+      {
+        "number": 1,
+        "pos": "GK",
+        "name": "Karl Darlow",
+        "club": {
+          "name": "Man Utd",
+          "country": "ENG"
+        },
+        "date_of_birth": "1990-10-08"
+      },
+      {
+        "number": 2,
+        "pos": "DF",
+        "name": "Chris Mepham",
+        "club": {
+          "name": "West Brom",
+          "country": "ENG"
+        },
+        "date_of_birth": "1997-11-05"
+      },
+      {
+        "number": 3,
+        "pos": "DF",
+        "name": "Neco Williams",
+        "club": {
+          "name": "Nott'm Forest",
+          "country": "ENG"
+        },
+        "date_of_birth": "2001-04-13"
+      },
+      {
+        "number": 4,
+        "pos": "DF",
+        "name": "Ben Davies",
+        "club": {
+          "name": "Tottenham",
+          "country": "ENG"
+        },
+        "date_of_birth": "1993-04-24"
+      },
+      {
+        "number": 5,
+        "pos": "MF",
+        "name": "Ethan Ampadu",
+        "club": {
+          "name": "Leeds",
+          "country": "ENG"
+        },
+        "date_of_birth": "2000-09-14"
+      },
+      {
+        "number": 6,
+        "pos": "DF",
+        "name": "Ben Cabango",
+        "club": {
+          "name": "Swansea",
+          "country": "ENG"
+        },
+        "date_of_birth": "2000-05-30"
+      },
+      {
+        "number": 7,
+        "pos": "MF",
+        "name": "David Brooks",
+        "club": {
+          "name": "Bournemouth",
+          "country": "ENG"
+        },
+        "date_of_birth": "1997-07-08"
+      },
+      {
+        "number": 8,
+        "pos": "MF",
+        "name": "Harry Wilson",
+        "club": {
+          "name": "Leeds",
+          "country": "ENG"
+        },
+        "date_of_birth": "1997-03-22"
+      },
+      {
+        "number": 8,
+        "pos": "FW",
+        "name": "Wes Burns",
+        "club": {
+          "name": "Leicester",
+          "country": "ENG"
+        },
+        "date_of_birth": "1994-11-23"
+      },
+      {
+        "number": 9,
+        "pos": "MF",
+        "name": "Lewis Koumas",
+        "club": {
+          "name": "Liverpool",
+          "country": "ENG"
+        },
+        "date_of_birth": "2005-09-19"
+      },
+      {
+        "number": 10,
+        "pos": "FW",
+        "name": "Liam Cullen",
+        "club": {
+          "name": "Leicester",
+          "country": "ENG"
+        },
+        "date_of_birth": "1999-04-23"
+      },
+      {
+        "number": 11,
+        "pos": "MF",
+        "name": "Brennan Johnson",
+        "club": {
+          "name": "Everton",
+          "country": "ENG"
+        },
+        "date_of_birth": "2001-05-23"
+      },
+      {
+        "number": 12,
+        "pos": "GK",
+        "name": "Danny Ward",
+        "club": {
+          "name": "Wrexham",
+          "country": "WAL"
+        },
+        "date_of_birth": "1993-06-22"
+      },
+      {
+        "number": 13,
+        "pos": "FW",
+        "name": "Kieffer Moore",
+        "club": {
+          "name": "Wrexham",
+          "country": "WAL"
+        },
+        "date_of_birth": "1992-08-08"
+      },
+      {
+        "number": 14,
+        "pos": "DF",
+        "name": "Connor Roberts",
+        "club": {
+          "name": "Burnley",
+          "country": "ENG"
+        },
+        "date_of_birth": "1995-09-23"
+      },
+      {
+        "number": 15,
+        "pos": "DF",
+        "name": "Jay Dasilva",
+        "club": {
+          "name": "Coventry",
+          "country": "ENG"
+        },
+        "date_of_birth": "1998-04-22"
+      },
+      {
+        "number": 16,
+        "pos": "DF",
+        "name": "Rhys Norrington-Davies",
+        "club": {
+          "name": "Sheff United",
+          "country": "ENG"
+        },
+        "date_of_birth": "1999-04-22"
+      },
+      {
+        "number": 17,
+        "pos": "MF",
+        "name": "Jordan James",
+        "club": {
+          "name": "Wolves",
+          "country": "ENG"
+        },
+        "date_of_birth": "2004-07-02"
+      },
+      {
+        "number": 18,
+        "pos": "FW",
+        "name": "Mark Harris",
+        "club": {
+          "name": "Oxford",
+          "country": "ENG"
+        },
+        "date_of_birth": "1998-12-29"
+      },
+      {
+        "number": 19,
+        "pos": "MF",
+        "name": "Sorba Thomas",
+        "club": {
+          "name": "Hull",
+          "country": "ENG"
+        },
+        "date_of_birth": "1999-01-25"
+      },
+      {
+        "number": 20,
+        "pos": "MF",
+        "name": "Daniel James",
+        "club": {
+          "name": "Leeds",
+          "country": "ENG"
+        },
+        "date_of_birth": "1997-11-10"
+      },
+      {
+        "number": 21,
+        "pos": "GK",
+        "name": "Tom King",
+        "club": {
+          "name": "Everton",
+          "country": "ENG"
+        },
+        "date_of_birth": "1995-03-09"
+      },
+      {
+        "number": 22,
+        "pos": "MF",
+        "name": "Joshua Sheehan",
+        "club": {
+          "name": "Bolton",
+          "country": "ENG"
+        },
+        "date_of_birth": "1995-03-30"
+      },
+      {
+        "number": 23,
+        "pos": "MF",
+        "name": "Cian Ashford",
+        "club": {
+          "name": "Cardiff",
+          "country": "WAL"
+        },
+        "date_of_birth": "2004-09-24"
+      },
+      {
+        "number": 23,
+        "pos": "MF",
+        "name": "Joel Colwill",
+        "club": {
+          "name": "Cardiff",
+          "country": "WAL"
+        },
+        "date_of_birth": "2004-10-27"
+      },
+      {
+        "number": 23,
+        "pos": "MF",
+        "name": "Nathan Broadhead",
+        "club": {
+          "name": "Wrexham",
+          "country": "WAL"
+        },
+        "date_of_birth": "1998-04-05"
+      }
+    ]
+  },
+  {
+    "name": "Austria",
+    "fifa_code": "AUT",
+    "group": "B3",
+    "league": "League B",
+    "players": [
+      {
+        "number": 1,
+        "pos": "GK",
+        "name": "Alexander Schlager",
+        "club": {
+          "name": "Bremen",
+          "country": "GER"
+        },
+        "date_of_birth": "1996-02-01"
+      },
+      {
+        "number": 2,
+        "pos": "DF",
+        "name": "David Affengruber",
+        "club": {
+          "name": "Fulham",
+          "country": "ENG"
+        },
+        "date_of_birth": "2001-03-19"
+      },
+      {
+        "number": 3,
+        "pos": "DF",
+        "name": "Kevin Danso",
+        "club": {
+          "name": "Sunderland",
+          "country": "ENG"
+        },
+        "date_of_birth": "1998-09-19"
+      },
+      {
+        "number": 4,
+        "pos": "MF",
+        "name": "Xaver Schlager",
+        "club": {
+          "name": "Nott'm Forest",
+          "country": "ENG"
+        },
+        "date_of_birth": "1997-09-28"
+      },
+      {
+        "number": 5,
+        "pos": "DF",
+        "name": "Stefan Posch",
+        "club": {
+          "name": "Mainz",
+          "country": "GER"
+        },
+        "date_of_birth": "1997-05-14"
+      },
+      {
+        "number": 6,
+        "pos": "MF",
+        "name": "Nicolas Seiwald",
+        "club": {
+          "name": "Leipzig",
+          "country": "GER"
+        },
+        "date_of_birth": "2001-05-04"
+      },
+      {
+        "number": 7,
+        "pos": "MF",
+        "name": "Christoph Lang",
+        "club": {
+          "name": "LASK",
+          "country": "AUT"
+        },
+        "date_of_birth": "2002-01-07"
+      },
+      {
+        "number": 7,
+        "pos": "MF",
+        "name": "Vasilije Markovic",
+        "club": {
+          "name": "Austria Wien",
+          "country": "AUT"
+        },
+        "date_of_birth": "2008-05-12"
+      },
+      {
+        "number": 8,
+        "pos": "FW",
+        "name": "Junior Adamu",
+        "club": {
+          "name": "Schalke",
+          "country": "GER"
+        },
+        "date_of_birth": "2001-06-06"
+      },
+      {
+        "number": 9,
+        "pos": "FW",
+        "name": "Sasa Kalajdzic",
+        "club": {
+          "name": "LASK",
+          "country": "AUT"
+        },
+        "date_of_birth": "1997-07-07"
+      },
+      {
+        "number": 10,
+        "pos": "MF",
+        "name": "Paul Wanner",
+        "club": {
+          "name": "PSV",
+          "country": "NED"
+        },
+        "date_of_birth": "2005-12-23"
+      },
+      {
+        "number": 11,
+        "pos": "FW",
+        "name": "Michael Gregoritsch",
+        "club": {
+          "name": "Augsburg",
+          "country": "GER"
+        },
+        "date_of_birth": "1994-04-18"
+      },
+      {
+        "number": 12,
+        "pos": "GK",
+        "name": "Florian Wiegele",
+        "club": {
+          "name": "Viktoria Plzeň",
+          "country": "CZE"
+        },
+        "date_of_birth": "2001-03-21"
+      },
+      {
+        "number": 13,
+        "pos": "GK",
+        "name": "Lukas Jungwirth",
+        "club": {
+          "name": "LASK",
+          "country": "AUT"
+        },
+        "date_of_birth": "2004-04-30"
+      },
+      {
+        "number": 14,
+        "pos": "DF",
+        "name": "Maximilian Wöber",
+        "club": {
+          "name": "Schalke",
+          "country": "GER"
+        },
+        "date_of_birth": "1998-02-04"
+      },
+      {
+        "number": 14,
+        "pos": "MF",
+        "name": "Nikolas Veratschnig",
+        "club": {
+          "name": "Salzburg",
+          "country": "AUT"
+        },
+        "date_of_birth": "2003-01-24"
+      },
+      {
+        "number": 15,
+        "pos": "DF",
+        "name": "Philipp Lienhart",
+        "club": {
+          "name": "Freiburg",
+          "country": "GER"
+        },
+        "date_of_birth": "1996-07-11"
+      },
+      {
+        "number": 16,
+        "pos": "DF",
+        "name": "Phillipp Mwene",
+        "club": {
+          "name": "Mainz",
+          "country": "GER"
+        },
+        "date_of_birth": "1994-01-29"
+      },
+      {
+        "number": 17,
+        "pos": "MF",
+        "name": "Carney Chukwuemeka",
+        "club": {
+          "name": "B. Dortmund",
+          "country": "GER"
+        },
+        "date_of_birth": "2003-10-20"
+      },
+      {
+        "number": 18,
+        "pos": "MF",
+        "name": "Romano Schmid",
+        "club": {
+          "name": "Frosinone",
+          "country": "ITA"
+        },
+        "date_of_birth": "2000-01-27"
+      },
+      {
+        "number": 19,
+        "pos": "MF",
+        "name": "Marco Grüll",
+        "club": {
+          "name": "Bremen",
+          "country": "GER"
+        },
+        "date_of_birth": "1998-07-06"
+      },
+      {
+        "number": 20,
+        "pos": "DF",
+        "name": "Konrad Laimer",
+        "club": {
+          "name": "Bayern München",
+          "country": "GER"
+        },
+        "date_of_birth": "1997-05-27"
+      },
+      {
+        "number": 20,
+        "pos": "MF",
+        "name": "Sascha Horvath",
+        "club": {
+          "name": "LASK",
+          "country": "AUT"
+        },
+        "date_of_birth": "1996-08-22"
+      },
+      {
+        "number": 21,
+        "pos": "MF",
+        "name": "Patrick Wimmer",
+        "club": {
+          "name": "Hoffenheim",
+          "country": "GER"
+        },
+        "date_of_birth": "2001-05-30"
+      },
+      {
+        "number": 22,
+        "pos": "MF",
+        "name": "Alexander Prass",
+        "club": {
+          "name": "Hoffenheim",
+          "country": "GER"
+        },
+        "date_of_birth": "2001-05-26"
+      },
+      {
+        "number": 23,
+        "pos": "DF",
+        "name": "Marco Friedl",
+        "club": {
+          "name": "Bayern München",
+          "country": "GER"
+        },
+        "date_of_birth": "1998-03-16"
+      }
+    ]
+  },
+  {
+    "name": "Israel",
+    "fifa_code": "ISR",
+    "group": "B3",
+    "league": "League B",
+    "players": [
+      {
+        "number": 1,
+        "pos": "GK",
+        "name": "Daniel Peretz",
+        "club": {
+          "name": "Southampton",
+          "country": "ENG"
+        },
+        "date_of_birth": "2000-07-10"
+      },
+      {
+        "number": 2,
+        "pos": "DF",
+        "name": "Eli Dasa",
+        "club": {
+          "name": "Without Club",
+          "country": null
+        },
+        "date_of_birth": "1992-12-03"
+      },
+      {
+        "number": 3,
+        "pos": "DF",
+        "name": "Roy Revivo",
+        "club": {
+          "name": "Elche",
+          "country": "ESP"
+        },
+        "date_of_birth": "2003-05-22"
+      },
+      {
+        "number": 4,
+        "pos": "DF",
+        "name": "Raz Shlomo",
+        "club": {
+          "name": "M. Tel-Aviv",
+          "country": "ISR"
+        },
+        "date_of_birth": "1999-08-13"
+      },
+      {
+        "number": 5,
+        "pos": "DF",
+        "name": "Idan Nachmias",
+        "club": {
+          "name": "H. Beer-Sheva",
+          "country": "ISR"
+        },
+        "date_of_birth": "1997-03-17"
+      },
+      {
+        "number": 6,
+        "pos": "MF",
+        "name": "Omri Gandelman",
+        "club": {
+          "name": "Lecce",
+          "country": "ITA"
+        },
+        "date_of_birth": "2000-05-16"
+      },
+      {
+        "number": 6,
+        "pos": "MF",
+        "name": "Yarin Levi",
+        "club": {
+          "name": "Maccabi Haifa",
+          "country": "ISR"
+        },
+        "date_of_birth": "2005-08-15"
+      },
+      {
+        "number": 7,
+        "pos": "FW",
+        "name": "Yarden Shua",
+        "club": {
+          "name": "Beitar",
+          "country": "ISR"
+        },
+        "date_of_birth": "1999-06-16"
+      },
+      {
+        "number": 8,
+        "pos": "MF",
+        "name": "Dor Peretz",
+        "club": {
+          "name": "M. Tel-Aviv",
+          "country": "ISR"
+        },
+        "date_of_birth": "1995-05-17"
+      },
+      {
+        "number": 9,
+        "pos": "FW",
+        "name": "Tai Baribo",
+        "club": {
+          "name": "DC United",
+          "country": "USA"
+        },
+        "date_of_birth": "1998-01-15"
+      },
+      {
+        "number": 10,
+        "pos": "MF",
+        "name": "Manor Solomon",
+        "club": {
+          "name": "West Ham",
+          "country": "ENG"
+        },
+        "date_of_birth": "1999-07-24"
+      },
+      {
+        "number": 11,
+        "pos": "MF",
+        "name": "Oscar Gloukh",
+        "club": {
+          "name": "Ajax",
+          "country": "NED"
+        },
+        "date_of_birth": "2004-04-01"
+      },
+      {
+        "number": 12,
+        "pos": "DF",
+        "name": "Noam Sztejfman",
+        "club": {
+          "name": "Maccabi Haifa",
+          "country": "ISR"
+        },
+        "date_of_birth": "2008-02-28"
+      },
+      {
+        "number": 13,
+        "pos": "DF",
+        "name": "Nikita Stoinov",
+        "club": {
+          "name": "Dinamo Bucureşti",
+          "country": "ROU"
+        },
+        "date_of_birth": "2005-08-24"
+      },
+      {
+        "number": 14,
+        "pos": "DF",
+        "name": "Guy Mizrahi",
+        "club": {
+          "name": "H. Beer-Sheva",
+          "country": "ISR"
+        },
+        "date_of_birth": "2001-03-30"
+      },
+      {
+        "number": 15,
+        "pos": "MF",
+        "name": "Eliel Peretz",
+        "club": {
+          "name": "H. Beer-Sheva",
+          "country": "ISR"
+        },
+        "date_of_birth": "1996-11-18"
+      },
+      {
+        "number": 16,
+        "pos": "DF",
+        "name": "Ilay Feingold",
+        "club": {
+          "name": "New England Revolution",
+          "country": "USA"
+        },
+        "date_of_birth": "2004-08-23"
+      },
+      {
+        "number": 16,
+        "pos": "MF",
+        "name": "Mohammad Abu Fani",
+        "club": {
+          "name": "Crvena Zvezda",
+          "country": "SRB"
+        },
+        "date_of_birth": "1998-04-27"
+      },
+      {
+        "number": 17,
+        "pos": "DF",
+        "name": "Anan Khalaili",
+        "club": {
+          "name": "Crystal Palace",
+          "country": "ENG"
+        },
+        "date_of_birth": "2004-09-03"
+      },
+      {
+        "number": 18,
+        "pos": "GK",
+        "name": "Omri Glazer",
+        "club": {
+          "name": "Maccabi Haifa",
+          "country": "ISR"
+        },
+        "date_of_birth": "1996-03-11"
+      },
+      {
+        "number": 19,
+        "pos": "FW",
+        "name": "Dor Turgeman",
+        "club": {
+          "name": "New England Revolution",
+          "country": "USA"
+        },
+        "date_of_birth": "2003-10-24"
+      },
+      {
+        "number": 20,
+        "pos": "MF",
+        "name": "Liel Abada",
+        "club": {
+          "name": "Charlotte FC",
+          "country": "USA"
+        },
+        "date_of_birth": "2001-10-03"
+      },
+      {
+        "number": 21,
+        "pos": "FW",
+        "name": "Idan Toclomiti",
+        "club": {
+          "name": "Charlotte FC",
+          "country": "USA"
+        },
+        "date_of_birth": "2004-08-09"
+      },
+      {
+        "number": 22,
+        "pos": "FW",
+        "name": "Saied Abu Farchi",
+        "club": {
+          "name": "Colorado",
+          "country": "USA"
+        },
+        "date_of_birth": "2006-05-11"
+      },
+      {
+        "number": 23,
+        "pos": "GK",
+        "name": "Assaf Tzur",
+        "club": {
+          "name": "H. Tel-Aviv",
+          "country": "ISR"
+        },
+        "date_of_birth": "1998-08-28"
+      }
+    ]
+  },
+  {
+    "name": "Kosovo",
+    "fifa_code": "KOS",
+    "group": "B3",
+    "league": "League B",
+    "players": [
+      {
+        "number": 1,
+        "pos": "GK",
+        "name": "Arijanet Muric",
+        "club": {
+          "name": "Sassuolo",
+          "country": "ITA"
+        },
+        "date_of_birth": "1998-11-07"
+      },
+      {
+        "number": 2,
+        "pos": "DF",
+        "name": "Ron Raçi",
+        "club": {
+          "name": "Hajduk Split",
+          "country": "CRO"
+        },
+        "date_of_birth": "2002-09-18"
+      },
+      {
+        "number": 3,
+        "pos": "MF",
+        "name": "Milot Avdyli",
+        "club": {
+          "name": "Celje",
+          "country": "SVN"
+        },
+        "date_of_birth": "2002-07-28"
+      },
+      {
+        "number": 4,
+        "pos": "DF",
+        "name": "Ilir Krasniqi",
+        "club": {
+          "name": "Polissya",
+          "country": "UKR"
+        },
+        "date_of_birth": "2000-04-02"
+      },
+      {
+        "number": 5,
+        "pos": "DF",
+        "name": "Lumbardh Dellova",
+        "club": {
+          "name": "Amedspor",
+          "country": "TUR"
+        },
+        "date_of_birth": "1999-01-01"
+      },
+      {
+        "number": 6,
+        "pos": "MF",
+        "name": "Erblin Osmani",
+        "club": {
+          "name": "Bayern München",
+          "country": "GER"
+        },
+        "date_of_birth": "2009-05-19"
+      },
+      {
+        "number": 7,
+        "pos": "MF",
+        "name": "Milot Rashica",
+        "club": {
+          "name": "Beşiktaş",
+          "country": "TUR"
+        },
+        "date_of_birth": "1996-06-28"
+      },
+      {
+        "number": 8,
+        "pos": "MF",
+        "name": "Valmir Matoshi",
+        "club": {
+          "name": "Thun",
+          "country": "SUI"
+        },
+        "date_of_birth": "2003-07-04"
+      },
+      {
+        "number": 9,
+        "pos": "FW",
+        "name": "Albion Rrahmani",
+        "club": {
+          "name": "Venezia",
+          "country": "ITA"
+        },
+        "date_of_birth": "2000-08-31"
+      },
+      {
+        "number": 10,
+        "pos": "FW",
+        "name": "Edon Zhegrova",
+        "club": {
+          "name": "Juventus",
+          "country": "ITA"
+        },
+        "date_of_birth": "1999-03-31"
+      },
+      {
+        "number": 11,
+        "pos": "FW",
+        "name": "Fisnik Asllani",
+        "club": {
+          "name": "Hoffenheim",
+          "country": "GER"
+        },
+        "date_of_birth": "2002-08-08"
+      },
+      {
+        "number": 12,
+        "pos": "GK",
+        "name": "Visar Bekaj",
+        "club": {
+          "name": "Tirana",
+          "country": "ALB"
+        },
+        "date_of_birth": "1997-05-24"
+      },
+      {
+        "number": 13,
+        "pos": "DF",
+        "name": "Dion Gallapeni",
+        "club": {
+          "name": "Wisła Płock",
+          "country": "POL"
+        },
+        "date_of_birth": "2004-12-22"
+      },
+      {
+        "number": 14,
+        "pos": "FW",
+        "name": "Baton Zabergja",
+        "club": {
+          "name": "Metalist 1925",
+          "country": "UKR"
+        },
+        "date_of_birth": "2001-04-18"
+      },
+      {
+        "number": 15,
+        "pos": "DF",
+        "name": "Mërgim Vojvoda",
+        "club": {
+          "name": "Udinese",
+          "country": "ITA"
+        },
+        "date_of_birth": "1995-02-01"
+      },
+      {
+        "number": 16,
+        "pos": "GK",
+        "name": "Amir Saipi",
+        "club": {
+          "name": "Castellón",
+          "country": "ESP"
+        },
+        "date_of_birth": "2000-07-08"
+      },
+      {
+        "number": 17,
+        "pos": "MF",
+        "name": "Ermal Krasniqi",
+        "club": {
+          "name": "Amedspor",
+          "country": "TUR"
+        },
+        "date_of_birth": "1998-09-07"
+      },
+      {
+        "number": 18,
+        "pos": "FW",
+        "name": "Vedat Muriqi",
+        "club": {
+          "name": "Fenerbahçe",
+          "country": "TUR"
+        },
+        "date_of_birth": "1994-04-24"
+      },
+      {
+        "number": 19,
+        "pos": "MF",
+        "name": "Dion Kacuri",
+        "club": {
+          "name": "Lustenau",
+          "country": "AUT"
+        },
+        "date_of_birth": "2004-02-11"
+      },
+      {
+        "number": 20,
+        "pos": "MF",
+        "name": "Veldin Hodža",
+        "club": {
+          "name": "Rubin",
+          "country": "RUS"
+        },
+        "date_of_birth": "2002-10-15"
+      },
+      {
+        "number": 22,
+        "pos": "MF",
+        "name": "Muharrem Jashari",
+        "club": {
+          "name": "LNZ Cherkasy",
+          "country": "UKR"
+        },
+        "date_of_birth": "1998-02-21"
+      },
+      {
+        "number": 23,
+        "pos": "MF",
+        "name": "Leon Avdullahu",
+        "club": {
+          "name": "Hoffenheim",
+          "country": "GER"
+        },
+        "date_of_birth": "2004-02-23"
+      }
+    ]
+  },
+  {
+    "name": "Republic of Ireland",
+    "fifa_code": "IRL",
+    "group": "B3",
+    "league": "League B",
+    "players": [
+      {
+        "number": 1,
+        "pos": "GK",
+        "name": "Caoimhín Kelleher",
+        "club": {
+          "name": "Brentford",
+          "country": "ENG"
+        },
+        "date_of_birth": "1998-11-23"
+      },
+      {
+        "number": 2,
+        "pos": "DF",
+        "name": "James Abankwah",
+        "club": {
+          "name": "Udinese",
+          "country": "ITA"
+        },
+        "date_of_birth": "2004-01-16"
+      },
+      {
+        "number": 3,
+        "pos": "DF",
+        "name": "Liam Scales",
+        "club": {
+          "name": "Celtic",
+          "country": "SCO"
+        },
+        "date_of_birth": "1998-08-08"
+      },
+      {
+        "number": 4,
+        "pos": "DF",
+        "name": "Dara O'Shea",
+        "club": {
+          "name": "Ipswich",
+          "country": "ENG"
+        },
+        "date_of_birth": "1999-03-04"
+      },
+      {
+        "number": 5,
+        "pos": "DF",
+        "name": "Jake O'Brien",
+        "club": {
+          "name": "Everton",
+          "country": "ENG"
+        },
+        "date_of_birth": "2001-05-15"
+      },
+      {
+        "number": 6,
+        "pos": "MF",
+        "name": "Jayson Molumby",
+        "club": {
+          "name": "West Brom",
+          "country": "ENG"
+        },
+        "date_of_birth": "1999-08-06"
+      },
+      {
+        "number": 7,
+        "pos": "FW",
+        "name": "Troy Parrott",
+        "club": {
+          "name": "Real Betis",
+          "country": "ESP"
+        },
+        "date_of_birth": "2002-02-04"
+      },
+      {
+        "number": 8,
+        "pos": "MF",
+        "name": "Jason Knight",
+        "club": {
+          "name": "Bristol City",
+          "country": "ENG"
+        },
+        "date_of_birth": "2001-02-13"
+      },
+      {
+        "number": 9,
+        "pos": "FW",
+        "name": "Thomas Cannon",
+        "club": {
+          "name": "Sheff United",
+          "country": "ENG"
+        },
+        "date_of_birth": "2002-12-28"
+      },
+      {
+        "number": 10,
+        "pos": "FW",
+        "name": "Adam Idah",
+        "club": {
+          "name": "Swansea",
+          "country": "ENG"
+        },
+        "date_of_birth": "2001-02-11"
+      },
+      {
+        "number": 11,
+        "pos": "MF",
+        "name": "Finn Azaz",
+        "club": {
+          "name": "Southampton",
+          "country": "ENG"
+        },
+        "date_of_birth": "2000-09-07"
+      },
+      {
+        "number": 12,
+        "pos": "DF",
+        "name": "Liam Kitching",
+        "club": {
+          "name": "Sheff United",
+          "country": "ENG"
+        },
+        "date_of_birth": "1999-09-25"
+      },
+      {
+        "number": 13,
+        "pos": "DF",
+        "name": "Joel Bagan",
+        "club": {
+          "name": "Cardiff",
+          "country": "WAL"
+        },
+        "date_of_birth": "2001-09-03"
+      },
+      {
+        "number": 14,
+        "pos": "MF",
+        "name": "Conor Coventry",
+        "club": {
+          "name": "Charlton",
+          "country": "ENG"
+        },
+        "date_of_birth": "2000-03-25"
+      },
+      {
+        "number": 15,
+        "pos": "DF",
+        "name": "John Egan",
+        "club": {
+          "name": "Hull",
+          "country": "ENG"
+        },
+        "date_of_birth": "1992-10-20"
+      },
+      {
+        "number": 16,
+        "pos": "GK",
+        "name": "Gavin Bazunu",
+        "club": {
+          "name": "Bolton",
+          "country": "ENG"
+        },
+        "date_of_birth": "2002-02-20"
+      },
+      {
+        "number": 17,
+        "pos": "MF",
+        "name": "Jack Moylan",
+        "club": {
+          "name": "Cardiff",
+          "country": "WAL"
+        },
+        "date_of_birth": "2001-09-01"
+      },
+      {
+        "number": 18,
+        "pos": "MF",
+        "name": "Ryan Manning",
+        "club": {
+          "name": "Southampton",
+          "country": "ENG"
+        },
+        "date_of_birth": "1996-06-14"
+      },
+      {
+        "number": 19,
+        "pos": "FW",
+        "name": "Owen Elding",
+        "club": {
+          "name": "Hibernian",
+          "country": "SCO"
+        },
+        "date_of_birth": "2006-03-07"
+      },
+      {
+        "number": 20,
+        "pos": "FW",
+        "name": "Chiedozie Ogbene",
+        "club": {
+          "name": "Lincoln City",
+          "country": "ENG"
+        },
+        "date_of_birth": "1997-05-01"
+      },
+      {
+        "number": 21,
+        "pos": "MF",
+        "name": "Rocco Vata",
+        "club": {
+          "name": "West Brom",
+          "country": "ENG"
+        },
+        "date_of_birth": "2005-04-18"
+      },
+      {
+        "number": 22,
+        "pos": "MF",
+        "name": "Killian Phillips",
+        "club": {
+          "name": "St. Mirren",
+          "country": "SCO"
+        },
+        "date_of_birth": "2002-03-30"
+      },
+      {
+        "number": 23,
+        "pos": "GK",
+        "name": "Max O'Leary",
+        "club": {
+          "name": "West Brom",
+          "country": "ENG"
+        },
+        "date_of_birth": "1996-10-10"
+      }
+    ]
+  },
+  {
+    "name": "Andorra",
+    "fifa_code": "AND",
+    "group": "D1",
+    "league": "League D",
+    "players": [
+      {
+        "number": 1,
+        "pos": "GK",
+        "name": "Marc De Castro",
+        "club": {
+          "name": "CD Alcalá",
+          "country": "ESP"
+        },
+        "date_of_birth": "2004-03-11"
+      },
+      {
+        "number": 2,
+        "pos": "DF",
+        "name": "Biel Borra",
+        "club": {
+          "name": "Olot",
+          "country": "ESP"
+        },
+        "date_of_birth": "2005-10-22"
+      },
+      {
+        "number": 2,
+        "pos": "DF",
+        "name": "Eric De Pablos",
+        "club": {
+          "name": "Rànger's",
+          "country": "AND"
+        },
+        "date_of_birth": "1999-03-08"
+      },
+      {
+        "number": 3,
+        "pos": "MF",
+        "name": "Pau Babot",
+        "club": {
+          "name": "Bayern Alzenau",
+          "country": "GER"
+        },
+        "date_of_birth": "2003-08-20"
+      },
+      {
+        "number": 4,
+        "pos": "DF",
+        "name": "Christian Garcia",
+        "club": {
+          "name": "At. Escaldes",
+          "country": "AND"
+        },
+        "date_of_birth": "1999-02-04"
+      },
+      {
+        "number": 5,
+        "pos": "DF",
+        "name": "Max Llovera",
+        "club": {
+          "name": "San Cristóbal",
+          "country": "ESP"
+        },
+        "date_of_birth": "1997-01-08"
+      },
+      {
+        "number": 6,
+        "pos": "DF",
+        "name": "Francisco Pomares",
+        "club": {
+          "name": "CD Tarancón",
+          "country": "ESP"
+        },
+        "date_of_birth": "1998-09-21"
+      },
+      {
+        "number": 7,
+        "pos": "FW",
+        "name": "Àlexandre Martínez",
+        "club": {
+          "name": "At. Escaldes",
+          "country": "AND"
+        },
+        "date_of_birth": "1998-10-10"
+      },
+      {
+        "number": 8,
+        "pos": "MF",
+        "name": "Eric Vales",
+        "club": {
+          "name": "Casa Portugal",
+          "country": "AND"
+        },
+        "date_of_birth": "2000-08-18"
+      },
+      {
+        "number": 9,
+        "pos": "FW",
+        "name": "Ricard Fernández ",
+        "club": {
+          "name": "Casa Portugal",
+          "country": "AND"
+        },
+        "date_of_birth": "1999-03-19"
+      },
+      {
+        "number": 10,
+        "pos": "FW",
+        "name": "Guillaume Lopez",
+        "club": {
+          "name": "FC Santa Coloma",
+          "country": "AND"
+        },
+        "date_of_birth": "1999-01-30"
+      },
+      {
+        "number": 11,
+        "pos": "FW",
+        "name": "Albert Rosas",
+        "club": {
+          "name": "Logroñés",
+          "country": "ESP"
+        },
+        "date_of_birth": "2002-08-19"
+      },
+      {
+        "number": 12,
+        "pos": "GK",
+        "name": "Iker Álvarez ",
+        "club": {
+          "name": "Córdoba",
+          "country": "ESP"
+        },
+        "date_of_birth": "2001-07-25"
+      },
+      {
+        "number": 13,
+        "pos": "GK",
+        "name": "Álex Ruiz",
+        "club": {
+          "name": "Casa Portugal",
+          "country": "AND"
+        },
+        "date_of_birth": "1991-09-03"
+      },
+      {
+        "number": 14,
+        "pos": "MF",
+        "name": "Jordi Aláez",
+        "club": {
+          "name": "At. Escaldes",
+          "country": "AND"
+        },
+        "date_of_birth": "1998-01-23"
+      },
+      {
+        "number": 15,
+        "pos": "DF",
+        "name": "Moisés San Nicolás",
+        "club": {
+          "name": "FC Santa Coloma",
+          "country": "AND"
+        },
+        "date_of_birth": "1993-09-17"
+      },
+      {
+        "number": 16,
+        "pos": "MF",
+        "name": "Eric De las Heras",
+        "club": {
+          "name": "UD Socuéllamos",
+          "country": "ESP"
+        },
+        "date_of_birth": "2002-01-13"
+      },
+      {
+        "number": 17,
+        "pos": "FW",
+        "name": "Aron Rodrigo",
+        "club": {
+          "name": "Mirandés",
+          "country": "ESP"
+        },
+        "date_of_birth": "2004-07-10"
+      },
+      {
+        "number": 18,
+        "pos": "DF",
+        "name": "Jesus Rubio",
+        "club": {
+          "name": "FC Santa Coloma",
+          "country": "AND"
+        },
+        "date_of_birth": "1994-09-09"
+      },
+      {
+        "number": 19,
+        "pos": "DF",
+        "name": "Joel Guillén",
+        "club": {
+          "name": "CD Binéfar",
+          "country": "ESP"
+        },
+        "date_of_birth": "2001-08-28"
+      },
+      {
+        "number": 20,
+        "pos": "FW",
+        "name": "Gerard Sola",
+        "club": {
+          "name": "CD Tudelano",
+          "country": "ESP"
+        },
+        "date_of_birth": "2004-04-04"
+      },
+      {
+        "number": 21,
+        "pos": "DF",
+        "name": "Alex Cornella",
+        "club": {
+          "name": "Rubí",
+          "country": "ESP"
+        },
+        "date_of_birth": "2006-09-18"
+      },
+      {
+        "number": 22,
+        "pos": "DF",
+        "name": "Ian Olivera",
+        "club": {
+          "name": "Getafe",
+          "country": "ESP"
+        },
+        "date_of_birth": "2004-10-05"
+      },
+      {
+        "number": 23,
+        "pos": "MF",
+        "name": "Ot Remolins",
+        "club": {
+          "name": "Oviedo",
+          "country": "ESP"
+        },
+        "date_of_birth": "2004-02-25"
+      }
+    ]
+  },
+  {
+    "name": "Malta",
+    "fifa_code": "MLT",
+    "group": "D1",
+    "league": "League D",
+    "players": [
+      {
+        "number": 1,
+        "pos": "GK",
+        "name": "Henry Bonello",
+        "club": {
+          "name": "Sliema",
+          "country": "MLT"
+        },
+        "date_of_birth": "1988-10-13"
+      },
+      {
+        "number": 2,
+        "pos": "DF",
+        "name": "Adam Overend",
+        "club": {
+          "name": "Sliema",
+          "country": "MLT"
+        },
+        "date_of_birth": "2000-05-03"
+      },
+      {
+        "number": 3,
+        "pos": "DF",
+        "name": "Ryan Camenzuli",
+        "club": {
+          "name": "Hamrun Spartans ",
+          "country": "MLT"
+        },
+        "date_of_birth": "1994-09-08"
+      },
+      {
+        "number": 4,
+        "pos": "DF",
+        "name": "Gabriel Mentz",
+        "club": {
+          "name": "Gżira",
+          "country": "MLT"
+        },
+        "date_of_birth": "1998-08-11"
+      },
+      {
+        "number": 5,
+        "pos": "DF",
+        "name": "Kurt Shaw",
+        "club": {
+          "name": "Hibernians",
+          "country": "MLT"
+        },
+        "date_of_birth": "1999-04-01"
+      },
+      {
+        "number": 6,
+        "pos": "MF",
+        "name": "Matthew Guillaumier",
+        "club": {
+          "name": "Hamrun Spartans ",
+          "country": "MLT"
+        },
+        "date_of_birth": "1998-04-09"
+      },
+      {
+        "number": 7,
+        "pos": "MF",
+        "name": "Brandon Paiber",
+        "club": {
+          "name": "Valletta",
+          "country": "MLT"
+        },
+        "date_of_birth": "1995-06-05"
+      },
+      {
+        "number": 8,
+        "pos": "FW",
+        "name": "Paul Mbong",
+        "club": {
+          "name": "Floriana",
+          "country": "MLT"
+        },
+        "date_of_birth": "2001-09-02"
+      },
+      {
+        "number": 9,
+        "pos": "MF",
+        "name": "Jake Grech",
+        "club": {
+          "name": "Hamrun Spartans ",
+          "country": "MLT"
+        },
+        "date_of_birth": "1997-11-18"
+      },
+      {
+        "number": 10,
+        "pos": "MF",
+        "name": "Teddy Teuma",
+        "club": {
+          "name": "Sliema",
+          "country": "MLT"
+        },
+        "date_of_birth": "1993-09-30"
+      },
+      {
+        "number": 11,
+        "pos": "FW",
+        "name": "Irvin Cardona",
+        "club": {
+          "name": "St-Étienne",
+          "country": "FRA"
+        },
+        "date_of_birth": "1997-08-08"
+      },
+      {
+        "number": 12,
+        "pos": "GK",
+        "name": "James Sissons",
+        "club": {
+          "name": "Chesterfield",
+          "country": "ENG"
+        },
+        "date_of_birth": "2007-03-26"
+      },
+      {
+        "number": 13,
+        "pos": "DF",
+        "name": "Enrico Pepe",
+        "club": {
+          "name": "Marsaxlokk",
+          "country": "MLT"
+        },
+        "date_of_birth": "1989-11-12"
+      },
+      {
+        "number": 14,
+        "pos": "MF",
+        "name": "Andrea Zammit",
+        "club": {
+          "name": "Valletta",
+          "country": "MLT"
+        },
+        "date_of_birth": "2003-04-05"
+      },
+      {
+        "number": 14,
+        "pos": "FW",
+        "name": "Basil Tuma",
+        "club": {
+          "name": "Aldershot",
+          "country": "ENG"
+        },
+        "date_of_birth": "2005-04-24"
+      },
+      {
+        "number": 15,
+        "pos": "MF",
+        "name": "Myles Beerman",
+        "club": {
+          "name": "Floriana",
+          "country": "MLT"
+        },
+        "date_of_birth": "1999-03-13"
+      },
+      {
+        "number": 16,
+        "pos": "GK",
+        "name": "Rashed Al-Tumi",
+        "club": {
+          "name": "Birkirkara",
+          "country": "MLT"
+        },
+        "date_of_birth": "2000-10-04"
+      },
+      {
+        "number": 17,
+        "pos": "MF",
+        "name": "Jake Azzopardi",
+        "club": {
+          "name": "Valletta",
+          "country": "MLT"
+        },
+        "date_of_birth": "2006-02-13"
+      },
+      {
+        "number": 18,
+        "pos": "MF",
+        "name": "Carlo Lonardelli",
+        "club": {
+          "name": "Floriana",
+          "country": "MLT"
+        },
+        "date_of_birth": "2001-04-29"
+      },
+      {
+        "number": 18,
+        "pos": "DF",
+        "name": "Kean Scicluna",
+        "club": {
+          "name": "Hamrun Spartans ",
+          "country": "MLT"
+        },
+        "date_of_birth": "2006-09-12"
+      },
+      {
+        "number": 19,
+        "pos": "MF",
+        "name": "Keyon Ewurum",
+        "club": {
+          "name": "Valletta",
+          "country": "MLT"
+        },
+        "date_of_birth": "2007-04-20"
+      },
+      {
+        "number": 20,
+        "pos": "FW",
+        "name": "Ilyas Chouaref",
+        "club": {
+          "name": "Sion",
+          "country": "SUI"
+        },
+        "date_of_birth": "2000-12-12"
+      },
+      {
+        "number": 21,
+        "pos": "MF",
+        "name": "Juan Corbalan",
+        "club": {
+          "name": "Marsaxlokk",
+          "country": "MLT"
+        },
+        "date_of_birth": "1997-01-03"
+      },
+      {
+        "number": 22,
+        "pos": "DF",
+        "name": "Zach Muscat",
+        "club": {
+          "name": "Birkirkara",
+          "country": "MLT"
+        },
+        "date_of_birth": "1993-08-22"
+      },
+      {
+        "number": 23,
+        "pos": "MF",
+        "name": "Alexander Satariano",
+        "club": {
+          "name": "Sliema",
+          "country": "MLT"
+        },
+        "date_of_birth": "2001-10-25"
+      }
+    ]
+  }
+]
