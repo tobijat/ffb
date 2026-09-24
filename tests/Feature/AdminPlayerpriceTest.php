@@ -464,7 +464,7 @@ class AdminPlayerpriceTest extends TestCase
             'elo_min_price' => 1.0,
             'team_price_preview' => null,
             'performance_preview' => null,
-            'performance_has_teamprices' => false,
+            'performance_has_teamelos' => false,
             'performance_opponent_weight' => 0.25,
             'recent_performance_preview' => null,
             'recent_lookback_rounds' => 5,

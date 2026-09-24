@@ -9,6 +9,7 @@ use App\Models\Playerprice;
 use App\Models\Playerstats;
 use App\Models\Playerteam;
 use App\Models\Team;
+use App\Models\Teamelo;
 use App\Models\Teamprice;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -33,6 +34,8 @@ class AdminPlayerpriceService
     private const DEFAULT_DECAY_FACTOR = 0.7;
 
     private const DEFAULT_MAX_PRICE_ADJUSTMENT = 2.0;
+
+    private const MIN_ELO_YEAR = 2007;
 
     public function __construct(
         private readonly AdminCenterService $adminCenter,
@@ -82,9 +85,9 @@ class AdminPlayerpriceService
                 : $this->lineupOptions->forLeague($leagueId))
             : $this->lineupOptions->forLeague(0);
 
-        $performanceHasTeamprices = false;
-        if ($resolvedTab === 'performance' && $resolvedMatchroundId > 0) {
-            $performanceHasTeamprices = $this->matchroundHasCompleteTeamprices($resolvedMatchroundId);
+        $performanceHasTeamelos = false;
+        if ($resolvedTab === 'performance' && $resolvedMatchroundId > 0 && $leagueId > 0) {
+            $performanceHasTeamelos = $this->leagueHasCompleteTeamelos($leagueId);
         }
 
         return [
@@ -107,9 +110,11 @@ class AdminPlayerpriceService
             'elo_exponent' => self::DEFAULT_EXPONENT,
             'elo_dream_team_ratio' => self::DEFAULT_DREAM_TEAM_RATIO,
             'elo_min_price' => self::DEFAULT_MIN_PRICE,
+            'elo_year' => (int) now()->year,
+            'elo_year_options' => $this->eloYearOptions(),
             'team_price_preview' => $teamPricePreview,
             'performance_preview' => $performancePreview,
-            'performance_has_teamprices' => $performanceHasTeamprices,
+            'performance_has_teamelos' => $performanceHasTeamelos,
             'performance_opponent_weight' => self::DEFAULT_OPPONENT_WEIGHT,
             'recent_performance_preview' => $recentPerformancePreview,
             'recent_lookback_rounds' => self::DEFAULT_LOOKBACK_ROUNDS,
@@ -131,12 +136,15 @@ class AdminPlayerpriceService
     /**
      * Preview round_performance for all players who played in a matchround (no DB writes).
      *
-     * Per position, players with minutes > 0 are ranked by points (0 = worst, n−1 = best).
+     * Per position, players with minutes > 0 are ranked by points (0 = worst, n−1 = best)
+     * against the full peer set of that position across all earlier league matchrounds
+     * plus the selected one (not only the teams still left in a late knockout round).
      * Ties share the average of the ranks they would occupy. Then
      * round_performance = (rank / (n − 1)) * 2 − 1, or 0 when n = 1.
      *
-     * Optionally adjusts by opponent teamprice strength when include_opponent_strength is set
-     * and complete teamprices exist for the matchround.
+     * Optionally adjusts by opponent Elo strength when include_opponent_strength is set
+     * and complete ffb_teamelo rows exist for every team in the league. The Elo span
+     * (min/max) is always the full league spectrum, not only the teams in the selected round.
      *
      * @param  array<string, mixed>  $input
      * @return array{
@@ -196,19 +204,21 @@ class AdminPlayerpriceService
             ? (float) $input['opponent_weight']
             : self::DEFAULT_OPPONENT_WEIGHT;
 
-        /** @var array<int, float> $teamPricesByTeamId */
-        $teamPricesByTeamId = [];
-        $minTeamPrice = 0.0;
-        $maxTeamPrice = 0.0;
+        /** @var array<int, float> $eloByTeamId */
+        $eloByTeamId = [];
+        $minElo = 0.0;
+        $maxElo = 0.0;
         /** @var array<int, array{home: int, guest: int}> $matchesById */
         $matchesById = [];
 
         if ($includeOpponentStrength) {
-            if (! $this->matchroundHasCompleteTeamprices($matchroundId)) {
+            $leagueTeamIds = $this->teamIdsForGame($leagueId);
+            $eloByTeamId = $this->teamElosForLeague($leagueTeamIds, $leagueId);
+            if ($leagueTeamIds === [] || count($eloByTeamId) !== count($leagueTeamIds)) {
                 return [
                     'ok' => false,
                     'errors' => [
-                        'Gegnerstärke benötigt vollständige Teampreise für alle Teams dieser Spielrunde (Tab Teams).',
+                        'Gegnerstärke benötigt ELO-Werte (ffb_teamelo) für alle Teams der Liga. Bitte zuerst im Tab Team-Preis speichern oder Team-Elo backfüllen.',
                     ],
                     'price_league_id' => $leagueId,
                     'matchround_id' => $matchroundId,
@@ -216,11 +226,9 @@ class AdminPlayerpriceService
                 ];
             }
 
-            $teamIds = $this->teamIdsForMatchround($matchroundId);
-            $teamPricesByTeamId = $this->teamPricesForMatchround($teamIds, $matchroundId);
-            $priceValues = array_values($teamPricesByTeamId);
-            $minTeamPrice = min($priceValues);
-            $maxTeamPrice = max($priceValues);
+            $eloValues = array_values($eloByTeamId);
+            $minElo = min($eloValues);
+            $maxElo = max($eloValues);
 
             $matchesById = MatchGame::query()
                 ->where('match_round', $matchroundId)
@@ -256,14 +264,26 @@ class AdminPlayerpriceService
                 'ffb_team.team_name',
             ]);
 
-        /** @var array<string, list<object>> $rowsByPosition */
-        $rowsByPosition = [];
-        foreach ($rows as $row) {
+        $rankingRoundIds = $this->matchroundIdsThrough($leagueId, $matchroundId);
+        $peerRows = Playerstats::query()
+            ->join('ffb_playerteam', 'ffb_playerteam.playerteam_id', '=', 'ffb_playerstats.playerstats_playerteam_id')
+            ->whereIn('ffb_playerstats.playerstats_matchround_id', $rankingRoundIds)
+            ->where('ffb_playerstats.playerstats_minutes', '>', 0)
+            ->get([
+                'ffb_playerstats.playerstats_id',
+                'ffb_playerstats.playerstats_matchround_id',
+                'ffb_playerstats.playerstats_score',
+                'ffb_playerteam.playerteam_player_position',
+            ]);
+
+        /** @var array<string, list<object>> $peerRowsByPosition */
+        $peerRowsByPosition = [];
+        foreach ($peerRows as $row) {
             $position = strtolower(trim((string) $row->playerteam_player_position));
             if ($position === '') {
                 continue;
             }
-            $rowsByPosition[$position][] = $row;
+            $peerRowsByPosition[$position][] = $row;
         }
 
         /** @var array<string, array{sample_size: int}> $positions */
@@ -271,7 +291,7 @@ class AdminPlayerpriceService
         /** @var array<int, array{rank: float, round_performance: float}> $byStatsId */
         $byStatsId = [];
 
-        foreach ($rowsByPosition as $position => $positionRows) {
+        foreach ($peerRowsByPosition as $position => $positionRows) {
             $n = count($positionRows);
             $positions[$position] = ['sample_size' => $n];
 
@@ -299,6 +319,9 @@ class AdminPlayerpriceService
                     : ($rank / ($n - 1)) * 2 - 1;
 
                 for ($r = $i; $r <= $j; $r++) {
+                    if ((int) $positionRows[$r]->playerstats_matchround_id !== $matchroundId) {
+                        continue;
+                    }
                     $byStatsId[(int) $positionRows[$r]->playerstats_id] = [
                         'rank' => $rank,
                         'round_performance' => $roundPerformance,
@@ -309,7 +332,7 @@ class AdminPlayerpriceService
             }
         }
 
-        $priceSpan = $maxTeamPrice - $minTeamPrice;
+        $eloSpan = $maxElo - $minElo;
         $players = [];
         foreach ($rows as $row) {
             $position = strtolower(trim((string) $row->playerteam_player_position));
@@ -328,8 +351,8 @@ class AdminPlayerpriceService
                     (int) $row->playerteam_team_id,
                     (int) ($row->playerstats_match_id ?? 0),
                     $matchesById,
-                    $teamPricesByTeamId,
-                    $priceSpan,
+                    $eloByTeamId,
+                    $eloSpan,
                 );
                 $roundPerformance = max(
                     -1.0,
@@ -1009,16 +1032,16 @@ class AdminPlayerpriceService
 
     /**
      * @param  array<int, array{home: int, guest: int}>  $matchesById
-     * @param  array<int, float>  $teamPricesByTeamId
+     * @param  array<int, float>  $eloByTeamId
      */
     private function opponentFactorForPlayer(
         int $playerTeamId,
         int $matchId,
         array $matchesById,
-        array $teamPricesByTeamId,
-        float $priceSpan,
+        array $eloByTeamId,
+        float $eloSpan,
     ): float {
-        if ($matchId <= 0 || $priceSpan == 0.0 || ! isset($matchesById[$matchId])) {
+        if ($matchId <= 0 || $eloSpan == 0.0 || ! isset($matchesById[$matchId])) {
             return 0.0;
         }
 
@@ -1031,11 +1054,48 @@ class AdminPlayerpriceService
             return 0.0;
         }
 
-        if (! isset($teamPricesByTeamId[$playerTeamId], $teamPricesByTeamId[$opponentTeamId])) {
+        if (! isset($eloByTeamId[$playerTeamId], $eloByTeamId[$opponentTeamId])) {
             return 0.0;
         }
 
-        return ($teamPricesByTeamId[$opponentTeamId] - $teamPricesByTeamId[$playerTeamId]) / $priceSpan;
+        return ($eloByTeamId[$opponentTeamId] - $eloByTeamId[$playerTeamId]) / $eloSpan;
+    }
+
+    /**
+     * Matchround IDs in the league up to and including the selected round
+     * (same or earlier matchround_startdate). Used as the ranking peer window.
+     *
+     * @return list<int>
+     */
+    private function matchroundIdsThrough(int $leagueId, int $matchroundId): array
+    {
+        $selectedStart = Matchround::query()
+            ->where('matchround_id', $matchroundId)
+            ->value('matchround_startdate');
+
+        if ($selectedStart === null || $selectedStart === '') {
+            return [$matchroundId];
+        }
+
+        return Matchround::query()
+            ->where('matchround_league_id', $leagueId)
+            ->where('matchround_startdate', '<=', $selectedStart)
+            ->orderBy('matchround_startdate')
+            ->pluck('matchround_id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->all();
+    }
+
+    private function leagueHasCompleteTeamelos(int $leagueId): bool
+    {
+        $teamIds = $this->teamIdsForGame($leagueId);
+        if ($teamIds === []) {
+            return false;
+        }
+
+        $elos = $this->teamElosForLeague($teamIds, $leagueId);
+
+        return count($elos) === count($teamIds);
     }
 
     private function matchroundHasCompleteTeamprices(int $matchroundId): bool
@@ -1048,6 +1108,26 @@ class AdminPlayerpriceService
         $prices = $this->teamPricesForMatchround($teamIds, $matchroundId);
 
         return count($prices) === count($teamIds);
+    }
+
+    /**
+     * @param  list<int>  $teamIds
+     * @return array<int, float> team_id => teamelo_elo
+     */
+    private function teamElosForLeague(array $teamIds, int $leagueId): array
+    {
+        if ($teamIds === [] || $leagueId <= 0) {
+            return [];
+        }
+
+        return Teamelo::query()
+            ->where('teamelo_league_id', $leagueId)
+            ->whereIn('teamelo_team_id', $teamIds)
+            ->get(['teamelo_team_id', 'teamelo_elo'])
+            ->mapWithKeys(static fn (Teamelo $row): array => [
+                (int) $row->teamelo_team_id => (float) $row->teamelo_elo,
+            ])
+            ->all();
     }
 
     private function truthyInput(mixed $value): bool
@@ -1118,12 +1198,17 @@ class AdminPlayerpriceService
 
         /** @var array<int, float> $pricesByTeamId */
         $pricesByTeamId = [];
+        /** @var array<int, float> $eloByTeamId */
+        $eloByTeamId = [];
         foreach ($preview['teams'] ?? [] as $row) {
             $teamId = (int) ($row['team_id'] ?? 0);
             if ($teamId <= 0) {
                 continue;
             }
             $pricesByTeamId[$teamId] = (float) ($row['price'] ?? 0);
+            if (array_key_exists('elo_rating', $row)) {
+                $eloByTeamId[$teamId] = (float) $row['elo_rating'];
+            }
         }
 
         if ($pricesByTeamId === []) {
@@ -1137,8 +1222,25 @@ class AdminPlayerpriceService
             ];
         }
 
+        $eloYear = (int) ($preview['form']['elo_year'] ?? 0);
+        if ($eloYear < self::MIN_ELO_YEAR) {
+            return [
+                'ok' => false,
+                'errors' => ['ELO-Jahr fehlt in der Preisberechnung.'],
+                'price_league_id' => $leagueId,
+                'matchround_id' => $matchroundId,
+                'tab' => 'teams',
+                'preview' => $preview,
+            ];
+        }
+
         try {
-            $details = $this->persistTeamPrices($pricesByTeamId, $targetMatchroundIds);
+            $details = DB::transaction(function () use ($pricesByTeamId, $targetMatchroundIds, $leagueId, $eloByTeamId, $eloYear): array {
+                $details = $this->persistTeamPrices($pricesByTeamId, $targetMatchroundIds);
+                $this->persistTeamElos($leagueId, $eloByTeamId, $eloYear);
+
+                return $details;
+            });
         } catch (Throwable $e) {
             return [
                 'ok' => false,
@@ -1153,9 +1255,10 @@ class AdminPlayerpriceService
         return [
             'ok' => true,
             'message' => sprintf(
-                'ELO Team-Preise gespeichert: %d Team(s) × %d Spielrunde(n).',
+                'ELO Team-Preise gespeichert: %d Team(s) × %d Spielrunde(n); Team-Elo (%d) aktualisiert.',
                 count($pricesByTeamId),
                 count($targetMatchroundIds),
+                $eloYear,
             ),
             'details' => $details,
             'price_league_id' => $leagueId,
@@ -1314,7 +1417,9 @@ class AdminPlayerpriceService
         $details = [];
         if ($execute) {
             try {
-                $details = $this->persistTeamPrices($pricesByTeamId, $matchroundIds);
+                $details = DB::transaction(
+                    fn (): array => $this->persistTeamPrices($pricesByTeamId, $matchroundIds),
+                );
             } catch (Throwable $e) {
                 return [
                     'ok' => false,
@@ -1389,6 +1494,21 @@ class AdminPlayerpriceService
             }
         }
 
+        $eloYear = $this->resolveEloYearInput($input);
+        if ($eloYear === null) {
+            return [
+                'ok' => false,
+                'errors' => [sprintf(
+                    'ELO-Jahr muss zwischen %d und %d liegen.',
+                    self::MIN_ELO_YEAR,
+                    (int) now()->year,
+                )],
+                'price_league_id' => $leagueId,
+                'matchround_id' => $matchroundId,
+                'tab' => 'teams',
+            ];
+        }
+
         try {
             $teamIds = $matchroundId > 0
                 ? $this->teamIdsForMatchround($matchroundId)
@@ -1416,7 +1536,7 @@ class AdminPlayerpriceService
             $maxPerTeam = $this->resolveIntInput($input['max_players_team'] ?? null, $defaultMaxPerTeam);
             $maxPerTeam = max(1, $maxPerTeam);
 
-            $eloRows = $this->eloRating->ratingsForTeamList($teamIds);
+            $eloRows = $this->eloRating->forYear($eloYear)->ratingsForTeamList($teamIds);
             if ($eloRows === []) {
                 return [
                     'ok' => false,
@@ -1515,6 +1635,7 @@ class AdminPlayerpriceService
                 'exponent' => $exponent,
                 'dream_team_ratio' => $dreamTeamRatio,
                 'min_price' => $minPrice,
+                'elo_year' => $eloYear,
             ];
 
             return [
@@ -1977,28 +2098,85 @@ class AdminPlayerpriceService
     {
         $details = [];
 
-        DB::transaction(function () use ($pricesByTeamId, $matchroundIds, &$details): void {
-            foreach ($matchroundIds as $matchroundId) {
-                foreach ($pricesByTeamId as $teamId => $price) {
-                    $row = Teamprice::query()
-                        ->where('teamprice_team_id', $teamId)
-                        ->where('teamprice_matchround_id', $matchroundId)
-                        ->first();
+        foreach ($matchroundIds as $matchroundId) {
+            foreach ($pricesByTeamId as $teamId => $price) {
+                $row = Teamprice::query()
+                    ->where('teamprice_team_id', $teamId)
+                    ->where('teamprice_matchround_id', $matchroundId)
+                    ->first();
 
-                    if (! $row) {
-                        $row = new Teamprice;
-                        $row->teamprice_team_id = $teamId;
-                        $row->teamprice_matchround_id = $matchroundId;
-                    }
-
-                    $row->teamprice_price = $price;
-                    $row->save();
-                    $details[] = 'Team '.$teamId.' / Runde '.$matchroundId.': '.$price;
+                if (! $row) {
+                    $row = new Teamprice;
+                    $row->teamprice_team_id = $teamId;
+                    $row->teamprice_matchround_id = $matchroundId;
                 }
+
+                $row->teamprice_price = $price;
+                $row->save();
+                $details[] = 'Team '.$teamId.' / Runde '.$matchroundId.': '.$price;
             }
-        });
+        }
 
         return $details;
+    }
+
+    /**
+     * Upsert ffb_teamelo for the teams whose Elo was used to compute team prices.
+     *
+     * @param  array<int, float>  $eloByTeamId
+     */
+    private function persistTeamElos(int $leagueId, array $eloByTeamId, int $eloYear): void
+    {
+        foreach ($eloByTeamId as $teamId => $elo) {
+            $row = Teamelo::query()
+                ->where('teamelo_team_id', $teamId)
+                ->where('teamelo_league_id', $leagueId)
+                ->first();
+
+            if ($row === null) {
+                $row = new Teamelo;
+                $row->teamelo_team_id = $teamId;
+                $row->teamelo_league_id = $leagueId;
+            }
+
+            $row->teamelo_elo = $elo;
+            $row->teamelo_elo_year = $eloYear;
+            $row->save();
+        }
+    }
+
+    /**
+     * Year for admin Team-Preis Elo fetch / ffb_teamelo write.
+     * Empty input defaults to the current calendar year.
+     */
+    private function resolveEloYearInput(array $input): ?int
+    {
+        $current = (int) now()->year;
+        $raw = $input['elo_year'] ?? null;
+        if ($raw === null || $raw === '') {
+            return $current;
+        }
+
+        if (! is_numeric($raw)) {
+            return null;
+        }
+
+        $year = (int) $raw;
+        if ($year < self::MIN_ELO_YEAR || $year > $current) {
+            return null;
+        }
+
+        return $year;
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function eloYearOptions(): array
+    {
+        $current = (int) now()->year;
+
+        return range($current, self::MIN_ELO_YEAR);
     }
 
     private function matchroundBelongsToLeague(int $matchroundId, int $leagueId): bool

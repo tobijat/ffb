@@ -6,6 +6,7 @@ use App\Models\League;
 use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\Team;
+use App\Models\Teamelo;
 use App\Models\Teamprice;
 use App\Services\AdminCenterService;
 use App\Services\AdminPlayerpriceService;
@@ -30,6 +31,7 @@ class AdminTeampriceSaveTest extends TestCase
     protected function tearDown(): void
     {
         Carbon::setTestNow();
+        Schema::dropIfExists('ffb_teamelo');
         Schema::dropIfExists('ffb_teamprice');
         Schema::dropIfExists('ffb_match');
         Schema::dropIfExists('ffb_matchround');
@@ -44,6 +46,7 @@ class AdminTeampriceSaveTest extends TestCase
         [$leagueId, $pastId, $futureA, $futureB, $teamA, $teamB] = $this->seedLeague();
 
         $elo = Mockery::mock(EloRatingClient::class);
+        $elo->shouldReceive('forYear')->once()->with(2026)->andReturnSelf();
         $elo->shouldReceive('ratingsForTeamList')
             ->once()
             ->andReturn([
@@ -55,8 +58,11 @@ class AdminTeampriceSaveTest extends TestCase
         $limits->shouldReceive('forLeague')->andReturn($this->lineupLimits());
         $limits->shouldReceive('forMatchround')->andReturn($this->lineupLimits());
 
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('selectedLeagueId')->andReturn($leagueId);
+
         $service = new AdminPlayerpriceService(
-            Mockery::mock(AdminCenterService::class),
+            $adminCenter,
             $elo,
             $limits,
         );
@@ -64,6 +70,7 @@ class AdminTeampriceSaveTest extends TestCase
         $result = $service->saveEloTeamPrices(544, [
             'price_league_id' => $leagueId,
             'matchround_id' => '',
+            'elo_year' => 2026,
             'max_credits' => 100,
             'max_players_team' => 3,
             'exponent' => 2,
@@ -92,6 +99,21 @@ class AdminTeampriceSaveTest extends TestCase
             ->where('teamprice_matchround_id', $futureA)
             ->value('teamprice_price');
         $this->assertGreaterThan($priceB, $priceA);
+
+        $this->assertDatabaseCount('ffb_teamelo', 2);
+        $this->assertDatabaseHas('ffb_teamelo', [
+            'teamelo_team_id' => $teamA,
+            'teamelo_league_id' => $leagueId,
+            'teamelo_elo' => 2000.0,
+            'teamelo_elo_year' => 2026,
+        ]);
+        $this->assertDatabaseHas('ffb_teamelo', [
+            'teamelo_team_id' => $teamB,
+            'teamelo_league_id' => $leagueId,
+            'teamelo_elo' => 1500.0,
+            'teamelo_elo_year' => 2026,
+        ]);
+        $this->assertStringContainsString('Team-Elo (2026)', $result['message'] ?? '');
     }
 
     #[Test]
@@ -106,6 +128,7 @@ class AdminTeampriceSaveTest extends TestCase
         ]);
 
         $elo = Mockery::mock(EloRatingClient::class);
+        $elo->shouldReceive('forYear')->once()->with(2026)->andReturnSelf();
         $elo->shouldReceive('ratingsForTeamList')
             ->once()
             ->andReturn([
@@ -117,8 +140,11 @@ class AdminTeampriceSaveTest extends TestCase
         $limits->shouldReceive('forLeague')->andReturn($this->lineupLimits());
         $limits->shouldReceive('forMatchround')->andReturn($this->lineupLimits());
 
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('selectedLeagueId')->andReturn($leagueId);
+
         $service = new AdminPlayerpriceService(
-            Mockery::mock(AdminCenterService::class),
+            $adminCenter,
             $elo,
             $limits,
         );
@@ -126,6 +152,7 @@ class AdminTeampriceSaveTest extends TestCase
         $result = $service->saveEloTeamPrices(544, [
             'price_league_id' => $leagueId,
             'matchround_id' => $futureA,
+            'elo_year' => 2026,
             'max_credits' => 100,
             'max_players_team' => 3,
             'exponent' => 2,
@@ -146,6 +173,98 @@ class AdminTeampriceSaveTest extends TestCase
             'teamprice_team_id' => $teamA,
             'teamprice_matchround_id' => $futureB,
         ]);
+        $this->assertDatabaseHas('ffb_teamelo', [
+            'teamelo_team_id' => $teamA,
+            'teamelo_league_id' => $leagueId,
+            'teamelo_elo' => 2000.0,
+        ]);
+    }
+
+    #[Test]
+    public function save_upserts_existing_teamelo_row(): void
+    {
+        [$leagueId, , $futureA, , $teamA, $teamB] = $this->seedLeague();
+
+        Teamelo::query()->insert([
+            'teamelo_team_id' => $teamA,
+            'teamelo_league_id' => $leagueId,
+            'teamelo_elo' => 1111.0,
+            'teamelo_elo_year' => 2020,
+        ]);
+
+        $elo = Mockery::mock(EloRatingClient::class);
+        $elo->shouldReceive('forYear')->once()->with(2012)->andReturnSelf();
+        $elo->shouldReceive('ratingsForTeamList')
+            ->once()
+            ->andReturn([
+                ['team_id' => $teamA, 'elo_rating' => 2000.0],
+                ['team_id' => $teamB, 'elo_rating' => 1500.0],
+            ]);
+
+        $limits = Mockery::mock(LineupOptionsResolver::class);
+        $limits->shouldReceive('forLeague')->andReturn($this->lineupLimits());
+        $limits->shouldReceive('forMatchround')->andReturn($this->lineupLimits());
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('selectedLeagueId')->andReturn($leagueId);
+
+        $service = new AdminPlayerpriceService(
+            $adminCenter,
+            $elo,
+            $limits,
+        );
+
+        $result = $service->saveEloTeamPrices(544, [
+            'price_league_id' => $leagueId,
+            'matchround_id' => $futureA,
+            'elo_year' => 2012,
+            'max_credits' => 100,
+            'max_players_team' => 3,
+            'exponent' => 2,
+            'dream_team_ratio' => 1.5,
+            'min_price' => 1,
+        ]);
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        $this->assertDatabaseCount('ffb_teamelo', 2);
+        $this->assertDatabaseHas('ffb_teamelo', [
+            'teamelo_team_id' => $teamA,
+            'teamelo_league_id' => $leagueId,
+            'teamelo_elo' => 2000.0,
+            'teamelo_elo_year' => 2012,
+        ]);
+        $this->assertStringContainsString('Team-Elo (2012)', $result['message'] ?? '');
+    }
+
+    #[Test]
+    public function save_rejects_invalid_elo_year(): void
+    {
+        [$leagueId, , $futureA] = $this->seedLeague();
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('selectedLeagueId')->andReturn($leagueId);
+
+        $service = new AdminPlayerpriceService(
+            $adminCenter,
+            Mockery::mock(EloRatingClient::class),
+            new LineupOptionsResolver,
+        );
+
+        $result = $service->saveEloTeamPrices(544, [
+            'price_league_id' => $leagueId,
+            'matchround_id' => $futureA,
+            'elo_year' => 2000,
+            'max_credits' => 100,
+            'max_players_team' => 3,
+            'exponent' => 2,
+            'dream_team_ratio' => 1.5,
+            'min_price' => 1,
+        ]);
+
+        $this->assertFalse($result['ok']);
+        $this->assertStringContainsString('ELO-Jahr', $result['errors'][0] ?? '');
+        $this->assertDatabaseCount('ffb_teamprice', 0);
+        $this->assertDatabaseCount('ffb_teamelo', 0);
     }
 
     #[Test]
@@ -153,8 +272,11 @@ class AdminTeampriceSaveTest extends TestCase
     {
         [$leagueId, $pastId] = $this->seedLeague();
 
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('selectedLeagueId')->andReturn($leagueId);
+
         $service = new AdminPlayerpriceService(
-            Mockery::mock(AdminCenterService::class),
+            $adminCenter,
             Mockery::mock(EloRatingClient::class),
             new LineupOptionsResolver,
         );
@@ -172,6 +294,7 @@ class AdminTeampriceSaveTest extends TestCase
         $this->assertFalse($result['ok']);
         $this->assertStringContainsString('Zukunft', $result['errors'][0] ?? '');
         $this->assertDatabaseCount('ffb_teamprice', 0);
+        $this->assertDatabaseCount('ffb_teamelo', 0);
     }
 
     /**
@@ -315,6 +438,15 @@ class AdminTeampriceSaveTest extends TestCase
             $table->unsignedInteger('teamprice_matchround_id');
             $table->double('teamprice_price')->default(0);
             $table->unique(['teamprice_team_id', 'teamprice_matchround_id']);
+        });
+
+        Schema::create('ffb_teamelo', function (Blueprint $table) {
+            $table->increments('teamelo_id');
+            $table->unsignedInteger('teamelo_team_id');
+            $table->unsignedInteger('teamelo_league_id');
+            $table->double('teamelo_elo');
+            $table->unsignedSmallInteger('teamelo_elo_year');
+            $table->unique(['teamelo_team_id', 'teamelo_league_id']);
         });
     }
 }

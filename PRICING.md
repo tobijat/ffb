@@ -152,39 +152,41 @@ It uses exactly the same formula but writes **every** matchround of the league, 
 
 This turns raw fantasy points from one round into a comparable −1…+1 score.
 
-Why not use the points directly? Because points are not comparable across positions: a goalkeeper and a striker earn points in completely different ways. So players are **ranked within their own position** for that round.
+Why not use the points directly? Because points are not comparable across positions: a goalkeeper and a striker earn points in completely different ways. So players are **ranked within their own position**.
+
+The peer set is not limited to the selected round. Every player with minutes > 0 at that position in **all earlier league matchrounds plus the selected one** enters the ranking. That way a final with only two goalkeepers does not automatically map them to −1 and +1 — their scores are judged against the whole tournament so far.
 
 ### The formula
 
 Only players with **minutes > 0** are included.
 
-1. Group all players of the round by position (`g`, `d`, `m`, `s`).
-2. Sort each group by points, worst first, and assign ranks `0 … n−1`.
+1. Collect all appearances for the position from league rounds with `matchround_startdate` ≤ the selected round.
+2. Sort that group by points, worst first, and assign ranks `0 … n−1`.
 3. Equal points share the **average** of the ranks they occupy (mid-rank), so ties are never broken arbitrarily.
-4. Map the rank onto −1…+1:
+4. Map the rank onto −1…+1 (only the selected round’s players are shown/saved):
 
    ```
    round_performance = (rank / (n − 1)) × 2 − 1
    ```
 
-   With only one player at a position (`n = 1`), the result is `0` — one player alone cannot be ranked.
+   With only one appearance at a position in the whole window (`n = 1`), the result is `0` — one sample alone cannot be ranked.
 
-Examples with 3 midfielders: worst → `−1`, middle → `0`, best → `+1`. With 4 midfielders: `−1`, `−0.333`, `+0.333`, `+1`.
+Examples with 3 midfielder appearances: worst → `−1`, middle → `0`, best → `+1`. With 4: `−1`, `−0.333`, `+0.333`, `+1`.
 
 ### Optional: opponent strength
 
-A great game against the tournament favourite is worth more than a great game against the weakest side. Tick *"Gegnerstärke (Teampreis) einbeziehen"* to account for that. It uses the **team prices of that round** as the strength yardstick:
+A great game against the tournament favourite is worth more than a great game against the weakest side. Tick *"Gegnerstärke (ELO) einbeziehen"* to account for that. It uses **Elo from `ffb_teamelo` for the league** (not matchround team prices). `min_elo` / `max_elo` are taken from **all teams in the league**, so a final between two close sides does not inflate the factor to ±1:
 
 ```
-opponent_factor   = (opponent_team_price − own_team_price) / (max_team_price − min_team_price)
+opponent_factor   = (opponent_elo − own_elo) / (max_elo − min_elo)
 round_performance = clamp(raw_round_performance + OPPONENT_WEIGHT × opponent_factor, −1, +1)
 ```
 
-`opponent_factor` is `+1` when the weakest team plays the strongest one and `−1` in the reverse case. With the default `OPPONENT_WEIGHT = 0.25`, the correction is at most ±0.25.
+`opponent_factor` is `+1` only when the lowest-Elo team in the league plays the highest-Elo one (and `−1` in the reverse case). With the default `OPPONENT_WEIGHT = 0.25`, the correction is at most ±0.25.
 
-Example: the worst-ranked defender (`raw = −1`) of the cheapest team faced the most expensive team, so `opponent_factor = +1` and the stored value becomes `−1 + 0.25 × 1 = −0.75`.
+Example: the worst-ranked defender (`raw = −1`) of the lowest-Elo team faced the highest-Elo team, so `opponent_factor = +1` and the stored value becomes `−1 + 0.25 × 1 = −0.75`.
 
-The checkbox only appears when **all** teams of that round already have team prices — the correction is meaningless otherwise. This is the first place where step 2 feeds into step 3.
+The checkbox only appears when **all** teams of the league already have `ffb_teamelo` rows — the correction is meaningless otherwise. Fill Elo via Team-Preis *Speichern* or the team-elo backfill.
 
 ### Saving
 

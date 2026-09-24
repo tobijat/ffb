@@ -9,7 +9,7 @@ use App\Models\Player;
 use App\Models\Playerstats;
 use App\Models\Playerteam;
 use App\Models\Team;
-use App\Models\Teamprice;
+use App\Models\Teamelo;
 use App\Services\AdminCenterService;
 use App\Services\AdminPlayerpriceService;
 use App\Services\EloRatingClient;
@@ -33,6 +33,7 @@ class AdminPlayerpricePerformanceTest extends TestCase
     protected function tearDown(): void
     {
         Schema::dropIfExists('ffb_playerstats');
+        Schema::dropIfExists('ffb_teamelo');
         Schema::dropIfExists('ffb_teamprice');
         Schema::dropIfExists('ffb_match');
         Schema::dropIfExists('ffb_playerteam');
@@ -84,7 +85,7 @@ class AdminPlayerpricePerformanceTest extends TestCase
                     'elo_min_price' => 1.0,
                     'team_price_preview' => null,
                     'performance_preview' => null,
-                    'performance_has_teamprices' => false,
+                    'performance_has_teamelos' => false,
                     'performance_opponent_weight' => 0.25,
                 ]);
         });
@@ -268,20 +269,143 @@ class AdminPlayerpricePerformanceTest extends TestCase
     }
 
     #[Test]
+    public function preview_ranks_against_position_peers_from_prior_and_current_rounds(): void
+    {
+        $league = League::query()->create(['league_title' => 'Testliga']);
+        $leagueId = (int) $league->league_id;
+
+        $group = Matchround::query()->create([
+            'matchround_league_id' => $leagueId,
+            'matchround_title' => 'Group',
+            'matchround_startdate' => '2026-06-01 00:00:00',
+        ]);
+        $final = Matchround::query()->create([
+            'matchround_league_id' => $leagueId,
+            'matchround_title' => 'Final',
+            'matchround_startdate' => '2026-07-01 00:00:00',
+        ]);
+        $groupId = (int) $group->matchround_id;
+        $finalId = (int) $final->matchround_id;
+
+        $teamA = Team::query()->create([
+            'team_name' => 'A',
+            'team_nationality' => 'AAA',
+            'team_status' => 1,
+            'team_num_players' => 0,
+            'team_foreign_id' => '',
+        ]);
+        $teamB = Team::query()->create([
+            'team_name' => 'B',
+            'team_nationality' => 'BBB',
+            'team_status' => 1,
+            'team_num_players' => 0,
+            'team_foreign_id' => '',
+        ]);
+
+        // Group: four GK appearances with scores 2, 4, 6, 8
+        $groupScores = [2, 4, 6, 8];
+        $statsId = 1;
+        foreach ($groupScores as $index => $score) {
+            $player = Player::query()->create([
+                'player_fname' => 'Group',
+                'player_lname' => (string) $score,
+                'player_nationality' => 'AUT',
+                'player_status' => 1,
+                'player_foreign_id' => '',
+                'player_status_description' => '',
+            ]);
+            $pt = Playerteam::query()->create([
+                'playerteam_player_id' => (int) $player->player_id,
+                'playerteam_team_id' => $index % 2 === 0 ? (int) $teamA->team_id : (int) $teamB->team_id,
+                'playerteam_league_id' => $leagueId,
+                'playerteam_player_picture' => '',
+                'playerteam_status' => 1,
+                'playerteam_player_position' => 'g',
+                'playerteam_date_transfer' => '2008-01-01 00:00:00',
+            ]);
+            Playerstats::query()->forceCreate([
+                'playerstats_id' => $statsId++,
+                'playerstats_playerteam_id' => (int) $pt->playerteam_id,
+                'playerstats_matchround_id' => $groupId,
+                'playerstats_match_id' => 1,
+                'playerstats_minutes' => 90,
+                'playerstats_score' => $score,
+                'playerstats_round_performance' => null,
+            ]);
+        }
+
+        // Final: only two GKs (scores 5 and 7) — without league peer set they would be −1 / +1
+        foreach (
+            [
+                ['fname' => 'Final', 'lname' => 'Low', 'team' => $teamA, 'score' => 5],
+                ['fname' => 'Final', 'lname' => 'High', 'team' => $teamB, 'score' => 7],
+            ] as $row
+        ) {
+            $player = Player::query()->create([
+                'player_fname' => $row['fname'],
+                'player_lname' => $row['lname'],
+                'player_nationality' => 'AUT',
+                'player_status' => 1,
+                'player_foreign_id' => '',
+                'player_status_description' => '',
+            ]);
+            $pt = Playerteam::query()->create([
+                'playerteam_player_id' => (int) $player->player_id,
+                'playerteam_team_id' => (int) $row['team']->team_id,
+                'playerteam_league_id' => $leagueId,
+                'playerteam_player_picture' => '',
+                'playerteam_status' => 1,
+                'playerteam_player_position' => 'g',
+                'playerteam_date_transfer' => '2008-01-01 00:00:00',
+            ]);
+            Playerstats::query()->forceCreate([
+                'playerstats_id' => $statsId++,
+                'playerstats_playerteam_id' => (int) $pt->playerteam_id,
+                'playerstats_matchround_id' => $finalId,
+                'playerstats_match_id' => 2,
+                'playerstats_minutes' => 90,
+                'playerstats_score' => $row['score'],
+                'playerstats_round_performance' => null,
+            ]);
+        }
+
+        $result = $this->service($leagueId)->previewMatchroundPerformance(544, [
+            'matchround_id' => $finalId,
+        ]);
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        $this->assertSame(6, $result['preview']['positions']['g']['sample_size']);
+        $this->assertCount(2, $result['preview']['players']);
+
+        $byName = [];
+        foreach ($result['preview']['players'] as $row) {
+            $byName[$row['player_name']] = $row;
+        }
+
+        // Peer scores 2,4,5,6,7,8 → ranks 0..5; Low(5)=2 → (2/5)*2−1=−0.2; High(7)=4 → 0.6
+        $this->assertSame(2.0, $byName['Final Low']['rank']);
+        $this->assertSame(-0.2, $byName['Final Low']['round_performance']);
+        $this->assertSame(4.0, $byName['Final High']['rank']);
+        $this->assertSame(0.6, $byName['Final High']['round_performance']);
+    }
+
+    #[Test]
     public function preview_applies_opponent_strength_when_requested(): void
     {
         [$leagueId, $matchroundId, $austriaId, $germanyId] = $this->seedRoundWithScoresAndMatch();
 
-        Teamprice::query()->insert([
+        Teamelo::query()->insert([
             [
-                'teamprice_team_id' => $austriaId,
-                'teamprice_matchround_id' => $matchroundId,
-                'teamprice_price' => 5.0,
+                'teamelo_team_id' => $austriaId,
+                'teamelo_league_id' => $leagueId,
+                'teamelo_elo' => 1500.0,
+                'teamelo_elo_year' => 2026,
             ],
             [
-                'teamprice_team_id' => $germanyId,
-                'teamprice_matchround_id' => $matchroundId,
-                'teamprice_price' => 15.0,
+                'teamelo_team_id' => $germanyId,
+                'teamelo_league_id' => $leagueId,
+                'teamelo_elo' => 2000.0,
+                'teamelo_elo_year' => 2026,
             ],
         ]);
 
@@ -299,20 +423,89 @@ class AdminPlayerpricePerformanceTest extends TestCase
             $byName[$row['player_name']] = $row;
         }
 
-        // price span 10; Austria vs Germany: factor (15-5)/10 = 1.0
+        // elo span 500 (only two teams in league); Austria vs Germany: factor (2000-1500)/500 = 1.0
         // Ada raw −1 → clamp(−1 + 0.25*1, −1, 1) = −0.75
         $this->assertSame(-1.0, $byName['Ada Alaba']['raw_round_performance']);
         $this->assertSame(1.0, $byName['Ada Alaba']['opponent_factor']);
         $this->assertSame(-0.75, $byName['Ada Alaba']['round_performance']);
 
-        // Hans (Germany) factor (5-15)/10 = −1.0; raw 0 → −0.25
+        // Hans (Germany) factor (1500-2000)/500 = −1.0; raw 0 → −0.25
         $this->assertSame(0.0, $byName['Hans Gast']['raw_round_performance']);
         $this->assertSame(-1.0, $byName['Hans Gast']['opponent_factor']);
         $this->assertSame(-0.25, $byName['Hans Gast']['round_performance']);
     }
 
     #[Test]
-    public function preview_rejects_opponent_strength_without_complete_teamprices(): void
+    public function opponent_factor_uses_full_league_elo_span_not_only_matchround_teams(): void
+    {
+        [$leagueId, $matchroundId, $austriaId, $germanyId] = $this->seedRoundWithScoresAndMatch();
+
+        $weak = Team::query()->create([
+            'team_name' => 'San Marino',
+            'team_nationality' => 'SMR',
+            'team_status' => 1,
+            'team_num_players' => 0,
+            'team_foreign_id' => '',
+        ]);
+        $weakId = (int) $weak->team_id;
+
+        $earlier = Matchround::query()->create([
+            'matchround_league_id' => $leagueId,
+            'matchround_title' => 'Group',
+            'matchround_startdate' => now()->subDays(10)->toDateTimeString(),
+        ]);
+        MatchGame::query()->insert([
+            'match_round' => (int) $earlier->matchround_id,
+            'match_hometeam_id' => $weakId,
+            'match_guestteam_id' => $austriaId,
+            'match_date' => '2026-07-01',
+            'match_status' => '',
+            'match_minutes' => 90,
+        ]);
+
+        // Finalists are close (1900 vs 2000); league floor is 1000 → span 1000, factor ±0.1
+        Teamelo::query()->insert([
+            [
+                'teamelo_team_id' => $weakId,
+                'teamelo_league_id' => $leagueId,
+                'teamelo_elo' => 1000.0,
+                'teamelo_elo_year' => 2026,
+            ],
+            [
+                'teamelo_team_id' => $austriaId,
+                'teamelo_league_id' => $leagueId,
+                'teamelo_elo' => 1900.0,
+                'teamelo_elo_year' => 2026,
+            ],
+            [
+                'teamelo_team_id' => $germanyId,
+                'teamelo_league_id' => $leagueId,
+                'teamelo_elo' => 2000.0,
+                'teamelo_elo_year' => 2026,
+            ],
+        ]);
+
+        $result = $this->service($leagueId)->previewMatchroundPerformance(544, [
+            'matchround_id' => $matchroundId,
+            'include_opponent_strength' => '1',
+            'opponent_weight' => 0.25,
+        ]);
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+
+        $byName = [];
+        foreach ($result['preview']['players'] as $row) {
+            $byName[$row['player_name']] = $row;
+        }
+
+        $this->assertSame(0.1, $byName['Ada Alaba']['opponent_factor']);
+        $this->assertSame(-0.975, $byName['Ada Alaba']['round_performance']);
+        $this->assertSame(-0.1, $byName['Hans Gast']['opponent_factor']);
+        $this->assertSame(-0.025, $byName['Hans Gast']['round_performance']);
+    }
+
+    #[Test]
+    public function preview_rejects_opponent_strength_without_complete_teamelos(): void
     {
         [$leagueId, $matchroundId] = $this->seedRoundWithScoresAndMatch();
 
@@ -322,7 +515,7 @@ class AdminPlayerpricePerformanceTest extends TestCase
         ]);
 
         $this->assertFalse($result['ok']);
-        $this->assertStringContainsString('Teampreise', $result['errors'][0] ?? '');
+        $this->assertStringContainsString('ELO', $result['errors'][0] ?? '');
     }
 
     #[Test]
@@ -471,7 +664,7 @@ class AdminPlayerpricePerformanceTest extends TestCase
                     'elo_min_price' => 1.0,
                     'team_price_preview' => null,
                     'performance_preview' => null,
-                    'performance_has_teamprices' => true,
+                    'performance_has_teamelos' => true,
                     'performance_opponent_weight' => 0.25,
                 ]);
         });
@@ -481,7 +674,7 @@ class AdminPlayerpricePerformanceTest extends TestCase
             ->assertOk()
             ->assertSee('Matchround-Performance berechnen', false)
             ->assertSee('Speichern', false)
-            ->assertSee('Gegnerstärke (Teampreis) einbeziehen', false)
+            ->assertSee('Gegnerstärke (ELO) einbeziehen', false)
             ->getContent();
 
         $this->assertSame(1, preg_match(
@@ -570,7 +763,7 @@ class AdminPlayerpricePerformanceTest extends TestCase
                     'elo_min_price' => 1.0,
                     'team_price_preview' => null,
                     'performance_preview' => $preview,
-                    'performance_has_teamprices' => true,
+                    'performance_has_teamelos' => true,
                     'performance_opponent_weight' => 0.25,
                 ]);
         });
@@ -767,6 +960,15 @@ class AdminPlayerpricePerformanceTest extends TestCase
             $table->string('match_date')->nullable();
             $table->string('match_status')->default('');
             $table->integer('match_minutes')->default(0);
+        });
+
+        Schema::create('ffb_teamelo', function (Blueprint $table) {
+            $table->increments('teamelo_id');
+            $table->unsignedInteger('teamelo_team_id');
+            $table->unsignedInteger('teamelo_league_id');
+            $table->double('teamelo_elo');
+            $table->unsignedSmallInteger('teamelo_elo_year');
+            $table->unique(['teamelo_team_id', 'teamelo_league_id']);
         });
 
         Schema::create('ffb_teamprice', function (Blueprint $table) {

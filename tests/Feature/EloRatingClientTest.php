@@ -170,4 +170,30 @@ class EloRatingClientTest extends TestCase
         $this->assertSame(1481.0, $historical->getEloRatingForTeam(70));
         Http::assertNotSent(fn ($request): bool => str_contains($request->url(), 'teams.csv'));
     }
+
+    #[Test]
+    public function for_year_loads_http_year_tsv(): void
+    {
+        file_put_contents($this->mapPath, '10;Argentinien;ARG;Argentina;;');
+
+        Http::fake([
+            'www.eloratings.net/2012.tsv' => Http::response("1\t1\tAR\t1901\t1\n", 200),
+            'www.eloratings.net/en.teams.tsv' => Http::response("AR\tArgentina\n", 200),
+        ]);
+
+        $this->assertSame(
+            'http://www.eloratings.net/2012.tsv',
+            EloRatingClient::ratingsUrlForYear(2012),
+        );
+
+        $client = (new EloRatingClient(
+            'https://www.eloratings.net/World.tsv',
+            $this->mapPath,
+            'https://www.eloratings.net/en.teams.tsv',
+        ))->forYear(2012);
+
+        $this->assertSame(1901.0, $client->getEloRatingForTeam(10));
+        Http::assertSent(fn ($request): bool => $request->url() === 'http://www.eloratings.net/2012.tsv');
+        Http::assertNotSent(fn ($request): bool => str_contains($request->url(), 'World.tsv'));
+    }
 }
