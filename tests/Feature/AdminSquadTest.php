@@ -34,7 +34,7 @@ class AdminSquadTest extends TestCase
         });
 
         $this->mock(AdminSquadService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544, 0, null, 'roster', null, null)->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->with(544, 0, null, 'roster', null, null, null)->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -100,7 +100,7 @@ class AdminSquadTest extends TestCase
         });
 
         $this->mock(AdminSquadService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544, 3, null, 'roster', null, null)->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->with(544, 3, null, 'roster', null, null, null)->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -179,7 +179,7 @@ class AdminSquadTest extends TestCase
         });
 
         $this->mock(AdminSquadService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544, 3, null, 'add', null, null)->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->with(544, 3, null, 'add', null, null, null)->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',

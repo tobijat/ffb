@@ -49,4 +49,33 @@ return [
         'ca_bundle' => env('WIKIMEDIA_CA_BUNDLE', storage_path('certs/cacert.pem')),
     ],
 
+    'uefa' => [
+        'base_url' => env('UEFA_COMP_API_URL', 'https://comp.uefa.com/v2'),
+        'timeout' => (int) env('UEFA_COMP_HTTP_TIMEOUT', 20),
+        'connect_timeout' => (int) env('UEFA_COMP_CONNECT_TIMEOUT', 5),
+        'page_limit' => (int) env('UEFA_COMP_PAGE_LIMIT', 500),
+        'max_pages' => (int) env('UEFA_COMP_MAX_PAGES', 40),
+        // PHP on Windows often has empty curl.cainfo; reuse the same Mozilla CA bundle as Wikimedia.
+        'ca_bundle' => env('UEFA_COMP_CA_BUNDLE', storage_path('certs/cacert.pem')),
+        /*
+         * Auto-Kader (UEFA) presets. round_orders = UEFA orderInCompetition values.
+         * Nations League: League phase only (1).
+         * WM 2026: tournament rounds without European qualifying groups/play-off semis (3–9).
+         */
+        'competitions' => [
+            'nations_league_2027' => [
+                'label' => 'Nations League 2026/2027 (Ligaphase)',
+                'competition_id' => 2014,
+                'season_year' => 2027,
+                'round_orders' => [1],
+            ],
+            'wm_2026' => [
+                'label' => 'WM 2026 (Endrunde)',
+                'competition_id' => 17,
+                'season_year' => 2026,
+                'round_orders' => [3, 4, 5, 6, 7, 8, 9],
+            ],
+        ],
+    ],
+
 ];
