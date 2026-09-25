@@ -455,4 +455,91 @@ class AdminMatchTest extends TestCase
             ->assertSessionHas('admin_message', '1 Spiel hinzugefügt.')
             ->assertSessionMissing('admin_matches_auto');
     }
+
+    public function test_auto_matches_store_accepts_matches_json_payload(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminMatchService::class, function ($mock) {
+            $mock->shouldReceive('createMatchesFromDraft')
+                ->once()
+                ->withArgs(function (array $matches, int $leagueId, string $sourceName): bool {
+                    return $leagueId === 26
+                        && $sourceName === 'plan.json'
+                        && count($matches) === 1
+                        && (int) ($matches[0]['match_round'] ?? 0) === 12
+                        && ($matches[0]['match_date'] ?? '') === '2026-09-24';
+                })
+                ->andReturn([
+                    'ok' => true,
+                    'message' => '1 Spiel hinzugefügt.',
+                    'league_id' => 26,
+                ]);
+        });
+
+        $this->withSession([
+            FfbAuth::SESSION_USER_ID => 544,
+        ])
+            ->post('/admin/matches/auto', [
+                'league_id' => 26,
+                'source_name' => 'plan.json',
+                'matches_json' => json_encode([
+                    [
+                        'match_round' => 12,
+                        'match_date' => '2026-09-24',
+                        'match_hometeam_id' => 1,
+                        'match_guestteam_id' => 2,
+                        'match_status' => '',
+                    ],
+                ], JSON_THROW_ON_ERROR),
+            ])
+            ->assertRedirect(route('admin.matches', ['tab' => 'auto', 'league_id' => 26]))
+            ->assertSessionHas('admin_message', '1 Spiel hinzugefügt.');
+    }
+
+    public function test_auto_uefa_matches_store_accepts_rows_json_payload(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminMatchService::class, function ($mock) {
+            $mock->shouldReceive('saveUefaMatches')
+                ->once()
+                ->withArgs(function (array $rows, int $leagueId, string $sourceName): bool {
+                    return $leagueId === 26
+                        && $sourceName === 'uefa'
+                        && count($rows) === 1
+                        && (int) ($rows[0]['match_round'] ?? 0) === 12;
+                })
+                ->andReturn([
+                    'ok' => true,
+                    'message' => '1 Spiel gespeichert.',
+                    'league_id' => 26,
+                ]);
+        });
+
+        $this->withSession([
+            FfbAuth::SESSION_USER_ID => 544,
+        ])
+            ->post('/admin/matches/auto-uefa', [
+                'league_id' => 26,
+                'source_name' => 'uefa',
+                'rows_json' => json_encode([
+                    [
+                        'row_status' => 'new',
+                        'match_id' => 0,
+                        'match_round' => 12,
+                        'match_date' => '2026-09-24',
+                        'match_hometeam_id' => 1,
+                        'match_guestteam_id' => 2,
+                        'match_status' => '',
+                    ],
+                ], JSON_THROW_ON_ERROR),
+            ])
+            ->assertRedirect(route('admin.matches', ['tab' => 'auto-uefa', 'league_id' => 26]))
+            ->assertSessionHas('admin_message', '1 Spiel gespeichert.');
+    }
 }

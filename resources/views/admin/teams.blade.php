@@ -282,6 +282,8 @@
                         @csrf
                         <input type="hidden" name="source_name" value="{{ $autoUefaSource }}">
                         <input type="hidden" name="league_id" value="{{ (int) ($autoUefa['league_id'] ?? $selectedLeagueId) }}">
+                        {{-- One JSON field avoids PHP max_input_vars truncating large team lists. --}}
+                        <input type="hidden" name="rows_json" id="admin-auto-uefa-teams-rows-json" value="">
 
                         <div class="admin-auto-teams-table-wrap admin-auto-uefa-teams-wrap">
                             <table class="admin-auto-teams-table admin-auto-uefa-teams-table" id="admin-auto-uefa-teams-table">
@@ -301,16 +303,25 @@
                                             $isMatched = (string) ($row['match_status'] ?? '') === 'matched';
                                             $createNew = (int) ($row['create_new'] ?? 0) === 1;
                                             $rowTeamId = (int) ($row['team_id'] ?? 0);
+                                            $rowPayload = [
+                                                'uefa_name' => (string) ($row['uefa_name'] ?? ''),
+                                                'uefa_id' => (string) ($row['uefa_id'] ?? ''),
+                                                'uefa_team_code' => (string) ($row['uefa_team_code'] ?? ''),
+                                                'match_status' => (string) ($row['match_status'] ?? 'unmatched'),
+                                                'team_name' => (string) (($row['team_name'] ?? '') !== '' ? $row['team_name'] : ($row['uefa_name'] ?? '')),
+                                                'team_id' => $rowTeamId,
+                                                'create_new' => $createNew ? '1' : '0',
+                                                'team_nationality' => (string) ($row['team_nationality'] ?? ''),
+                                                'team_uefa_id' => (string) ($row['team_uefa_id'] ?? ''),
+                                                'team_team_code' => (string) ($row['team_team_code'] ?? ''),
+                                            ];
                                         @endphp
-                                        <tr class="admin-auto-uefa-row{{ $isMatched ? ' is-matched' : ' is-unmatched' }}">
+                                        <tr
+                                            class="admin-auto-uefa-row{{ $isMatched ? ' is-matched' : ' is-unmatched' }}"
+                                            data-row='@json($rowPayload)'
+                                        >
                                             <td class="admin-auto-uefa-match-cell">
-                                                <input type="hidden" name="rows[{{ $index }}][uefa_name]" value="{{ $row['uefa_name'] ?? '' }}">
-                                                <input type="hidden" name="rows[{{ $index }}][uefa_id]" value="{{ $row['uefa_id'] ?? '' }}">
-                                                <input type="hidden" name="rows[{{ $index }}][uefa_team_code]" value="{{ $row['uefa_team_code'] ?? '' }}">
-                                                <input type="hidden" name="rows[{{ $index }}][match_status]" value="{{ $row['match_status'] ?? 'unmatched' }}" class="admin-auto-uefa-match-status">
-                                                <input type="hidden" name="rows[{{ $index }}][team_name]" value="{{ ($row['team_name'] ?? '') !== '' ? $row['team_name'] : ($row['uefa_name'] ?? '') }}" class="admin-auto-uefa-team-name">
                                                 <select
-                                                    name="rows[{{ $index }}][team_id]"
                                                     class="admin-auto-uefa-team-id"
                                                     aria-label="FFB-Team {{ $index + 1 }}"
                                                 >
@@ -327,16 +338,24 @@
                                                 </select>
                                                 <input
                                                     type="hidden"
-                                                    name="rows[{{ $index }}][create_new]"
                                                     value="{{ $createNew ? '1' : '0' }}"
                                                     class="admin-auto-uefa-create-new"
+                                                >
+                                                <input
+                                                    type="hidden"
+                                                    value="{{ $rowPayload['match_status'] }}"
+                                                    class="admin-auto-uefa-match-status"
+                                                >
+                                                <input
+                                                    type="hidden"
+                                                    value="{{ $rowPayload['team_name'] }}"
+                                                    class="admin-auto-uefa-team-name"
                                                 >
                                             </td>
                                             <td>{{ $row['uefa_name'] ?? '' }}</td>
                                             <td>
                                                 <input
                                                     type="text"
-                                                    name="rows[{{ $index }}][team_nationality]"
                                                     value="{{ $row['team_nationality'] ?? '' }}"
                                                     maxlength="32"
                                                     class="admin-auto-uefa-nat"
@@ -349,7 +368,6 @@
                                             <td>
                                                 <input
                                                     type="text"
-                                                    name="rows[{{ $index }}][team_uefa_id]"
                                                     value="{{ $row['team_uefa_id'] ?? '' }}"
                                                     maxlength="64"
                                                     required
@@ -360,7 +378,6 @@
                                             <td>
                                                 <input
                                                     type="text"
-                                                    name="rows[{{ $index }}][team_team_code]"
                                                     value="{{ $row['team_team_code'] ?? '' }}"
                                                     maxlength="16"
                                                     required
@@ -757,6 +774,7 @@
 
 @if ($tab === 'auto-uefa')
 @push('scripts')
+<script src="{{ url('js/admin-bulk-json-form.js') }}"></script>
 <script>
 (function () {
     const table = document.getElementById('admin-auto-uefa-teams-table');
@@ -819,6 +837,21 @@
             }
         }
         refreshSaveState();
+    });
+
+    AdminBulkJsonForm.bind({
+        form: '#admin-auto-uefa-teams-form',
+        hidden: '#admin-auto-uefa-teams-rows-json',
+        rowSelector: 'tr.admin-auto-uefa-row',
+        fields: {
+            team_id: 'select.admin-auto-uefa-team-id',
+            create_new: '.admin-auto-uefa-create-new',
+            match_status: '.admin-auto-uefa-match-status',
+            team_name: '.admin-auto-uefa-team-name',
+            team_nationality: '.admin-auto-uefa-nat',
+            team_uefa_id: '.admin-auto-uefa-id',
+            team_team_code: '.admin-auto-uefa-code'
+        }
     });
 
     refreshSaveState();

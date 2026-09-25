@@ -349,4 +349,78 @@ class AdminSquadTest extends TestCase
             ->assertRedirect(route('admin.squad', ['team_id' => 3]))
             ->assertSessionHas('admin_message', 'Spieler aus dem Kader entfernt.');
     }
+
+    public function test_auto_squad_store_accepts_players_json_payload(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminSquadService::class, function ($mock) {
+            $mock->shouldReceive('createSquadFromDraft')
+                ->once()
+                ->withArgs(function (
+                    array $players,
+                    int $teamId,
+                    int $leagueId,
+                    string $sourceName,
+                    string $fifaCode,
+                    array $almost,
+                ): bool {
+                    return $teamId === 3
+                        && $leagueId === 1
+                        && $sourceName === 'squads.json'
+                        && $fifaCode === 'GER'
+                        && count($players) === 1
+                        && ($players[0]['player_lname'] ?? '') === 'Müller'
+                        && count($almost) === 1
+                        && ($almost[0]['use_existing'] ?? '') === '1';
+                })
+                ->andReturn([
+                    'ok' => true,
+                    'message' => '1 Spieler übernommen.',
+                    'team_id' => 3,
+                    'league_id' => 1,
+                ]);
+        });
+
+        $this->withSession([
+            FfbAuth::SESSION_USER_ID => 544,
+            'admin_squad_auto' => [
+                'analyzed' => true,
+                'source_name' => 'squads.json',
+                'fifa_code' => 'GER',
+                'source_kind' => 'json',
+            ],
+        ])
+            ->post('/admin/squad/auto', [
+                'team_id' => 3,
+                'squad_league_id' => 1,
+                'source_name' => 'squads.json',
+                'source_kind' => 'json',
+                'fifa_code' => 'GER',
+                'players_json' => json_encode([
+                    [
+                        'player_id' => 0,
+                        'is_new' => '1',
+                        'player_fname' => 'Thomas',
+                        'player_lname' => 'Müller',
+                        'playerteam_player_position' => 'm',
+                        'playerteam_status' => 1,
+                    ],
+                ], JSON_THROW_ON_ERROR),
+                'almost_json' => json_encode([
+                    [
+                        'use_existing' => '1',
+                        'db_player_id' => 99,
+                        'json_fname' => 'Manuel',
+                        'json_lname' => 'Neuer',
+                        'playerteam_player_position' => 'g',
+                        'playerteam_status' => 1,
+                    ],
+                ], JSON_THROW_ON_ERROR),
+            ])
+            ->assertRedirect(route('admin.squad', ['tab' => 'auto', 'team_id' => 3, 'squad_league_id' => 1]))
+            ->assertSessionHas('admin_message', '1 Spieler übernommen.');
+    }
 }

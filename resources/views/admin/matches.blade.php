@@ -184,6 +184,8 @@
                                     @csrf
                                     <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
                                     <input type="hidden" name="source_name" value="{{ $autoSource }}">
+                                    {{-- One JSON field avoids PHP max_input_vars truncating large match lists. --}}
+                                    <input type="hidden" name="matches_json" id="admin-auto-matches-json" value="">
 
                                     <div class="admin-auto-matches-table-wrap">
                                         <table class="admin-auto-matches-table" id="admin-auto-matches-table">
@@ -199,13 +201,22 @@
                                             </thead>
                                             <tbody>
                                                 @foreach ($autoMatches as $index => $match)
-                                                    <tr class="admin-auto-match-row">
+                                                    @php
+                                                        $rowPayload = [
+                                                            'home_name' => (string) ($match['home_name'] ?? ''),
+                                                            'guest_name' => (string) ($match['guest_name'] ?? ''),
+                                                            'spieltag' => (string) ($match['spieltag'] ?? ''),
+                                                            'match_round' => (string) ($match['match_round'] ?? ''),
+                                                            'match_date' => (string) ($match['match_date'] ?? ''),
+                                                            'match_hometeam_id' => (string) ($match['match_hometeam_id'] ?? ''),
+                                                            'match_guestteam_id' => (string) ($match['match_guestteam_id'] ?? ''),
+                                                            'match_status' => (string) ($match['match_status'] ?? ''),
+                                                        ];
+                                                    @endphp
+                                                    <tr class="admin-auto-match-row" data-row='@json($rowPayload)'>
                                                         <td>
-                                                            <input type="hidden" name="matches[{{ $index }}][home_name]" value="{{ $match['home_name'] ?? '' }}">
-                                                            <input type="hidden" name="matches[{{ $index }}][guest_name]" value="{{ $match['guest_name'] ?? '' }}">
-                                                            <input type="hidden" name="matches[{{ $index }}][spieltag]" value="{{ $match['spieltag'] ?? '' }}">
                                                             <select
-                                                                name="matches[{{ $index }}][match_round]"
+                                                                class="admin-auto-match-round"
                                                                 required
                                                                 aria-label="Spielrunde {{ $index + 1 }}"
                                                             >
@@ -223,7 +234,7 @@
                                                         <td>
                                                             <input
                                                                 type="date"
-                                                                name="matches[{{ $index }}][match_date]"
+                                                                class="admin-auto-match-date"
                                                                 value="{{ $match['match_date'] ?? '' }}"
                                                                 required
                                                                 aria-label="Datum {{ $index + 1 }}"
@@ -231,7 +242,7 @@
                                                         </td>
                                                         <td>
                                                             <select
-                                                                name="matches[{{ $index }}][match_hometeam_id]"
+                                                                class="admin-auto-match-home"
                                                                 required
                                                                 aria-label="Heimteam {{ $index + 1 }}"
                                                             >
@@ -248,7 +259,7 @@
                                                         </td>
                                                         <td>
                                                             <select
-                                                                name="matches[{{ $index }}][match_guestteam_id]"
+                                                                class="admin-auto-match-guest"
                                                                 required
                                                                 aria-label="Gastteam {{ $index + 1 }}"
                                                             >
@@ -266,7 +277,7 @@
                                                         <td>
                                                             <input
                                                                 type="text"
-                                                                name="matches[{{ $index }}][match_status]"
+                                                                class="admin-auto-match-status"
                                                                 value="{{ $match['match_status'] ?? '' }}"
                                                                 maxlength="255"
                                                                 placeholder="leer = OK"
@@ -589,6 +600,7 @@
 
 @if ($tab === 'auto')
 @push('scripts')
+<script src="{{ url('js/admin-bulk-json-form.js') }}"></script>
 <script>
 (function () {
     const table = document.getElementById('admin-auto-matches-table');
@@ -602,6 +614,19 @@
             row.remove();
         }
     });
+
+    AdminBulkJsonForm.bind({
+        form: '#admin-auto-matches-form',
+        hidden: '#admin-auto-matches-json',
+        rowSelector: 'tr.admin-auto-match-row',
+        fields: {
+            match_round: 'select.admin-auto-match-round',
+            match_date: '.admin-auto-match-date',
+            match_hometeam_id: 'select.admin-auto-match-home',
+            match_guestteam_id: 'select.admin-auto-match-guest',
+            match_status: '.admin-auto-match-status'
+        }
+    });
 })();
 </script>
 @endpush
@@ -609,34 +634,16 @@
 
 @if ($tab === 'auto-uefa')
 @push('scripts')
+<script src="{{ url('js/admin-bulk-json-form.js') }}"></script>
 <script>
 (function () {
-    const form = document.getElementById('admin-auto-uefa-matches-form');
-    const table = document.getElementById('admin-auto-uefa-matches-table');
-    const rowsJson = document.getElementById('admin-auto-uefa-rows-json');
-    if (!form || !table || !rowsJson) {
-        return;
-    }
-
-    form.addEventListener('submit', function () {
-        const rows = [];
-        table.querySelectorAll('tr.admin-auto-uefa-match-row').forEach(function (tr) {
-            let row;
-            try {
-                row = JSON.parse(tr.getAttribute('data-row') || '{}');
-            } catch (e) {
-                row = {};
-            }
-            if (!row || typeof row !== 'object') {
-                row = {};
-            }
-            const select = tr.querySelector('select.admin-auto-uefa-match-round');
-            if (select) {
-                row.match_round = select.value;
-            }
-            rows.push(row);
-        });
-        rowsJson.value = JSON.stringify(rows);
+    AdminBulkJsonForm.bind({
+        form: '#admin-auto-uefa-matches-form',
+        hidden: '#admin-auto-uefa-rows-json',
+        rowSelector: 'tr.admin-auto-uefa-match-row',
+        fields: {
+            match_round: 'select.admin-auto-uefa-match-round'
+        }
     });
 })();
 </script>

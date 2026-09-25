@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\AdminSquadService;
 use App\Services\FfbAuth;
+use App\Support\RequestJsonArray;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -252,16 +253,8 @@ class AdminSquadController extends Controller
     {
         $teamId = (int) $request->input('team_id', 0);
         $leagueId = (int) $request->input('squad_league_id', 0);
-        /** @var list<array<string, mixed>>|array<int, array<string, mixed>> $players */
-        $players = $request->input('players', []);
-        if (! is_array($players)) {
-            $players = [];
-        }
-        /** @var list<array<string, mixed>>|array<int, array<string, mixed>> $almost */
-        $almost = $request->input('almost', []);
-        if (! is_array($almost)) {
-            $almost = [];
-        }
+        $players = RequestJsonArray::pull($request, 'players_json', 'players');
+        $almost = RequestJsonArray::pull($request, 'almost_json', 'almost');
 
         $sessionKey = $tab === 'auto-uefa' ? 'admin_squad_auto_uefa' : 'admin_squad_auto';
         $sourceName = (string) ($request->input('source_name')
