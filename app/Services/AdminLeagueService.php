@@ -48,6 +48,7 @@ class AdminLeagueService
                 'league_visible' => 1,
                 'league_archive' => 0,
                 'league_symbol' => self::DEFAULT_SYMBOL,
+                'league_uefa_competition_identifier' => '',
                 'symbol_url' => '/images/ffb/symbols/'.self::DEFAULT_SYMBOL,
             ],
             $this->defaultOptionsForm(),
@@ -77,6 +78,7 @@ class AdminLeagueService
                 'league_visible' => (int) (bool) $league->league_visible,
                 'league_archive' => (int) (bool) $league->league_archive,
                 'league_symbol' => $symbol,
+                'league_uefa_competition_identifier' => (string) ($league->league_uefa_competition_identifier ?? ''),
                 'symbol_url' => '/images/ffb/symbols/'.$symbol,
             ],
             $optionForm,
@@ -114,6 +116,7 @@ class AdminLeagueService
                 'league_visible' => (int) $form['league_visible'],
                 'league_archive' => (int) $form['league_archive'],
                 'league_symbol' => $form['league_symbol'],
+                'league_uefa_competition_identifier' => $form['league_uefa_competition_identifier'],
             ]);
 
             LeagueOptions::query()->create(array_merge(
@@ -168,6 +171,7 @@ class AdminLeagueService
             $league->league_visible = (int) $form['league_visible'];
             $league->league_archive = (int) $form['league_archive'];
             $league->league_symbol = $form['league_symbol'];
+            $league->league_uefa_competition_identifier = $form['league_uefa_competition_identifier'];
             $league->save();
 
             $existingPointsMode = (string) ($league->options?->options_league_pointsmode ?: 'new');
@@ -266,6 +270,7 @@ class AdminLeagueService
             'league_visible' => (int) ($input['league_visible'] ?? 0) === 1 ? 1 : 0,
             'league_archive' => (int) ($input['league_archive'] ?? 0) === 1 ? 1 : 0,
             'league_symbol' => $symbol,
+            'league_uefa_competition_identifier' => trim((string) ($input['league_uefa_competition_identifier'] ?? '')),
             'symbol_url' => '/images/ffb/symbols/'.$symbol,
         ];
 

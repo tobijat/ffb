@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\League;
-use App\Models\LeagueOptions;
 use App\Services\AdminCenterService;
 use App\Services\AdminLeagueService;
 use Illuminate\Database\Schema\Blueprint;
@@ -12,7 +11,7 @@ use Mockery;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-class AdminLeaguePointsModeTest extends TestCase
+class AdminLeagueUefaCompetitionIdentifierTest extends TestCase
 {
     protected function setUp(): void
     {
@@ -28,99 +27,43 @@ class AdminLeaguePointsModeTest extends TestCase
     }
 
     #[Test]
-    public function create_always_stores_new_pointsmode_even_if_old_posted(): void
+    public function create_and_update_persist_uefa_competition_identifier(): void
     {
         $service = $this->service();
 
-        $result = $service->create([
-            'league_title' => 'Neue Liga',
+        $create = $service->create([
+            'league_title' => 'Nations League',
             'league_visible' => 1,
             'league_archive' => 0,
+            'league_uefa_competition_identifier' => '2014/2027/league_phase',
             'options_league_rankmode' => 'lc',
             'options_league_pricemode' => 'dynamic',
-            'options_league_pointsmode' => 'old',
             'options_league_lcpoints' => '12,10,8,7,6,5,4,3,2,1',
         ] + $this->numericOptionDefaults());
 
-        $this->assertTrue($result['ok']);
+        $this->assertTrue($create['ok']);
+
         $league = League::query()->first();
         $this->assertNotNull($league);
-        $this->assertSame('new', (string) LeagueOptions::query()
-            ->where('options_league_id', $league->league_id)
-            ->value('options_league_pointsmode'));
-    }
+        $this->assertSame('2014/2027/league_phase', (string) $league->league_uefa_competition_identifier);
 
-    #[Test]
-    public function update_preserves_existing_pointsmode_and_ignores_posted_value(): void
-    {
-        $league = League::query()->create([
-            'league_title' => 'Alte Liga',
+        $form = $service->formForEdit((int) $league->league_id);
+        $this->assertNotNull($form);
+        $this->assertSame('2014/2027/league_phase', $form['league_uefa_competition_identifier']);
+
+        $update = $service->update((int) $league->league_id, [
+            'league_title' => 'Nations League',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => 'symbol_game_na.png',
-        ]);
-
-        LeagueOptions::query()->create([
-            'options_league_id' => (int) $league->league_id,
+            'league_uefa_competition_identifier' => '  17/2026/tournament  ',
             'options_league_rankmode' => 'lc',
             'options_league_pricemode' => 'dynamic',
-            'options_league_pointsmode' => 'old',
-            'options_league_lcpoints' => '10,8,6,4,2,1',
-        ] + $this->numericOptionDefaults());
-
-        $result = $this->service()->update((int) $league->league_id, [
-            'league_title' => 'Alte Liga Updated',
-            'league_visible' => 1,
-            'league_archive' => 0,
-            'options_league_rankmode' => 'points',
-            'options_league_pricemode' => 'static',
-            'options_league_pointsmode' => 'new',
             'options_league_lcpoints' => '12,10,8,7,6,5,4,3,2,1',
         ] + $this->numericOptionDefaults());
 
-        $this->assertTrue($result['ok']);
-
-        $options = LeagueOptions::query()->where('options_league_id', $league->league_id)->first();
-        $this->assertNotNull($options);
-        $this->assertSame('old', (string) $options->options_league_pointsmode);
-        $this->assertSame('points', (string) $options->options_league_rankmode);
-        $this->assertSame('static', (string) $options->options_league_pricemode);
-        $this->assertSame('12,10,8,7,6,5,4,3,2,1', (string) $options->options_league_lcpoints);
-    }
-
-    #[Test]
-    public function create_rejects_invalid_lc_points_list(): void
-    {
-        $result = $this->service()->create([
-            'league_title' => 'Neue Liga',
-            'league_visible' => 1,
-            'league_archive' => 0,
-            'options_league_rankmode' => 'lc',
-            'options_league_pricemode' => 'dynamic',
-            'options_league_lcpoints' => '12,ten,8',
-        ] + $this->numericOptionDefaults());
-
-        $this->assertFalse($result['ok']);
-        $this->assertNotEmpty($result['errors'] ?? []);
-    }
-
-    #[Test]
-    public function create_normalizes_spaced_lc_points_list(): void
-    {
-        $result = $this->service()->create([
-            'league_title' => 'Neue Liga',
-            'league_visible' => 1,
-            'league_archive' => 0,
-            'options_league_rankmode' => 'lc',
-            'options_league_pricemode' => 'dynamic',
-            'options_league_lcpoints' => '12, 10, 8, 7',
-        ] + $this->numericOptionDefaults());
-
-        $this->assertTrue($result['ok']);
-        $this->assertSame(
-            '12,10,8,7',
-            (string) LeagueOptions::query()->value('options_league_lcpoints')
-        );
+        $this->assertTrue($update['ok']);
+        $league->refresh();
+        $this->assertSame('17/2026/tournament', (string) $league->league_uefa_competition_identifier);
     }
 
     private function service(): AdminLeagueService

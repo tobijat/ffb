@@ -55,6 +55,18 @@
                 </div>
 
                 <div class="admin-field">
+                    <label for="league_uefa_competition_identifier">UEFA-Competition-Identifier</label>
+                    <input
+                        id="league_uefa_competition_identifier"
+                        type="text"
+                        name="league_uefa_competition_identifier"
+                        value="{{ $form['league_uefa_competition_identifier'] ?? '' }}"
+                        maxlength="255"
+                    >
+                    <p class="hint">Optional. Freitext für competitionId, seasonYear und Phase (UEFA-API-Subset).</p>
+                </div>
+
+                <div class="admin-field">
                     <label for="league_visible">Sichtbar</label>
                     <select id="league_visible" name="league_visible">
                         <option value="1" @selected((int) $form['league_visible'] === 1)>ja</option>
