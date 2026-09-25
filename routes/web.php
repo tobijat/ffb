@@ -87,6 +87,8 @@ Route::middleware('ffb.admin')->group(function () {
     Route::post('/admin/matches', [AdminMatchController::class, 'store'])->name('admin.matches.store');
     Route::post('/admin/matches/auto/analyze', [AdminMatchController::class, 'analyzeAuto'])->name('admin.matches.auto.analyze');
     Route::post('/admin/matches/auto', [AdminMatchController::class, 'storeAuto'])->name('admin.matches.auto.store');
+    Route::post('/admin/matches/auto-uefa/analyze', [AdminMatchController::class, 'analyzeAutoUefa'])->name('admin.matches.auto-uefa.analyze');
+    Route::post('/admin/matches/auto-uefa', [AdminMatchController::class, 'storeAutoUefa'])->name('admin.matches.auto-uefa.store');
     Route::get('/admin/matches/{match}/edit', [AdminMatchController::class, 'edit'])->name('admin.matches.edit');
     Route::put('/admin/matches/{match}', [AdminMatchController::class, 'update'])->name('admin.matches.update');
     Route::delete('/admin/matches/{match}', [AdminMatchController::class, 'destroy'])->name('admin.matches.destroy');

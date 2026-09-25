@@ -325,6 +325,102 @@ class AdminMatchTest extends TestCase
             ->assertSessionHas('admin_matches_auto.matches.0.home_name', 'Niederlande');
     }
 
+    public function test_auto_matches_draft_is_not_kept_after_page_reload(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $emptyPayload = [
+            'user' => [
+                'user_id' => 544,
+                'user_nickname' => 'adminuser',
+                'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                'is_ffb_admin' => true,
+            ],
+            'navigation' => [],
+            'selected_league' => null,
+            'leagues' => [],
+            'selected_league_id' => 26,
+            'selected_league_title' => 'Testliga',
+            'uefa_competition_identifier' => '',
+            'matchrounds' => [],
+            'teams' => [],
+            'items' => [],
+            'form' => [
+                'match_id' => '',
+                'match_round' => '',
+                'match_date' => '',
+                'match_hometeam_id' => '',
+                'match_guestteam_id' => '',
+                'match_status' => '',
+            ],
+            'mode' => 'create',
+            'tab' => 'auto-uefa',
+            'auto' => [
+                'analyzed' => false,
+                'source_name' => '',
+                'league_id' => 0,
+                'present' => [],
+                'matches' => [],
+            ],
+            'auto_uefa' => [
+                'analyzed' => false,
+                'source_name' => '',
+                'league_id' => 0,
+                'rows' => [],
+            ],
+            'matchplan_files' => [],
+        ];
+
+        $this->mock(AdminMatchService::class, function ($mock) use ($emptyPayload) {
+            $mock->shouldReceive('defaultLeagueId')->andReturn(26);
+            $mock->shouldReceive('pagePayload')->twice()->andReturnUsing(function (
+                int $userId,
+                int $leagueId,
+                $form,
+                string $mode,
+                string $tab,
+                $auto,
+                $autoUefa,
+            ) use ($emptyPayload) {
+                $payload = $emptyPayload;
+                $payload['auto_uefa'] = is_array($autoUefa) ? $autoUefa : $emptyPayload['auto_uefa'];
+
+                return $payload;
+            });
+        });
+
+        $draft = [
+            'analyzed' => true,
+            'source_name' => 'competitionId=2014&seasonYear=2027&competitionPhase=TOURNAMENT',
+            'league_id' => 26,
+            'rows' => [
+                [
+                    'row_status' => 'new',
+                    'match_id' => 0,
+                    'home_name' => 'Deutschland',
+                    'guest_name' => 'Malta',
+                ],
+            ],
+        ];
+
+        $this->withSession([
+            FfbAuth::SESSION_USER_ID => 544,
+            'admin_matches_auto_uefa' => $draft,
+        ])
+            ->get('/admin/matches?tab=auto-uefa')
+            ->assertOk()
+            ->assertSee('Deutschland', false)
+            ->assertSee('Malta', false);
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->get('/admin/matches?tab=auto-uefa')
+            ->assertOk()
+            ->assertDontSee('Deutschland', false)
+            ->assertSessionMissing('admin_matches_auto_uefa');
+    }
+
     public function test_auto_matches_store_creates_and_clears_session(): void
     {
         $this->mock(FfbAdminAccess::class, function ($mock) {
@@ -341,13 +437,6 @@ class AdminMatchTest extends TestCase
 
         $this->withSession([
             FfbAuth::SESSION_USER_ID => 544,
-            'admin_matches_auto' => [
-                'analyzed' => true,
-                'source_name' => 'plan.json',
-                'league_id' => 26,
-                'present' => [],
-                'matches' => [],
-            ],
         ])
             ->post('/admin/matches/auto', [
                 'league_id' => 26,

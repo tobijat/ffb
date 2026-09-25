@@ -2127,6 +2127,37 @@
     }
 }
 
+.admin-auto-uefa-matches-wrap {
+    overflow-x: auto;
+    max-width: 100%;
+    width: 100%;
+}
+
+.admin-auto-uefa-matches-table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.admin-auto-uefa-matches-table select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.admin-auto-uefa-matches-table tr.is-matched {
+    background: color-mix(in srgb, var(--panel-light, #ccffcc) 70%, #fff);
+}
+
+.admin-auto-uefa-matches-table tr.is-unmapped {
+    background: color-mix(in srgb, #ffcccc 55%, #fff);
+}
+
+.admin-auto-uefa-warn {
+    color: #a00;
+    font-weight: bold;
+}
+
 .admin-auto-matches-upload {
     margin-top: 12px;
 }

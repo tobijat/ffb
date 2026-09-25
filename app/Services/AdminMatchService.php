@@ -9,6 +9,10 @@ use App\Models\Playerstats;
 use App\Models\Team;
 use App\Support\Flag;
 use DateTimeImmutable;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
+use Throwable;
 
 class AdminMatchService
 {
@@ -17,6 +21,7 @@ class AdminMatchService
     public function __construct(
         private readonly AdminCenterService $adminCenter,
         private readonly AdminTeamService $teams,
+        private readonly UefaCompApiClient $uefaClient = new UefaCompApiClient,
     ) {}
 
     public function defaultLeagueId(int $userId): int
@@ -27,6 +32,7 @@ class AdminMatchService
     /**
      * @param  array<string, mixed>|null  $form
      * @param  array<string, mixed>|null  $auto
+     * @param  array<string, mixed>|null  $autoUefa
      * @return array<string, mixed>
      */
     public function pagePayload(
@@ -36,6 +42,7 @@ class AdminMatchService
         string $mode = 'create',
         string $tab = 'manual',
         ?array $auto = null,
+        ?array $autoUefa = null,
     ): array {
         $shell = $this->adminCenter->shellPayload($userId);
         $leagues = $this->leagueOptions();
@@ -48,7 +55,20 @@ class AdminMatchService
             }
         }
 
+        $resolvedTab = match ($tab) {
+            'auto' => 'auto',
+            'auto-uefa' => 'auto-uefa',
+            default => 'manual',
+        };
+
         $form = $form ?? $this->emptyForm();
+
+        $uefaIdentifier = '';
+        if ($selectedLeagueId > 0) {
+            $uefaIdentifier = (string) (League::query()
+                ->whereKey($selectedLeagueId)
+                ->value('league_uefa_competition_identifier') ?? '');
+        }
 
         return [
             'user' => $shell['user'],
@@ -57,14 +77,16 @@ class AdminMatchService
             'leagues' => $leagues,
             'selected_league_id' => $selectedLeagueId,
             'selected_league_title' => $selectedTitle,
+            'uefa_competition_identifier' => $uefaIdentifier,
             'matchrounds' => $selectedLeagueId > 0 ? $this->matchroundOptions($selectedLeagueId) : [],
             'teams' => $selectedLeagueId > 0 ? $this->teamOptions() : [],
-            'items' => $selectedLeagueId > 0 ? $this->listItems($selectedLeagueId) : [],
+            'items' => $selectedLeagueId > 0 && $resolvedTab === 'manual' ? $this->listItems($selectedLeagueId) : [],
             'form' => $form,
             'mode' => $mode === 'update' ? 'update' : 'create',
-            'tab' => $tab === 'auto' ? 'auto' : 'manual',
+            'tab' => $resolvedTab,
             'auto' => $auto ?? $this->emptyAutoState(),
-            'matchplan_files' => $tab === 'auto' ? $this->teams->matchplanJsonOptions() : [],
+            'auto_uefa' => $autoUefa ?? $this->emptyAutoUefaState(),
+            'matchplan_files' => $resolvedTab === 'auto' ? $this->teams->matchplanJsonOptions() : [],
         ];
     }
 
@@ -79,6 +101,19 @@ class AdminMatchService
             'league_id' => 0,
             'present' => [],
             'matches' => [],
+        ];
+    }
+
+    /**
+     * @return array{analyzed: bool, source_name: string, league_id: int, rows: list<array<string, mixed>>}
+     */
+    public function emptyAutoUefaState(): array
+    {
+        return [
+            'analyzed' => false,
+            'source_name' => '',
+            'league_id' => 0,
+            'rows' => [],
         ];
     }
 
@@ -549,6 +584,411 @@ class AdminMatchService
             'message' => implode(', ', $parts).'.',
             'league_id' => $leagueId,
         ];
+    }
+
+    /**
+     * Build Auto-Matches (UEFA) rows from the league competition identifier.
+     *
+     * @return array{
+     *     ok: bool,
+     *     errors?: list<string>,
+     *     auto_uefa?: array{analyzed: bool, source_name: string, league_id: int, rows: list<array<string, mixed>>},
+     *     message?: string,
+     *     league_id?: int
+     * }
+     */
+    public function analyzeUefaMatches(int $leagueId): array
+    {
+        if ($leagueId <= 0) {
+            return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga wählen.'], 'league_id' => 0];
+        }
+
+        $league = League::query()->find($leagueId);
+        if (! $league) {
+            return ['ok' => false, 'errors' => ['Liga nicht gefunden.'], 'league_id' => $leagueId];
+        }
+
+        $identifier = trim((string) ($league->league_uefa_competition_identifier ?? ''));
+        if ($identifier === '') {
+            return [
+                'ok' => false,
+                'errors' => ['Für diese Liga ist kein UEFA-Competition-Identifier hinterlegt (Admin → Ligen).'],
+                'league_id' => $leagueId,
+            ];
+        }
+
+        $rounds = $this->matchroundsForMapping($leagueId);
+        if ($rounds === []) {
+            return [
+                'ok' => false,
+                'errors' => ['Diese Liga hat noch keine Spielrunden. Bitte zuerst Spielrunden anlegen.'],
+                'league_id' => $leagueId,
+            ];
+        }
+
+        try {
+            $api = UefaCompetitionApi::fromIdentifier($identifier, $this->uefaClient);
+            $uefaMatches = $api->matches();
+        } catch (InvalidArgumentException $e) {
+            return ['ok' => false, 'errors' => [$e->getMessage()], 'league_id' => $leagueId];
+        } catch (Throwable $e) {
+            Log::warning('UEFA auto-matches analyze failed', [
+                'league_id' => $leagueId,
+                'message' => $e->getMessage(),
+            ]);
+
+            return [
+                'ok' => false,
+                'errors' => ['UEFA-Spiele konnten nicht geladen werden: '.$e->getMessage()],
+                'league_id' => $leagueId,
+            ];
+        }
+
+        if ($uefaMatches === []) {
+            return [
+                'ok' => false,
+                'errors' => ['Für '.$identifier.' wurden keine UEFA-Spiele gefunden.'],
+                'league_id' => $leagueId,
+            ];
+        }
+
+        /** @var array<string, Team> $teamsByUefaId */
+        $teamsByUefaId = [];
+        foreach (
+            Team::query()
+                ->where('team_uefa_id', '!=', '')
+                ->get(['team_id', 'team_name', 'team_uefa_id']) as $team
+        ) {
+            $uefaId = trim((string) ($team->team_uefa_id ?? ''));
+            if ($uefaId !== '' && ! isset($teamsByUefaId[$uefaId])) {
+                $teamsByUefaId[$uefaId] = $team;
+            }
+        }
+
+        $leagueMatches = $this->leagueMatchesIndexedByTeamsAndDate($leagueId);
+
+        $rows = [];
+        $matched = 0;
+        $unmapped = 0;
+        $missing = 0;
+
+        foreach ($uefaMatches as $uefa) {
+            $homeTeam = $teamsByUefaId[$uefa['home_uefa_id']] ?? null;
+            $awayTeam = $teamsByUefaId[$uefa['away_uefa_id']] ?? null;
+            $homeId = $homeTeam !== null ? (int) $homeTeam->team_id : 0;
+            $guestId = $awayTeam !== null ? (int) $awayTeam->team_id : 0;
+            $homeName = $homeTeam !== null ? (string) $homeTeam->team_name : $uefa['home_name_de'];
+            $guestName = $awayTeam !== null ? (string) $awayTeam->team_name : $uefa['away_name_de'];
+            $date = $uefa['date'];
+            $matchday = (int) $uefa['matchday'];
+            $suggestedRound = $matchday > 0 ? ($this->resolveMatchroundId($matchday, $rounds) ?? 0) : 0;
+
+            if ($homeId <= 0 || $guestId <= 0) {
+                $unmapped++;
+                $rows[] = [
+                    'row_status' => 'unmapped',
+                    'match_id' => 0,
+                    'match_round' => $suggestedRound,
+                    'match_date' => $date,
+                    'match_hometeam_id' => $homeId,
+                    'match_guestteam_id' => $guestId,
+                    'match_status' => '',
+                    'home_name' => $homeName,
+                    'guest_name' => $guestName,
+                    'uefa_match_id' => $uefa['uefa_match_id'],
+                    'home_uefa_id' => $uefa['home_uefa_id'],
+                    'away_uefa_id' => $uefa['away_uefa_id'],
+                    'matchday' => $matchday,
+                ];
+
+                continue;
+            }
+
+            $existing = $leagueMatches[$this->teamsDateKey($homeId, $guestId, $date)] ?? null;
+            if ($existing !== null) {
+                $matched++;
+                $rows[] = [
+                    'row_status' => 'matched',
+                    'match_id' => (int) $existing->match_id,
+                    'match_round' => (int) $existing->match_round,
+                    'match_date' => $date,
+                    'match_hometeam_id' => $homeId,
+                    'match_guestteam_id' => $guestId,
+                    'match_status' => (string) ($existing->match_status ?? ''),
+                    'home_name' => $homeName,
+                    'guest_name' => $guestName,
+                    'uefa_match_id' => $uefa['uefa_match_id'],
+                    'home_uefa_id' => $uefa['home_uefa_id'],
+                    'away_uefa_id' => $uefa['away_uefa_id'],
+                    'matchday' => $matchday,
+                ];
+
+                continue;
+            }
+
+            $missing++;
+            $rows[] = [
+                'row_status' => 'new',
+                'match_id' => 0,
+                'match_round' => $suggestedRound,
+                'match_date' => $date,
+                'match_hometeam_id' => $homeId,
+                'match_guestteam_id' => $guestId,
+                'match_status' => '',
+                'home_name' => $homeName,
+                'guest_name' => $guestName,
+                'uefa_match_id' => $uefa['uefa_match_id'],
+                'home_uefa_id' => $uefa['home_uefa_id'],
+                'away_uefa_id' => $uefa['away_uefa_id'],
+                'matchday' => $matchday,
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'league_id' => $leagueId,
+            'auto_uefa' => [
+                'analyzed' => true,
+                'source_name' => $api->identifier(),
+                'league_id' => $leagueId,
+                'rows' => $rows,
+            ],
+            'message' => count($rows).' UEFA-Spiele geprüft, '.$matched.' vorhanden, '.$missing.' neu'
+                .($unmapped > 0 ? ', '.$unmapped.' ohne Team-Zuordnung (team_uefa_id).' : '.'),
+        ];
+    }
+
+    /**
+     * Update matched / create new Auto-Matches (UEFA) rows.
+     *
+     * @param  list<array<string, mixed>>|array<int, array<string, mixed>>  $rows
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     league_id?: int,
+     *     auto_uefa?: array{analyzed: bool, source_name: string, league_id: int, rows: list<array<string, mixed>>}
+     * }
+     */
+    public function saveUefaMatches(array $rows, int $leagueId, string $sourceName = ''): array
+    {
+        if ($leagueId <= 0) {
+            return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga wählen.'], 'league_id' => 0];
+        }
+
+        $normalized = [];
+        foreach (array_values($rows) as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+
+            $form = $this->normalizeInput($row);
+            $matchId = (int) ($row['match_id'] ?? ($form['match_id'] ?: 0));
+            $rowStatus = (string) ($row['row_status'] ?? ($matchId > 0 ? 'matched' : 'new'));
+            if ($rowStatus === 'unmapped') {
+                continue;
+            }
+
+            $normalized[] = [
+                'match_id' => $matchId,
+                'row_status' => $matchId > 0 ? 'matched' : 'new',
+                'match_round' => $form['match_round'],
+                'match_date' => $form['match_date'],
+                'match_hometeam_id' => $form['match_hometeam_id'],
+                'match_guestteam_id' => $form['match_guestteam_id'],
+                'match_status' => $form['match_status'],
+                'home_name' => (string) ($row['home_name'] ?? ''),
+                'guest_name' => (string) ($row['guest_name'] ?? ''),
+                'uefa_match_id' => (string) ($row['uefa_match_id'] ?? ''),
+                'home_uefa_id' => (string) ($row['home_uefa_id'] ?? ''),
+                'away_uefa_id' => (string) ($row['away_uefa_id'] ?? ''),
+                'matchday' => (int) ($row['matchday'] ?? 0),
+            ];
+        }
+
+        $autoState = [
+            'analyzed' => true,
+            'source_name' => $sourceName,
+            'league_id' => $leagueId,
+            'rows' => $normalized,
+        ];
+
+        if ($normalized === []) {
+            return [
+                'ok' => false,
+                'errors' => ['Keine Spiele zum Speichern.'],
+                'league_id' => $leagueId,
+                'auto_uefa' => $autoState,
+            ];
+        }
+
+        $errors = [];
+        foreach ($normalized as $index => $row) {
+            $label = $this->uefaRowLabel($row, $index);
+            if ((int) ($row['match_round'] ?? 0) <= 0) {
+                $errors[] = $label.': Bitte eine Spielrunde wählen.';
+            }
+        }
+
+        if ($errors !== []) {
+            return [
+                'ok' => false,
+                'errors' => $errors,
+                'league_id' => $leagueId,
+                'auto_uefa' => $autoState,
+            ];
+        }
+
+        $created = 0;
+        $updated = 0;
+        $failedRows = [];
+
+        try {
+            DB::transaction(function () use ($normalized, &$created, &$updated, &$errors, &$failedRows): void {
+                foreach ($normalized as $index => $row) {
+                    $label = $this->uefaRowLabel($row, $index);
+
+                    if ($row['match_id'] > 0) {
+                        $result = $this->update((int) $row['match_id'], [
+                            'match_id' => $row['match_id'],
+                            'match_round' => $row['match_round'],
+                            'match_date' => $row['match_date'],
+                            'match_hometeam_id' => $row['match_hometeam_id'],
+                            'match_guestteam_id' => $row['match_guestteam_id'],
+                            'match_status' => $row['match_status'],
+                        ]);
+                        if ($result['ok'] ?? false) {
+                            $updated++;
+
+                            continue;
+                        }
+                        $errors[] = $label.': '.implode(' ', $result['errors'] ?? ['Aktualisieren fehlgeschlagen.']);
+                        $failedRows[] = $row;
+                        throw new InvalidArgumentException('UEFA-Match-Speichern abgebrochen.');
+                    }
+
+                    $result = $this->create([
+                        'match_round' => $row['match_round'],
+                        'match_date' => $row['match_date'],
+                        'match_hometeam_id' => $row['match_hometeam_id'],
+                        'match_guestteam_id' => $row['match_guestteam_id'],
+                        'match_status' => $row['match_status'],
+                    ]);
+                    if ($result['ok'] ?? false) {
+                        $created++;
+
+                        continue;
+                    }
+
+                    $rowErrors = $result['errors'] ?? ['Anlegen fehlgeschlagen.'];
+                    if ($this->isOnlyIdenticalMatchError($rowErrors)) {
+                        $updated++;
+
+                        continue;
+                    }
+
+                    $errors[] = $label.': '.implode(' ', $rowErrors);
+                    $failedRows[] = $row;
+                    throw new InvalidArgumentException('UEFA-Match-Speichern abgebrochen.');
+                }
+            });
+        } catch (InvalidArgumentException) {
+            return [
+                'ok' => false,
+                'errors' => $errors !== [] ? $errors : ['Speichern fehlgeschlagen.'],
+                'league_id' => $leagueId,
+                'auto_uefa' => [
+                    'analyzed' => true,
+                    'source_name' => $sourceName,
+                    'league_id' => $leagueId,
+                    'rows' => $failedRows !== [] ? $failedRows : $normalized,
+                ],
+            ];
+        }
+
+        $parts = [];
+        if ($updated === 1) {
+            $parts[] = '1 Spiel aktualisiert';
+        } elseif ($updated > 1) {
+            $parts[] = $updated.' Spiele aktualisiert';
+        }
+        if ($created === 1) {
+            $parts[] = '1 Spiel angelegt';
+        } elseif ($created > 1) {
+            $parts[] = $created.' Spiele angelegt';
+        }
+        if ($parts === []) {
+            $parts[] = 'Keine Spiele geändert';
+        }
+
+        return [
+            'ok' => true,
+            'message' => implode(', ', $parts).'.',
+            'league_id' => $leagueId,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     */
+    private function uefaRowLabel(array $row, int $index): string
+    {
+        $home = (string) ($row['home_name'] ?? '');
+        $guest = (string) ($row['guest_name'] ?? '');
+        if ($home !== '' && $guest !== '') {
+            return $home.' : '.$guest;
+        }
+
+        return 'Zeile '.($index + 1);
+    }
+
+    /**
+     * @return array<string, MatchGame>
+     */
+    private function leagueMatchesIndexedByTeamsAndDate(int $leagueId): array
+    {
+        $roundIds = Matchround::query()
+            ->where('matchround_league_id', $leagueId)
+            ->pluck('matchround_id')
+            ->all();
+        if ($roundIds === []) {
+            return [];
+        }
+
+        $indexed = [];
+        foreach (
+            MatchGame::query()
+                ->whereIn('match_round', $roundIds)
+                ->get([
+                    'match_id',
+                    'match_round',
+                    'match_date',
+                    'match_hometeam_id',
+                    'match_guestteam_id',
+                    'match_status',
+                ]) as $match
+        ) {
+            $dateTs = strtotime((string) $match->match_date);
+            $date = $dateTs ? date('Y-m-d', $dateTs) : '';
+            if ($date === '') {
+                continue;
+            }
+            $key = $this->teamsDateKey(
+                (int) $match->match_hometeam_id,
+                (int) $match->match_guestteam_id,
+                $date,
+            );
+            if (! isset($indexed[$key])) {
+                $indexed[$key] = $match;
+            }
+        }
+
+        return $indexed;
+    }
+
+    private function teamsDateKey(int $homeId, int $guestId, string $date): string
+    {
+        return $homeId.'|'.$guestId.'|'.$date;
     }
 
     /**

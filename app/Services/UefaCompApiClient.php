@@ -215,12 +215,51 @@ class UefaCompApiClient
     }
 
     /**
+     * All matches for a competition/season (paginated via match.uefa.com).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function matches(int $competitionId, int $seasonYear): array
+    {
+        $limit = max(1, min(500, (int) config('services.uefa.page_limit', 500)));
+        $offset = 0;
+        $maxPages = max(1, (int) config('services.uefa.max_pages', 40));
+        $all = [];
+
+        for ($page = 0; $page < $maxPages; $page++) {
+            $batch = $this->getJson('/matches', [
+                'competitionId' => $competitionId,
+                'seasonYear' => $seasonYear,
+                'order' => 'ASC',
+                'limit' => $limit,
+                'offset' => $offset,
+            ], $this->matchBaseUrl());
+
+            $count = 0;
+            foreach ($batch as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                $all[] = $row;
+                $count++;
+            }
+
+            if ($count < $limit) {
+                break;
+            }
+            $offset += $limit;
+        }
+
+        return $all;
+    }
+
+    /**
      * @param  array<string, scalar>  $query
      * @return list<mixed>
      */
-    private function getJson(string $path, array $query = []): array
+    private function getJson(string $path, array $query = [], ?string $baseUrl = null): array
     {
-        $url = rtrim($this->baseUrl(), '/').'/'.ltrim($path, '/');
+        $url = rtrim($baseUrl ?? $this->baseUrl(), '/').'/'.ltrim($path, '/');
         $timeout = max(1, (int) config('services.uefa.timeout', 20));
         $connectTimeout = max(1, (int) config('services.uefa.connect_timeout', 5));
 
@@ -261,6 +300,11 @@ class UefaCompApiClient
         $configured = $this->baseUrl ?? (string) config('services.uefa.base_url', 'https://comp.uefa.com/v2');
 
         return rtrim($configured, '/');
+    }
+
+    private function matchBaseUrl(): string
+    {
+        return rtrim((string) config('services.uefa.match_base_url', 'https://match.uefa.com/v5'), '/');
     }
 
     private function caBundlePath(): ?string

@@ -166,4 +166,71 @@ class UefaCompetitionApiTest extends TestCase
         $this->assertCount(1, $teams);
         $this->assertSame('47', $teams[0]['uefa_id']);
     }
+
+    #[Test]
+    public function matches_filters_by_phase_and_maps_payload(): void
+    {
+        config([
+            'services.uefa.base_url' => 'https://comp.uefa.test/v2',
+            'services.uefa.match_base_url' => 'https://match.uefa.test/v5',
+        ]);
+        Http::preventStrayRequests();
+        Http::fake([
+            'match.uefa.test/v5/matches*' => Http::response([
+                [
+                    'id' => '10',
+                    'competitionPhase' => 'QUALIFYING',
+                    'homeTeam' => [
+                        'id' => '1',
+                        'internationalName' => 'A',
+                        'isPlaceHolder' => false,
+                        'translations' => ['countryName' => ['DE' => 'A', 'EN' => 'A']],
+                    ],
+                    'awayTeam' => [
+                        'id' => '2',
+                        'internationalName' => 'B',
+                        'isPlaceHolder' => false,
+                        'translations' => ['countryName' => ['DE' => 'B', 'EN' => 'B']],
+                    ],
+                    'kickOffTime' => ['date' => '2026-03-01'],
+                    'matchday' => ['sequenceNumber' => '1', 'phase' => 'QUALIFYING'],
+                    'round' => ['phase' => 'QUALIFYING', 'orderInCompetition' => 1],
+                ],
+                [
+                    'id' => '11',
+                    'competitionPhase' => 'TOURNAMENT',
+                    'homeTeam' => [
+                        'id' => '47',
+                        'internationalName' => 'Germany',
+                        'isPlaceHolder' => false,
+                        'translations' => ['countryName' => ['DE' => 'Deutschland', 'EN' => 'Germany']],
+                    ],
+                    'awayTeam' => [
+                        'id' => '88',
+                        'internationalName' => 'Malta',
+                        'isPlaceHolder' => false,
+                        'translations' => ['countryName' => ['DE' => 'Malta', 'EN' => 'Malta']],
+                    ],
+                    'kickOffTime' => ['date' => '2026-09-24', 'dateTime' => '2026-09-24T16:00:00Z'],
+                    'matchday' => ['sequenceNumber' => '1', 'phase' => 'TOURNAMENT'],
+                    'round' => ['phase' => 'TOURNAMENT', 'orderInCompetition' => 1],
+                ],
+            ], 200),
+        ]);
+
+        $api = UefaCompetitionApi::fromIdentifier(
+            'competitionId=2014&seasonYear=2027&competitionPhase=TOURNAMENT',
+            new UefaCompApiClient,
+        );
+
+        $matches = $api->matches();
+        $this->assertCount(1, $matches);
+        $this->assertSame('11', $matches[0]['uefa_match_id']);
+        $this->assertSame('47', $matches[0]['home_uefa_id']);
+        $this->assertSame('88', $matches[0]['away_uefa_id']);
+        $this->assertSame('Deutschland', $matches[0]['home_name_de']);
+        $this->assertSame('2026-09-24', $matches[0]['date']);
+        $this->assertSame(1, $matches[0]['matchday']);
+        $this->assertSame('TOURNAMENT', $matches[0]['round_phase']);
+    }
 }
