@@ -458,11 +458,66 @@ class AdminTeamTest extends TestCase
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->get('/admin/teams?tab=auto-uefa')
             ->assertOk()
-            ->assertSee('name="rows[0][team_id]"', false)
-            ->assertSee('name="rows[1][team_id]"', false)
+            ->assertSee('name="rows_json"', false)
+            ->assertSee('admin-auto-uefa-team-id', false)
+            ->assertSee('data-row=', false)
             ->assertSee('selected', false)
             ->assertSee('Deutschland (GER)', false)
             ->assertSee('Neu anlegen', false)
-            ->assertDontSee('type="hidden" name="rows[0][team_id]"', false);
+            ->assertDontSee('name="rows[0][team_id]"', false);
+    }
+
+    public function test_auto_uefa_store_accepts_rows_json_payload(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminTeamService::class, function ($mock) {
+            $mock->shouldReceive('saveUefaTeams')
+                ->once()
+                ->withArgs(function (array $rows, string $sourceName, int $leagueId): bool {
+                    return $leagueId === 1
+                        && $sourceName === 'uefa'
+                        && count($rows) === 1
+                        && (int) ($rows[0]['team_id'] ?? 0) === 10
+                        && ($rows[0]['team_uefa_id'] ?? '') === '47';
+                })
+                ->andReturn([
+                    'ok' => true,
+                    'message' => '1 Team gespeichert.',
+                ]);
+        });
+
+        $this->withSession([
+            FfbAuth::SESSION_USER_ID => 544,
+            'admin_teams_auto_uefa' => [
+                'analyzed' => true,
+                'source_name' => 'uefa',
+                'league_id' => 1,
+                'rows' => [],
+            ],
+        ])
+            ->post('/admin/teams/auto-uefa', [
+                'league_id' => 1,
+                'source_name' => 'uefa',
+                'rows_json' => json_encode([
+                    [
+                        'team_id' => 10,
+                        'create_new' => '0',
+                        'match_status' => 'matched',
+                        'team_name' => 'Deutschland',
+                        'team_nationality' => 'ger',
+                        'uefa_name' => 'Deutschland',
+                        'uefa_id' => '47',
+                        'uefa_team_code' => 'GER',
+                        'team_uefa_id' => '47',
+                        'team_team_code' => 'GER',
+                    ],
+                ], JSON_THROW_ON_ERROR),
+            ])
+            ->assertRedirect(route('admin.teams', ['tab' => 'auto-uefa']))
+            ->assertSessionHas('admin_message', '1 Team gespeichert.')
+            ->assertSessionMissing('admin_teams_auto_uefa');
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\AdminMatchService;
 use App\Services\FfbAuth;
+use App\Support\RequestJsonArray;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -150,11 +151,7 @@ class AdminMatchController extends Controller
     public function storeAuto(Request $request): RedirectResponse
     {
         $leagueId = (int) $request->input('league_id', 0);
-        /** @var list<array<string, mixed>>|array<int, array<string, mixed>> $matches */
-        $matches = $request->input('matches', []);
-        if (! is_array($matches)) {
-            $matches = [];
-        }
+        $matches = RequestJsonArray::pull($request, 'matches_json', 'matches');
 
         $sourceName = (string) ($request->input('source_name') ?? '');
         $result = $this->matches->createMatchesFromDraft($matches, $leagueId, $sourceName);
@@ -207,7 +204,7 @@ class AdminMatchController extends Controller
     public function storeAutoUefa(Request $request): RedirectResponse
     {
         $leagueId = (int) $request->input('league_id', 0);
-        $rows = $this->rowsFromRequest($request);
+        $rows = RequestJsonArray::pull($request, 'rows_json', 'rows');
 
         $sourceName = (string) ($request->input('source_name') ?? '');
         $result = $this->matches->saveUefaMatches($rows, $leagueId, $sourceName);
@@ -233,29 +230,6 @@ class AdminMatchController extends Controller
         return redirect()
             ->route('admin.matches', $redirectQuery)
             ->with('admin_message', $result['message'] ?? null);
-    }
-
-    /**
-     * Prefer a single JSON payload (avoids PHP max_input_vars truncation on large lists).
-     *
-     * @return list<array<string, mixed>>
-     */
-    private function rowsFromRequest(Request $request): array
-    {
-        $json = $request->input('rows_json');
-        if (is_string($json) && $json !== '') {
-            $decoded = json_decode($json, true);
-            if (is_array($decoded)) {
-                return array_values(array_filter($decoded, static fn (mixed $row): bool => is_array($row)));
-            }
-        }
-
-        $rows = $request->input('rows', []);
-        if (! is_array($rows)) {
-            return [];
-        }
-
-        return array_values(array_filter($rows, static fn (mixed $row): bool => is_array($row)));
     }
 
     /**

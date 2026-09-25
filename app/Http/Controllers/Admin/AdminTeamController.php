@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\AdminTeamService;
 use App\Services\FfbAuth;
+use App\Support\RequestJsonArray;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -183,11 +184,7 @@ class AdminTeamController extends Controller
 
     public function storeAutoUefa(Request $request): RedirectResponse
     {
-        /** @var list<array<string, mixed>>|array<int, array<string, mixed>> $rows */
-        $rows = $request->input('rows', []);
-        if (! is_array($rows)) {
-            $rows = [];
-        }
+        $rows = RequestJsonArray::pull($request, 'rows_json', 'rows');
 
         $sourceName = (string) ($request->input('source_name')
             ?: (session('admin_teams_auto_uefa.source_name') ?? ''));
