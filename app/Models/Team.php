@@ -20,6 +20,8 @@ class Team extends Model
         'team_nationality',
         'team_num_players',
         'team_status',
+        'team_uefa_id',
+        'team_team_code',
     ];
 
     public function teamfid(): HasOne

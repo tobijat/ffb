@@ -7,8 +7,13 @@
     $mode = $data['mode'];
     $items = $data['items'];
     $icons = $data['icons'];
-    $tab = ($data['tab'] ?? 'manual') === 'auto' ? 'auto' : 'manual';
+    $tab = match ($data['tab'] ?? 'manual') {
+        'auto' => 'auto',
+        'auto-uefa' => 'auto-uefa',
+        default => 'manual',
+    };
     $auto = $data['auto'] ?? ['analyzed' => false, 'source_name' => '', 'present' => [], 'missing' => []];
+    $autoUefa = $data['auto_uefa'] ?? ['analyzed' => false, 'source_name' => '', 'league_id' => 0, 'rows' => []];
     $selectedSymbol = $data['selected_symbol'] ?? null;
     $usesIconPicker = (bool) ($data['uses_icon_picker'] ?? true);
     $flashErrors = $errors ?: (session('admin_errors') ?: []);
@@ -17,6 +22,12 @@
     $autoMissing = is_array($auto['missing'] ?? null) ? $auto['missing'] : [];
     $autoAnalyzed = (bool) ($auto['analyzed'] ?? false);
     $autoSource = (string) ($auto['source_name'] ?? '');
+    $autoUefaAnalyzed = (bool) ($autoUefa['analyzed'] ?? false);
+    $autoUefaSource = (string) ($autoUefa['source_name'] ?? '');
+    $autoUefaRows = is_array($autoUefa['rows'] ?? null) ? $autoUefa['rows'] : [];
+    $uefaIdentifier = (string) ($data['uefa_competition_identifier'] ?? '');
+    $selectedLeagueId = (int) ($data['selected_league_id'] ?? 0);
+    $teamOptions = is_array($data['team_options'] ?? null) ? $data['team_options'] : [];
 @endphp
 
 @section('content')
@@ -37,6 +48,12 @@
                 href="{{ route('admin.teams', ['tab' => 'auto']) }}"
             >
                 Auto-Teams
+            </a>
+            <a
+                class="admin-squad-tab ffb-tab{{ $tab === 'auto-uefa' ? ' is-active' : '' }}"
+                href="{{ route('admin.teams', ['tab' => 'auto-uefa']) }}"
+            >
+                Auto-Teams (UEFA)
             </a>
         </nav>
 
@@ -212,6 +229,162 @@
                     </div>
                 </div>
             @endif
+        @elseif ($tab === 'auto-uefa')
+            @php
+                $selectedLeagueTitle = (string) (($data['selected_league']['league_title'] ?? '') ?: '');
+            @endphp
+
+            <p class="hint">
+                Nutzt den UEFA-Competition-Identifier der ausgewählten Liga
+                @if ($selectedLeagueTitle !== '')
+                    (<strong>{{ $selectedLeagueTitle }}</strong>)
+                @endif.
+                Format: <code>competitionId=…&amp;seasonYear=…&amp;competitionPhase=TOURNAMENT</code>
+            </p>
+
+            @if ($selectedLeagueId <= 0)
+                <p class="hint">Bitte zuerst unter <a href="{{ url('/admin') }}">Ligen</a> eine Liga auswählen.</p>
+            @elseif ($uefaIdentifier === '')
+                <p class="hint">
+                    Für diese Liga ist kein Identifier hinterlegt.
+                    Bitte unter <a href="{{ route('admin.leagues') }}">Ligen</a> setzen.
+                </p>
+            @else
+                <p class="muted">Identifier: <code>{{ $uefaIdentifier }}</code></p>
+
+                <form
+                    class="admin-form admin-auto-teams-upload"
+                    method="post"
+                    action="{{ route('admin.teams.auto-uefa.analyze') }}"
+                    accept-charset="UTF-8"
+                >
+                    @csrf
+                    <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
+                    <div class="admin-actions">
+                        <button type="submit" class="admin-submit">Teams prüfen</button>
+                    </div>
+                </form>
+            @endif
+
+            @if ($autoUefaAnalyzed && count($autoUefaRows) > 0)
+                <div class="admin-auto-teams-result">
+                    @if ($autoUefaSource !== '')
+                        <p class="muted">Quelle: {{ $autoUefaSource }}</p>
+                    @endif
+
+                    <form
+                        class="admin-form"
+                        id="admin-auto-uefa-teams-form"
+                        method="post"
+                        action="{{ route('admin.teams.auto-uefa.store') }}"
+                        accept-charset="UTF-8"
+                    >
+                        @csrf
+                        <input type="hidden" name="source_name" value="{{ $autoUefaSource }}">
+                        <input type="hidden" name="league_id" value="{{ (int) ($autoUefa['league_id'] ?? $selectedLeagueId) }}">
+
+                        <div class="admin-auto-teams-table-wrap admin-auto-uefa-teams-wrap">
+                            <table class="admin-auto-teams-table admin-auto-uefa-teams-table" id="admin-auto-uefa-teams-table">
+                                <thead>
+                                    <tr>
+                                        <th>Zuordnung (FFB)</th>
+                                        <th>UEFA-Name (DE)</th>
+                                        <th>Nat.</th>
+                                        <th>UEFA-Code</th>
+                                        <th>team_uefa_id</th>
+                                        <th>team_team_code</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($autoUefaRows as $index => $row)
+                                        @php
+                                            $isMatched = (string) ($row['match_status'] ?? '') === 'matched';
+                                            $createNew = (int) ($row['create_new'] ?? 0) === 1;
+                                            $rowTeamId = (int) ($row['team_id'] ?? 0);
+                                        @endphp
+                                        <tr class="admin-auto-uefa-row{{ $isMatched ? ' is-matched' : ' is-unmatched' }}">
+                                            <td class="admin-auto-uefa-match-cell">
+                                                <input type="hidden" name="rows[{{ $index }}][uefa_name]" value="{{ $row['uefa_name'] ?? '' }}">
+                                                <input type="hidden" name="rows[{{ $index }}][uefa_id]" value="{{ $row['uefa_id'] ?? '' }}">
+                                                <input type="hidden" name="rows[{{ $index }}][uefa_team_code]" value="{{ $row['uefa_team_code'] ?? '' }}">
+                                                <input type="hidden" name="rows[{{ $index }}][match_status]" value="{{ $row['match_status'] ?? 'unmatched' }}" class="admin-auto-uefa-match-status">
+                                                <input type="hidden" name="rows[{{ $index }}][team_name]" value="{{ ($row['team_name'] ?? '') !== '' ? $row['team_name'] : ($row['uefa_name'] ?? '') }}" class="admin-auto-uefa-team-name">
+                                                <select
+                                                    name="rows[{{ $index }}][team_id]"
+                                                    class="admin-auto-uefa-team-id"
+                                                    aria-label="FFB-Team {{ $index + 1 }}"
+                                                >
+                                                    <option value="">— zuordnen —</option>
+                                                    <option value="0" data-create-new="1" @selected($createNew)>Neu anlegen</option>
+                                                    @foreach ($teamOptions as $option)
+                                                        <option
+                                                            value="{{ $option['team_id'] }}"
+                                                            @selected(! $createNew && $rowTeamId === (int) $option['team_id'])
+                                                        >
+                                                            {{ $option['team_label'] }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                <input
+                                                    type="hidden"
+                                                    name="rows[{{ $index }}][create_new]"
+                                                    value="{{ $createNew ? '1' : '0' }}"
+                                                    class="admin-auto-uefa-create-new"
+                                                >
+                                            </td>
+                                            <td>{{ $row['uefa_name'] ?? '' }}</td>
+                                            <td>
+                                                <input
+                                                    type="text"
+                                                    name="rows[{{ $index }}][team_nationality]"
+                                                    value="{{ $row['team_nationality'] ?? '' }}"
+                                                    maxlength="32"
+                                                    class="admin-auto-uefa-nat"
+                                                    aria-label="Nationalität {{ $index + 1 }}"
+                                                    readonly
+                                                    title="Nur zur Anzeige — wird bei Zuordnung bestehender Teams nicht gespeichert"
+                                                >
+                                            </td>
+                                            <td><code>{{ $row['uefa_team_code'] ?? '' }}</code></td>
+                                            <td>
+                                                <input
+                                                    type="text"
+                                                    name="rows[{{ $index }}][team_uefa_id]"
+                                                    value="{{ $row['team_uefa_id'] ?? '' }}"
+                                                    maxlength="64"
+                                                    required
+                                                    class="admin-auto-uefa-id"
+                                                    aria-label="UEFA-ID {{ $index + 1 }}"
+                                                >
+                                            </td>
+                                            <td>
+                                                <input
+                                                    type="text"
+                                                    name="rows[{{ $index }}][team_team_code]"
+                                                    value="{{ $row['team_team_code'] ?? '' }}"
+                                                    maxlength="16"
+                                                    required
+                                                    class="admin-auto-uefa-code"
+                                                    aria-label="Team-Code {{ $index + 1 }}"
+                                                >
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="admin-actions">
+                            <button type="submit" class="admin-submit" id="admin-auto-uefa-save" disabled>
+                                Speichern
+                            </button>
+                            <span class="muted" id="admin-auto-uefa-save-hint">Alle Teams müssen zugeordnet oder als neu markiert sein.</span>
+                        </div>
+                    </form>
+                </div>
+            @elseif ($autoUefaAnalyzed)
+                <p class="muted">Keine UEFA-Teams gefunden.</p>
+            @endif
         @else
         <form
             class="admin-form"
@@ -239,6 +412,16 @@
                     <option value="1" @selected((int) $form['team_status'] === 1)>aktiv</option>
                     <option value="0" @selected((int) $form['team_status'] === 0)>inaktiv</option>
                 </select>
+            </div>
+
+            <div class="admin-field">
+                <label for="team_uefa_id">UEFA-ID</label>
+                <input id="team_uefa_id" type="text" name="team_uefa_id" value="{{ $form['team_uefa_id'] ?? '' }}" maxlength="64">
+            </div>
+
+            <div class="admin-field">
+                <label for="team_team_code">UEFA Team-Code</label>
+                <input id="team_team_code" type="text" name="team_team_code" value="{{ $form['team_team_code'] ?? '' }}" maxlength="16">
             </div>
 
             <fieldset class="admin-fieldset">
@@ -567,6 +750,78 @@
             });
         });
     }
+})();
+</script>
+@endpush
+@endif
+
+@if ($tab === 'auto-uefa')
+@push('scripts')
+<script>
+(function () {
+    const table = document.getElementById('admin-auto-uefa-teams-table');
+    const saveBtn = document.getElementById('admin-auto-uefa-save');
+    const hint = document.getElementById('admin-auto-uefa-save-hint');
+    if (!table || !saveBtn) {
+        return;
+    }
+
+    function refreshSaveState() {
+        const rows = table.querySelectorAll('tr.admin-auto-uefa-row');
+        let ready = rows.length > 0;
+        rows.forEach(function (row) {
+            const select = row.querySelector('select.admin-auto-uefa-team-id');
+            if (!select) {
+                ready = false;
+                return;
+            }
+            const option = select.options[select.selectedIndex];
+            const isCreate = option && option.getAttribute('data-create-new') === '1';
+            const teamId = Number(select.value || 0);
+            if (!isCreate && teamId <= 0) {
+                ready = false;
+            }
+        });
+        saveBtn.disabled = !ready;
+        if (hint) {
+            hint.hidden = ready;
+        }
+    }
+
+    table.addEventListener('change', function (event) {
+        const select = event.target.closest('select.admin-auto-uefa-team-id');
+        if (!select) {
+            return;
+        }
+        const row = select.closest('tr.admin-auto-uefa-row');
+        if (!row) {
+            return;
+        }
+        const createNew = row.querySelector('.admin-auto-uefa-create-new');
+        const teamName = row.querySelector('.admin-auto-uefa-team-name');
+        const matchStatus = row.querySelector('.admin-auto-uefa-match-status');
+        const option = select.options[select.selectedIndex];
+        const isCreate = option && option.getAttribute('data-create-new') === '1';
+        const teamId = Number(select.value || 0);
+        if (createNew) {
+            createNew.value = isCreate ? '1' : '0';
+        }
+        if (matchStatus) {
+            matchStatus.value = (isCreate || teamId > 0) ? 'matched' : 'unmatched';
+        }
+        row.classList.toggle('is-matched', isCreate || teamId > 0);
+        row.classList.toggle('is-unmatched', !isCreate && teamId <= 0);
+        if (teamName && option) {
+            if (isCreate) {
+                // keep UEFA name for new teams
+            } else if (teamId > 0) {
+                teamName.value = option.textContent.trim();
+            }
+        }
+        refreshSaveState();
+    });
+
+    refreshSaveState();
 })();
 </script>
 @endpush

@@ -95,6 +95,8 @@ Route::middleware('ffb.admin')->group(function () {
     Route::post('/admin/teams', [AdminTeamController::class, 'store'])->name('admin.teams.store');
     Route::post('/admin/teams/auto/analyze', [AdminTeamController::class, 'analyzeAuto'])->name('admin.teams.auto.analyze');
     Route::post('/admin/teams/auto', [AdminTeamController::class, 'storeAuto'])->name('admin.teams.auto.store');
+    Route::post('/admin/teams/auto-uefa/analyze', [AdminTeamController::class, 'analyzeAutoUefa'])->name('admin.teams.auto-uefa.analyze');
+    Route::post('/admin/teams/auto-uefa', [AdminTeamController::class, 'storeAutoUefa'])->name('admin.teams.auto-uefa.store');
     Route::get('/admin/teams/{team}/edit', [AdminTeamController::class, 'edit'])->name('admin.teams.edit');
     Route::put('/admin/teams/{team}', [AdminTeamController::class, 'update'])->name('admin.teams.update');
     Route::delete('/admin/teams/{team}', [AdminTeamController::class, 'destroy'])->name('admin.teams.destroy');

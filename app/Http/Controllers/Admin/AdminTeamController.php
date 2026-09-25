@@ -20,8 +20,13 @@ class AdminTeamController extends Controller
     {
         $userId = $this->auth->userId($request);
         $errors = session('admin_errors');
-        $tab = $request->query('tab') === 'auto' ? 'auto' : 'manual';
+        $tab = match ($request->query('tab')) {
+            'auto' => 'auto',
+            'auto-uefa' => 'auto-uefa',
+            default => 'manual',
+        };
         $auto = session('admin_teams_auto');
+        $autoUefa = session('admin_teams_auto_uefa');
 
         return $this->render(
             $userId,
@@ -30,6 +35,7 @@ class AdminTeamController extends Controller
             is_array($errors) ? $errors : [],
             $tab,
             is_array($auto) ? $auto : null,
+            is_array($autoUefa) ? $autoUefa : null,
         );
     }
 
@@ -157,10 +163,61 @@ class AdminTeamController extends Controller
             ->with('admin_message', $result['message'] ?? null);
     }
 
+    public function analyzeAutoUefa(Request $request): RedirectResponse
+    {
+        $leagueId = (int) $request->input('league_id', 0);
+        $result = $this->teams->analyzeUefaTeams($leagueId);
+
+        if (! ($result['ok'] ?? false)) {
+            return redirect()
+                ->route('admin.teams', ['tab' => 'auto-uefa'])
+                ->with('admin_errors', $result['errors'] ?? ['Analyse fehlgeschlagen.']);
+        }
+
+        session(['admin_teams_auto_uefa' => $result['auto_uefa']]);
+
+        return redirect()
+            ->route('admin.teams', ['tab' => 'auto-uefa'])
+            ->with('admin_message', $result['message'] ?? null);
+    }
+
+    public function storeAutoUefa(Request $request): RedirectResponse
+    {
+        /** @var list<array<string, mixed>>|array<int, array<string, mixed>> $rows */
+        $rows = $request->input('rows', []);
+        if (! is_array($rows)) {
+            $rows = [];
+        }
+
+        $sourceName = (string) ($request->input('source_name')
+            ?: (session('admin_teams_auto_uefa.source_name') ?? ''));
+        $leagueId = (int) ($request->input('league_id')
+            ?: (session('admin_teams_auto_uefa.league_id') ?? 0));
+
+        $result = $this->teams->saveUefaTeams($rows, $sourceName, $leagueId);
+
+        if (! ($result['ok'] ?? false)) {
+            if (isset($result['auto_uefa']) && is_array($result['auto_uefa'])) {
+                session(['admin_teams_auto_uefa' => $result['auto_uefa']]);
+            }
+
+            return redirect()
+                ->route('admin.teams', ['tab' => 'auto-uefa'])
+                ->with('admin_errors', $result['errors'] ?? ['Speichern fehlgeschlagen.']);
+        }
+
+        session()->forget('admin_teams_auto_uefa');
+
+        return redirect()
+            ->route('admin.teams', ['tab' => 'auto-uefa'])
+            ->with('admin_message', $result['message'] ?? null);
+    }
+
     /**
      * @param  array<string, mixed>|null  $form
      * @param  list<string>  $errors
      * @param  array<string, mixed>|null  $auto
+     * @param  array<string, mixed>|null  $autoUefa
      */
     private function render(
         int $userId,
@@ -169,9 +226,10 @@ class AdminTeamController extends Controller
         array $errors = [],
         string $tab = 'manual',
         ?array $auto = null,
+        ?array $autoUefa = null,
     ): View {
         return view('admin.teams', [
-            'data' => $this->teams->pagePayload($userId, $form, $mode, $tab, $auto),
+            'data' => $this->teams->pagePayload($userId, $form, $mode, $tab, $auto, $autoUefa),
             'errors' => $errors,
             'answer' => session('admin_message'),
             'legacyBase' => '/',

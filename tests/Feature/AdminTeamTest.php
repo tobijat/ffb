@@ -374,4 +374,95 @@ class AdminTeamTest extends TestCase
             ->assertSessionHas('admin_message', '1 Team erfolgreich hinzugefügt.')
             ->assertSessionMissing('admin_teams_auto');
     }
+
+    public function test_auto_uefa_tab_shows_team_selector_for_matched_and_unmatched(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminTeamService::class, function ($mock) {
+            $mock->shouldReceive('pagePayload')->once()->andReturn([
+                'user' => [
+                    'user_id' => 544,
+                    'user_nickname' => 'adminuser',
+                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'is_ffb_admin' => true,
+                ],
+                'navigation' => [],
+                'selected_league' => ['league_id' => 1, 'league_title' => 'Nations League'],
+                'selected_league_id' => 1,
+                'uefa_competition_identifier' => 'competitionId=2014&seasonYear=2027&competitionPhase=TOURNAMENT',
+                'icons' => [],
+                'selected_symbol' => null,
+                'uses_icon_picker' => true,
+                'items' => [],
+                'team_options' => [
+                    ['team_id' => 10, 'team_label' => 'Deutschland (GER)'],
+                    ['team_id' => 11, 'team_label' => 'Malta (MLT)'],
+                ],
+                'form' => [
+                    'team_id' => '',
+                    'team_name' => '',
+                    'team_nationality' => '',
+                    'team_icon_key' => '',
+                    'team_status' => 1,
+                    'teamfid_fid_tm' => '',
+                    'teamfid_name_tm' => '',
+                    'teamfid_name_wf' => '',
+                    'teamfid_url_foe' => '',
+                ],
+                'mode' => 'create',
+                'tab' => 'auto-uefa',
+                'auto' => [
+                    'analyzed' => false,
+                    'source_name' => '',
+                    'present' => [],
+                    'missing' => [],
+                ],
+                'auto_uefa' => [
+                    'analyzed' => true,
+                    'source_name' => 'competitionId=2014&seasonYear=2027&competitionPhase=TOURNAMENT',
+                    'league_id' => 1,
+                    'rows' => [
+                        [
+                            'match_status' => 'matched',
+                            'team_id' => 10,
+                            'create_new' => 0,
+                            'team_name' => 'Deutschland',
+                            'team_nationality' => 'ger',
+                            'uefa_name' => 'Deutschland',
+                            'uefa_id' => '47',
+                            'uefa_team_code' => 'GER',
+                            'team_uefa_id' => '47',
+                            'team_team_code' => 'GER',
+                        ],
+                        [
+                            'match_status' => 'unmatched',
+                            'team_id' => 0,
+                            'create_new' => 0,
+                            'team_name' => '',
+                            'team_nationality' => 'mlt',
+                            'uefa_name' => 'Malta',
+                            'uefa_id' => '88',
+                            'uefa_team_code' => 'MLT',
+                            'team_uefa_id' => '88',
+                            'team_team_code' => 'MLT',
+                        ],
+                    ],
+                ],
+                'matchplan_files' => [],
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->get('/admin/teams?tab=auto-uefa')
+            ->assertOk()
+            ->assertSee('name="rows[0][team_id]"', false)
+            ->assertSee('name="rows[1][team_id]"', false)
+            ->assertSee('selected', false)
+            ->assertSee('Deutschland (GER)', false)
+            ->assertSee('Neu anlegen', false)
+            ->assertDontSee('type="hidden" name="rows[0][team_id]"', false);
+    }
 }
