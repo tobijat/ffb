@@ -2050,6 +2050,77 @@
     max-width: 14rem;
 }
 
+.admin-auto-uefa-teams-wrap {
+    overflow-x: visible;
+    max-width: 100%;
+    width: 100%;
+}
+
+.admin-auto-uefa-teams-table {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+}
+
+.admin-auto-uefa-teams-table th,
+.admin-auto-uefa-teams-table td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.admin-auto-uefa-teams-table th:nth-child(1),
+.admin-auto-uefa-teams-table td:nth-child(1) {
+    width: 34%;
+}
+
+.admin-auto-uefa-teams-table th:nth-child(2),
+.admin-auto-uefa-teams-table td:nth-child(2) {
+    width: 22%;
+}
+
+.admin-auto-uefa-teams-table th:nth-child(3),
+.admin-auto-uefa-teams-table td:nth-child(3) {
+    width: 8%;
+}
+
+.admin-auto-uefa-teams-table th:nth-child(4),
+.admin-auto-uefa-teams-table td:nth-child(4) {
+    width: 10%;
+}
+
+.admin-auto-uefa-teams-table th:nth-child(5),
+.admin-auto-uefa-teams-table td:nth-child(5) {
+    width: 14%;
+}
+
+.admin-auto-uefa-teams-table th:nth-child(6),
+.admin-auto-uefa-teams-table td:nth-child(6) {
+    width: 12%;
+}
+
+.admin-auto-uefa-teams-table input[type="text"],
+.admin-auto-uefa-teams-table select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.admin-auto-uefa-teams-table select.admin-auto-uefa-team-id {
+    min-width: 0;
+}
+
+.admin-auto-uefa-teams-table input.admin-auto-uefa-nat,
+.admin-auto-uefa-teams-table input.admin-auto-uefa-id,
+.admin-auto-uefa-teams-table input.admin-auto-uefa-code {
+    width: 100%;
+    min-width: 0;
+}
+
+.admin-auto-uefa-teams-table tr.is-matched {
+    background: color-mix(in srgb, var(--panel-light, #ccffcc) 70%, #fff);
+}
+
 @media (max-width: 900px) {
     .admin-auto-teams-columns {
         grid-template-columns: 1fr;
