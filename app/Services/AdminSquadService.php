@@ -28,6 +28,7 @@ class AdminSquadService
         private readonly AdminCenterService $adminCenter,
         private readonly AdminPlayerService $players,
         private readonly WikimediaPlayerImageService $wikimediaImages,
+        private readonly UefaCompApiClient $uefa = new UefaCompApiClient,
     ) {}
 
     /**
@@ -40,6 +41,7 @@ class AdminSquadService
         string $tab = 'roster',
         ?array $auto = null,
         ?array $images = null,
+        ?string $uefaCompetitionKey = null,
     ): array {
         $shell = $this->adminCenter->shellPayload($userId);
         $leagueId = $this->resolveSquadLeagueId($squadLeagueId, $shell);
@@ -57,6 +59,7 @@ class AdminSquadService
         $resolvedTab = match ($tab) {
             'add' => 'add',
             'auto' => 'auto',
+            'auto-uefa' => 'auto-uefa',
             'images' => 'images',
             default => 'roster',
         };
@@ -70,6 +73,23 @@ class AdminSquadService
                 $imageState['players'] = $this->squadImagePlayers($teamId, $leagueId);
                 $imageState['checked'] = false;
             }
+        }
+
+        $uefaCompetitions = $this->uefa->competitionOptions();
+        $selectedUefaKey = '';
+        if ($resolvedTab === 'auto-uefa') {
+            $selectedUefaKey = trim((string) ($uefaCompetitionKey ?? ''));
+            if ($selectedUefaKey === '' && is_array($auto)) {
+                $selectedUefaKey = trim((string) ($auto['uefa_competition_key'] ?? ''));
+            }
+            if ($selectedUefaKey !== '' && $this->uefa->competitionByKey($selectedUefaKey) === null) {
+                $selectedUefaKey = '';
+            }
+        }
+
+        $uefaTeamCheck = null;
+        if ($resolvedTab === 'auto-uefa' && $selectedUefaKey !== '' && $leagueId > 0) {
+            $uefaTeamCheck = $this->compareUefaTeamsWithFfb($selectedUefaKey, $teams);
         }
 
         return [
@@ -103,6 +123,9 @@ class AdminSquadService
             'tab' => $resolvedTab,
             'auto' => $auto ?? $this->emptyAutoState(),
             'squad_files' => $resolvedTab === 'auto' ? $this->squadJsonOptions() : [],
+            'uefa_competitions' => $uefaCompetitions,
+            'uefa_competition_key' => $selectedUefaKey,
+            'uefa_team_check' => $uefaTeamCheck,
             'images' => $imageState,
         ];
     }
@@ -398,9 +421,11 @@ class AdminSquadService
         return [
             'analyzed' => false,
             'source_name' => '',
+            'source_kind' => 'json',
             'team_id' => 0,
             'league_id' => 0,
             'fifa_code' => '',
+            'uefa_competition_key' => '',
             'players' => [],
             'almost' => [],
         ];
@@ -418,31 +443,12 @@ class AdminSquadService
      */
     public function analyzeSquadsFile(int $teamId, int $leagueId, ?string $storedFileName): array
     {
-        if ($teamId <= 0) {
-            return ['ok' => false, 'errors' => ['Bitte zuerst ein Team wählen.'], 'team_id' => 0, 'league_id' => $leagueId];
-        }
-        if ($leagueId <= 0) {
-            return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga wählen.'], 'team_id' => $teamId, 'league_id' => 0];
+        $guard = $this->guardAutoAnalyze($teamId, $leagueId);
+        if ($guard['ok'] === false) {
+            return $guard;
         }
 
-        $team = Team::query()->find($teamId);
-        if (! $team) {
-            return ['ok' => false, 'errors' => ['Team nicht gefunden.'], 'team_id' => $teamId, 'league_id' => $leagueId];
-        }
-        if (! League::query()->whereKey($leagueId)->exists()) {
-            return ['ok' => false, 'errors' => ['Liga nicht gefunden.'], 'team_id' => $teamId, 'league_id' => $leagueId];
-        }
-
-        $fifaCode = strtoupper(trim((string) ($team->team_nationality ?? '')));
-        if ($fifaCode === '') {
-            return [
-                'ok' => false,
-                'errors' => ['Das ausgewählte Team hat keinen FIFA-/Nationalitäts-Code (team_nationality).'],
-                'team_id' => $teamId,
-                'league_id' => $leagueId,
-            ];
-        }
-
+        $fifaCode = $guard['fifa_code'];
         $parsed = $this->parseSquadsStoredFile($storedFileName);
         if (! ($parsed['ok'] ?? false)) {
             return [
@@ -476,6 +482,294 @@ class AdminSquadService
             ];
         }
 
+        return $this->analyzeRawSquadPlayers(
+            $teamId,
+            $leagueId,
+            $fifaCode,
+            $rawPlayers,
+            $sourceName,
+            'json',
+            '',
+        );
+    }
+
+    /**
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     team_id?: int,
+     *     league_id?: int,
+     *     auto?: array<string, mixed>
+     * }
+     */
+    public function analyzeSquadsFromUefa(int $teamId, int $leagueId, ?string $competitionKey): array
+    {
+        $guard = $this->guardAutoAnalyze($teamId, $leagueId);
+        if ($guard['ok'] === false) {
+            return $guard;
+        }
+
+        $competition = $this->uefa->competitionByKey((string) $competitionKey);
+        if ($competition === null) {
+            return [
+                'ok' => false,
+                'errors' => ['Bitte eine UEFA-Liga/Saison wählen.'],
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+            ];
+        }
+
+        $fifaCode = $guard['fifa_code'];
+
+        try {
+            $enrolledIds = $this->uefa->enrolledTeamIds(
+                $competition['competition_id'],
+                $competition['season_year'],
+                $competition['round_orders'],
+            );
+            if ($enrolledIds === []) {
+                return [
+                    'ok' => false,
+                    'errors' => ['Für '.$competition['label'].' wurden keine UEFA-Teams in den gewählten Runden gefunden.'],
+                    'team_id' => $teamId,
+                    'league_id' => $leagueId,
+                ];
+            }
+
+            $uefaTeams = $this->uefa->teams($enrolledIds);
+            $uefaTeamId = $this->findUefaTeamIdByFifaCode($uefaTeams, $fifaCode);
+            if ($uefaTeamId === null) {
+                return [
+                    'ok' => false,
+                    'errors' => [
+                        'In '.$competition['label'].' wurde kein UEFA-Team mit FIFA-Code '.$fifaCode.' gefunden.',
+                    ],
+                    'team_id' => $teamId,
+                    'league_id' => $leagueId,
+                ];
+            }
+
+            $allPlayers = $this->uefa->players(
+                $competition['competition_id'],
+                $competition['season_year'],
+            );
+        } catch (Throwable $e) {
+            Log::warning('UEFA squad analyze failed', [
+                'competition' => $competition['key'],
+                'message' => $e->getMessage(),
+            ]);
+
+            return [
+                'ok' => false,
+                'errors' => ['UEFA-Daten konnten nicht geladen werden: '.$e->getMessage()],
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+            ];
+        }
+
+        $rawPlayers = [];
+        foreach ($allPlayers as $player) {
+            if ((string) ($player['nationalTeamId'] ?? '') !== $uefaTeamId) {
+                continue;
+            }
+            $mapped = $this->mapUefaPlayerToRawSquadRow($player);
+            if ($mapped !== null) {
+                $rawPlayers[] = $mapped;
+            }
+        }
+
+        if ($rawPlayers === []) {
+            return [
+                'ok' => false,
+                'errors' => [
+                    'Für FIFA-Code '.$fifaCode.' wurden in '.$competition['label'].' keine Kader-Spieler gefunden.',
+                ],
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+            ];
+        }
+
+        return $this->analyzeRawSquadPlayers(
+            $teamId,
+            $leagueId,
+            $fifaCode,
+            $rawPlayers,
+            $competition['label'],
+            'uefa',
+            $competition['key'],
+        );
+    }
+
+    /**
+     * Compare FFB league teams (selector) with UEFA enrolled teams for a competition preset.
+     *
+     * @param  list<array{team_id: int, team_label: string, team_nationality?: string, active_count?: int}>  $ffbTeams
+     * @return array{
+     *     ok: bool,
+     *     competition_key: string,
+     *     competition_label: string,
+     *     matched: list<array{fifa_code: string, ffb_label: string, uefa_name: string}>,
+     *     only_ffb: list<array{fifa_code: string, ffb_label: string}>,
+     *     only_uefa: list<array{fifa_code: string, uefa_name: string}>,
+     *     errors: list<string>
+     * }
+     */
+    public function compareUefaTeamsWithFfb(string $competitionKey, array $ffbTeams): array
+    {
+        $competition = $this->uefa->competitionByKey($competitionKey);
+        if ($competition === null) {
+            return [
+                'ok' => false,
+                'competition_key' => $competitionKey,
+                'competition_label' => '',
+                'matched' => [],
+                'only_ffb' => [],
+                'only_uefa' => [],
+                'errors' => ['Unbekannte UEFA-Liga/Saison.'],
+            ];
+        }
+
+        try {
+            $enrolledIds = $this->uefa->enrolledTeamIds(
+                $competition['competition_id'],
+                $competition['season_year'],
+                $competition['round_orders'],
+            );
+            $uefaTeams = $enrolledIds === [] ? [] : $this->uefa->teams($enrolledIds);
+        } catch (Throwable $e) {
+            Log::warning('UEFA team sanity check failed', [
+                'competition' => $competition['key'],
+                'message' => $e->getMessage(),
+            ]);
+
+            return [
+                'ok' => false,
+                'competition_key' => $competition['key'],
+                'competition_label' => $competition['label'],
+                'matched' => [],
+                'only_ffb' => [],
+                'only_uefa' => [],
+                'errors' => ['UEFA-Teams konnten nicht geladen werden: '.$e->getMessage()],
+            ];
+        }
+
+        /** @var array<string, array{fifa_code: string, uefa_name: string}> $uefaByCode */
+        $uefaByCode = [];
+        foreach ($uefaTeams as $team) {
+            $code = $this->uefaTeamFifaCode($team);
+            if ($code === '') {
+                continue;
+            }
+            $uefaByCode[$code] = [
+                'fifa_code' => $code,
+                'uefa_name' => (string) ($team['internationalName']
+                    ?? ($team['translations']['displayName']['EN'] ?? $code)),
+            ];
+        }
+
+        /** @var array<string, array{fifa_code: string, ffb_label: string}> $ffbByCode */
+        $ffbByCode = [];
+        foreach ($ffbTeams as $team) {
+            $code = strtoupper(trim((string) ($team['team_nationality'] ?? '')));
+            if ($code === '') {
+                continue;
+            }
+            $ffbByCode[$code] = [
+                'fifa_code' => $code,
+                'ffb_label' => (string) ($team['team_label'] ?? $code),
+            ];
+        }
+
+        $matched = [];
+        $onlyFfb = [];
+        foreach ($ffbByCode as $code => $ffb) {
+            if (isset($uefaByCode[$code])) {
+                $matched[] = [
+                    'fifa_code' => $code,
+                    'ffb_label' => $ffb['ffb_label'],
+                    'uefa_name' => $uefaByCode[$code]['uefa_name'],
+                ];
+            } else {
+                $onlyFfb[] = $ffb;
+            }
+        }
+
+        $onlyUefa = [];
+        foreach ($uefaByCode as $code => $uefa) {
+            if (! isset($ffbByCode[$code])) {
+                $onlyUefa[] = $uefa;
+            }
+        }
+
+        usort($matched, static fn (array $a, array $b): int => strcmp($a['fifa_code'], $b['fifa_code']));
+        usort($onlyFfb, static fn (array $a, array $b): int => strcmp($a['fifa_code'], $b['fifa_code']));
+        usort($onlyUefa, static fn (array $a, array $b): int => strcmp($a['fifa_code'], $b['fifa_code']));
+
+        return [
+            'ok' => true,
+            'competition_key' => $competition['key'],
+            'competition_label' => $competition['label'],
+            'matched' => $matched,
+            'only_ffb' => $onlyFfb,
+            'only_uefa' => $onlyUefa,
+            'errors' => [],
+        ];
+    }
+
+    /**
+     * @return array{ok: true, fifa_code: string}|array{ok: false, errors: list<string>, team_id: int, league_id: int}
+     */
+    private function guardAutoAnalyze(int $teamId, int $leagueId): array
+    {
+        if ($teamId <= 0) {
+            return ['ok' => false, 'errors' => ['Bitte zuerst ein Team wählen.'], 'team_id' => 0, 'league_id' => $leagueId];
+        }
+        if ($leagueId <= 0) {
+            return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga wählen.'], 'team_id' => $teamId, 'league_id' => 0];
+        }
+
+        $team = Team::query()->find($teamId);
+        if (! $team) {
+            return ['ok' => false, 'errors' => ['Team nicht gefunden.'], 'team_id' => $teamId, 'league_id' => $leagueId];
+        }
+        if (! League::query()->whereKey($leagueId)->exists()) {
+            return ['ok' => false, 'errors' => ['Liga nicht gefunden.'], 'team_id' => $teamId, 'league_id' => $leagueId];
+        }
+
+        $fifaCode = strtoupper(trim((string) ($team->team_nationality ?? '')));
+        if ($fifaCode === '') {
+            return [
+                'ok' => false,
+                'errors' => ['Das ausgewählte Team hat keinen FIFA-/Nationalitäts-Code (team_nationality).'],
+                'team_id' => $teamId,
+                'league_id' => $leagueId,
+            ];
+        }
+
+        return ['ok' => true, 'fifa_code' => $fifaCode];
+    }
+
+    /**
+     * @param  list<mixed>|array<int, mixed>  $rawPlayers
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     team_id?: int,
+     *     league_id?: int,
+     *     auto?: array<string, mixed>
+     * }
+     */
+    private function analyzeRawSquadPlayers(
+        int $teamId,
+        int $leagueId,
+        string $fifaCode,
+        array $rawPlayers,
+        string $sourceName,
+        string $sourceKind,
+        string $uefaCompetitionKey,
+    ): array {
         $onSquadRows = Playerteam::query()
             ->where('playerteam_team_id', $teamId)
             ->where('playerteam_league_id', $leagueId)
@@ -614,10 +908,12 @@ class AdminSquadService
             ];
         }
 
+        $sourceLabel = $sourceKind === 'uefa' ? 'UEFA' : 'JSON';
+
         if ($draft === [] && $almost === []) {
             return [
                 'ok' => false,
-                'errors' => ['In der JSON-Datei wurden keine gültigen Spieler für diesen Kader gefunden.'],
+                'errors' => ['In der '.$sourceLabel.'-Quelle wurden keine gültigen Spieler für diesen Kader gefunden.'],
                 'team_id' => $teamId,
                 'league_id' => $leagueId,
             ];
@@ -650,9 +946,9 @@ class AdminSquadService
             $parts[] = 'davon '.$alreadyOnSquad.' bereits im Kader';
         }
         if ($surplusCount === 1) {
-            $parts[] = '1 aktiver Kader-Spieler nicht in JSON (Status → inaktiv)';
+            $parts[] = '1 aktiver Kader-Spieler nicht in '.$sourceLabel.' (Status → inaktiv)';
         } elseif ($surplusCount > 1) {
-            $parts[] = $surplusCount.' aktive Kader-Spieler nicht in JSON (Status → inaktiv)';
+            $parts[] = $surplusCount.' aktive Kader-Spieler nicht in '.$sourceLabel.' (Status → inaktiv)';
         }
         if (count($almost) === 1) {
             $parts[] = '1 Namens-Ähnlichkeit zur Prüfung';
@@ -667,14 +963,91 @@ class AdminSquadService
             'auto' => [
                 'analyzed' => true,
                 'source_name' => $sourceName,
+                'source_kind' => $sourceKind,
                 'team_id' => $teamId,
                 'league_id' => $leagueId,
                 'fifa_code' => $fifaCode,
+                'uefa_competition_key' => $uefaCompetitionKey,
                 'players' => $draft,
                 'almost' => $almost,
             ],
             'message' => implode(', ', $parts).'.',
         ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $uefaTeams
+     */
+    private function findUefaTeamIdByFifaCode(array $uefaTeams, string $fifaCode): ?string
+    {
+        $wanted = strtoupper(trim($fifaCode));
+        foreach ($uefaTeams as $team) {
+            if ($this->uefaTeamFifaCode($team) === $wanted) {
+                $id = trim((string) ($team['id'] ?? ''));
+
+                return $id !== '' ? $id : null;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $team
+     */
+    private function uefaTeamFifaCode(array $team): string
+    {
+        foreach (['teamCode', 'countryCode'] as $key) {
+            $code = strtoupper(trim((string) ($team[$key] ?? '')));
+            if ($code !== '') {
+                return $code;
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * @param  array<string, mixed>  $player
+     * @return array{name: string, pos: string, number: int}|null
+     */
+    private function mapUefaPlayerToRawSquadRow(array $player): ?array
+    {
+        $translations = is_array($player['translations'] ?? null) ? $player['translations'] : [];
+        $firstName = trim((string) ($translations['firstName']['EN'] ?? ''));
+        $lastName = trim((string) ($translations['lastName']['EN'] ?? ''));
+        $fullName = trim($firstName.' '.$lastName);
+        if ($fullName === '' || $firstName === '' || $lastName === '') {
+            $fullName = trim((string) ($player['internationalName']
+                ?? ($translations['name']['EN'] ?? '')));
+        }
+        if ($fullName === '') {
+            return null;
+        }
+
+        $position = $this->mapUefaFieldPosition((string) (
+            $player['nationalFieldPosition']
+            ?? $player['fieldPosition']
+            ?? ''
+        ));
+        $number = (int) ($player['nationalJerseyNumber'] ?? 0);
+
+        return [
+            'name' => $fullName,
+            'pos' => $position,
+            'number' => $number,
+        ];
+    }
+
+    private function mapUefaFieldPosition(string $position): string
+    {
+        return match (strtoupper(trim($position))) {
+            'GOALKEEPER' => 'GK',
+            'DEFENDER' => 'DF',
+            'MIDFIELDER' => 'MF',
+            'FORWARD', 'STRIKER' => 'FW',
+            default => 'DF',
+        };
     }
 
     /**
@@ -699,6 +1072,8 @@ class AdminSquadService
         string $sourceName = '',
         string $fifaCode = '',
         array $almost = [],
+        string $sourceKind = 'json',
+        string $uefaCompetitionKey = '',
     ): array {
         if ($teamId <= 0) {
             return ['ok' => false, 'errors' => ['Bitte zuerst ein Team wählen.'], 'team_id' => 0, 'league_id' => $leagueId];
@@ -728,13 +1103,15 @@ class AdminSquadService
             $drafts[] = $this->resolveAlmostRowToDraft($almostRow, $teamId, $leagueId);
         }
 
-        $autoState = static function (array $playersState, array $almostState) use ($sourceName, $teamId, $leagueId, $fifaCode): array {
+        $autoState = static function (array $playersState, array $almostState) use ($sourceName, $teamId, $leagueId, $fifaCode, $sourceKind, $uefaCompetitionKey): array {
             return [
                 'analyzed' => true,
                 'source_name' => $sourceName,
+                'source_kind' => $sourceKind,
                 'team_id' => $teamId,
                 'league_id' => $leagueId,
                 'fifa_code' => $fifaCode,
+                'uefa_competition_key' => $uefaCompetitionKey,
                 'players' => $playersState,
                 'almost' => $almostState,
             ];
