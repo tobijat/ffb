@@ -51,6 +51,7 @@ return [
 
     'uefa' => [
         'base_url' => env('UEFA_COMP_API_URL', 'https://comp.uefa.com/v2'),
+        'match_base_url' => env('UEFA_MATCH_API_URL', 'https://match.uefa.com/v5'),
         'timeout' => (int) env('UEFA_COMP_HTTP_TIMEOUT', 20),
         'connect_timeout' => (int) env('UEFA_COMP_CONNECT_TIMEOUT', 5),
         'page_limit' => (int) env('UEFA_COMP_PAGE_LIMIT', 500),

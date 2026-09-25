@@ -6,7 +6,7 @@
     <title>@yield('title', 'Admin Center') — SoccerSportsfan</title>
     <link rel="stylesheet" href="{{ url('css/start.css') }}?v=20">
     <link rel="stylesheet" href="{{ url('css/dashboard.css') }}?v=11">
-    <link rel="stylesheet" href="{{ url('css/admin.css') }}?v=66">
+    <link rel="stylesheet" href="{{ url('css/admin.css') }}?v=67">
     @stack('head')
 </head>
 <body class="dash-body">

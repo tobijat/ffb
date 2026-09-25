@@ -147,6 +147,50 @@ class UefaCompetitionApi
     }
 
     /**
+     * Mapped matches for the configured competition / phase subset.
+     *
+     * @return list<array{
+     *     uefa_match_id: string,
+     *     home_uefa_id: string,
+     *     away_uefa_id: string,
+     *     home_name_de: string,
+     *     away_name_de: string,
+     *     date: string,
+     *     matchday: int,
+     *     round_phase: string,
+     *     round_order: int
+     * }>
+     */
+    public function matches(): array
+    {
+        $rows = [];
+        foreach ($this->client->matches($this->competitionId, $this->seasonYear) as $match) {
+            $mapped = $this->mapMatch($match);
+            if ($mapped === null) {
+                continue;
+            }
+            if ($this->phases !== [] && ! in_array($mapped['round_phase'], $this->phases, true)) {
+                continue;
+            }
+            $rows[] = $mapped;
+        }
+
+        usort(
+            $rows,
+            static function (array $a, array $b): int {
+                $dateCmp = strcmp($a['date'], $b['date']);
+                if ($dateCmp !== 0) {
+                    return $dateCmp;
+                }
+
+                return strcmp($a['uefa_match_id'], $b['uefa_match_id']);
+            }
+        );
+
+        return $rows;
+    }
+
+    /**
      * @param  array<string, mixed>  $round
      */
     private function roundMatchesPhases(array $round): bool
@@ -198,5 +242,94 @@ class UefaCompetitionApi
             'name_en' => $nameEn !== '' ? $nameEn : $international,
             'international_name' => $international,
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $match
+     * @return array{
+     *     uefa_match_id: string,
+     *     home_uefa_id: string,
+     *     away_uefa_id: string,
+     *     home_name_de: string,
+     *     away_name_de: string,
+     *     date: string,
+     *     matchday: int,
+     *     round_phase: string,
+     *     round_order: int
+     * }|null
+     */
+    private function mapMatch(array $match): ?array
+    {
+        $uefaMatchId = trim((string) ($match['id'] ?? ''));
+        if ($uefaMatchId === '') {
+            return null;
+        }
+
+        $home = is_array($match['homeTeam'] ?? null) ? $match['homeTeam'] : [];
+        $away = is_array($match['awayTeam'] ?? null) ? $match['awayTeam'] : [];
+        if (($home['isPlaceHolder'] ?? false) || ($away['isPlaceHolder'] ?? false)) {
+            return null;
+        }
+        if (strtoupper(trim((string) ($home['teamTypeDetail'] ?? ''))) === 'FAKE'
+            || strtoupper(trim((string) ($away['teamTypeDetail'] ?? ''))) === 'FAKE') {
+            return null;
+        }
+
+        $homeId = trim((string) ($home['id'] ?? ''));
+        $awayId = trim((string) ($away['id'] ?? ''));
+        if ($homeId === '' || $awayId === '') {
+            return null;
+        }
+
+        $kickOff = is_array($match['kickOffTime'] ?? null) ? $match['kickOffTime'] : [];
+        $date = trim((string) ($kickOff['date'] ?? ''));
+        if ($date === '' && isset($kickOff['dateTime'])) {
+            $dateTime = trim((string) $kickOff['dateTime']);
+            if (preg_match('/^(\d{4}-\d{2}-\d{2})/', $dateTime, $m) === 1) {
+                $date = $m[1];
+            }
+        }
+        if ($date === '' || preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) !== 1) {
+            return null;
+        }
+
+        $round = is_array($match['round'] ?? null) ? $match['round'] : [];
+        $matchday = is_array($match['matchday'] ?? null) ? $match['matchday'] : [];
+        $phase = strtoupper(trim((string) ($match['competitionPhase']
+            ?? ($matchday['phase'] ?? ($round['phase'] ?? '')))));
+
+        return [
+            'uefa_match_id' => $uefaMatchId,
+            'home_uefa_id' => $homeId,
+            'away_uefa_id' => $awayId,
+            'home_name_de' => $this->teamDisplayName($home),
+            'away_name_de' => $this->teamDisplayName($away),
+            'date' => $date,
+            'matchday' => (int) ($matchday['sequenceNumber'] ?? 0),
+            'round_phase' => $phase,
+            'round_order' => (int) ($round['orderInCompetition'] ?? 0),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $team
+     */
+    private function teamDisplayName(array $team): string
+    {
+        $translations = is_array($team['translations'] ?? null) ? $team['translations'] : [];
+        $countryName = is_array($translations['countryName'] ?? null) ? $translations['countryName'] : [];
+        $displayName = is_array($translations['displayName'] ?? null) ? $translations['displayName'] : [];
+
+        $nameDe = trim((string) ($countryName['DE'] ?? ($displayName['DE'] ?? '')));
+        if ($nameDe !== '') {
+            return $nameDe;
+        }
+
+        $international = trim((string) ($team['internationalName'] ?? ''));
+        if ($international !== '') {
+            return $international;
+        }
+
+        return trim((string) ($countryName['EN'] ?? ($displayName['EN'] ?? '')));
     }
 }

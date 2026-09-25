@@ -11,13 +11,22 @@
     $teams = $data['teams'];
     $selectedLeagueId = (int) $data['selected_league_id'];
     $selectedLeagueTitle = $data['selected_league_title'];
-    $tab = ($data['tab'] ?? 'manual') === 'auto' ? 'auto' : 'manual';
+    $tab = match ($data['tab'] ?? 'manual') {
+        'auto' => 'auto',
+        'auto-uefa' => 'auto-uefa',
+        default => 'manual',
+    };
     $auto = $data['auto'] ?? ['analyzed' => false, 'source_name' => '', 'league_id' => 0, 'present' => [], 'matches' => []];
+    $autoUefa = $data['auto_uefa'] ?? ['analyzed' => false, 'source_name' => '', 'league_id' => 0, 'rows' => []];
+    $uefaIdentifier = (string) ($data['uefa_competition_identifier'] ?? '');
     $flashErrors = $errors ?: (session('admin_errors') ?: []);
     $autoPresent = is_array($auto['present'] ?? null) ? $auto['present'] : [];
     $autoMatches = is_array($auto['matches'] ?? null) ? $auto['matches'] : [];
     $autoAnalyzed = (bool) ($auto['analyzed'] ?? false);
     $autoSource = (string) ($auto['source_name'] ?? '');
+    $autoUefaAnalyzed = (bool) ($autoUefa['analyzed'] ?? false);
+    $autoUefaSource = (string) ($autoUefa['source_name'] ?? '');
+    $autoUefaRows = is_array($autoUefa['rows'] ?? null) ? $autoUefa['rows'] : [];
 @endphp
 
 @section('content')
@@ -38,6 +47,12 @@
                 href="{{ route('admin.matches', array_filter(['tab' => 'auto', 'league_id' => $selectedLeagueId > 0 ? $selectedLeagueId : null])) }}"
             >
                 Auto-Matches
+            </a>
+            <a
+                class="admin-squad-tab ffb-tab{{ $tab === 'auto-uefa' ? ' is-active' : '' }}"
+                href="{{ route('admin.matches', array_filter(['tab' => 'auto-uefa', 'league_id' => $selectedLeagueId > 0 ? $selectedLeagueId : null])) }}"
+            >
+                Auto-Matches (UEFA)
             </a>
         </nav>
 
@@ -283,6 +298,157 @@
                     </div>
                 </div>
             @endif
+        @elseif ($tab === 'auto-uefa')
+            <p class="muted">Liga: {{ $selectedLeagueTitle }}</p>
+            <p class="hint">
+                Nutzt den UEFA-Competition-Identifier der ausgewählten Liga
+                (<code>{{ $uefaIdentifier !== '' ? $uefaIdentifier : '—' }}</code>).
+                Vorhandene Spiele werden über Heim-/Gast-Team (<code>team_uefa_id</code>) und Datum erkannt.
+            </p>
+
+            @if ($uefaIdentifier === '')
+                <p class="hint">
+                    Für diese Liga ist kein UEFA-Competition-Identifier hinterlegt.
+                    Bitte zuerst unter <a href="{{ url('/admin/leagues') }}">Ligen</a> setzen.
+                </p>
+            @elseif ($matchrounds === [])
+                <p class="hint">Noch keine Spielrunden. Lege zuerst unter Spielrunden welche an.</p>
+            @else
+                <form
+                    class="admin-form"
+                    method="post"
+                    action="{{ route('admin.matches.auto-uefa.analyze') }}"
+                    accept-charset="UTF-8"
+                >
+                    @csrf
+                    <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
+                    <div class="admin-actions">
+                        <button type="submit" class="admin-submit">UEFA-Spiele prüfen</button>
+                    </div>
+                </form>
+            @endif
+
+            @if ($autoUefaAnalyzed && count($autoUefaRows) > 0)
+                <div class="admin-auto-matches-result">
+                    @if ($autoUefaSource !== '')
+                        <p class="muted">Quelle: {{ $autoUefaSource }}</p>
+                    @endif
+
+                    <form
+                        class="admin-form admin-auto-matches-form"
+                        id="admin-auto-uefa-matches-form"
+                        method="post"
+                        action="{{ route('admin.matches.auto-uefa.store') }}"
+                        accept-charset="UTF-8"
+                    >
+                        @csrf
+                        <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
+                        <input type="hidden" name="source_name" value="{{ $autoUefaSource }}">
+                        {{-- One JSON field avoids PHP max_input_vars truncating large match lists. --}}
+                        <input type="hidden" name="rows_json" id="admin-auto-uefa-rows-json" value="">
+
+                        <div class="admin-auto-matches-table-wrap admin-auto-uefa-matches-wrap">
+                            <table class="admin-auto-matches-table admin-auto-uefa-matches-table" id="admin-auto-uefa-matches-table">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Spielrunde *</th>
+                                        <th>Datum</th>
+                                        <th>Heim</th>
+                                        <th>Gast</th>
+                                        <th>MD</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($autoUefaRows as $index => $row)
+                                        @php
+                                            $rowStatus = (string) ($row['row_status'] ?? 'new');
+                                            $isUnmapped = $rowStatus === 'unmapped';
+                                            $isMatched = $rowStatus === 'matched';
+                                            $rowPayload = [
+                                                'row_status' => $rowStatus,
+                                                'match_id' => (int) ($row['match_id'] ?? 0),
+                                                'match_round' => (int) ($row['match_round'] ?? 0),
+                                                'match_date' => (string) ($row['match_date'] ?? ''),
+                                                'match_hometeam_id' => (int) ($row['match_hometeam_id'] ?? 0),
+                                                'match_guestteam_id' => (int) ($row['match_guestteam_id'] ?? 0),
+                                                'match_status' => (string) ($row['match_status'] ?? ''),
+                                                'home_name' => (string) ($row['home_name'] ?? ''),
+                                                'guest_name' => (string) ($row['guest_name'] ?? ''),
+                                                'uefa_match_id' => (string) ($row['uefa_match_id'] ?? ''),
+                                                'home_uefa_id' => (string) ($row['home_uefa_id'] ?? ''),
+                                                'away_uefa_id' => (string) ($row['away_uefa_id'] ?? ''),
+                                                'matchday' => (int) ($row['matchday'] ?? 0),
+                                            ];
+                                        @endphp
+                                        <tr
+                                            class="admin-auto-uefa-match-row is-{{ $rowStatus }}"
+                                            data-row='@json($rowPayload)'
+                                        >
+                                            <td>
+                                                @if ($isMatched)
+                                                    vorhanden
+                                                    @if ((int) ($row['match_id'] ?? 0) > 0)
+                                                        <span class="muted">#{{ (int) $row['match_id'] }}</span>
+                                                    @endif
+                                                @elseif ($isUnmapped)
+                                                    <span class="admin-auto-uefa-warn">Team fehlt</span>
+                                                @else
+                                                    neu
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($isUnmapped)
+                                                    <span class="muted">—</span>
+                                                @else
+                                                    <select
+                                                        class="admin-auto-uefa-match-round"
+                                                        required
+                                                        aria-label="Spielrunde {{ $index + 1 }}"
+                                                    >
+                                                        <option value="">— wählen —</option>
+                                                        @foreach ($matchrounds as $round)
+                                                            <option
+                                                                value="{{ $round['matchround_id'] }}"
+                                                                @selected((string) ($row['match_round'] ?? '') === (string) $round['matchround_id'])
+                                                            >
+                                                                {{ $round['matchround_title'] }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                @endif
+                                            </td>
+                                            <td>{{ $row['match_date'] ?? '' }}</td>
+                                            <td>
+                                                {{ $row['home_name'] ?? '' }}
+                                                @if (($row['home_uefa_id'] ?? '') !== '')
+                                                    <span class="muted">({{ $row['home_uefa_id'] }})</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                {{ $row['guest_name'] ?? '' }}
+                                                @if (($row['away_uefa_id'] ?? '') !== '')
+                                                    <span class="muted">({{ $row['away_uefa_id'] }})</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ (int) ($row['matchday'] ?? 0) > 0 ? (int) $row['matchday'] : '—' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="admin-actions">
+                            <button type="submit" class="admin-submit" id="admin-auto-uefa-matches-save">
+                                Speichern
+                            </button>
+                            <span class="muted">Vorhandene Spiele werden aktualisiert, neue angelegt. Zeilen ohne Team-Zuordnung werden übersprungen.</span>
+                        </div>
+                    </form>
+                </div>
+            @elseif ($autoUefaAnalyzed)
+                <p class="muted">Keine UEFA-Spiele gefunden.</p>
+            @endif
         @elseif ($matchrounds === [])
             <p class="muted">Liga: {{ $selectedLeagueTitle }} — noch keine Spielrunden. Lege zuerst unter Spielrunden welche an.</p>
         @else
@@ -435,6 +601,42 @@
         if (row) {
             row.remove();
         }
+    });
+})();
+</script>
+@endpush
+@endif
+
+@if ($tab === 'auto-uefa')
+@push('scripts')
+<script>
+(function () {
+    const form = document.getElementById('admin-auto-uefa-matches-form');
+    const table = document.getElementById('admin-auto-uefa-matches-table');
+    const rowsJson = document.getElementById('admin-auto-uefa-rows-json');
+    if (!form || !table || !rowsJson) {
+        return;
+    }
+
+    form.addEventListener('submit', function () {
+        const rows = [];
+        table.querySelectorAll('tr.admin-auto-uefa-match-row').forEach(function (tr) {
+            let row;
+            try {
+                row = JSON.parse(tr.getAttribute('data-row') || '{}');
+            } catch (e) {
+                row = {};
+            }
+            if (!row || typeof row !== 'object') {
+                row = {};
+            }
+            const select = tr.querySelector('select.admin-auto-uefa-match-round');
+            if (select) {
+                row.match_round = select.value;
+            }
+            rows.push(row);
+        });
+        rowsJson.value = JSON.stringify(rows);
     });
 })();
 </script>

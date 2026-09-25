@@ -22,8 +22,15 @@ class AdminMatchController extends Controller
         $leagueId = $this->matches->defaultLeagueId($userId);
         $errors = session('admin_errors');
         $prefill = session('admin_match_prefill');
-        $tab = $request->query('tab') === 'auto' ? 'auto' : 'manual';
-        $auto = session('admin_matches_auto');
+        $tab = match ($request->query('tab')) {
+            'auto' => 'auto',
+            'auto-uefa' => 'auto-uefa',
+            default => 'manual',
+        };
+
+        // One-shot drafts: keep only for this request (reload / league switch must not reuse them).
+        $auto = session()->pull('admin_matches_auto');
+        $autoUefa = session()->pull('admin_matches_auto_uefa');
 
         return $this->render(
             $userId,
@@ -33,6 +40,7 @@ class AdminMatchController extends Controller
             is_array($errors) ? $errors : [],
             $tab,
             is_array($auto) ? $auto : null,
+            is_array($autoUefa) ? $autoUefa : null,
         );
     }
 
@@ -133,10 +141,9 @@ class AdminMatchController extends Controller
                 ->with('admin_errors', $result['errors'] ?? ['Analyse fehlgeschlagen.']);
         }
 
-        session(['admin_matches_auto' => $result['auto']]);
-
         return redirect()
             ->route('admin.matches', $redirectQuery)
+            ->with('admin_matches_auto', $result['auto'])
             ->with('admin_message', $result['message'] ?? null);
     }
 
@@ -149,8 +156,7 @@ class AdminMatchController extends Controller
             $matches = [];
         }
 
-        $sourceName = (string) ($request->input('source_name')
-            ?: (session('admin_matches_auto.source_name') ?? ''));
+        $sourceName = (string) ($request->input('source_name') ?? '');
         $result = $this->matches->createMatchesFromDraft($matches, $leagueId, $sourceName);
 
         $redirectQuery = ['tab' => 'auto'];
@@ -160,20 +166,69 @@ class AdminMatchController extends Controller
         }
 
         if (! ($result['ok'] ?? false)) {
-            if (isset($result['auto']) && is_array($result['auto'])) {
-                $previous = session('admin_matches_auto');
-                if (is_array($previous) && isset($previous['present']) && is_array($previous['present'])) {
-                    $result['auto']['present'] = $previous['present'];
-                }
-                session(['admin_matches_auto' => $result['auto']]);
-            }
-
-            return redirect()
+            $redirect = redirect()
                 ->route('admin.matches', $redirectQuery)
                 ->with('admin_errors', $result['errors'] ?? ['Anlegen fehlgeschlagen.']);
+
+            if (isset($result['auto']) && is_array($result['auto'])) {
+                $redirect->with('admin_matches_auto', $result['auto']);
+            }
+
+            return $redirect;
         }
 
-        session()->forget('admin_matches_auto');
+        return redirect()
+            ->route('admin.matches', $redirectQuery)
+            ->with('admin_message', $result['message'] ?? null);
+    }
+
+    public function analyzeAutoUefa(Request $request): RedirectResponse
+    {
+        $leagueId = (int) $request->input('league_id', 0);
+        $result = $this->matches->analyzeUefaMatches($leagueId);
+
+        $redirectQuery = ['tab' => 'auto-uefa'];
+        if ($leagueId > 0) {
+            $redirectQuery['league_id'] = $leagueId;
+        }
+
+        if (! ($result['ok'] ?? false)) {
+            return redirect()
+                ->route('admin.matches', $redirectQuery)
+                ->with('admin_errors', $result['errors'] ?? ['Analyse fehlgeschlagen.']);
+        }
+
+        return redirect()
+            ->route('admin.matches', $redirectQuery)
+            ->with('admin_matches_auto_uefa', $result['auto_uefa'])
+            ->with('admin_message', $result['message'] ?? null);
+    }
+
+    public function storeAutoUefa(Request $request): RedirectResponse
+    {
+        $leagueId = (int) $request->input('league_id', 0);
+        $rows = $this->rowsFromRequest($request);
+
+        $sourceName = (string) ($request->input('source_name') ?? '');
+        $result = $this->matches->saveUefaMatches($rows, $leagueId, $sourceName);
+
+        $redirectQuery = ['tab' => 'auto-uefa'];
+        $resultLeagueId = (int) ($result['league_id'] ?? $leagueId);
+        if ($resultLeagueId > 0) {
+            $redirectQuery['league_id'] = $resultLeagueId;
+        }
+
+        if (! ($result['ok'] ?? false)) {
+            $redirect = redirect()
+                ->route('admin.matches', $redirectQuery)
+                ->with('admin_errors', $result['errors'] ?? ['Speichern fehlgeschlagen.']);
+
+            if (isset($result['auto_uefa']) && is_array($result['auto_uefa'])) {
+                $redirect->with('admin_matches_auto_uefa', $result['auto_uefa']);
+            }
+
+            return $redirect;
+        }
 
         return redirect()
             ->route('admin.matches', $redirectQuery)
@@ -181,9 +236,33 @@ class AdminMatchController extends Controller
     }
 
     /**
+     * Prefer a single JSON payload (avoids PHP max_input_vars truncation on large lists).
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function rowsFromRequest(Request $request): array
+    {
+        $json = $request->input('rows_json');
+        if (is_string($json) && $json !== '') {
+            $decoded = json_decode($json, true);
+            if (is_array($decoded)) {
+                return array_values(array_filter($decoded, static fn (mixed $row): bool => is_array($row)));
+            }
+        }
+
+        $rows = $request->input('rows', []);
+        if (! is_array($rows)) {
+            return [];
+        }
+
+        return array_values(array_filter($rows, static fn (mixed $row): bool => is_array($row)));
+    }
+
+    /**
      * @param  array<string, mixed>|null  $form
      * @param  list<string>  $errors
      * @param  array<string, mixed>|null  $auto
+     * @param  array<string, mixed>|null  $autoUefa
      */
     private function render(
         int $userId,
@@ -193,9 +272,10 @@ class AdminMatchController extends Controller
         array $errors = [],
         string $tab = 'manual',
         ?array $auto = null,
+        ?array $autoUefa = null,
     ): View {
         return view('admin.matches', [
-            'data' => $this->matches->pagePayload($userId, $leagueId, $form, $mode, $tab, $auto),
+            'data' => $this->matches->pagePayload($userId, $leagueId, $form, $mode, $tab, $auto, $autoUefa),
             'errors' => $errors,
             'answer' => session('admin_message'),
             'legacyBase' => '/',
