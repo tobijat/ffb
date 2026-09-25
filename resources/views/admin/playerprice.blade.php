@@ -537,9 +537,9 @@
             </div>
             <p class="hint">
                 Berechnet Spieler-Basisteampreise aus ELO-Ratings (eloratings.net).
-                Ohne Spielrunde: alle Liga-Teams; Speichern schreibt in alle zukünftigen Spielrunden der Liga.
-                Mit Spielrunde: nur Teams der Runde; Speichern nur für diese zukünftige Runde.
-                Vergangene Spielrunden sind sichtbar, aber nicht wählbar und werden nicht verändert.
+                Ohne Spielrunde: alle Liga-Teams; Speichern schreibt in alle Spielrunden der Liga ohne Aufstellungen.
+                Mit Spielrunde: nur Teams der Runde; Speichern nur für diese Runde (sofern noch keine Aufstellungen existieren).
+                Spielrunden mit bestehenden Aufstellungen sind sichtbar, aber nicht wählbar und werden nicht verändert.
             </p>
 
             <form class="admin-league-picker" method="get" action="{{ route('admin.playerprice') }}">
@@ -547,16 +547,16 @@
                 <input type="hidden" name="tab" value="teams">
                 <label for="pp_elo_matchround">Spielrunde</label>
                 <select id="pp_elo_matchround" name="matchround_id" onchange="this.form.submit()">
-                    <option value="">— Auf alle zukünftigen Spielrunden anwenden —</option>
+                    <option value="">— Auf alle Spielrunden ohne Aufstellungen anwenden —</option>
                     @foreach ($matchrounds as $round)
                         <option
                             value="{{ $round['matchround_id'] }}"
                             @selected($matchroundId === (int) $round['matchround_id'])
-                            @disabled(empty($round['is_future']))
+                            @disabled(empty($round['can_update']))
                         >
                             {{ $round['matchround_title'] }}
-                            @if (empty($round['is_future']))
-                                (vergangen)
+                            @if (empty($round['can_update']))
+                                (mit Aufstellungen)
                             @endif
                         </option>
                     @endforeach

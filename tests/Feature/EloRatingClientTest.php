@@ -172,6 +172,36 @@ class EloRatingClientTest extends TestCase
     }
 
     #[Test]
+    public function maps_german_local_names_to_eloratings_english_aliases(): void
+    {
+        // FFB uses German / ASCII names; eloratings.net uses English (with accents).
+        file_put_contents(
+            $this->mapPath,
+            "164;Curacao;CUW;Curaçao;;\n166;Marokko;MAR;Morocco;;\n",
+        );
+
+        Http::fake([
+            'www.eloratings.net/World.tsv' => Http::response(
+                "1\t1\tCW\t1401\t1\n2\t2\tMA\t1762\t2\n",
+                200,
+            ),
+            'www.eloratings.net/en.teams.tsv' => Http::response(
+                "CW\tCuraçao\nMA\tMorocco\n",
+                200,
+            ),
+        ]);
+
+        $client = new EloRatingClient(
+            'https://www.eloratings.net/World.tsv',
+            $this->mapPath,
+            'https://www.eloratings.net/en.teams.tsv',
+        );
+
+        $this->assertSame(1401.0, $client->getEloRatingForTeam(164));
+        $this->assertSame(1762.0, $client->getEloRatingForTeam(166));
+    }
+
+    #[Test]
     public function for_year_loads_http_year_tsv(): void
     {
         file_put_contents($this->mapPath, '10;Argentinien;ARG;Argentina;;');

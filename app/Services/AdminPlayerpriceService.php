@@ -11,6 +11,7 @@ use App\Models\Playerteam;
 use App\Models\Team;
 use App\Models\Teamelo;
 use App\Models\Teamprice;
+use App\Models\Userteam;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -74,7 +75,7 @@ class AdminPlayerpriceService
             $resolvedMatchroundId = $this->matchroundBelongsToLeague($matchroundId, $leagueId)
                 ? $matchroundId
                 : 0;
-            if ($resolvedTab === 'teams' && $resolvedMatchroundId > 0 && ! $this->matchroundIsFuture($resolvedMatchroundId)) {
+            if ($resolvedTab === 'teams' && $resolvedMatchroundId > 0 && $this->matchroundHasUserLineups($resolvedMatchroundId)) {
                 $resolvedMatchroundId = 0;
             }
         }
@@ -1159,7 +1160,8 @@ class AdminPlayerpriceService
     }
 
     /**
-     * Recompute Elo team prices and persist into ffb_teamprice for future matchround(s).
+     * Recompute Elo team prices and persist into ffb_teamprice for matchround(s)
+     * that do not yet have user lineups.
      *
      * @param  array<string, mixed>  $input
      * @return array{
@@ -1184,11 +1186,11 @@ class AdminPlayerpriceService
         $matchroundId = (int) $built['matchround_id'];
         $preview = $built['preview'];
 
-        $targetMatchroundIds = $this->futureMatchroundIdsForSave($leagueId, $matchroundId);
+        $targetMatchroundIds = $this->writableMatchroundIdsForSave($leagueId, $matchroundId);
         if ($targetMatchroundIds === []) {
             return [
                 'ok' => false,
-                'errors' => ['Keine zukünftige Spielrunde zum Speichern gefunden.'],
+                'errors' => ['Keine Spielrunde ohne Aufstellungen zum Speichern gefunden.'],
                 'price_league_id' => $leagueId,
                 'matchround_id' => $matchroundId,
                 'tab' => 'teams',
@@ -1483,10 +1485,10 @@ class AdminPlayerpriceService
                     'tab' => 'teams',
                 ];
             }
-            if (! $this->matchroundIsFuture($matchroundId)) {
+            if ($this->matchroundHasUserLineups($matchroundId)) {
                 return [
                     'ok' => false,
-                    'errors' => ['Nur Spielrunden mit Start-Datum in der Zukunft sind erlaubt.'],
+                    'errors' => ['Spielrunden mit bestehenden Aufstellungen können nicht aktualisiert werden.'],
                     'price_league_id' => $leagueId,
                     'matchround_id' => $matchroundId,
                     'tab' => 'teams',
@@ -2032,25 +2034,33 @@ class AdminPlayerpriceService
     }
 
     /**
-     * All league matchrounds for the Team-Preis dropdown (past ones marked non-selectable).
+     * All league matchrounds for the Team-Preis dropdown
+     * (rounds with user lineups marked non-selectable).
      *
-     * @return list<array{matchround_id: int, matchround_title: string, is_future: bool}>
+     * @return list<array{matchround_id: int, matchround_title: string, can_update: bool}>
      */
     private function matchroundsForTeamPrice(int $leagueId): array
     {
-        $now = now();
-
-        return Matchround::query()
+        $rounds = Matchround::query()
             ->where('matchround_league_id', $leagueId)
             ->orderBy('matchround_startdate')
-            ->get(['matchround_id', 'matchround_title', 'matchround_startdate'])
-            ->map(static function (Matchround $r) use ($now): array {
-                $start = (string) $r->matchround_startdate;
+            ->get(['matchround_id', 'matchround_title']);
+
+        if ($rounds->isEmpty()) {
+            return [];
+        }
+
+        $roundIds = $rounds->map(static fn (Matchround $r): int => (int) $r->matchround_id)->all();
+        $lockedIds = $this->matchroundIdsWithUserLineups($roundIds);
+
+        return $rounds
+            ->map(static function (Matchround $r) use ($lockedIds): array {
+                $id = (int) $r->matchround_id;
 
                 return [
-                    'matchround_id' => (int) $r->matchround_id,
+                    'matchround_id' => $id,
                     'matchround_title' => (string) $r->matchround_title,
-                    'is_future' => $start !== '' && strtotime($start) > $now->getTimestamp(),
+                    'can_update' => ! isset($lockedIds[$id]),
                 ];
             })
             ->all();
@@ -2059,12 +2069,12 @@ class AdminPlayerpriceService
     /**
      * @return list<int>
      */
-    private function futureMatchroundIdsForSave(int $leagueId, int $selectedMatchroundId): array
+    private function writableMatchroundIdsForSave(int $leagueId, int $selectedMatchroundId): array
     {
         if ($selectedMatchroundId > 0) {
             if (
                 $this->matchroundBelongsToLeague($selectedMatchroundId, $leagueId)
-                && $this->matchroundIsFuture($selectedMatchroundId)
+                && ! $this->matchroundHasUserLineups($selectedMatchroundId)
             ) {
                 return [$selectedMatchroundId];
             }
@@ -2072,21 +2082,54 @@ class AdminPlayerpriceService
             return [];
         }
 
-        return Matchround::query()
+        $roundIds = Matchround::query()
             ->where('matchround_league_id', $leagueId)
-            ->where('matchround_startdate', '>', now())
             ->orderBy('matchround_startdate')
             ->pluck('matchround_id')
             ->map(static fn ($id): int => (int) $id)
             ->all();
+
+        if ($roundIds === []) {
+            return [];
+        }
+
+        $lockedIds = $this->matchroundIdsWithUserLineups($roundIds);
+
+        return array_values(array_filter(
+            $roundIds,
+            static fn (int $id): bool => ! isset($lockedIds[$id]),
+        ));
     }
 
-    private function matchroundIsFuture(int $matchroundId): bool
+    private function matchroundHasUserLineups(int $matchroundId): bool
     {
-        return Matchround::query()
-            ->where('matchround_id', $matchroundId)
-            ->where('matchround_startdate', '>', now())
+        if ($matchroundId <= 0) {
+            return false;
+        }
+
+        return Userteam::query()
+            ->where('userteam_matchround_id', $matchroundId)
             ->exists();
+    }
+
+    /**
+     * @param  list<int>  $matchroundIds
+     * @return array<int, true> matchround_id => true
+     */
+    private function matchroundIdsWithUserLineups(array $matchroundIds): array
+    {
+        if ($matchroundIds === []) {
+            return [];
+        }
+
+        $ids = Userteam::query()
+            ->whereIn('userteam_matchround_id', $matchroundIds)
+            ->distinct()
+            ->pluck('userteam_matchround_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+
+        return array_fill_keys($ids, true);
     }
 
     /**

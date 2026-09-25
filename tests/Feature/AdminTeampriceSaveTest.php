@@ -8,6 +8,7 @@ use App\Models\Matchround;
 use App\Models\Team;
 use App\Models\Teamelo;
 use App\Models\Teamprice;
+use App\Models\Userteam;
 use App\Services\AdminCenterService;
 use App\Services\AdminPlayerpriceService;
 use App\Services\EloRatingClient;
@@ -31,6 +32,7 @@ class AdminTeampriceSaveTest extends TestCase
     protected function tearDown(): void
     {
         Carbon::setTestNow();
+        Schema::dropIfExists('ffb_userteam');
         Schema::dropIfExists('ffb_teamelo');
         Schema::dropIfExists('ffb_teamprice');
         Schema::dropIfExists('ffb_match');
@@ -41,9 +43,15 @@ class AdminTeampriceSaveTest extends TestCase
     }
 
     #[Test]
-    public function save_writes_prices_only_for_future_matchrounds_when_none_selected(): void
+    public function save_writes_prices_for_all_rounds_without_user_lineups_when_none_selected(): void
     {
         [$leagueId, $pastId, $futureA, $futureB, $teamA, $teamB] = $this->seedLeague();
+
+        Userteam::query()->insert([
+            'userteam_user_id' => 1,
+            'userteam_matchround_id' => $futureB,
+            'userteam_score' => 0,
+        ]);
 
         $elo = Mockery::mock(EloRatingClient::class);
         $elo->shouldReceive('forYear')->once()->with(2026)->andReturnSelf();
@@ -79,14 +87,17 @@ class AdminTeampriceSaveTest extends TestCase
         ]);
 
         $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        // past + futureA (2 rounds × 2 teams); futureB has lineups and is skipped
         $this->assertDatabaseCount('ffb_teamprice', 4);
-        $this->assertDatabaseMissing('ffb_teamprice', ['teamprice_matchround_id' => $pastId]);
+        $this->assertDatabaseHas('ffb_teamprice', [
+            'teamprice_team_id' => $teamA,
+            'teamprice_matchround_id' => $pastId,
+        ]);
         $this->assertDatabaseHas('ffb_teamprice', [
             'teamprice_team_id' => $teamA,
             'teamprice_matchround_id' => $futureA,
         ]);
-        $this->assertDatabaseHas('ffb_teamprice', [
-            'teamprice_team_id' => $teamB,
+        $this->assertDatabaseMissing('ffb_teamprice', [
             'teamprice_matchround_id' => $futureB,
         ]);
 
@@ -117,13 +128,13 @@ class AdminTeampriceSaveTest extends TestCase
     }
 
     #[Test]
-    public function save_for_selected_future_round_does_not_touch_other_rounds(): void
+    public function save_for_selected_past_round_without_lineups_does_not_touch_other_rounds(): void
     {
         [$leagueId, $pastId, $futureA, $futureB, $teamA, $teamB] = $this->seedLeague();
 
         Teamprice::query()->insert([
             'teamprice_team_id' => $teamA,
-            'teamprice_matchround_id' => $pastId,
+            'teamprice_matchround_id' => $futureB,
             'teamprice_price' => 9.9,
         ]);
 
@@ -151,7 +162,7 @@ class AdminTeampriceSaveTest extends TestCase
 
         $result = $service->saveEloTeamPrices(544, [
             'price_league_id' => $leagueId,
-            'matchround_id' => $futureA,
+            'matchround_id' => $pastId,
             'elo_year' => 2026,
             'max_credits' => 100,
             'max_players_team' => 3,
@@ -163,15 +174,15 @@ class AdminTeampriceSaveTest extends TestCase
         $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
         $this->assertSame(9.9, (float) Teamprice::query()
             ->where('teamprice_team_id', $teamA)
-            ->where('teamprice_matchround_id', $pastId)
+            ->where('teamprice_matchround_id', $futureB)
             ->value('teamprice_price'));
         $this->assertDatabaseHas('ffb_teamprice', [
             'teamprice_team_id' => $teamA,
-            'teamprice_matchround_id' => $futureA,
+            'teamprice_matchround_id' => $pastId,
         ]);
         $this->assertDatabaseMissing('ffb_teamprice', [
             'teamprice_team_id' => $teamA,
-            'teamprice_matchround_id' => $futureB,
+            'teamprice_matchround_id' => $futureA,
         ]);
         $this->assertDatabaseHas('ffb_teamelo', [
             'teamelo_team_id' => $teamA,
@@ -268,9 +279,15 @@ class AdminTeampriceSaveTest extends TestCase
     }
 
     #[Test]
-    public function save_rejects_past_matchround(): void
+    public function save_rejects_matchround_with_user_lineups(): void
     {
         [$leagueId, $pastId] = $this->seedLeague();
+
+        Userteam::query()->insert([
+            'userteam_user_id' => 7,
+            'userteam_matchround_id' => $pastId,
+            'userteam_score' => 0,
+        ]);
 
         $adminCenter = Mockery::mock(AdminCenterService::class);
         $adminCenter->shouldReceive('selectedLeagueId')->andReturn($leagueId);
@@ -292,7 +309,7 @@ class AdminTeampriceSaveTest extends TestCase
         ]);
 
         $this->assertFalse($result['ok']);
-        $this->assertStringContainsString('Zukunft', $result['errors'][0] ?? '');
+        $this->assertStringContainsString('Aufstellungen', $result['errors'][0] ?? '');
         $this->assertDatabaseCount('ffb_teamprice', 0);
         $this->assertDatabaseCount('ffb_teamelo', 0);
     }
@@ -447,6 +464,13 @@ class AdminTeampriceSaveTest extends TestCase
             $table->double('teamelo_elo');
             $table->unsignedSmallInteger('teamelo_elo_year');
             $table->unique(['teamelo_team_id', 'teamelo_league_id']);
+        });
+
+        Schema::create('ffb_userteam', function (Blueprint $table) {
+            $table->increments('userteam_id');
+            $table->unsignedInteger('userteam_user_id');
+            $table->unsignedInteger('userteam_matchround_id');
+            $table->integer('userteam_score')->default(0);
         });
     }
 }

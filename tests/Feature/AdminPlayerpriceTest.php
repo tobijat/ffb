@@ -123,7 +123,7 @@ class AdminPlayerpriceTest extends TestCase
             ->assertSee('Preise berechnen', false)
             ->assertSee('Preise speichern', false)
             ->assertSee('disabled', false)
-            ->assertSee('Auf alle zukünftigen Spielrunden anwenden', false)
+            ->assertSee('Auf alle Spielrunden ohne Aufstellungen anwenden', false)
             ->assertDontSee('ELO BasePrices for League', false);
     }
 
@@ -173,8 +173,8 @@ class AdminPlayerpriceTest extends TestCase
                 ->andReturn($this->payload([
                     'tab' => 'teams',
                     'matchrounds' => [
-                        ['matchround_id' => 1, 'matchround_title' => 'Past Round', 'is_future' => false],
-                        ['matchround_id' => 2, 'matchround_title' => 'Future Round', 'is_future' => true],
+                        ['matchround_id' => 1, 'matchround_title' => 'Locked Round', 'can_update' => false],
+                        ['matchround_id' => 2, 'matchround_title' => 'Open Round', 'can_update' => true],
                     ],
                     'team_price_preview' => $preview,
                 ]));
@@ -186,10 +186,10 @@ class AdminPlayerpriceTest extends TestCase
                 'tab' => 'teams',
             ])
             ->assertOk()
-            ->assertSee('Past Round', false)
-            ->assertSee('(vergangen)', false)
-            ->assertSee('Future Round', false)
-            ->assertSee('Auf alle zukünftigen Spielrunden anwenden', false)
+            ->assertSee('Locked Round', false)
+            ->assertSee('(mit Aufstellungen)', false)
+            ->assertSee('Open Round', false)
+            ->assertSee('Auf alle Spielrunden ohne Aufstellungen anwenden', false)
             ->getContent();
 
         $this->assertSame(1, preg_match(
@@ -202,9 +202,9 @@ class AdminPlayerpriceTest extends TestCase
         $this->assertSame(1, preg_match(
             '/<option\b[^>]*\bvalue="1"[^>]*>/',
             $html,
-            $pastOption,
+            $lockedOption,
         ));
-        $this->assertStringContainsString('disabled', $pastOption[0]);
+        $this->assertStringContainsString('disabled', $lockedOption[0]);
     }
 
     public function test_preview_elo_team_prices_renders_result_table(): void
@@ -453,7 +453,7 @@ class AdminPlayerpriceTest extends TestCase
             ],
             'tab' => 'teams',
             'matchrounds' => [
-                ['matchround_id' => 3, 'matchround_title' => 'Runde 1', 'is_future' => true],
+                ['matchround_id' => 3, 'matchround_title' => 'Runde 1', 'can_update' => true],
             ],
             'matchround_id' => 0,
             'lineup_max_credits' => 100.0,
