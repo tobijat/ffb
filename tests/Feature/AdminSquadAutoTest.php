@@ -513,6 +513,43 @@ class AdminSquadAutoTest extends TestCase
     }
 
     #[Test]
+    public function analyze_puts_ss_sz_and_accent_variants_into_almost_matches(): void
+    {
+        [$teamId, $leagueId] = $this->seedTeamAndLeague('ger');
+
+        $gross = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Pascal',
+            'player_lname' => 'Groß',
+            'player_nationality' => 'GER',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+
+        $file = $this->jsonFile([
+            [
+                'name' => 'Germany',
+                'fifa_code' => 'GER',
+                'players' => [
+                    ['number' => 8, 'pos' => 'MF', 'name' => 'Pascal Gross'],
+                ],
+            ],
+        ]);
+
+        $result = $this->service()->analyzeSquadsFile($teamId, $leagueId, $file);
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        $this->assertSame([], $result['auto']['players']);
+        $this->assertCount(1, $result['auto']['almost']);
+        $this->assertSame((int) $gross->player_id, $result['auto']['almost'][0]['db_player_id']);
+        $this->assertSame('Pascal Gross', $result['auto']['almost'][0]['json_name']);
+        $this->assertSame('Pascal', $result['auto']['almost'][0]['db_fname']);
+        $this->assertSame('Groß', $result['auto']['almost'][0]['db_lname']);
+        $this->assertSame('Schreibweise/Akzente', $result['auto']['almost'][0]['match_reason']);
+        $this->assertFalse((bool) $result['auto']['almost'][0]['use_existing']);
+    }
+
+    #[Test]
     public function analyze_puts_accent_and_switched_names_into_almost_matches(): void
     {
         [$teamId, $leagueId] = $this->seedTeamAndLeague('cze');
@@ -836,6 +873,7 @@ class AdminSquadAutoTest extends TestCase
         Schema::create('ffb_player', function (Blueprint $table) {
             $table->increments('player_id');
             $table->string('player_foreign_id')->default('');
+            $table->string('player_uefa_id')->default('');
             $table->string('player_fname')->default('');
             $table->string('player_lname')->default('');
             $table->string('player_nationality')->default('');

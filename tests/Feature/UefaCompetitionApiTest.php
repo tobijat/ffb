@@ -168,6 +168,67 @@ class UefaCompetitionApiTest extends TestCase
     }
 
     #[Test]
+    public function players_filters_by_national_team_and_maps_payload(): void
+    {
+        config(['services.uefa.base_url' => 'https://comp.uefa.test/v2']);
+        Http::preventStrayRequests();
+        Http::fake([
+            'comp.uefa.test/v2/players*' => Http::response([
+                [
+                    'id' => '1',
+                    'nationalTeamId' => '88',
+                    'nationalJerseyNumber' => '1',
+                    'nationalFieldPosition' => 'GOALKEEPER',
+                    'internationalName' => 'Henry Bonello',
+                    'translations' => [
+                        'firstName' => ['EN' => 'Henry'],
+                        'lastName' => ['EN' => 'Bonello'],
+                    ],
+                ],
+                [
+                    'id' => '2',
+                    'nationalTeamId' => '47',
+                    'nationalJerseyNumber' => '7',
+                    'nationalFieldPosition' => 'FORWARD',
+                    'internationalName' => 'Other Player',
+                    'translations' => [
+                        'firstName' => ['EN' => 'Other'],
+                        'lastName' => ['EN' => 'Player'],
+                    ],
+                ],
+                [
+                    'id' => '3',
+                    'nationalTeamId' => '88',
+                    'nationalJerseyNumber' => '10',
+                    'nationalFieldPosition' => 'FORWARD',
+                    'internationalName' => 'New Striker',
+                    'translations' => [
+                        'firstName' => ['EN' => 'New'],
+                        'lastName' => ['EN' => 'Striker'],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $api = UefaCompetitionApi::fromIdentifier(
+            'competitionId=2014&seasonYear=2027&competitionPhase=TOURNAMENT',
+            new UefaCompApiClient,
+        );
+
+        $players = $api->players('88');
+
+        $this->assertCount(2, $players);
+        $this->assertSame('1', $players[0]['uefa_player_id']);
+        $this->assertSame('88', $players[0]['uefa_team_id']);
+        $this->assertSame('GK', $players[0]['position']);
+        $this->assertSame(1, $players[0]['number']);
+        $this->assertSame('Henry Bonello', $players[0]['name']);
+        $this->assertSame('3', $players[1]['uefa_player_id']);
+        $this->assertSame('FW', $players[1]['position']);
+        $this->assertSame(10, $players[1]['number']);
+    }
+
+    #[Test]
     public function matches_filters_by_phase_and_maps_payload(): void
     {
         config([

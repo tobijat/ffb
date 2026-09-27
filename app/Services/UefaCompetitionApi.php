@@ -191,6 +191,53 @@ class UefaCompetitionApi
     }
 
     /**
+     * Players for the competition/season, optionally filtered to one national team.
+     *
+     * The remote /players endpoint ignores team filters, so filtering is done locally
+     * via nationalTeamId after pagination.
+     *
+     * @return list<array{
+     *     uefa_player_id: string,
+     *     uefa_team_id: string,
+     *     name: string,
+     *     first_name: string,
+     *     last_name: string,
+     *     position: string,
+     *     number: int
+     * }>
+     */
+    public function players(?string $uefaTeamId = null): array
+    {
+        $wantedTeamId = $uefaTeamId !== null ? trim($uefaTeamId) : null;
+        $rows = [];
+
+        foreach ($this->client->players($this->competitionId, $this->seasonYear) as $player) {
+            $mapped = $this->mapPlayer($player);
+            if ($mapped === null) {
+                continue;
+            }
+            if ($wantedTeamId !== null && $wantedTeamId !== '' && $mapped['uefa_team_id'] !== $wantedTeamId) {
+                continue;
+            }
+            $rows[] = $mapped;
+        }
+
+        usort(
+            $rows,
+            static function (array $a, array $b): int {
+                $numCmp = $a['number'] <=> $b['number'];
+                if ($numCmp !== 0) {
+                    return $numCmp;
+                }
+
+                return strcasecmp($a['name'], $b['name']);
+            }
+        );
+
+        return $rows;
+    }
+
+    /**
      * @param  array<string, mixed>  $round
      */
     private function roundMatchesPhases(array $round): bool
@@ -308,6 +355,61 @@ class UefaCompetitionApi
             'matchday' => (int) ($matchday['sequenceNumber'] ?? 0),
             'round_phase' => $phase,
             'round_order' => (int) ($round['orderInCompetition'] ?? 0),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $player
+     * @return array{
+     *     uefa_player_id: string,
+     *     uefa_team_id: string,
+     *     name: string,
+     *     first_name: string,
+     *     last_name: string,
+     *     position: string,
+     *     number: int
+     * }|null
+     */
+    private function mapPlayer(array $player): ?array
+    {
+        $uefaPlayerId = trim((string) ($player['id'] ?? ''));
+        $uefaTeamId = trim((string) ($player['nationalTeamId'] ?? ''));
+        if ($uefaPlayerId === '' || $uefaTeamId === '') {
+            return null;
+        }
+
+        $translations = is_array($player['translations'] ?? null) ? $player['translations'] : [];
+        $firstName = trim((string) ($translations['firstName']['EN'] ?? ''));
+        $lastName = trim((string) ($translations['lastName']['EN'] ?? ''));
+        $fullName = trim($firstName.' '.$lastName);
+        if ($fullName === '' || $firstName === '' || $lastName === '') {
+            $fullName = trim((string) ($player['internationalName']
+                ?? ($translations['name']['EN'] ?? '')));
+        }
+        if ($fullName === '') {
+            return null;
+        }
+
+        $position = match (strtoupper(trim((string) (
+            $player['nationalFieldPosition']
+            ?? $player['fieldPosition']
+            ?? ''
+        )))) {
+            'GOALKEEPER' => 'GK',
+            'DEFENDER' => 'DF',
+            'MIDFIELDER' => 'MF',
+            'FORWARD', 'STRIKER' => 'FW',
+            default => 'DF',
+        };
+
+        return [
+            'uefa_player_id' => $uefaPlayerId,
+            'uefa_team_id' => $uefaTeamId,
+            'name' => $fullName,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'position' => $position,
+            'number' => (int) ($player['nationalJerseyNumber'] ?? 0),
         ];
     }
 

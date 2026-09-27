@@ -123,6 +123,7 @@ return [
     'KIR' => 'ki',
     'KOR' => 'kr',
     'KOS' => 'xk',
+    'RKS' => 'xk',
     'KSA' => 'sa',
     'KUW' => 'kw',
     'LAO' => 'la',
