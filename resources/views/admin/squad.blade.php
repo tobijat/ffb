@@ -31,9 +31,9 @@
         $autoPlayers = is_array($auto['players'] ?? null) ? $auto['players'] : [];
         $autoAlmost = is_array($auto['almost'] ?? null) ? $auto['almost'] : [];
         $autoHasRows = count($autoPlayers) > 0 || count($autoAlmost) > 0;
-        $uefaCompetitions = is_array($data['uefa_competitions'] ?? null) ? $data['uefa_competitions'] : [];
-        $uefaCompetitionKey = (string) ($data['uefa_competition_key'] ?? '');
-        $uefaTeamCheck = is_array($data['uefa_team_check'] ?? null) ? $data['uefa_team_check'] : null;
+        $uefaIdentifier = (string) ($data['uefa_competition_identifier'] ?? '');
+        $uefaTeams = is_array($data['uefa_teams'] ?? null) ? $data['uefa_teams'] : [];
+        $uefaTeamId = (string) ($data['uefa_team_id'] ?? '');
         $images = is_array($data['images'] ?? null) ? $data['images'] : [];
         $imagesChecked = (bool) ($images['checked'] ?? false);
         $imagePlayers = is_array($images['players'] ?? null) ? $images['players'] : [];
@@ -63,10 +63,12 @@
         ], static fn ($v) => $v !== null);
         $addQuery = $rosterQuery + ['tab' => 'add'];
         $autoQuery = $rosterQuery + ['tab' => 'auto'];
-        $autoUefaQuery = $rosterQuery + ['tab' => 'auto-uefa'];
-        if ($uefaCompetitionKey !== '') {
-            $autoUefaQuery['uefa_competition'] = $uefaCompetitionKey;
-        }
+        $autoUefaQuery = array_filter([
+            'tab' => 'auto-uefa',
+            'squad_league_id' => $squadLeagueId > 0 ? $squadLeagueId : null,
+            'uefa_team_id' => $uefaTeamId !== '' ? $uefaTeamId : null,
+            'team_id' => $selectedTeamId > 0 ? $selectedTeamId : null,
+        ], static fn ($v) => $v !== null);
         $imagesQuery = $rosterQuery + ['tab' => 'images'];
         $selectedTeamNat = strtoupper(trim((string) ($selectedTeam['team_nationality'] ?? '')));
     @endphp
@@ -98,24 +100,33 @@
             @if (in_array($tab, ['add', 'auto', 'auto-uefa', 'images'], true))
                 <input type="hidden" name="tab" value="{{ $tab }}">
             @endif
-            @if ($tab === 'auto-uefa' && $uefaCompetitionKey !== '')
-                <input type="hidden" name="uefa_competition" value="{{ $uefaCompetitionKey }}">
+            @if ($tab === 'auto-uefa' && $uefaTeamId !== '')
+                <input type="hidden" name="uefa_team_id" value="{{ $uefaTeamId }}">
             @endif
             @if ($squadLeagueId > 0)
                 <input type="hidden" name="squad_league_id" value="{{ $squadLeagueId }}">
             @endif
-            <label for="team_id">Team</label>
-            <select id="team_id" name="team_id" onchange="this.form.submit()" @disabled($squadLeagueId <= 0)>
-                <option value="">— Team wählen —</option>
-                @foreach ($teams as $team)
-                    <option value="{{ $team['team_id'] }}" @selected($selectedTeamId === (int) $team['team_id'])>
-                        {{ $team['team_label'] }} ({{ (int) ($team['active_count'] ?? 0) }})
-                    </option>
-                @endforeach
-            </select>
-            <noscript>
-                <button type="submit" class="admin-submit">Anzeigen</button>
-            </noscript>
+            @if ($tab !== 'auto-uefa')
+                <label for="team_id">Team</label>
+                <select id="team_id" name="team_id" onchange="this.form.submit()" @disabled($squadLeagueId <= 0)>
+                    <option value="">— Team wählen —</option>
+                    @foreach ($teams as $team)
+                        <option value="{{ $team['team_id'] }}" @selected($selectedTeamId === (int) $team['team_id'])>
+                            {{ $team['team_label'] }} ({{ (int) ($team['active_count'] ?? 0) }})
+                        </option>
+                    @endforeach
+                </select>
+                <noscript>
+                    <button type="submit" class="admin-submit">Anzeigen</button>
+                </noscript>
+            @elseif ($selectedTeamId > 0)
+                <input type="hidden" name="team_id" value="{{ $selectedTeamId }}">
+                <p class="muted">
+                    FFB-Team:
+                    <strong>{{ $selectedTeam['team_label'] ?? ('#'.$selectedTeamId) }}</strong>
+                    (über UEFA-Zuordnung)
+                </p>
+            @endif
         </form>
         @if (!empty($data['hint']))
             <p class="hint">{{ $data['hint'] }}</p>
@@ -138,9 +149,9 @@
             </div>
         @endif
 
-        @if ($selectedTeamId <= 0)
+        @if ($selectedTeamId <= 0 && $tab !== 'auto-uefa')
             <p class="hint">Wähle oben ein Team, um dessen Kader zu verwalten.</p>
-        @else
+        @elseif ($squadLeagueId > 0)
             <nav class="admin-squad-tabs ffb-tabs" aria-label="Kader-Bereiche">
                 <a
                     class="admin-squad-tab ffb-tab{{ $tab === 'roster' ? ' is-active' : '' }}"
@@ -162,7 +173,7 @@
                 </a>
                 <a
                     class="admin-squad-tab ffb-tab{{ $tab === 'auto-uefa' ? ' is-active' : '' }}"
-                    href="{{ route('admin.squad', $autoUefaQuery) }}"
+                    href="{{ route('admin.squad', ['tab' => 'auto-uefa', 'squad_league_id' => $squadLeagueId] + ($uefaTeamId !== '' ? ['uefa_team_id' => $uefaTeamId] : [])) }}"
                 >
                     Auto-Kader (UEFA)
                 </a>
@@ -455,26 +466,39 @@
         </section>
     @endif
 
-    @if ($selectedTeamId > 0 && in_array($tab, ['auto', 'auto-uefa'], true))
+    @if ($tab === 'auto-uefa' && $squadLeagueId > 0)
         @php
-            $isUefaAuto = $tab === 'auto-uefa';
-            $autoSourceLabel = $isUefaAuto ? 'UEFA' : 'JSON';
+            $autoSourceLabel = 'UEFA';
+            $selectedUefaLabel = '';
+            foreach ($uefaTeams as $option) {
+                if (($option['uefa_id'] ?? '') === $uefaTeamId) {
+                    $selectedUefaLabel = (string) ($option['label'] ?? '');
+                    break;
+                }
+            }
         @endphp
-        <section class="panel admin-main" aria-labelledby="admin-squad-auto-title">
+        <section class="panel admin-main" aria-labelledby="admin-squad-auto-uefa-title">
             <div class="section-head">
-                <h2 id="admin-squad-auto-title">{{ $isUefaAuto ? 'Auto-Kader (UEFA)' : 'Auto-Kader' }}</h2>
+                <h2 id="admin-squad-auto-uefa-title">Auto-Kader (UEFA)</h2>
             </div>
 
             <p class="hint">
-                Team: <strong>{{ $selectedTeam['team_label'] ?? '' }}</strong>
-                @if ($selectedTeamNat !== '')
-                    · FIFA-Code: <strong>{{ $selectedTeamNat }}</strong>
-                @endif
-                · Aktive Kader-Spieler, die nicht in {{ $autoSourceLabel }} stehen, erscheinen mit Status
+                Wähle unten ein UEFA-Team der Competition — das ersetzt den FFB-Team-Picker oben.
+                Zuordnung über <code>team_uefa_id</code> / Team-Code / Nationalität.
+                Die UEFA-Players-API liefert Kader vor allem für UEFA-Verbände;
+                Nicht-UEFA-Teams (z.&nbsp;B. ARG, EGY bei der WM) haben dort oft noch keine Spieler.
+                Aktive Kader-Spieler, die nicht bei UEFA stehen, erscheinen mit Status
                 <strong>inaktiv</strong> und werden beim Speichern deaktiviert.
             </p>
 
-            @if ($isUefaAuto)
+            @if ($uefaIdentifier === '')
+                <p class="hint">
+                    Für diese Liga ist kein UEFA-Competition-Identifier hinterlegt.
+                    Bitte unter <a href="{{ route('admin.leagues') }}">Ligen</a> setzen.
+                </p>
+            @else
+                <p class="muted">Identifier: <code>{{ $uefaIdentifier }}</code></p>
+
                 <form
                     class="admin-form admin-auto-squad-upload"
                     method="get"
@@ -482,31 +506,28 @@
                     accept-charset="UTF-8"
                 >
                     <input type="hidden" name="tab" value="auto-uefa">
-                    <input type="hidden" name="team_id" value="{{ $selectedTeamId }}">
-                    @if ($squadLeagueId > 0)
-                        <input type="hidden" name="squad_league_id" value="{{ $squadLeagueId }}">
-                    @endif
+                    <input type="hidden" name="squad_league_id" value="{{ $squadLeagueId }}">
                     <div class="admin-field">
-                        <label for="uefa_competition">UEFA-Liga / Saison</label>
+                        <label for="uefa_team_id">UEFA-Team</label>
                         <select
-                            id="uefa_competition"
-                            name="uefa_competition"
+                            id="uefa_team_id"
+                            name="uefa_team_id"
                             onchange="this.form.submit()"
-                            @disabled($uefaCompetitions === [])
+                            @disabled($uefaTeams === [])
                         >
-                            <option value="">— UEFA-Liga wählen —</option>
-                            @foreach ($uefaCompetitions as $competition)
+                            <option value="">— Team wählen —</option>
+                            @foreach ($uefaTeams as $option)
                                 <option
-                                    value="{{ $competition['key'] }}"
-                                    @selected($uefaCompetitionKey === (string) $competition['key'])
+                                    value="{{ $option['uefa_id'] }}"
+                                    @selected($uefaTeamId === (string) $option['uefa_id'])
                                 >
-                                    {{ $competition['label'] }}
+                                    {{ $option['label'] }}
                                 </option>
                             @endforeach
                         </select>
-                        <p class="hint">
-                            Teams werden über den FIFA-Code (<code>team_nationality</code> ↔ UEFA <code>teamCode</code>) abgeglichen.
-                        </p>
+                        @if ($uefaTeams === [])
+                            <p class="hint">Keine UEFA-Teams für diesen Identifier geladen.</p>
+                        @endif
                     </div>
                     <noscript>
                         <div class="admin-actions">
@@ -515,45 +536,6 @@
                     </noscript>
                 </form>
 
-                @if (is_array($uefaTeamCheck))
-                    @if (! empty($uefaTeamCheck['errors']))
-                        <div class="account-flash account-flash-error" role="alert">
-                            <ul>
-                                @foreach ($uefaTeamCheck['errors'] as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @else
-                        @php
-                            $matchedCount = count($uefaTeamCheck['matched'] ?? []);
-                            $onlyFfbCount = count($uefaTeamCheck['only_ffb'] ?? []);
-                            $onlyUefaCount = count($uefaTeamCheck['only_uefa'] ?? []);
-                        @endphp
-                        <p class="muted">
-                            Team-Abgleich {{ $uefaTeamCheck['competition_label'] ?? '' }}:
-                            {{ $matchedCount }} gemeinsam,
-                            {{ $onlyFfbCount }} nur in FFB,
-                            {{ $onlyUefaCount }} nur bei UEFA.
-                        </p>
-                        @if ($onlyFfbCount > 0 || $onlyUefaCount > 0)
-                            <details class="hint">
-                                <summary>Abweichungen anzeigen</summary>
-                                @if ($onlyFfbCount > 0)
-                                    <p><strong>Nur in FFB:</strong>
-                                        {{ collect($uefaTeamCheck['only_ffb'])->pluck('fifa_code')->implode(', ') }}
-                                    </p>
-                                @endif
-                                @if ($onlyUefaCount > 0)
-                                    <p><strong>Nur bei UEFA:</strong>
-                                        {{ collect($uefaTeamCheck['only_uefa'])->map(fn ($row) => $row['fifa_code'].' ('.$row['uefa_name'].')')->implode(', ') }}
-                                    </p>
-                                @endif
-                            </details>
-                        @endif
-                    @endif
-                @endif
-
                 <form
                     class="admin-form admin-auto-squad-upload"
                     method="post"
@@ -561,24 +543,84 @@
                     accept-charset="UTF-8"
                 >
                     @csrf
-                    <input type="hidden" name="team_id" value="{{ $selectedTeamId }}">
                     <input type="hidden" name="squad_league_id" value="{{ $squadLeagueId }}">
-                    <input type="hidden" name="uefa_competition" value="{{ $uefaCompetitionKey }}">
+                    <input type="hidden" name="uefa_team_id" value="{{ $uefaTeamId }}">
                     <div class="admin-actions">
                         <button
                             type="submit"
                             class="admin-submit"
-                            @disabled($uefaCompetitionKey === '')
+                            @disabled($uefaTeamId === '')
                         >
                             Kader prüfen
                         </button>
                     </div>
                 </form>
 
-                @if ($uefaCompetitionKey === '')
-                    <p class="hint">Bitte zuerst eine UEFA-Liga/Saison wählen.</p>
+                @if ($uefaTeamId === '')
+                    <p class="hint">Bitte zuerst ein UEFA-Team wählen.</p>
+                @elseif ($selectedUefaLabel !== '')
+                    <p class="muted">Gewählt: {{ $selectedUefaLabel }}</p>
                 @endif
-            @else
+            @endif
+
+            @if ($autoAnalyzed && $autoHasRows)
+                <div class="admin-auto-squad-result">
+                    @if ($autoSource !== '')
+                        <p class="muted">Quelle: {{ $autoSource }}@if ($autoFifa !== '') · FIFA: {{ $autoFifa }}@endif</p>
+                    @endif
+
+                    <form
+                        class="admin-form admin-auto-squad-form"
+                        id="admin-auto-squad-form"
+                        method="post"
+                        action="{{ route('admin.squad.auto-uefa.store') }}"
+                        accept-charset="UTF-8"
+                    >
+                        @csrf
+                        <input type="hidden" name="team_id" value="{{ $selectedTeamId }}">
+                        <input type="hidden" name="squad_league_id" value="{{ $squadLeagueId }}">
+                        <input type="hidden" name="source_name" value="{{ $autoSource }}">
+                        <input type="hidden" name="source_kind" value="uefa">
+                        <input type="hidden" name="fifa_code" value="{{ $autoFifa }}">
+                        <input type="hidden" name="uefa_team_id" value="{{ $uefaTeamId }}">
+                        <input type="hidden" name="players_json" id="admin-auto-squad-players-json" value="">
+                        <input type="hidden" name="almost_json" id="admin-auto-squad-almost-json" value="">
+
+                        @include('admin.partials.auto-squad-draft-tables', [
+                            'autoPlayers' => $autoPlayers,
+                            'autoAlmost' => $autoAlmost,
+                            'autoSourceLabel' => $autoSourceLabel,
+                            'countries' => $countries,
+                            'positions' => $positions,
+                            'defaults' => $defaults,
+                            'legacyBase' => $legacyBase,
+                        ])
+                    </form>
+                </div>
+            @elseif ($autoAnalyzed)
+                <p class="muted">Keine Spieler bei UEFA für dieses Team.</p>
+            @endif
+        </section>
+    @endif
+
+    @if ($selectedTeamId > 0 && $tab === 'auto')
+        @php
+            $autoSourceLabel = 'JSON';
+        @endphp
+        <section class="panel admin-main" aria-labelledby="admin-squad-auto-title">
+            <div class="section-head">
+                <h2 id="admin-squad-auto-title">Auto-Kader</h2>
+            </div>
+
+            <p class="hint">
+                Team: <strong>{{ $selectedTeam['team_label'] ?? '' }}</strong>
+                @if ($selectedTeamNat !== '')
+                    · FIFA-Code: <strong>{{ $selectedTeamNat }}</strong>
+                @endif
+                · Aktive Kader-Spieler, die nicht in JSON stehen, erscheinen mit Status
+                <strong>inaktiv</strong> und werden beim Speichern deaktiviert.
+            </p>
+
             @php
                 $squadFiles = is_array($data['squad_files'] ?? null) ? $data['squad_files'] : [];
             @endphp
@@ -629,316 +671,45 @@
                 </div>
             </form>
 
-                @if ($squadFiles === [])
-                    <p class="hint">Noch keine JSON-Dateien unter <code>public/data/squad</code> gefunden.</p>
-                @endif
+            @if ($squadFiles === [])
+                <p class="hint">Noch keine JSON-Dateien unter <code>public/data/squad</code> gefunden.</p>
             @endif
 
             @if ($autoAnalyzed && $autoHasRows)
                 <div class="admin-auto-squad-result">
                     @if ($autoSource !== '')
-                        <p class="muted">{{ $isUefaAuto ? 'Quelle' : 'Datei' }}: {{ $autoSource }}@if ($autoFifa !== '') · FIFA: {{ $autoFifa }}@endif</p>
+                        <p class="muted">Datei: {{ $autoSource }}@if ($autoFifa !== '') · FIFA: {{ $autoFifa }}@endif</p>
                     @endif
 
                     <form
                         class="admin-form admin-auto-squad-form"
                         id="admin-auto-squad-form"
                         method="post"
-                        action="{{ $isUefaAuto ? route('admin.squad.auto-uefa.store') : route('admin.squad.auto.store') }}"
+                        action="{{ route('admin.squad.auto.store') }}"
                         accept-charset="UTF-8"
                     >
                         @csrf
                         <input type="hidden" name="team_id" value="{{ $selectedTeamId }}">
                         <input type="hidden" name="squad_league_id" value="{{ $squadLeagueId }}">
                         <input type="hidden" name="source_name" value="{{ $autoSource }}">
-                        <input type="hidden" name="source_kind" value="{{ $autoSourceKind }}">
+                        <input type="hidden" name="source_kind" value="json">
                         <input type="hidden" name="fifa_code" value="{{ $autoFifa }}">
-                        @if ($isUefaAuto)
-                            <input type="hidden" name="uefa_competition" value="{{ $uefaCompetitionKey }}">
-                        @endif
-                        {{-- JSON payloads avoid PHP max_input_vars truncating large squad drafts. --}}
                         <input type="hidden" name="players_json" id="admin-auto-squad-players-json" value="">
                         <input type="hidden" name="almost_json" id="admin-auto-squad-almost-json" value="">
 
-                        @if (count($autoPlayers) > 0)
-                            <div class="admin-auto-squad-table-wrap">
-                                <table class="admin-auto-squad-table" id="admin-auto-squad-table">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Vorname *</th>
-                                            <th>Nachname *</th>
-                                            <th>Nat.</th>
-                                            <th>TM-ID</th>
-                                            <th>Pos. *</th>
-                                            <th>Kader-Status</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($autoPlayers as $index => $player)
-                                            @php
-                                                $isNew = (bool) ($player['is_new'] ?? false);
-                                                $onSquad = (bool) ($player['on_squad'] ?? false);
-                                                $notInJson = (bool) ($player['not_in_json'] ?? false);
-                                                $playerId = (int) ($player['player_id'] ?? 0);
-                                                $canEditIdentity = $isNew && ! $onSquad;
-                                                $rowClass = 'admin-auto-squad-row';
-                                                if ($notInJson) {
-                                                    $rowClass .= ' is-not-in-json is-on-squad';
-                                                } elseif ($onSquad) {
-                                                    $rowClass .= ' is-on-squad';
-                                                } elseif ($isNew) {
-                                                    $rowClass .= ' is-new';
-                                                } else {
-                                                    $rowClass .= ' is-existing';
-                                                }
-                                                $rowPayload = [
-                                                    'player_id' => $playerId,
-                                                    'playerteam_id' => (int) ($player['playerteam_id'] ?? 0),
-                                                    'is_new' => $isNew ? '1' : '0',
-                                                    'on_squad' => $onSquad ? '1' : '0',
-                                                    'not_in_json' => $notInJson ? '1' : '0',
-                                                    'json_number' => $player['json_number'] ?? 0,
-                                                    'json_name' => (string) ($player['json_name'] ?? ''),
-                                                    'player_status' => 1,
-                                                    'player_status_description' => '',
-                                                    'playerteam_date_transfer' => (string) ($player['playerteam_date_transfer'] ?? $defaults['playerteam_date_transfer']),
-                                                    'player_fname' => (string) ($player['player_fname'] ?? ''),
-                                                    'player_lname' => (string) ($player['player_lname'] ?? ''),
-                                                    'player_nationality' => (string) ($player['player_nationality'] ?? ''),
-                                                    'player_foreign_id' => (string) ($player['player_foreign_id'] ?? ''),
-                                                    'playerteam_player_position' => (string) ($player['playerteam_player_position'] ?? ''),
-                                                    'playerteam_status' => (int) ($player['playerteam_status'] ?? 1),
-                                                ];
-                                            @endphp
-                                            <tr class="{{ $rowClass }}" data-row='@json($rowPayload)'>
-                                                <td class="admin-auto-squad-num">
-                                                    @if ($notInJson)
-                                                        <span class="muted">—</span>
-                                                        <span class="admin-auto-squad-badge" title="Aktiv im Kader, aber nicht in {{ $autoSourceLabel }}">nicht in {{ $autoSourceLabel }}</span>
-                                                    @else
-                                                        {{ $player['json_number'] ?? '' }}
-                                                        @if ($onSquad)
-                                                            <span class="admin-auto-squad-badge" title="Bereits im Kader">im Kader</span>
-                                                        @endif
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    @if ($canEditIdentity)
-                                                        <input
-                                                            type="text"
-                                                            class="admin-auto-squad-fname"
-                                                            value="{{ $player['player_fname'] ?? '' }}"
-                                                            maxlength="255"
-                                                            required
-                                                            aria-label="Vorname {{ $index + 1 }}"
-                                                        >
-                                                    @else
-                                                        <span class="admin-auto-squad-readonly">{{ $player['player_fname'] ?? '' }}</span>
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    @if ($canEditIdentity)
-                                                        <input
-                                                            type="text"
-                                                            class="admin-auto-squad-lname"
-                                                            value="{{ $player['player_lname'] ?? '' }}"
-                                                            maxlength="255"
-                                                            required
-                                                            aria-label="Nachname {{ $index + 1 }}"
-                                                        >
-                                                    @else
-                                                        <span class="admin-auto-squad-readonly">{{ $player['player_lname'] ?? '' }}</span>
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    @if ($canEditIdentity)
-                                                        <select class="admin-auto-squad-nationality" aria-label="Nationalität {{ $index + 1 }}">
-                                                            <option value=""></option>
-                                                            @foreach ($countries as $code => $name)
-                                                                <option value="{{ $code }}" @selected(($player['player_nationality'] ?? '') === $code)>{{ $code }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                    @else
-                                                        <span class="admin-auto-squad-readonly">{{ $player['player_nationality'] ?? '' }}</span>
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    @if ($canEditIdentity)
-                                                        <input
-                                                            type="text"
-                                                            class="admin-auto-squad-foreign-id"
-                                                            value="{{ $player['player_foreign_id'] ?? '' }}"
-                                                            maxlength="255"
-                                                            placeholder="TM-ID"
-                                                            aria-label="TM-ID {{ $index + 1 }}"
-                                                        >
-                                                    @else
-                                                        <span class="admin-auto-squad-readonly">{{ $player['player_foreign_id'] ?: '—' }}</span>
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    <select class="admin-auto-squad-position" required aria-label="Position {{ $index + 1 }}">
-                                                        @foreach ($positions as $code => $label)
-                                                            <option value="{{ $code }}" @selected(($player['playerteam_player_position'] ?? '') === $code)>{{ strtoupper($code) }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <select class="admin-auto-squad-status" aria-label="Kader-Status {{ $index + 1 }}">
-                                                        <option value="1" @selected((int) ($player['playerteam_status'] ?? 1) === 1)>aktiv</option>
-                                                        <option value="0" @selected((int) ($player['playerteam_status'] ?? 1) === 0)>inaktiv</option>
-                                                    </select>
-                                                </td>
-                                                <td class="admin-auto-squad-actions">
-                                                    <button
-                                                        type="button"
-                                                        class="admin-icon-btn admin-auto-squad-discard"
-                                                        title="Zeile verwerfen"
-                                                        aria-label="Zeile verwerfen"
-                                                    >
-                                                        <img src="{{ $legacyBase }}images/ffb/symbols/delete.png" alt="" width="16" height="16">
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @endif
-
-                        @if (count($autoAlmost) > 0)
-                            <div class="admin-auto-squad-almost">
-                                <h3>Mögliche Namens-Übereinstimmungen</h3>
-                                <p class="hint">
-                                    Haken bei <strong>Übernehmen</strong>: bestehenden DB-Spieler verwenden.
-                                    Ohne Haken: neuen Spieler aus {{ $autoSourceLabel }}-Daten anlegen.
-                                </p>
-                                <div class="admin-auto-squad-table-wrap">
-                                    <table class="admin-auto-squad-almost-table" id="admin-auto-squad-almost-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Übernehmen</th>
-                                                <th>{{ $autoSourceLabel }}</th>
-                                                <th>Datenbank</th>
-                                                <th>Pos. *</th>
-                                                <th>Kader-Status</th>
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($autoAlmost as $index => $row)
-                                                @php
-                                                    $jsonName = trim(($row['json_fname'] ?? '').' '.($row['json_lname'] ?? ''));
-                                                    if ($jsonName === '') {
-                                                        $jsonName = (string) ($row['json_name'] ?? '');
-                                                    }
-                                                    $dbName = trim(($row['db_fname'] ?? '').' '.($row['db_lname'] ?? ''));
-                                                    $jsonPos = strtoupper((string) ($row['json_position'] ?? ''));
-                                                    $dbPos = strtoupper((string) ($row['db_position'] ?? ''));
-                                                    $dbSquads = is_array($row['db_squads'] ?? null) ? $row['db_squads'] : [];
-                                                    $almostPayload = [
-                                                        'use_existing' => ! empty($row['use_existing']) ? '1' : '0',
-                                                        'match_reason' => (string) ($row['match_reason'] ?? ''),
-                                                        'json_number' => $row['json_number'] ?? 0,
-                                                        'json_name' => (string) ($row['json_name'] ?? ''),
-                                                        'json_fname' => (string) ($row['json_fname'] ?? ''),
-                                                        'json_lname' => (string) ($row['json_lname'] ?? ''),
-                                                        'json_nationality' => (string) ($row['json_nationality'] ?? ''),
-                                                        'json_position' => (string) ($row['json_position'] ?? ''),
-                                                        'db_player_id' => (int) ($row['db_player_id'] ?? 0),
-                                                        'db_fname' => (string) ($row['db_fname'] ?? ''),
-                                                        'db_lname' => (string) ($row['db_lname'] ?? ''),
-                                                        'db_nationality' => (string) ($row['db_nationality'] ?? ''),
-                                                        'db_position' => (string) ($row['db_position'] ?? ''),
-                                                        'db_foreign_id' => (string) ($row['db_foreign_id'] ?? ''),
-                                                        'playerteam_date_transfer' => (string) ($row['playerteam_date_transfer'] ?? $defaults['playerteam_date_transfer']),
-                                                        'db_squads' => $dbSquads,
-                                                        'playerteam_player_position' => (string) ($row['playerteam_player_position'] ?? ''),
-                                                        'playerteam_status' => (int) ($row['playerteam_status'] ?? 1),
-                                                    ];
-                                                @endphp
-                                                <tr class="admin-auto-squad-almost-row" data-row='@json($almostPayload)'>
-                                                    <td class="admin-auto-squad-almost-check">
-                                                        <label>
-                                                            <input
-                                                                type="checkbox"
-                                                                class="admin-auto-squad-almost-use-existing"
-                                                                value="1"
-                                                                @checked(! empty($row['use_existing']))
-                                                            >
-                                                            <span>Übernehmen</span>
-                                                        </label>
-                                                        @if (! empty($row['match_reason']))
-                                                            <span class="muted admin-auto-squad-almost-reason">{{ $row['match_reason'] }}</span>
-                                                        @endif
-                                                    </td>
-                                                    <td>
-                                                        <div class="admin-auto-squad-almost-side">
-                                                            <strong>{{ $jsonName }}</strong>
-                                                            <span>{{ $row['json_nationality'] ?? '' }}</span>
-                                                            <span>{{ $jsonPos !== '' ? $jsonPos : '—' }}</span>
-                                                            <span class="muted">—</span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div class="admin-auto-squad-almost-side">
-                                                            <strong>{{ $dbName }}</strong>
-                                                            <span>{{ $row['db_nationality'] ?? '' }}</span>
-                                                            <span>{{ $dbPos !== '' ? $dbPos : '—' }}</span>
-                                                            <span class="muted">
-                                                                @if (count($dbSquads) > 0)
-                                                                    {{ implode(', ', $dbSquads) }}
-                                                                @else
-                                                                    keine Kader
-                                                                @endif
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <select class="admin-auto-squad-almost-position" required aria-label="Position Ähnlichkeit {{ $index + 1 }}">
-                                                            @foreach ($positions as $code => $label)
-                                                                <option value="{{ $code }}" @selected(($row['playerteam_player_position'] ?? '') === $code)>{{ strtoupper($code) }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                    </td>
-                                                    <td>
-                                                        <select class="admin-auto-squad-almost-status" aria-label="Kader-Status Ähnlichkeit {{ $index + 1 }}">
-                                                            <option value="1" @selected((int) ($row['playerteam_status'] ?? 1) === 1)>aktiv</option>
-                                                            <option value="0" @selected((int) ($row['playerteam_status'] ?? 1) === 0)>inaktiv</option>
-                                                        </select>
-                                                    </td>
-                                                    <td class="admin-auto-squad-actions">
-                                                        <button
-                                                            type="button"
-                                                            class="admin-icon-btn admin-auto-squad-almost-discard"
-                                                            title="Zeile verwerfen"
-                                                            aria-label="Zeile verwerfen"
-                                                        >
-                                                            <img src="{{ $legacyBase }}images/ffb/symbols/delete.png" alt="" width="16" height="16">
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        @endif
-
-                        @php
-                            $submitCount = count($autoPlayers) + count($autoAlmost);
-                        @endphp
-                        <div class="admin-actions">
-                            <button type="submit" class="admin-submit" id="admin-auto-squad-submit" @disabled($submitCount <= 0)>
-                                Alle übernehmen ({{ $submitCount }})
-                            </button>
-                        </div>
+                        @include('admin.partials.auto-squad-draft-tables', [
+                            'autoPlayers' => $autoPlayers,
+                            'autoAlmost' => $autoAlmost,
+                            'autoSourceLabel' => $autoSourceLabel,
+                            'countries' => $countries,
+                            'positions' => $positions,
+                            'defaults' => $defaults,
+                            'legacyBase' => $legacyBase,
+                        ])
                     </form>
                 </div>
             @elseif ($autoAnalyzed)
-                <p class="muted">Keine Spieler in {{ $autoSourceLabel }} für diesen FIFA-Code.</p>
+                <p class="muted">Keine Spieler in JSON für diesen FIFA-Code.</p>
             @endif
         </section>
     @endif

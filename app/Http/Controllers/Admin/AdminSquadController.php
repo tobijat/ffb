@@ -38,8 +38,8 @@ class AdminSquadController extends Controller
             }
         }
 
-        $uefaCompetitionKey = $tab === 'auto-uefa'
-            ? (string) $request->query('uefa_competition', '')
+        $uefaTeamId = $tab === 'auto-uefa'
+            ? (string) $request->query('uefa_team_id', '')
             : null;
 
         return $this->render(
@@ -51,7 +51,7 @@ class AdminSquadController extends Controller
             is_array($auto) ? $auto : null,
             null,
             null,
-            $uefaCompetitionKey,
+            $uefaTeamId,
         );
     }
 
@@ -154,16 +154,17 @@ class AdminSquadController extends Controller
 
     public function analyzeAutoUefa(Request $request): RedirectResponse
     {
-        $teamId = (int) $request->input('team_id', 0);
         $leagueId = (int) $request->input('squad_league_id', 0);
-        $competitionKey = (string) $request->input('uefa_competition', '');
-        $result = $this->squad->analyzeSquadsFromUefa(
-            $teamId,
-            $leagueId,
-            $competitionKey,
-        );
+        $uefaTeamId = (string) $request->input('uefa_team_id', '');
+        $result = $this->squad->analyzeSquadsFromUefa($leagueId, $uefaTeamId);
 
-        $redirectQuery = $this->autoUefaRedirectParams($teamId, $leagueId, $competitionKey);
+        $resultTeamId = (int) ($result['team_id'] ?? 0);
+        $resultLeagueId = (int) ($result['league_id'] ?? $leagueId);
+        $redirectQuery = $this->autoUefaRedirectParams(
+            $resultTeamId,
+            $resultLeagueId,
+            (string) ($result['auto']['uefa_team_id'] ?? $uefaTeamId),
+        );
 
         if (! ($result['ok'] ?? false)) {
             return redirect()
@@ -263,8 +264,8 @@ class AdminSquadController extends Controller
             ?: (session($sessionKey.'.fifa_code') ?? ''));
         $sourceKind = (string) ($request->input('source_kind')
             ?: (session($sessionKey.'.source_kind') ?? ($tab === 'auto-uefa' ? 'uefa' : 'json')));
-        $uefaCompetitionKey = (string) ($request->input('uefa_competition')
-            ?: (session($sessionKey.'.uefa_competition_key') ?? ''));
+        $uefaTeamId = (string) ($request->input('uefa_team_id')
+            ?: (session($sessionKey.'.uefa_team_id') ?? ''));
 
         $result = $this->squad->createSquadFromDraft(
             $players,
@@ -274,13 +275,13 @@ class AdminSquadController extends Controller
             $fifaCode,
             $almost,
             $sourceKind,
-            $uefaCompetitionKey,
+            $uefaTeamId,
         );
 
         $resultTeamId = (int) ($result['team_id'] ?? $teamId);
         $resultLeagueId = (int) ($result['league_id'] ?? $leagueId);
         $redirectQuery = $tab === 'auto-uefa'
-            ? $this->autoUefaRedirectParams($resultTeamId, $resultLeagueId, $uefaCompetitionKey)
+            ? $this->autoUefaRedirectParams($resultTeamId, $resultLeagueId, $uefaTeamId)
             : $this->autoRedirectParams($resultTeamId, $resultLeagueId);
 
         if (! ($result['ok'] ?? false)) {
@@ -328,15 +329,15 @@ class AdminSquadController extends Controller
     }
 
     /**
-     * @return array{tab: string, team_id?: int, squad_league_id?: int, uefa_competition?: string}
+     * @return array{tab: string, team_id?: int, squad_league_id?: int, uefa_team_id?: string}
      */
-    private function autoUefaRedirectParams(int $teamId, int $leagueId, string $competitionKey): array
+    private function autoUefaRedirectParams(int $teamId, int $leagueId, string $uefaTeamId): array
     {
         return array_filter([
             'tab' => 'auto-uefa',
             'team_id' => $teamId > 0 ? $teamId : null,
             'squad_league_id' => $leagueId > 0 ? $leagueId : null,
-            'uefa_competition' => $competitionKey !== '' ? $competitionKey : null,
+            'uefa_team_id' => $uefaTeamId !== '' ? $uefaTeamId : null,
         ]);
     }
 
@@ -366,7 +367,7 @@ class AdminSquadController extends Controller
         ?array $auto = null,
         ?array $images = null,
         ?string $answer = null,
-        ?string $uefaCompetitionKey = null,
+        ?string $uefaTeamId = null,
     ): View {
         return view('admin.squad', [
             'data' => $this->squad->pagePayload(
@@ -376,7 +377,7 @@ class AdminSquadController extends Controller
                 $tab,
                 $auto,
                 $images,
-                $uefaCompetitionKey,
+                $uefaTeamId,
             ),
             'errors' => $errors,
             'answer' => $answer ?? session('admin_message'),

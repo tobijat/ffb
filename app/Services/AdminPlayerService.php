@@ -80,6 +80,7 @@ class AdminPlayerService
             'player_status' => 1,
             'player_status_description' => '',
             'player_foreign_id' => '',
+            'player_uefa_id' => '',
         ];
     }
 
@@ -106,6 +107,7 @@ class AdminPlayerService
             'player_status' => (int) $item->player_status ? 1 : 0,
             'player_status_description' => $desc,
             'player_foreign_id' => (string) ($item->player_foreign_id ?? ''),
+            'player_uefa_id' => (string) ($item->player_uefa_id ?? ''),
         ];
     }
 
@@ -123,6 +125,7 @@ class AdminPlayerService
 
         $player = Player::query()->create([
             'player_foreign_id' => $form['player_foreign_id'],
+            'player_uefa_id' => $form['player_uefa_id'],
             'player_fname' => $form['player_fname'],
             'player_lname' => $form['player_lname'],
             'player_nationality' => $form['player_nationality'],
@@ -293,6 +296,7 @@ class AdminPlayerService
     private function applyPlayerFields(Player $item, array $form): void
     {
         $item->player_foreign_id = $form['player_foreign_id'];
+        $item->player_uefa_id = $form['player_uefa_id'];
         $item->player_fname = $form['player_fname'];
         $item->player_lname = $form['player_lname'];
         $item->player_nationality = $form['player_nationality'];
@@ -495,6 +499,7 @@ class AdminPlayerService
             'player_status' => ((string) ($input['player_status'] ?? '1') === '0') ? 0 : 1,
             'player_status_description' => trim((string) ($input['player_status_description'] ?? '')),
             'player_foreign_id' => trim((string) ($input['player_foreign_id'] ?? '')),
+            'player_uefa_id' => trim((string) ($input['player_uefa_id'] ?? '')),
         ];
     }
 
