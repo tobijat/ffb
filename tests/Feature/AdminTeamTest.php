@@ -520,4 +520,58 @@ class AdminTeamTest extends TestCase
             ->assertSessionHas('admin_message', '1 Team gespeichert.')
             ->assertSessionMissing('admin_teams_auto_uefa');
     }
+
+    public function test_auto_fifa_store_accepts_rows_json_payload(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminTeamService::class, function ($mock) {
+            $mock->shouldReceive('saveFifaTeams')
+                ->once()
+                ->withArgs(function (array $rows, string $sourceName, int $leagueId): bool {
+                    return $leagueId === 39
+                        && $sourceName === 'fifa'
+                        && count($rows) === 1
+                        && (int) ($rows[0]['team_id'] ?? 0) === 10
+                        && ($rows[0]['team_fifa_id'] ?? '') === '43971';
+                })
+                ->andReturn([
+                    'ok' => true,
+                    'message' => '1 Team gespeichert.',
+                ]);
+        });
+
+        $this->withSession([
+            FfbAuth::SESSION_USER_ID => 544,
+            'admin_teams_auto_fifa' => [
+                'analyzed' => true,
+                'source_name' => 'fifa',
+                'league_id' => 39,
+                'rows' => [],
+            ],
+        ])
+            ->post('/admin/teams/auto-fifa', [
+                'league_id' => 39,
+                'source_name' => 'fifa',
+                'rows_json' => json_encode([
+                    [
+                        'team_id' => 10,
+                        'create_new' => '0',
+                        'match_status' => 'matched',
+                        'team_name' => 'Schweiz',
+                        'team_nationality' => 'sui',
+                        'fifa_name' => 'Schweiz',
+                        'fifa_id' => '43971',
+                        'fifa_team_code' => 'SUI',
+                        'team_fifa_id' => '43971',
+                        'team_team_code' => 'SUI',
+                    ],
+                ], JSON_THROW_ON_ERROR),
+            ])
+            ->assertRedirect(route('admin.teams', ['tab' => 'auto-fifa']))
+            ->assertSessionHas('admin_message', '1 Team gespeichert.')
+            ->assertSessionMissing('admin_teams_auto_fifa');
+    }
 }
