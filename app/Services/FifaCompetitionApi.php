@@ -99,6 +99,7 @@ class FifaCompetitionApi
      *     away_abbr: string,
      *     home_name_de: string,
      *     away_name_de: string,
+     *     stage_name: string,
      *     date: string  Europe/Berlin calendar day of kickoff (matches FFB match_date)
      * }>
      */
@@ -177,6 +178,7 @@ class FifaCompetitionApi
      *     away_abbr: string,
      *     home_name_de: string,
      *     away_name_de: string,
+     *     stage_name: string,
      *     date: string  Europe/Berlin calendar day of kickoff
      * }|null
      */
@@ -208,6 +210,7 @@ class FifaCompetitionApi
             'away_abbr' => strtoupper(trim((string) ($away['Abbreviation'] ?? ($away['IdCountry'] ?? '')))),
             'home_name_de' => $this->localizedText($home['TeamName'] ?? null),
             'away_name_de' => $this->localizedText($away['TeamName'] ?? null),
+            'stage_name' => $this->localizedText($match['StageName'] ?? null),
             'date' => $date,
         ];
     }

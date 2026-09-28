@@ -14,11 +14,14 @@
     $tab = match ($data['tab'] ?? 'manual') {
         'auto' => 'auto',
         'auto-uefa' => 'auto-uefa',
+        'auto-fifa' => 'auto-fifa',
         default => 'manual',
     };
     $auto = $data['auto'] ?? ['analyzed' => false, 'source_name' => '', 'league_id' => 0, 'present' => [], 'matches' => []];
     $autoUefa = $data['auto_uefa'] ?? ['analyzed' => false, 'source_name' => '', 'league_id' => 0, 'rows' => []];
+    $autoFifa = $data['auto_fifa'] ?? ['analyzed' => false, 'source_name' => '', 'league_id' => 0, 'rows' => []];
     $uefaIdentifier = (string) ($data['uefa_competition_identifier'] ?? '');
+    $fifaIdentifier = (string) ($data['fifa_competition_identifier'] ?? '');
     $flashErrors = $errors ?: (session('admin_errors') ?: []);
     $autoPresent = is_array($auto['present'] ?? null) ? $auto['present'] : [];
     $autoMatches = is_array($auto['matches'] ?? null) ? $auto['matches'] : [];
@@ -27,6 +30,9 @@
     $autoUefaAnalyzed = (bool) ($autoUefa['analyzed'] ?? false);
     $autoUefaSource = (string) ($autoUefa['source_name'] ?? '');
     $autoUefaRows = is_array($autoUefa['rows'] ?? null) ? $autoUefa['rows'] : [];
+    $autoFifaAnalyzed = (bool) ($autoFifa['analyzed'] ?? false);
+    $autoFifaSource = (string) ($autoFifa['source_name'] ?? '');
+    $autoFifaRows = is_array($autoFifa['rows'] ?? null) ? $autoFifa['rows'] : [];
 @endphp
 
 @section('content')
@@ -53,6 +59,12 @@
                 href="{{ route('admin.matches', array_filter(['tab' => 'auto-uefa', 'league_id' => $selectedLeagueId > 0 ? $selectedLeagueId : null])) }}"
             >
                 Auto-Matches (UEFA)
+            </a>
+            <a
+                class="admin-squad-tab ffb-tab{{ $tab === 'auto-fifa' ? ' is-active' : '' }}"
+                href="{{ route('admin.matches', array_filter(['tab' => 'auto-fifa', 'league_id' => $selectedLeagueId > 0 ? $selectedLeagueId : null])) }}"
+            >
+                Auto-Matches (FIFA)
             </a>
         </nav>
 
@@ -460,6 +472,161 @@
             @elseif ($autoUefaAnalyzed)
                 <p class="muted">Keine UEFA-Spiele gefunden.</p>
             @endif
+        @elseif ($tab === 'auto-fifa')
+            <p class="muted">Liga: {{ $selectedLeagueTitle }}</p>
+            <p class="hint">
+                Nutzt den FIFA-Competition-Identifier der ausgewählten Liga
+                (<code>{{ $fifaIdentifier !== '' ? $fifaIdentifier : '—' }}</code>).
+                Vorhandene Spiele werden über Heim-/Gast-Team (<code>team_team_code</code> / Nationalität)
+                und Datum (Europe/Berlin-Kalendertag des FIFA-Anstoßes) erkannt.
+                Knockout-Runden werden aus dem FIFA-Stage-Namen vorgeschlagen.
+            </p>
+
+            @if ($fifaIdentifier === '')
+                <p class="hint">
+                    Für diese Liga ist kein FIFA-Competition-Identifier hinterlegt.
+                    Bitte zuerst unter <a href="{{ url('/admin/leagues') }}">Ligen</a> setzen.
+                </p>
+            @elseif ($matchrounds === [])
+                <p class="hint">Noch keine Spielrunden. Lege zuerst unter Spielrunden welche an.</p>
+            @else
+                <form
+                    class="admin-form"
+                    method="post"
+                    action="{{ route('admin.matches.auto-fifa.analyze') }}"
+                    accept-charset="UTF-8"
+                >
+                    @csrf
+                    <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
+                    <div class="admin-actions">
+                        <button type="submit" class="admin-submit">FIFA-Spiele prüfen</button>
+                    </div>
+                </form>
+            @endif
+
+            @if ($autoFifaAnalyzed && count($autoFifaRows) > 0)
+                <div class="admin-auto-matches-result">
+                    @if ($autoFifaSource !== '')
+                        <p class="muted">Quelle: {{ $autoFifaSource }}</p>
+                    @endif
+
+                    <form
+                        class="admin-form admin-auto-matches-form"
+                        id="admin-auto-fifa-matches-form"
+                        method="post"
+                        action="{{ route('admin.matches.auto-fifa.store') }}"
+                        accept-charset="UTF-8"
+                    >
+                        @csrf
+                        <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
+                        <input type="hidden" name="source_name" value="{{ $autoFifaSource }}">
+                        {{-- One JSON field avoids PHP max_input_vars truncating large match lists. --}}
+                        <input type="hidden" name="rows_json" id="admin-auto-fifa-rows-json" value="">
+
+                        <div class="admin-auto-matches-table-wrap admin-auto-fifa-matches-wrap">
+                            <table class="admin-auto-matches-table admin-auto-fifa-matches-table" id="admin-auto-fifa-matches-table">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Spielrunde *</th>
+                                        <th>Datum</th>
+                                        <th>Heim</th>
+                                        <th>Gast</th>
+                                        <th>Stage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($autoFifaRows as $index => $row)
+                                        @php
+                                            $rowStatus = (string) ($row['row_status'] ?? 'new');
+                                            $isUnmapped = $rowStatus === 'unmapped';
+                                            $isMatched = $rowStatus === 'matched';
+                                            $rowPayload = [
+                                                'row_status' => $rowStatus,
+                                                'match_id' => (int) ($row['match_id'] ?? 0),
+                                                'match_round' => (int) ($row['match_round'] ?? 0),
+                                                'match_date' => (string) ($row['match_date'] ?? ''),
+                                                'match_hometeam_id' => (int) ($row['match_hometeam_id'] ?? 0),
+                                                'match_guestteam_id' => (int) ($row['match_guestteam_id'] ?? 0),
+                                                'match_status' => (string) ($row['match_status'] ?? ''),
+                                                'home_name' => (string) ($row['home_name'] ?? ''),
+                                                'guest_name' => (string) ($row['guest_name'] ?? ''),
+                                                'fifa_match_id' => (string) ($row['fifa_match_id'] ?? ''),
+                                                'home_fifa_id' => (string) ($row['home_fifa_id'] ?? ''),
+                                                'away_fifa_id' => (string) ($row['away_fifa_id'] ?? ''),
+                                                'home_abbr' => (string) ($row['home_abbr'] ?? ''),
+                                                'away_abbr' => (string) ($row['away_abbr'] ?? ''),
+                                                'stage_name' => (string) ($row['stage_name'] ?? ''),
+                                            ];
+                                        @endphp
+                                        <tr
+                                            class="admin-auto-fifa-match-row is-{{ $rowStatus }}"
+                                            data-row='@json($rowPayload)'
+                                        >
+                                            <td>
+                                                @if ($isMatched)
+                                                    vorhanden
+                                                    @if ((int) ($row['match_id'] ?? 0) > 0)
+                                                        <span class="muted">#{{ (int) $row['match_id'] }}</span>
+                                                    @endif
+                                                @elseif ($isUnmapped)
+                                                    <span class="admin-auto-uefa-warn">Team fehlt</span>
+                                                @else
+                                                    neu
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($isUnmapped)
+                                                    <span class="muted">—</span>
+                                                @else
+                                                    <select
+                                                        class="admin-auto-fifa-match-round"
+                                                        required
+                                                        aria-label="Spielrunde {{ $index + 1 }}"
+                                                    >
+                                                        <option value="">— wählen —</option>
+                                                        @foreach ($matchrounds as $round)
+                                                            <option
+                                                                value="{{ $round['matchround_id'] }}"
+                                                                @selected((string) ($row['match_round'] ?? '') === (string) $round['matchround_id'])
+                                                            >
+                                                                {{ $round['matchround_title'] }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                @endif
+                                            </td>
+                                            <td>{{ $row['match_date'] ?? '' }}</td>
+                                            <td>
+                                                {{ $row['home_name'] ?? '' }}
+                                                @if (($row['home_abbr'] ?? '') !== '')
+                                                    <span class="muted">({{ $row['home_abbr'] }})</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                {{ $row['guest_name'] ?? '' }}
+                                                @if (($row['away_abbr'] ?? '') !== '')
+                                                    <span class="muted">({{ $row['away_abbr'] }})</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ ($row['stage_name'] ?? '') !== '' ? $row['stage_name'] : '—' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="admin-actions">
+                            <button type="submit" class="admin-submit" id="admin-auto-fifa-matches-save">
+                                Speichern
+                            </button>
+                            <span class="muted">Vorhandene Spiele werden aktualisiert, neue angelegt. Zeilen ohne Team-Zuordnung werden übersprungen.</span>
+                        </div>
+                    </form>
+                </div>
+            @elseif ($autoFifaAnalyzed)
+                <p class="muted">Keine FIFA-Spiele gefunden.</p>
+            @endif
         @elseif ($matchrounds === [])
             <p class="muted">Liga: {{ $selectedLeagueTitle }} — noch keine Spielrunden. Lege zuerst unter Spielrunden welche an.</p>
         @else
@@ -643,6 +810,24 @@
         rowSelector: 'tr.admin-auto-uefa-match-row',
         fields: {
             match_round: 'select.admin-auto-uefa-match-round'
+        }
+    });
+})();
+</script>
+@endpush
+@endif
+
+@if ($tab === 'auto-fifa')
+@push('scripts')
+<script src="{{ url('js/admin-bulk-json-form.js') }}"></script>
+<script>
+(function () {
+    AdminBulkJsonForm.bind({
+        form: '#admin-auto-fifa-matches-form',
+        hidden: '#admin-auto-fifa-rows-json',
+        rowSelector: 'tr.admin-auto-fifa-match-row',
+        fields: {
+            match_round: 'select.admin-auto-fifa-match-round'
         }
     });
 })();
