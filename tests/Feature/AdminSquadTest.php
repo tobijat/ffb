@@ -88,8 +88,70 @@ class AdminSquadTest extends TestCase
             ->assertOk()
             ->assertSee('Kader', false)
             ->assertSee('Liga', false)
+            ->assertSee('eine Liga auswählen', false)
+            ->assertDontSee('Bestand', false)
+            ->assertDontSee('Team wählen', false)
+            ->assertDontSee('Wähle oben ein Team', false)
+            ->assertDontSee('Kader-Liste', false);
+    }
+
+    public function test_squad_shows_tabs_and_team_picker_without_team(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminSquadService::class, function ($mock) {
+            $mock->shouldReceive('pagePayload')->once()->with(544, 0, null, 'roster', null, null, null)->andReturn([
+                'user' => [
+                    'user_id' => 544,
+                    'user_nickname' => 'adminuser',
+                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'is_ffb_admin' => true,
+                ],
+                'navigation' => [],
+                'selected_league' => ['league_id' => 1, 'league_title' => 'WM 2026'],
+                'squad_league_id' => 1,
+                'leagues' => [
+                    ['league_id' => 1, 'league_title' => 'WM 2026'],
+                ],
+                'hint' => 'Position gilt pro Liga.',
+                'countries' => ['AUT' => 'Österreich'],
+                'positions' => ['g' => 'Tor', 'd' => 'Abwehr', 'm' => 'Mittelfeld', 's' => 'Angriff'],
+                'teams' => [
+                    ['team_id' => 3, 'team_label' => 'Rapid (AUT)', 'active_count' => 2],
+                ],
+                'selected_team_id' => 0,
+                'selected_team' => null,
+                'items' => [],
+                'roster_active_count' => 0,
+                'per_page' => 100,
+                'defaults' => [
+                    'playerteam_status' => 1,
+                    'playerteam_player_position' => 'd',
+                    'playerteam_date_transfer' => '2008-01-01',
+                ],
+                'tab' => 'roster',
+                'auto' => [
+                    'analyzed' => false,
+                    'source_name' => '',
+                    'team_id' => 0,
+                    'league_id' => 0,
+                    'fifa_code' => '',
+                    'players' => [],
+                ],
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->get('/admin/squad?squad_league_id=1')
+            ->assertOk()
+            ->assertSee('Bestand', false)
+            ->assertSee('Spieler hinzufügen', false)
+            ->assertSee('Auto-Kader (UEFA)', false)
             ->assertSee('Team wählen', false)
-            ->assertSee('Wähle oben ein Team', false)
+            ->assertSee('Bitte ein Team wählen', false)
+            ->assertDontSee('Wähle oben ein Team', false)
             ->assertDontSee('Kader-Liste', false);
     }
 
