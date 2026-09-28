@@ -441,6 +441,154 @@ class FifaMatchStatsMapperTest extends TestCase
         $this->assertSame(0, $guestById['21']['player_penalties_saved']);
     }
 
+    #[Test]
+    public function open_play_penalty_wide_miss_does_not_use_later_unrelated_save(): void
+    {
+        // Argentina–Austria pattern: Type 6 at 9', then a normal open-play Type 57 at 19'.
+        $live = [
+            'IdMatch' => '57',
+            'ResultType' => 1,
+            'HomeTeamPenaltyScore' => 0,
+            'AwayTeamPenaltyScore' => 0,
+            'HomeTeam' => [
+                'IdTeam' => '10',
+                'Score' => 0,
+                'Players' => [
+                    $this->player('1', 'Home GK', 1),
+                    $this->player('2', 'Home Taker', 1),
+                ],
+                'Goals' => [],
+                'Bookings' => [],
+                'Substitutions' => [],
+            ],
+            'AwayTeam' => [
+                'IdTeam' => '20',
+                'Score' => 0,
+                'Players' => [
+                    $this->player('21', 'Away GK', 1),
+                ],
+                'Goals' => [],
+                'Bookings' => [],
+                'Substitutions' => [],
+            ],
+        ];
+
+        $timeline = [
+            'Event' => [
+                [
+                    'Type' => 6,
+                    'Period' => 3,
+                    'MatchMinute' => "9'",
+                    'IdPlayer' => '2',
+                    'IdTeam' => '10',
+                    'IdSubPlayer' => null,
+                    'IdSubTeam' => null,
+                ],
+                [
+                    'Type' => 12,
+                    'Period' => 3,
+                    'MatchMinute' => "9'",
+                    'IdPlayer' => '2',
+                    'IdTeam' => '10',
+                ],
+                [
+                    'Type' => 57,
+                    'Period' => 3,
+                    'MatchMinute' => "19'",
+                    'IdPlayer' => '21',
+                    'IdTeam' => '20',
+                ],
+            ],
+        ];
+
+        $mapped = (new FifaMatchStatsMapper)->map($live, $timeline);
+        $homeById = [];
+        foreach ($mapped['home'] as $row) {
+            $homeById[$row['player_fifa_id']] = $row;
+        }
+        $guestById = [];
+        foreach ($mapped['guest'] as $row) {
+            $guestById[$row['player_fifa_id']] = $row;
+        }
+
+        $this->assertSame(1, $homeById['2']['player_penalties_lost']);
+        $this->assertSame(0, $guestById['21']['player_penalties_saved']);
+        $this->assertSame(0, $homeById['1']['player_penalties_saved']);
+    }
+
+    #[Test]
+    public function open_play_penalty_same_minute_goal_prevention_credits_save(): void
+    {
+        // Argentina–Egypt pattern: Type 6 + Type 57 share MatchMinute / IdSubPlayer.
+        $live = [
+            'IdMatch' => '58',
+            'ResultType' => 1,
+            'HomeTeamPenaltyScore' => 0,
+            'AwayTeamPenaltyScore' => 0,
+            'HomeTeam' => [
+                'IdTeam' => '10',
+                'Score' => 0,
+                'Players' => [
+                    $this->player('2', 'Home Taker', 1),
+                ],
+                'Goals' => [],
+                'Bookings' => [],
+                'Substitutions' => [],
+            ],
+            'AwayTeam' => [
+                'IdTeam' => '20',
+                'Score' => 0,
+                'Players' => [
+                    $this->player('21', 'Away GK', 1),
+                ],
+                'Goals' => [],
+                'Bookings' => [],
+                'Substitutions' => [],
+            ],
+        ];
+
+        $timeline = [
+            'Event' => [
+                [
+                    'Type' => 6,
+                    'Period' => 3,
+                    'MatchMinute' => "21'",
+                    'IdPlayer' => '2',
+                    'IdTeam' => '10',
+                    'IdSubPlayer' => '21',
+                    'IdSubTeam' => '20',
+                ],
+                [
+                    'Type' => 12,
+                    'Period' => 3,
+                    'MatchMinute' => "21'",
+                    'IdPlayer' => '2',
+                    'IdTeam' => '10',
+                ],
+                [
+                    'Type' => 57,
+                    'Period' => 3,
+                    'MatchMinute' => "21'",
+                    'IdPlayer' => '21',
+                    'IdTeam' => '20',
+                ],
+            ],
+        ];
+
+        $mapped = (new FifaMatchStatsMapper)->map($live, $timeline);
+        $homeById = [];
+        foreach ($mapped['home'] as $row) {
+            $homeById[$row['player_fifa_id']] = $row;
+        }
+        $guestById = [];
+        foreach ($mapped['guest'] as $row) {
+            $guestById[$row['player_fifa_id']] = $row;
+        }
+
+        $this->assertSame(1, $homeById['2']['player_penalties_lost']);
+        $this->assertSame(1, $guestById['21']['player_penalties_saved']);
+    }
+
     /**
      * @return array<string, mixed>
      */
