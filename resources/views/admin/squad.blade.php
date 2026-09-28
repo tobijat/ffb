@@ -20,13 +20,18 @@
             'add' => 'add',
             'auto' => 'auto',
             'auto-uefa' => 'auto-uefa',
+            'auto-fifa' => 'auto-fifa',
             'images' => 'images',
             default => 'roster',
         };
         $auto = is_array($data['auto'] ?? null) ? $data['auto'] : [];
         $autoAnalyzed = (bool) ($auto['analyzed'] ?? false);
         $autoSource = (string) ($auto['source_name'] ?? '');
-        $autoSourceKind = (string) ($auto['source_kind'] ?? ($tab === 'auto-uefa' ? 'uefa' : 'json'));
+        $autoSourceKind = (string) ($auto['source_kind'] ?? match ($tab) {
+            'auto-uefa' => 'uefa',
+            'auto-fifa' => 'fifa',
+            default => 'json',
+        });
         $autoFifa = (string) ($auto['fifa_code'] ?? '');
         $autoPlayers = is_array($auto['players'] ?? null) ? $auto['players'] : [];
         $autoAlmost = is_array($auto['almost'] ?? null) ? $auto['almost'] : [];
@@ -34,6 +39,9 @@
         $uefaIdentifier = (string) ($data['uefa_competition_identifier'] ?? '');
         $uefaTeams = is_array($data['uefa_teams'] ?? null) ? $data['uefa_teams'] : [];
         $uefaTeamId = (string) ($data['uefa_team_id'] ?? '');
+        $fifaIdentifier = (string) ($data['fifa_competition_identifier'] ?? '');
+        $fifaTeams = is_array($data['fifa_teams'] ?? null) ? $data['fifa_teams'] : [];
+        $fifaTeamId = (string) ($data['fifa_team_id'] ?? '');
         $images = is_array($data['images'] ?? null) ? $data['images'] : [];
         $imagesChecked = (bool) ($images['checked'] ?? false);
         $imagePlayers = is_array($images['players'] ?? null) ? $images['players'] : [];
@@ -67,6 +75,12 @@
             'tab' => 'auto-uefa',
             'squad_league_id' => $squadLeagueId > 0 ? $squadLeagueId : null,
             'uefa_team_id' => $uefaTeamId !== '' ? $uefaTeamId : null,
+            'team_id' => $selectedTeamId > 0 ? $selectedTeamId : null,
+        ], static fn ($v) => $v !== null);
+        $autoFifaQuery = array_filter([
+            'tab' => 'auto-fifa',
+            'squad_league_id' => $squadLeagueId > 0 ? $squadLeagueId : null,
+            'fifa_team_id' => $fifaTeamId !== '' ? $fifaTeamId : null,
             'team_id' => $selectedTeamId > 0 ? $selectedTeamId : null,
         ], static fn ($v) => $v !== null);
         $imagesQuery = $rosterQuery + ['tab' => 'images'];
@@ -142,6 +156,12 @@
                     href="{{ route('admin.squad', $autoUefaQuery) }}"
                 >
                     Auto-Kader (UEFA)
+                </a>
+                <a
+                    class="admin-squad-tab ffb-tab{{ $tab === 'auto-fifa' ? ' is-active' : '' }}"
+                    href="{{ route('admin.squad', $autoFifaQuery) }}"
+                >
+                    Auto-Kader (FIFA)
                 </a>
                 <a
                     class="admin-squad-tab ffb-tab{{ $tab === 'images' ? ' is-active' : '' }}"
@@ -586,6 +606,142 @@
                 </div>
             @elseif ($autoAnalyzed)
                 <p class="muted">Keine Spieler bei UEFA für dieses Team.</p>
+            @endif
+        </section>
+    @endif
+
+    @if ($tab === 'auto-fifa' && $squadLeagueId > 0)
+        @php
+            $autoSourceLabel = 'FIFA';
+            $selectedFifaLabel = '';
+            foreach ($fifaTeams as $option) {
+                if (($option['fifa_id'] ?? '') === $fifaTeamId) {
+                    $selectedFifaLabel = (string) ($option['label'] ?? '');
+                    break;
+                }
+            }
+        @endphp
+        <section class="panel admin-main" aria-labelledby="admin-squad-auto-fifa-title">
+            <div class="section-head">
+                <h2 id="admin-squad-auto-fifa-title">Auto-Kader (FIFA)</h2>
+            </div>
+
+            <p class="hint">
+                Wähle unten ein FIFA-Team der Competition — das ersetzt den FFB-Team-Picker.
+                Zuordnung über Team-Code / Nationalität / Namen.
+                Aktive Kader-Spieler, die nicht bei FIFA stehen, erscheinen mit Status
+                <strong>inaktiv</strong> und werden beim Speichern deaktiviert.
+            </p>
+
+            @if ($fifaIdentifier === '')
+                <p class="hint">
+                    Für diese Liga ist kein FIFA-Competition-Identifier hinterlegt.
+                    Bitte unter <a href="{{ route('admin.leagues') }}">Ligen</a> setzen
+                    (z.&nbsp;B. <code>idCompetition=17&amp;idSeason=285023</code> für WM 2026).
+                </p>
+            @else
+                <p class="muted">Identifier: <code>{{ $fifaIdentifier }}</code></p>
+
+                <form
+                    class="admin-form admin-auto-squad-upload"
+                    method="get"
+                    action="{{ route('admin.squad') }}"
+                    accept-charset="UTF-8"
+                >
+                    <input type="hidden" name="tab" value="auto-fifa">
+                    <input type="hidden" name="squad_league_id" value="{{ $squadLeagueId }}">
+                    <div class="admin-field">
+                        <label for="fifa_team_id">FIFA-Team</label>
+                        <select
+                            id="fifa_team_id"
+                            name="fifa_team_id"
+                            onchange="this.form.submit()"
+                            @disabled($fifaTeams === [])
+                        >
+                            <option value="">— Team wählen —</option>
+                            @foreach ($fifaTeams as $option)
+                                <option
+                                    value="{{ $option['fifa_id'] }}"
+                                    @selected($fifaTeamId === (string) $option['fifa_id'])
+                                >
+                                    {{ $option['label'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @if ($fifaTeams === [])
+                            <p class="hint">Keine FIFA-Teams für diesen Identifier geladen.</p>
+                        @endif
+                    </div>
+                    <noscript>
+                        <div class="admin-actions">
+                            <button type="submit" class="admin-submit">Anzeigen</button>
+                        </div>
+                    </noscript>
+                </form>
+
+                <form
+                    class="admin-form admin-auto-squad-upload"
+                    method="post"
+                    action="{{ route('admin.squad.auto-fifa.analyze') }}"
+                    accept-charset="UTF-8"
+                >
+                    @csrf
+                    <input type="hidden" name="squad_league_id" value="{{ $squadLeagueId }}">
+                    <input type="hidden" name="fifa_team_id" value="{{ $fifaTeamId }}">
+                    <div class="admin-actions">
+                        <button
+                            type="submit"
+                            class="admin-submit"
+                            @disabled($fifaTeamId === '')
+                        >
+                            Kader prüfen
+                        </button>
+                    </div>
+                </form>
+
+                @if ($fifaTeamId === '')
+                    <p class="hint">Bitte zuerst ein FIFA-Team wählen.</p>
+                @elseif ($selectedFifaLabel !== '')
+                    <p class="muted">Gewählt: {{ $selectedFifaLabel }}</p>
+                @endif
+            @endif
+
+            @if ($autoAnalyzed && $autoHasRows)
+                <div class="admin-auto-squad-result">
+                    @if ($autoSource !== '')
+                        <p class="muted">Quelle: {{ $autoSource }}@if ($autoFifa !== '') · FIFA: {{ $autoFifa }}@endif</p>
+                    @endif
+
+                    <form
+                        class="admin-form admin-auto-squad-form"
+                        id="admin-auto-squad-form"
+                        method="post"
+                        action="{{ route('admin.squad.auto-fifa.store') }}"
+                        accept-charset="UTF-8"
+                    >
+                        @csrf
+                        <input type="hidden" name="team_id" value="{{ $selectedTeamId }}">
+                        <input type="hidden" name="squad_league_id" value="{{ $squadLeagueId }}">
+                        <input type="hidden" name="source_name" value="{{ $autoSource }}">
+                        <input type="hidden" name="source_kind" value="fifa">
+                        <input type="hidden" name="fifa_code" value="{{ $autoFifa }}">
+                        <input type="hidden" name="fifa_team_id" value="{{ $fifaTeamId }}">
+                        <input type="hidden" name="players_json" id="admin-auto-squad-players-json" value="">
+                        <input type="hidden" name="almost_json" id="admin-auto-squad-almost-json" value="">
+
+                        @include('admin.partials.auto-squad-draft-tables', [
+                            'autoPlayers' => $autoPlayers,
+                            'autoAlmost' => $autoAlmost,
+                            'autoSourceLabel' => $autoSourceLabel,
+                            'countries' => $countries,
+                            'positions' => $positions,
+                            'defaults' => $defaults,
+                            'legacyBase' => $legacyBase,
+                        ])
+                    </form>
+                </div>
+            @elseif ($autoAnalyzed)
+                <p class="muted">Keine Spieler bei FIFA für dieses Team.</p>
             @endif
         </section>
     @endif

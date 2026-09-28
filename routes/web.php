@@ -117,6 +117,8 @@ Route::middleware('ffb.admin')->group(function () {
     Route::post('/admin/squad/auto', [AdminSquadController::class, 'storeAuto'])->name('admin.squad.auto.store');
     Route::post('/admin/squad/auto-uefa/analyze', [AdminSquadController::class, 'analyzeAutoUefa'])->name('admin.squad.auto-uefa.analyze');
     Route::post('/admin/squad/auto-uefa', [AdminSquadController::class, 'storeAutoUefa'])->name('admin.squad.auto-uefa.store');
+    Route::post('/admin/squad/auto-fifa/analyze', [AdminSquadController::class, 'analyzeAutoFifa'])->name('admin.squad.auto-fifa.analyze');
+    Route::post('/admin/squad/auto-fifa', [AdminSquadController::class, 'storeAutoFifa'])->name('admin.squad.auto-fifa.store');
     Route::post('/admin/squad/images/check', [AdminSquadController::class, 'checkImages'])->name('admin.squad.images.check');
     Route::post('/admin/squad/images/apply', [AdminSquadController::class, 'applyImages'])->name('admin.squad.images.apply');
     Route::post('/admin/squad/batch-update', [AdminSquadController::class, 'batchUpdate'])->name('admin.squad.batchUpdate');

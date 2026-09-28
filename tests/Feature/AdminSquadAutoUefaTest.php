@@ -620,6 +620,7 @@ class AdminSquadAutoUefaTest extends TestCase
             $table->increments('player_id');
             $table->string('player_foreign_id')->default('');
             $table->string('player_uefa_id')->default('');
+            $table->string('player_fifa_id')->default('');
             $table->string('player_fname')->default('');
             $table->string('player_lname')->default('');
             $table->string('player_nationality')->default('');

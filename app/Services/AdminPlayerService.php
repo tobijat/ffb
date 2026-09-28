@@ -81,6 +81,7 @@ class AdminPlayerService
             'player_status_description' => '',
             'player_foreign_id' => '',
             'player_uefa_id' => '',
+            'player_fifa_id' => '',
         ];
     }
 
@@ -108,6 +109,7 @@ class AdminPlayerService
             'player_status_description' => $desc,
             'player_foreign_id' => (string) ($item->player_foreign_id ?? ''),
             'player_uefa_id' => (string) ($item->player_uefa_id ?? ''),
+            'player_fifa_id' => (string) ($item->player_fifa_id ?? ''),
         ];
     }
 
@@ -126,6 +128,7 @@ class AdminPlayerService
         $player = Player::query()->create([
             'player_foreign_id' => $form['player_foreign_id'],
             'player_uefa_id' => $form['player_uefa_id'],
+            'player_fifa_id' => $form['player_fifa_id'],
             'player_fname' => $form['player_fname'],
             'player_lname' => $form['player_lname'],
             'player_nationality' => $form['player_nationality'],
@@ -295,8 +298,9 @@ class AdminPlayerService
      */
     private function applyPlayerFields(Player $item, array $form): void
     {
-        $item->player_foreign_id = $form['player_foreign_id'];
+        // player_foreign_id (TM) is no longer edited on admin/players; keep existing value.
         $item->player_uefa_id = $form['player_uefa_id'];
+        $item->player_fifa_id = $form['player_fifa_id'];
         $item->player_fname = $form['player_fname'];
         $item->player_lname = $form['player_lname'];
         $item->player_nationality = $form['player_nationality'];
@@ -414,8 +418,8 @@ class AdminPlayerService
                     'player_nationality_label' => $nat !== '' ? ($countries[$nat] ?? $nat) : '',
                     'player_status' => (int) $item->player_status ? 1 : 0,
                     'player_status_description' => $desc,
-                    'player_foreign_id' => (string) ($item->player_foreign_id ?? ''),
-                    'tm_url' => $this->transfermarktUrl((string) ($item->player_foreign_id ?? '')),
+                    'player_uefa_id' => (string) ($item->player_uefa_id ?? ''),
+                    'player_fifa_id' => (string) ($item->player_fifa_id ?? ''),
                     'picture_url' => null,
                     'flag_url' => $nat !== '' ? Flag::imageUrl($nat) : null,
                     'flag_html' => $nat !== '' ? Flag::html($nat) : '',
@@ -463,26 +467,6 @@ class AdminPlayerService
         return $items;
     }
 
-    private function transfermarktUrl(string $foreignId): ?string
-    {
-        $foreignId = trim($foreignId);
-        if ($foreignId === '' || $foreignId === '0') {
-            return null;
-        }
-
-        // Stored as "{id}/{slug}", e.g. "232454/nadiem-amiri"
-        if (preg_match('#^(\d+)/([A-Za-z0-9][A-Za-z0-9\-]*)$#', $foreignId, $m)) {
-            return 'https://www.transfermarkt.at/'.$m[2].'/profil/spieler/'.$m[1];
-        }
-
-        // Also accept "{slug}/{id}"
-        if (preg_match('#^([A-Za-z0-9][A-Za-z0-9\-]*)/(\d+)$#', $foreignId, $m)) {
-            return 'https://www.transfermarkt.at/'.$m[1].'/profil/spieler/'.$m[2];
-        }
-
-        return null;
-    }
-
     /**
      * @param  array<string, mixed>  $input
      * @return array<string, mixed>
@@ -500,6 +484,7 @@ class AdminPlayerService
             'player_status_description' => trim((string) ($input['player_status_description'] ?? '')),
             'player_foreign_id' => trim((string) ($input['player_foreign_id'] ?? '')),
             'player_uefa_id' => trim((string) ($input['player_uefa_id'] ?? '')),
+            'player_fifa_id' => trim((string) ($input['player_fifa_id'] ?? '')),
         ];
     }
 

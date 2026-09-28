@@ -67,6 +67,18 @@
                 </div>
 
                 <div class="admin-field">
+                    <label for="league_fifa_competition_identifier">FIFA-Competition-Identifier</label>
+                    <input
+                        id="league_fifa_competition_identifier"
+                        type="text"
+                        name="league_fifa_competition_identifier"
+                        value="{{ $form['league_fifa_competition_identifier'] ?? '' }}"
+                        maxlength="255"
+                    >
+                    <p class="hint">Optional. z.&nbsp;B. <code>idCompetition=17&amp;idSeason=285023</code> (FIFA-API).</p>
+                </div>
+
+                <div class="admin-field">
                     <label for="league_visible">Sichtbar</label>
                     <select id="league_visible" name="league_visible">
                         <option value="1" @selected((int) $form['league_visible'] === 1)>ja</option>

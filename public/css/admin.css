@@ -1473,7 +1473,7 @@
     flex: 1 1 auto;
     min-width: 0;
     display: grid;
-    grid-template-columns: minmax(5.5rem, 0.9fr) minmax(5.5rem, 0.9fr) minmax(7rem, 1fr) 5.5rem minmax(6rem, 1fr) minmax(7rem, 1.1fr);
+    grid-template-columns: minmax(5rem, 0.85fr) minmax(5rem, 0.85fr) minmax(6.5rem, 1fr) 5.5rem minmax(5.5rem, 0.9fr) minmax(5.5rem, 0.85fr) minmax(5.5rem, 0.85fr);
     gap: 6px 8px;
     align-items: center;
 }

@@ -1,5 +1,7 @@
 ﻿@php
     $isUefaAuto = ($autoSourceLabel ?? '') === 'UEFA';
+    $isFifaAuto = ($autoSourceLabel ?? '') === 'FIFA';
+    $externalIdLabel = $isUefaAuto ? 'UEFA-ID' : ($isFifaAuto ? 'FIFA-ID' : 'TM-ID');
 @endphp
                         @if (count($autoPlayers) > 0)
                             <div class="admin-auto-squad-table-wrap">
@@ -10,7 +12,7 @@
                                             <th>Vorname *</th>
                                             <th>Nachname *</th>
                                             <th>Nat.</th>
-                                            <th>{{ $isUefaAuto ? 'UEFA-ID' : 'TM-ID' }}</th>
+                                            <th>{{ $externalIdLabel }}</th>
                                             <th>Pos. *</th>
                                             <th>Kader-Status</th>
                                             <th></th>
@@ -50,6 +52,7 @@
                                                     'player_nationality' => (string) ($player['player_nationality'] ?? ''),
                                                     'player_foreign_id' => (string) ($player['player_foreign_id'] ?? ''),
                                                     'player_uefa_id' => (string) ($player['player_uefa_id'] ?? ''),
+                                                    'player_fifa_id' => (string) ($player['player_fifa_id'] ?? ''),
                                                     'playerteam_player_position' => (string) ($player['playerteam_player_position'] ?? ''),
                                                     'playerteam_status' => (int) ($player['playerteam_status'] ?? 1),
                                                 ];
@@ -109,6 +112,8 @@
                                                 <td>
                                                     @if ($isUefaAuto)
                                                         <span class="admin-auto-squad-readonly">{{ ($player['player_uefa_id'] ?? '') !== '' ? $player['player_uefa_id'] : '—' }}</span>
+                                                    @elseif ($isFifaAuto)
+                                                        <span class="admin-auto-squad-readonly">{{ ($player['player_fifa_id'] ?? '') !== '' ? $player['player_fifa_id'] : '—' }}</span>
                                                     @elseif ($canEditIdentity)
                                                         <input
                                                             type="text"
@@ -198,6 +203,7 @@
                                                         'db_position' => (string) ($row['db_position'] ?? ''),
                                                         'db_foreign_id' => (string) ($row['db_foreign_id'] ?? ''),
                                                         'player_uefa_id' => (string) ($row['player_uefa_id'] ?? ''),
+                                                        'player_fifa_id' => (string) ($row['player_fifa_id'] ?? ''),
                                                         'playerteam_date_transfer' => (string) ($row['playerteam_date_transfer'] ?? $defaults['playerteam_date_transfer']),
                                                         'db_squads' => $dbSquads,
                                                         'playerteam_player_position' => (string) ($row['playerteam_player_position'] ?? ''),
@@ -226,6 +232,8 @@
                                                             <span>{{ $jsonPos !== '' ? $jsonPos : '—' }}</span>
                                                             @if ($isUefaAuto && ($row['player_uefa_id'] ?? '') !== '')
                                                                 <span class="muted">UEFA {{ $row['player_uefa_id'] }}</span>
+                                                            @elseif ($isFifaAuto && ($row['player_fifa_id'] ?? '') !== '')
+                                                                <span class="muted">FIFA {{ $row['player_fifa_id'] }}</span>
                                                             @else
                                                                 <span class="muted">—</span>
                                                             @endif

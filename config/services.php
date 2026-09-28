@@ -79,4 +79,12 @@ return [
         ],
     ],
 
+    'fifa' => [
+        'base_url' => env('FIFA_API_URL', 'https://api.fifa.com/api/v3'),
+        'timeout' => (int) env('FIFA_HTTP_TIMEOUT', 20),
+        'connect_timeout' => (int) env('FIFA_CONNECT_TIMEOUT', 5),
+        // PHP on Windows often has empty curl.cainfo; reuse the same Mozilla CA bundle as UEFA/Wikimedia.
+        'ca_bundle' => env('FIFA_CA_BUNDLE', storage_path('certs/cacert.pem')),
+    ],
+
 ];

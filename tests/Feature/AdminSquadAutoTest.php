@@ -550,6 +550,43 @@ class AdminSquadAutoTest extends TestCase
     }
 
     #[Test]
+    public function analyze_puts_turkish_dotless_i_variants_into_almost_matches(): void
+    {
+        [$teamId, $leagueId] = $this->seedTeamAndLeague('tur');
+
+        $yildiz = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Kenan',
+            'player_lname' => 'Yıldız',
+            'player_nationality' => 'TUR',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+
+        $file = $this->jsonFile([
+            [
+                'name' => 'Turkey',
+                'fifa_code' => 'TUR',
+                'players' => [
+                    ['number' => 10, 'pos' => 'FW', 'name' => 'Kenan Yildiz'],
+                ],
+            ],
+        ]);
+
+        $result = $this->service()->analyzeSquadsFile($teamId, $leagueId, $file);
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        $this->assertSame([], $result['auto']['players']);
+        $this->assertCount(1, $result['auto']['almost']);
+        $this->assertSame((int) $yildiz->player_id, $result['auto']['almost'][0]['db_player_id']);
+        $this->assertSame('Kenan Yildiz', $result['auto']['almost'][0]['json_name']);
+        $this->assertSame('Kenan', $result['auto']['almost'][0]['db_fname']);
+        $this->assertSame('Yıldız', $result['auto']['almost'][0]['db_lname']);
+        $this->assertSame('Schreibweise/Akzente', $result['auto']['almost'][0]['match_reason']);
+        $this->assertFalse((bool) $result['auto']['almost'][0]['use_existing']);
+    }
+
+    #[Test]
     public function analyze_puts_accent_and_switched_names_into_almost_matches(): void
     {
         [$teamId, $leagueId] = $this->seedTeamAndLeague('cze');
@@ -604,9 +641,136 @@ class AdminSquadAutoTest extends TestCase
         $result = $this->service()->analyzeSquadsFile($teamId, $leagueId, $file);
 
         $this->assertTrue($result['ok']);
-        $this->assertCount(1, $result['auto']['players']);
-        $this->assertSame('Matěj Kovář', $result['auto']['players'][0]['json_name']);
-        $this->assertTrue($result['auto']['players'][0]['on_squad']);
+        // Accent near-match stays in review even when already on the squad.
+        $this->assertSame([], $result['auto']['players']);
+        $this->assertCount(3, $result['auto']['almost']);
+
+        $byJson = [];
+        foreach ($result['auto']['almost'] as $row) {
+            $byJson[$row['json_name']] = $row;
+        }
+
+        $this->assertSame((int) $accent->player_id, $byJson['Matěj Kovář']['db_player_id']);
+        $this->assertSame('Schreibweise/Akzente', $byJson['Matěj Kovář']['match_reason']);
+        $this->assertSame((int) $switched->player_id, $byJson['Tomáš Holeš']['db_player_id']);
+        $this->assertSame('Vor-/Nachname vertauscht', $byJson['Tomáš Holeš']['match_reason']);
+        $this->assertSame((int) $single->player_id, $byJson['Pelé']['db_player_id']);
+        $this->assertStringContainsString('Einzelnamen', $byJson['Pelé']['match_reason']);
+        $this->assertStringContainsString('Namens-Ähnlichkeiten zur Prüfung', $result['message']);
+    }
+
+    #[Test]
+    public function analyze_puts_duplicate_token_and_typo_names_into_almost_matches(): void
+    {
+        [$teamId, $leagueId] = $this->seedTeamAndLeague('bel');
+
+        $deBruyne = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Kevin',
+            'player_lname' => 'De Bruyne',
+            'player_nationality' => 'BEL',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+        $mwene = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Phillipp',
+            'player_lname' => 'Mwene',
+            'player_nationality' => 'BEL',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+        $schlager = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Xaver',
+            'player_lname' => 'Schlager',
+            'player_nationality' => 'BEL',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+
+        $file = $this->jsonFile([
+            [
+                'name' => 'Belgium',
+                'fifa_code' => 'BEL',
+                'players' => [
+                    ['number' => 7, 'pos' => 'MF', 'name' => 'Kevin De De Bruyne'],
+                    ['number' => 2, 'pos' => 'DF', 'name' => 'Phillip Mwene'],
+                    ['number' => 10, 'pos' => 'MF', 'name' => 'Xaver Schlager Xaver'],
+                ],
+            ],
+        ]);
+
+        $result = $this->service()->analyzeSquadsFile($teamId, $leagueId, $file);
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        $this->assertSame([], $result['auto']['players']);
+        $this->assertCount(3, $result['auto']['almost']);
+
+        $byJson = [];
+        foreach ($result['auto']['almost'] as $row) {
+            $byJson[$row['json_name']] = $row;
+        }
+
+        $this->assertSame((int) $deBruyne->player_id, $byJson['Kevin De De Bruyne']['db_player_id']);
+        $this->assertSame('Token-Duplikat', $byJson['Kevin De De Bruyne']['match_reason']);
+
+        $this->assertSame((int) $mwene->player_id, $byJson['Phillip Mwene']['db_player_id']);
+        $this->assertSame('Tippfehler', $byJson['Phillip Mwene']['match_reason']);
+
+        $this->assertSame((int) $schlager->player_id, $byJson['Xaver Schlager Xaver']['db_player_id']);
+        $this->assertSame('Token-Duplikat', $byJson['Xaver Schlager Xaver']['match_reason']);
+    }
+
+    #[Test]
+    public function analyze_puts_on_squad_almost_matches_into_review_not_main_draft(): void
+    {
+        [$teamId, $leagueId] = $this->seedTeamAndLeague('aut');
+
+        $mwene = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Phillipp',
+            'player_lname' => 'Mwene',
+            'player_nationality' => 'AUT',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+        $schlager = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Xaver',
+            'player_lname' => 'Schlager',
+            'player_nationality' => 'AUT',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+
+        foreach ([$mwene, $schlager] as $player) {
+            Playerteam::query()->create([
+                'playerteam_player_id' => (int) $player->player_id,
+                'playerteam_team_id' => $teamId,
+                'playerteam_league_id' => $leagueId,
+                'playerteam_player_picture' => '',
+                'playerteam_status' => 1,
+                'playerteam_player_position' => 'd',
+                'playerteam_date_transfer' => '2008-01-01 00:00:00',
+            ]);
+        }
+
+        $file = $this->jsonFile([
+            [
+                'name' => 'Austria',
+                'fifa_code' => 'AUT',
+                'players' => [
+                    ['number' => 2, 'pos' => 'DF', 'name' => 'Phillip Mwene'],
+                    ['number' => 10, 'pos' => 'MF', 'name' => 'Xaver Schlager Xaver'],
+                ],
+            ],
+        ]);
+
+        $result = $this->service()->analyzeSquadsFile($teamId, $leagueId, $file);
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        $this->assertSame([], $result['auto']['players']);
         $this->assertCount(2, $result['auto']['almost']);
 
         $byJson = [];
@@ -614,11 +778,213 @@ class AdminSquadAutoTest extends TestCase
             $byJson[$row['json_name']] = $row;
         }
 
-        $this->assertSame((int) $switched->player_id, $byJson['Tomáš Holeš']['db_player_id']);
-        $this->assertSame('Vor-/Nachname vertauscht', $byJson['Tomáš Holeš']['match_reason']);
-        $this->assertSame((int) $single->player_id, $byJson['Pelé']['db_player_id']);
-        $this->assertStringContainsString('Einzelnamen', $byJson['Pelé']['match_reason']);
-        $this->assertStringContainsString('Namens-Ähnlichkeiten zur Prüfung', $result['message']);
+        $this->assertSame((int) $mwene->player_id, $byJson['Phillip Mwene']['db_player_id']);
+        $this->assertSame('Tippfehler', $byJson['Phillip Mwene']['match_reason']);
+        $this->assertSame((int) $schlager->player_id, $byJson['Xaver Schlager Xaver']['db_player_id']);
+        $this->assertSame('Token-Duplikat', $byJson['Xaver Schlager Xaver']['match_reason']);
+    }
+
+    #[Test]
+    public function analyze_puts_junior_suffix_and_particle_split_into_almost_matches(): void
+    {
+        [$teamId, $leagueId] = $this->seedTeamAndLeague('bel');
+
+        $moreira = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Diego',
+            'player_lname' => 'Moreira',
+            'player_nationality' => 'BEL',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+        $ketelaere = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Charles',
+            'player_lname' => 'De Ketelaere',
+            'player_nationality' => 'BEL',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+        $cuyper = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Maxim',
+            'player_lname' => 'De Cuyper',
+            'player_nationality' => 'BEL',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+
+        foreach ([$moreira, $ketelaere, $cuyper] as $player) {
+            Playerteam::query()->create([
+                'playerteam_player_id' => (int) $player->player_id,
+                'playerteam_team_id' => $teamId,
+                'playerteam_league_id' => $leagueId,
+                'playerteam_player_picture' => '',
+                'playerteam_status' => 1,
+                'playerteam_player_position' => 'm',
+                'playerteam_date_transfer' => '2008-01-01 00:00:00',
+            ]);
+        }
+
+        $file = $this->jsonFile([
+            [
+                'name' => 'Belgium',
+                'fifa_code' => 'BEL',
+                'players' => [
+                    // Jr suffix / last-token split → Diego Moreira + Jr
+                    ['number' => 11, 'pos' => 'FW', 'name' => 'Diego Moreira Jr'],
+                    // Particle split differs: "Charles De"+"Ketelaere" vs "Charles"+"De Ketelaere"
+                    ['number' => 7, 'pos' => 'MF', 'fname' => 'Charles De', 'lname' => 'Ketelaere', 'name' => 'Charles De Ketelaere'],
+                    ['number' => 5, 'pos' => 'DF', 'fname' => 'Maxim De', 'lname' => 'Cuyper', 'name' => 'Maxim De Cuyper'],
+                ],
+            ],
+        ]);
+
+        $result = $this->service()->analyzeSquadsFile($teamId, $leagueId, $file);
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        $this->assertSame([], $result['auto']['players']);
+        $this->assertCount(3, $result['auto']['almost']);
+
+        $byJson = [];
+        foreach ($result['auto']['almost'] as $row) {
+            $byJson[$row['json_name']] = $row;
+        }
+
+        $this->assertSame((int) $moreira->player_id, $byJson['Diego Moreira Jr']['db_player_id']);
+        $this->assertSame('Token-Duplikat', $byJson['Diego Moreira Jr']['match_reason']);
+        $this->assertSame((int) $ketelaere->player_id, $byJson['Charles De Ketelaere']['db_player_id']);
+        $this->assertSame('Token-Duplikat', $byJson['Charles De Ketelaere']['match_reason']);
+        $this->assertSame((int) $cuyper->player_id, $byJson['Maxim De Cuyper']['db_player_id']);
+        $this->assertSame('Token-Duplikat', $byJson['Maxim De Cuyper']['match_reason']);
+    }
+
+    #[Test]
+    public function analyze_puts_fifa_abbreviated_name_suffix_into_almost_matches(): void
+    {
+        [$teamId, $leagueId] = $this->seedTeamAndLeague('eng');
+
+        $henderson = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Dean',
+            'player_lname' => 'Henderson',
+            'player_nationality' => 'ENG',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+
+        Playerteam::query()->create([
+            'playerteam_player_id' => (int) $henderson->player_id,
+            'playerteam_team_id' => $teamId,
+            'playerteam_league_id' => $leagueId,
+            'playerteam_player_picture' => '',
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 'g',
+            'playerteam_date_transfer' => '2008-01-01 00:00:00',
+        ]);
+
+        $file = $this->jsonFile([
+            [
+                'name' => 'England',
+                'fifa_code' => 'ENG',
+                'players' => [
+                    ['number' => 1, 'pos' => 'GK', 'name' => 'Dean Henderson D. Henderson'],
+                ],
+            ],
+        ]);
+
+        $result = $this->service()->analyzeSquadsFile($teamId, $leagueId, $file);
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        $this->assertSame([], $result['auto']['players']);
+        $this->assertCount(1, $result['auto']['almost']);
+        $this->assertSame((int) $henderson->player_id, $result['auto']['almost'][0]['db_player_id']);
+        $this->assertSame('Dean Henderson D. Henderson', $result['auto']['almost'][0]['json_name']);
+        $this->assertSame('Token-Duplikat', $result['auto']['almost'][0]['match_reason']);
+    }
+
+    #[Test]
+    public function analyze_puts_fifa_particle_name_garbage_into_almost_matches(): void
+    {
+        [$teamId, $leagueId] = $this->seedTeamAndLeague('ned');
+
+        $deJong = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Fenkie',
+            'player_lname' => 'de Jong',
+            'player_nationality' => 'NED',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+        $vanDeVen = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Micky',
+            'player_lname' => 'van de Ven',
+            'player_nationality' => 'NED',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+        $vanHecke = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Jan Paul',
+            'player_lname' => 'van Hecke',
+            'player_nationality' => 'NED',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+        $vanDijk = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'Virgil',
+            'player_lname' => 'van Dijk',
+            'player_nationality' => 'NED',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+
+        foreach ([$deJong, $vanDeVen, $vanHecke, $vanDijk] as $player) {
+            Playerteam::query()->create([
+                'playerteam_player_id' => (int) $player->player_id,
+                'playerteam_team_id' => $teamId,
+                'playerteam_league_id' => $leagueId,
+                'playerteam_player_picture' => '',
+                'playerteam_status' => 1,
+                'playerteam_player_position' => 'd',
+                'playerteam_date_transfer' => '2008-01-01 00:00:00',
+            ]);
+        }
+
+        $file = $this->jsonFile([
+            [
+                'name' => 'Netherlands',
+                'fifa_code' => 'NED',
+                'players' => [
+                    ['number' => 21, 'pos' => 'MF', 'name' => 'Frenkie De F. De Jong'],
+                    ['number' => 4, 'pos' => 'DF', 'name' => 'Micky Van De Van De Ven'],
+                    ['number' => 2, 'pos' => 'DF', 'name' => 'Jan Paul Van Jan Paul Van Hecke'],
+                    ['number' => 5, 'pos' => 'DF', 'name' => 'Virgil Van Virgil'],
+                ],
+            ],
+        ]);
+
+        $result = $this->service()->analyzeSquadsFile($teamId, $leagueId, $file);
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        $this->assertSame([], $result['auto']['players']);
+        $this->assertCount(4, $result['auto']['almost']);
+
+        $byJson = [];
+        foreach ($result['auto']['almost'] as $row) {
+            $byJson[$row['json_name']] = $row;
+        }
+
+        $this->assertSame((int) $deJong->player_id, $byJson['Frenkie De F. De Jong']['db_player_id']);
+        $this->assertSame('Token-Duplikat', $byJson['Frenkie De F. De Jong']['match_reason']);
+        $this->assertSame((int) $vanDeVen->player_id, $byJson['Micky Van De Van De Ven']['db_player_id']);
+        $this->assertSame('Token-Duplikat', $byJson['Micky Van De Van De Ven']['match_reason']);
+        $this->assertSame((int) $vanHecke->player_id, $byJson['Jan Paul Van Jan Paul Van Hecke']['db_player_id']);
+        $this->assertSame('Token-Duplikat', $byJson['Jan Paul Van Jan Paul Van Hecke']['match_reason']);
+        $this->assertSame((int) $vanDijk->player_id, $byJson['Virgil Van Virgil']['db_player_id']);
+        $this->assertSame('Token-Duplikat', $byJson['Virgil Van Virgil']['match_reason']);
     }
 
     #[Test]
@@ -874,6 +1240,7 @@ class AdminSquadAutoTest extends TestCase
             $table->increments('player_id');
             $table->string('player_foreign_id')->default('');
             $table->string('player_uefa_id')->default('');
+            $table->string('player_fifa_id')->default('');
             $table->string('player_fname')->default('');
             $table->string('player_lname')->default('');
             $table->string('player_nationality')->default('');
