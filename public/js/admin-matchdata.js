@@ -8,6 +8,7 @@
     const resultTpl = root.dataset.resultUrlTemplate || '';
     const savePlayerTpl = root.dataset.savePlayerUrlTemplate || '';
     const scrapeTpl = root.dataset.scrapeUrlTemplate || '';
+    const scrapeUefaTpl = root.dataset.scrapeUefaUrlTemplate || '';
     const wfProxyUrl = root.dataset.wfProxyUrl || '';
     const csrf = root.dataset.csrf || '';
     const imagesBase = root.dataset.imagesBase || '/images/ffb/';
@@ -36,6 +37,7 @@
     const matchMinutesSelect = document.getElementById('admin-mp-match-minutes');
     const matchUrlInput = document.getElementById('admin-mp-url');
     const scrapeBtn = document.getElementById('admin-mp-scrape');
+    const scrapeUefaBtn = document.getElementById('admin-mp-scrape-uefa');
     const scrapeHint = document.getElementById('admin-mp-scrape-hint');
     const cfFrame = document.getElementById('admin-mp-cf-frame');
     const saveBtn = document.getElementById('admin-mp-save');
@@ -94,16 +96,29 @@
     }
 
     function fillScoreSelect(selectEl, selected, max, min) {
+        if (!selectEl) return;
         let html = '';
+        const selectedNum = Number(selected);
+        const hasSelected = Number.isFinite(selectedNum);
         for (let i = min; i <= max; i++) {
-            const sel = Number(selected) === i ? ' selected' : '';
-            html += `<option value="${i}"${sel}>${i}</option>`;
+            const sel = hasSelected && selectedNum === i ? ' selected' : '';
+            const label = i < 0 ? '—' : String(i);
+            html += `<option value="${i}"${sel}>${label}</option>`;
         }
         selectEl.innerHTML = html;
+        if (hasSelected && [...selectEl.options].some((o) => Number(o.value) === selectedNum)) {
+            selectEl.value = String(selectedNum);
+            return;
+        }
         if (![...selectEl.options].some((o) => o.selected) && selectEl.options.length) {
             const fallback = [...selectEl.options].find((o) => Number(o.value) === min) || selectEl.options[0];
             fallback.selected = true;
         }
+    }
+
+    function applyResultScores(homescore, guestscore) {
+        fillScoreSelect(homeScore, homescore, 49, -1);
+        fillScoreSelect(guestScore, guestscore, 49, -1);
     }
 
     function snapshotFromPlayer(p) {
@@ -221,6 +236,7 @@
         guestPlayers.innerHTML = '';
         if (matchUrlInput) matchUrlInput.value = '';
         if (scrapeBtn) scrapeBtn.disabled = true;
+        if (scrapeUefaBtn) scrapeUefaBtn.disabled = true;
         if (scrapeHint) {
             scrapeHint.hidden = true;
             scrapeHint.textContent = '';
@@ -421,13 +437,26 @@
         }
         if (data.result) {
             const r = data.result;
-            if (homeScore.querySelector(`option[value="${r.homescore}"]`)) homeScore.value = String(r.homescore);
-            if (guestScore.querySelector(`option[value="${r.guestscore}"]`)) guestScore.value = String(r.guestscore);
+            applyResultScores(r.homescore, r.guestscore);
             setPenaltyUi(
                 hasStoredPenalty(r.homescore_penalty, r.guestscore_penalty),
                 r.homescore_penalty,
                 r.guestscore_penalty
             );
+            // Keep the match dropdown label in sync before save.
+            if (currentMatchId && matchesCache.length) {
+                const cached = matchesCache.find((m) => Number(m.match_id) === Number(currentMatchId));
+                if (cached) {
+                    cached.match_homescore = Number(r.homescore);
+                    cached.match_guestscore = Number(r.guestscore);
+                    const selected = matchSelect?.selectedOptions?.[0];
+                    if (selected) {
+                        const hs = Number(cached.match_homescore) < 0 ? '—' : cached.match_homescore;
+                        const gs = Number(cached.match_guestscore) < 0 ? '—' : cached.match_guestscore;
+                        selected.textContent = `${cached.match_hometeam_name} ${hs}:${gs} ${cached.match_guestteam_name}`;
+                    }
+                }
+            }
         }
 
         const mapped = data.players || {};
@@ -633,7 +662,56 @@
             }
         } finally {
             scrapeInFlight = false;
-            scrapeBtn.disabled = !currentMatchId;
+            if (scrapeBtn) scrapeBtn.disabled = !currentMatchId;
+        }
+    }
+
+    async function scrapeUefa() {
+        if (!currentMatchId) {
+            alert('Bitte zuerst ein Spiel wählen.');
+            return;
+        }
+        if (!scrapeUefaTpl) {
+            alert('UEFA-Laden ist nicht konfiguriert.');
+            return;
+        }
+        if (scrapeInFlight) return;
+        scrapeInFlight = true;
+        if (scrapeUefaBtn) scrapeUefaBtn.disabled = true;
+        if (scrapeHint) {
+            scrapeHint.hidden = false;
+            scrapeHint.textContent = 'UEFA-Spieldaten werden geladen…';
+        }
+        try {
+            const headers = {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrf,
+                'X-XSRF-TOKEN': xsrfToken(),
+            };
+            const response = await fetch(scrapeUefaTpl.replace('__ID__', String(currentMatchId)), {
+                method: 'POST',
+                headers,
+                credentials: 'same-origin',
+                body: JSON.stringify({}),
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || data.ok === false) {
+                const msg = (data.errors && data.errors[0]) || data.message || 'Laden fehlgeschlagen.';
+                throw new Error(msg);
+            }
+            applyScrapePayload(data);
+        } catch (err) {
+            if (scrapeHint) {
+                scrapeHint.hidden = false;
+                scrapeHint.textContent = err.message || 'Laden fehlgeschlagen.';
+            } else {
+                alert(err.message || 'Laden fehlgeschlagen.');
+            }
+        } finally {
+            scrapeInFlight = false;
+            if (scrapeUefaBtn) scrapeUefaBtn.disabled = !currentMatchId;
         }
     }
 
@@ -713,8 +791,8 @@
         if (guestNamePs) guestNamePs.textContent = guestLabel;
         homeHeading.textContent = homeLabel;
         guestHeading.textContent = guestLabel;
-        fillScoreSelect(homeScore, match.match_homescore, 49, 0);
-        fillScoreSelect(guestScore, match.match_guestscore, 49, 0);
+        fillScoreSelect(homeScore, match.match_homescore, 49, -1);
+        fillScoreSelect(guestScore, match.match_guestscore, 49, -1);
         setPenaltyUi(
             hasStoredPenalty(match.match_homescore_penalty, match.match_guestscore_penalty),
             match.match_homescore_penalty,
@@ -723,6 +801,7 @@
         setMatchMinutes(match.match_minutes || 90);
         if (matchUrlInput) matchUrlInput.value = match.match_url || '';
         if (scrapeBtn) scrapeBtn.disabled = false;
+        if (scrapeUefaBtn) scrapeUefaBtn.disabled = false;
         if (scrapeHint) {
             scrapeHint.hidden = true;
             scrapeHint.textContent = '';
@@ -752,8 +831,8 @@
         matchesCache = matches || [];
         matchSelect.innerHTML = '<option value="">— Spiel wählen —</option>';
         matchesCache.forEach((m) => {
-            const hs = Number(m.match_homescore) < 0 ? '-' : m.match_homescore;
-            const gs = Number(m.match_guestscore) < 0 ? '-' : m.match_guestscore;
+            const hs = Number(m.match_homescore) < 0 ? '—' : m.match_homescore;
+            const gs = Number(m.match_guestscore) < 0 ? '—' : m.match_guestscore;
             const opt = document.createElement('option');
             opt.value = String(m.match_id);
             opt.textContent = `${m.match_hometeam_name} ${hs}:${gs} ${m.match_guestteam_name}`;
@@ -908,6 +987,7 @@
         matchUrlInput.addEventListener('change', refreshSavebar);
     }
     if (scrapeBtn) scrapeBtn.addEventListener('click', () => scrapeExternal());
+    if (scrapeUefaBtn) scrapeUefaBtn.addEventListener('click', () => scrapeUefa());
 
     window.addEventListener('message', (event) => {
         if (!waitingForFrame || !event.data || event.data.type !== 'ffb-wf-proxy') return;
