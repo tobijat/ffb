@@ -61,6 +61,7 @@ class FifaCompetitionApiMatchesTest extends TestCase
         $this->assertSame('ECU', $matches[0]['away_abbr']);
         $this->assertSame('2022-11-20', $matches[0]['date']);
         $this->assertSame('Katar', $matches[0]['home_name_de']);
+        $this->assertSame('', $matches[0]['stage_name']);
     }
 
     #[Test]

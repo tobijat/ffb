@@ -26,12 +26,14 @@ class AdminMatchController extends Controller
         $tab = match ($request->query('tab')) {
             'auto' => 'auto',
             'auto-uefa' => 'auto-uefa',
+            'auto-fifa' => 'auto-fifa',
             default => 'manual',
         };
 
         // One-shot drafts: keep only for this request (reload / league switch must not reuse them).
         $auto = session()->pull('admin_matches_auto');
         $autoUefa = session()->pull('admin_matches_auto_uefa');
+        $autoFifa = session()->pull('admin_matches_auto_fifa');
 
         return $this->render(
             $userId,
@@ -42,6 +44,7 @@ class AdminMatchController extends Controller
             $tab,
             is_array($auto) ? $auto : null,
             is_array($autoUefa) ? $autoUefa : null,
+            is_array($autoFifa) ? $autoFifa : null,
         );
     }
 
@@ -232,11 +235,65 @@ class AdminMatchController extends Controller
             ->with('admin_message', $result['message'] ?? null);
     }
 
+    public function analyzeAutoFifa(Request $request): RedirectResponse
+    {
+        $leagueId = (int) $request->input('league_id', 0);
+        $result = $this->matches->analyzeFifaMatches($leagueId);
+
+        $redirectQuery = ['tab' => 'auto-fifa'];
+        if ($leagueId > 0) {
+            $redirectQuery['league_id'] = $leagueId;
+        }
+
+        if (! ($result['ok'] ?? false)) {
+            return redirect()
+                ->route('admin.matches', $redirectQuery)
+                ->with('admin_errors', $result['errors'] ?? ['Analyse fehlgeschlagen.']);
+        }
+
+        return redirect()
+            ->route('admin.matches', $redirectQuery)
+            ->with('admin_matches_auto_fifa', $result['auto_fifa'])
+            ->with('admin_message', $result['message'] ?? null);
+    }
+
+    public function storeAutoFifa(Request $request): RedirectResponse
+    {
+        $leagueId = (int) $request->input('league_id', 0);
+        $rows = RequestJsonArray::pull($request, 'rows_json', 'rows');
+
+        $sourceName = (string) ($request->input('source_name') ?? '');
+        $result = $this->matches->saveFifaMatches($rows, $leagueId, $sourceName);
+
+        $redirectQuery = ['tab' => 'auto-fifa'];
+        $resultLeagueId = (int) ($result['league_id'] ?? $leagueId);
+        if ($resultLeagueId > 0) {
+            $redirectQuery['league_id'] = $resultLeagueId;
+        }
+
+        if (! ($result['ok'] ?? false)) {
+            $redirect = redirect()
+                ->route('admin.matches', $redirectQuery)
+                ->with('admin_errors', $result['errors'] ?? ['Speichern fehlgeschlagen.']);
+
+            if (isset($result['auto_fifa']) && is_array($result['auto_fifa'])) {
+                $redirect->with('admin_matches_auto_fifa', $result['auto_fifa']);
+            }
+
+            return $redirect;
+        }
+
+        return redirect()
+            ->route('admin.matches', $redirectQuery)
+            ->with('admin_message', $result['message'] ?? null);
+    }
+
     /**
      * @param  array<string, mixed>|null  $form
      * @param  list<string>  $errors
      * @param  array<string, mixed>|null  $auto
      * @param  array<string, mixed>|null  $autoUefa
+     * @param  array<string, mixed>|null  $autoFifa
      */
     private function render(
         int $userId,
@@ -247,9 +304,10 @@ class AdminMatchController extends Controller
         string $tab = 'manual',
         ?array $auto = null,
         ?array $autoUefa = null,
+        ?array $autoFifa = null,
     ): View {
         return view('admin.matches', [
-            'data' => $this->matches->pagePayload($userId, $leagueId, $form, $mode, $tab, $auto, $autoUefa),
+            'data' => $this->matches->pagePayload($userId, $leagueId, $form, $mode, $tab, $auto, $autoUefa, $autoFifa),
             'errors' => $errors,
             'answer' => session('admin_message'),
             'legacyBase' => '/',
