@@ -795,7 +795,7 @@ class AdminMatchdataService
                 'cards' => $card,
                 'penaltieslost' => (int) ($sp['player_penalties_lost'] ?? 0),
                 'penaltiessaved' => (int) ($sp['player_penalties_saved'] ?? 0),
-                'penaltyshootout_save' => 0,
+                'penaltyshootout_save' => (int) ($sp['player_penalties_shootout_save'] ?? 0),
                 'penaltyshootout_lost' => (int) ($sp['player_penalties_fail'] ?? 0),
                 'penaltyshootout_hit' => (int) ($sp['player_penalties_hit'] ?? 0),
             ];

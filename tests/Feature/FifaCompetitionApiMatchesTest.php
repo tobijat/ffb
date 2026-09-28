@@ -62,4 +62,44 @@ class FifaCompetitionApiMatchesTest extends TestCase
         $this->assertSame('2022-11-20', $matches[0]['date']);
         $this->assertSame('Katar', $matches[0]['home_name_de']);
     }
+
+    #[Test]
+    public function matches_uses_europe_berlin_calendar_day_for_late_utc_kickoffs(): void
+    {
+        config(['services.fifa.base_url' => 'https://api.fifa.test/api/v3']);
+        Http::preventStrayRequests();
+        Http::fake([
+            'api.fifa.test/api/v3/calendar/matches*' => Http::response([
+                'Results' => [
+                    [
+                        'IdMatch' => '400021456',
+                        'IdStage' => '285063',
+                        // 22:00 UTC = 00:00 next day in Europe/Berlin (CEST).
+                        'Date' => '2026-06-13T22:00:00Z',
+                        'Home' => [
+                            'IdTeam' => '43924',
+                            'Abbreviation' => 'BRA',
+                            'IdCountry' => 'BRA',
+                            'TeamName' => [['Locale' => 'de-DE', 'Description' => 'Brasilien']],
+                        ],
+                        'Away' => [
+                            'IdTeam' => '43872',
+                            'Abbreviation' => 'MAR',
+                            'IdCountry' => 'MAR',
+                            'TeamName' => [['Locale' => 'de-DE', 'Description' => 'Marokko']],
+                        ],
+                    ],
+                ],
+            ]),
+        ]);
+
+        $api = FifaCompetitionApi::fromIdentifier(
+            'idCompetition=17&idSeason=285023',
+            new FifaCompApiClient('https://api.fifa.test/api/v3'),
+        );
+        $matches = $api->matches();
+
+        $this->assertCount(1, $matches);
+        $this->assertSame('2026-06-14', $matches[0]['date']);
+    }
 }
