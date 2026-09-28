@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\CloudflareChallengeException;
 use App\Models\Goal;
+use App\Models\League;
 use App\Models\LeagueOptions;
 use App\Models\MatchGame;
 use App\Models\Matchround;
@@ -14,6 +15,8 @@ use App\Models\Psgoal;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Throwable;
 
 class AdminMatchdataService
@@ -24,6 +27,8 @@ class AdminMatchdataService
         private readonly AdminCenterService $adminCenter,
         private readonly WeltfussballMatchScraper $weltfussball,
         private readonly WeltfussballProxyService $wfProxy,
+        private readonly UefaCompApiClient $uefaClient,
+        private readonly UefaMatchStatsMapper $uefaMapper,
     ) {}
 
     /**
@@ -214,6 +219,7 @@ class AdminMatchdataService
                 'player_id' => (int) ($player?->player_id ?? 0),
                 'player_fname' => (string) ($player?->player_fname ?? ''),
                 'player_lname' => (string) ($player?->player_lname ?? ''),
+                'player_uefa_id' => trim((string) ($player?->player_uefa_id ?? '')),
                 'playerteam_id' => $playerteamId,
                 'playerteam_player_position' => (string) ($playerteam->playerteam_player_position ?: ''),
                 'player_name_fid_wf' => $wfName !== '' && $wfName !== '0'
@@ -372,6 +378,147 @@ class AdminMatchdataService
     }
 
     /**
+     * Load match + player stats from the UEFA match API for the selected FFB match.
+     *
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     match_minutes?: int,
+     *     result?: array{homescore: int, guestscore: int, homescore_penalty: int, guestscore_penalty: int},
+     *     players?: array<string, array<string, int|string>>,
+     *     unmatched?: list<string>,
+     *     matched?: int,
+     *     uefa_match_id?: string
+     * }
+     */
+    public function scrapeUefaMatchData(int $userId, int $matchId): array
+    {
+        if ($matchId <= 0) {
+            return ['ok' => false, 'errors' => ['Kein Spiel gewählt.']];
+        }
+
+        $match = MatchGame::query()->with(['matchround', 'homeTeam', 'guestTeam'])->find($matchId);
+        if (! $match) {
+            return ['ok' => false, 'errors' => ['Spiel nicht gefunden.']];
+        }
+
+        $resolved = $this->resolveUefaMatchId($match);
+        if (! ($resolved['ok'] ?? false)) {
+            return [
+                'ok' => false,
+                'errors' => $resolved['errors'] ?? ['UEFA-Spiel konnte nicht zugeordnet werden.'],
+            ];
+        }
+        $uefaMatchId = (string) $resolved['uefa_match_id'];
+
+        try {
+            $uefaMatch = $this->uefaClient->match($uefaMatchId);
+            $lineups = $this->uefaClient->matchLineups($uefaMatchId);
+            $events = $this->uefaClient->matchEvents($uefaMatchId);
+            $parsed = $this->uefaMapper->map($uefaMatch, $lineups, $events);
+        } catch (Throwable $e) {
+            Log::warning('UEFA matchdata scrape failed', [
+                'match_id' => $matchId,
+                'uefa_match_id' => $uefaMatchId,
+                'message' => $e->getMessage(),
+            ]);
+
+            return ['ok' => false, 'errors' => ['UEFA-Spieldaten konnten nicht geladen werden: '.$e->getMessage()]];
+        }
+
+        $pm = $this->pointsMode($userId);
+        $homeDb = $this->playersForTeam($userId, (int) $match->match_hometeam_id, $matchId);
+        $guestDb = $this->playersForTeam($userId, (int) $match->match_guestteam_id, $matchId);
+
+        [$homeMapped, $homeUnmatched] = $this->mapScrapedSide($parsed['home'], $homeDb, $pm);
+        [$guestMapped, $guestUnmatched] = $this->mapScrapedSide($parsed['guest'], $guestDb, $pm);
+
+        // Own goals count for the opponent — result already comes from UEFA score,
+        // so prefer official score when present.
+        $players = $homeMapped + $guestMapped;
+        $unmatched = array_values(array_unique(array_merge($homeUnmatched, $guestUnmatched)));
+
+        return [
+            'ok' => true,
+            'message' => count($players) === 1
+                ? '1 Spieler zugeordnet.'
+                : count($players).' Spieler zugeordnet.',
+            'match_minutes' => (int) $parsed['match_minutes'],
+            'result' => $parsed['result'],
+            'players' => $players,
+            'unmatched' => $unmatched,
+            'matched' => count($players),
+            'uefa_match_id' => $uefaMatchId,
+        ];
+    }
+
+    /**
+     * @return array{ok: bool, uefa_match_id?: string, errors?: list<string>}
+     */
+    private function resolveUefaMatchId(MatchGame $match): array
+    {
+        $leagueId = (int) ($match->matchround?->matchround_league_id ?? 0);
+        if ($leagueId <= 0) {
+            return ['ok' => false, 'errors' => ['Spielrunde/Liga für dieses Spiel fehlt.']];
+        }
+
+        $league = League::query()->find($leagueId);
+        $identifier = trim((string) ($league?->league_uefa_competition_identifier ?? ''));
+        if ($identifier === '') {
+            return [
+                'ok' => false,
+                'errors' => ['Für diese Liga ist kein UEFA-Competition-Identifier hinterlegt (Admin → Ligen).'],
+            ];
+        }
+
+        $homeUefaId = trim((string) ($match->homeTeam?->team_uefa_id ?? ''));
+        $awayUefaId = trim((string) ($match->guestTeam?->team_uefa_id ?? ''));
+        if ($homeUefaId === '' || $awayUefaId === '') {
+            return [
+                'ok' => false,
+                'errors' => ['Heim- und/oder Gastteam haben keine team_uefa_id. Bitte unter Teams (UEFA) zuordnen.'],
+            ];
+        }
+
+        $dateTs = strtotime((string) $match->match_date);
+        $date = $dateTs ? date('Y-m-d', $dateTs) : '';
+        if ($date === '') {
+            return ['ok' => false, 'errors' => ['Spieldatum fehlt.']];
+        }
+
+        try {
+            $api = UefaCompetitionApi::fromIdentifier($identifier, $this->uefaClient);
+            $uefaMatches = $api->matches();
+        } catch (InvalidArgumentException $e) {
+            return ['ok' => false, 'errors' => [$e->getMessage()]];
+        } catch (Throwable $e) {
+            return ['ok' => false, 'errors' => ['UEFA-Spiele konnten nicht geladen werden: '.$e->getMessage()]];
+        }
+
+        foreach ($uefaMatches as $uefa) {
+            if (
+                ($uefa['home_uefa_id'] ?? '') === $homeUefaId
+                && ($uefa['away_uefa_id'] ?? '') === $awayUefaId
+                && ($uefa['date'] ?? '') === $date
+            ) {
+                return ['ok' => true, 'uefa_match_id' => (string) $uefa['uefa_match_id']];
+            }
+        }
+
+        return [
+            'ok' => false,
+            'errors' => [
+                'Kein UEFA-Spiel für '
+                .($match->homeTeam?->team_name ?? 'Heim')
+                .' – '
+                .($match->guestTeam?->team_name ?? 'Gast')
+                .' am '.$date.' gefunden.',
+            ],
+        ];
+    }
+
+    /**
      * @param  list<array<string, mixed>>  $scraped
      * @param  list<array<string, mixed>>  $dbPlayers
      * @return array{0: array<string, array<string, int|string>>, 1: list<string>, 2: int, 3: int}
@@ -386,16 +533,17 @@ class AdminMatchdataService
 
         foreach ($scraped as $sp) {
             $name = trim((string) ($sp['player_name'] ?? ''));
-            if ($name === '') {
+            $uefaId = trim((string) ($sp['player_uefa_id'] ?? ''));
+            if ($name === '' && $uefaId === '') {
                 continue;
             }
 
             $goals += (int) ($sp['player_num_goals'] ?? 0);
             $psHits += (int) ($sp['player_penalties_hit'] ?? 0);
 
-            $ptId = $this->findMatchingPlayerteamId($name, $dbPlayers, $usedPt);
+            $ptId = $this->findMatchingPlayerteamId($name, $dbPlayers, $usedPt, $uefaId);
             if ($ptId === null) {
-                $unmatched[] = $name;
+                $unmatched[] = $name !== '' ? $name : ('UEFA#'.$uefaId);
 
                 continue;
             }
@@ -424,8 +572,8 @@ class AdminMatchdataService
                 'owngoals' => $owngoalValue,
                 'assists' => (int) ($sp['player_num_assists'] ?? 0),
                 'cards' => $card,
-                'penaltieslost' => 0,
-                'penaltiessaved' => 0,
+                'penaltieslost' => (int) ($sp['player_penalties_lost'] ?? 0),
+                'penaltiessaved' => (int) ($sp['player_penalties_saved'] ?? 0),
                 'penaltyshootout_save' => 0,
                 'penaltyshootout_lost' => (int) ($sp['player_penalties_fail'] ?? 0),
                 'penaltyshootout_hit' => (int) ($sp['player_penalties_hit'] ?? 0),
@@ -439,9 +587,29 @@ class AdminMatchdataService
      * @param  list<array<string, mixed>>  $dbPlayers
      * @param  array<int, true>  $usedPt
      */
-    private function findMatchingPlayerteamId(string $scrapedName, array $dbPlayers, array $usedPt): ?int
-    {
+    private function findMatchingPlayerteamId(
+        string $scrapedName,
+        array $dbPlayers,
+        array $usedPt,
+        string $uefaId = '',
+    ): ?int {
+        $uefaId = trim($uefaId);
+        if ($uefaId !== '') {
+            foreach ($dbPlayers as $db) {
+                $ptId = (int) ($db['playerteam_id'] ?? 0);
+                if ($ptId <= 0 || isset($usedPt[$ptId])) {
+                    continue;
+                }
+                if (trim((string) ($db['player_uefa_id'] ?? '')) === $uefaId) {
+                    return $ptId;
+                }
+            }
+        }
+
         $needle = mb_strtolower(trim($scrapedName));
+        if ($needle === '') {
+            return null;
+        }
         foreach ($dbPlayers as $db) {
             $ptId = (int) ($db['playerteam_id'] ?? 0);
             if ($ptId <= 0 || isset($usedPt[$ptId])) {

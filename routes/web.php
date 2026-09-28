@@ -133,6 +133,7 @@ Route::middleware('ffb.admin')->group(function () {
     Route::post('/admin/matchdata/matches/{match}/result', [AdminMatchdataController::class, 'setResult'])->name('admin.matchdata.setResult');
     Route::post('/admin/matchdata/matches/{match}/players/{playerteam}', [AdminMatchdataController::class, 'savePlayer'])->name('admin.matchdata.savePlayer');
     Route::post('/admin/matchdata/matches/{match}/scrape', [AdminMatchdataController::class, 'scrape'])->name('admin.matchdata.scrape');
+    Route::post('/admin/matchdata/matches/{match}/scrape-uefa', [AdminMatchdataController::class, 'scrapeUefa'])->name('admin.matchdata.scrapeUefa');
     Route::match(['get', 'post'], '/admin/matchdata/wf-proxy', [AdminMatchdataController::class, 'wfProxy'])->name('admin.matchdata.wfProxy');
 
     Route::get('/admin/score', [AdminScoreController::class, 'show'])->name('admin.score');

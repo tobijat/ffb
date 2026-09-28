@@ -3,7 +3,7 @@
 @section('title', 'Spieldaten')
 
 @push('scripts')
-    <script src="{{ url('js/admin-matchdata.js') }}?v=15" defer></script>
+    <script src="{{ url('js/admin-matchdata.js') }}?v=17" defer></script>
 @endpush
 
 @section('content')
@@ -11,17 +11,20 @@
         $leagues = $data['leagues'] ?? [];
         $selectedLeagueId = (int) ($data['selected_league_id'] ?? 0);
         $pointsmode = $data['pointsmode'] ?? 'new';
+        $tab = ($tab ?? 'wf') === 'uefa' ? 'uefa' : 'wf';
     @endphp
 
     <section
         class="panel admin-main admin-mp"
         aria-labelledby="admin-matchdata-title"
+        data-tab="{{ $tab }}"
         data-rounds-url="{{ route('admin.matchdata.rounds') }}"
         data-matches-url-template="{{ url('/admin/matchdata/rounds') }}/__ID__/matches"
         data-players-url-template="{{ url('/admin/matchdata/matches') }}/__MATCH__/teams/__TEAM__/players"
         data-result-url-template="{{ url('/admin/matchdata/matches') }}/__ID__/result"
         data-save-player-url-template="{{ url('/admin/matchdata/matches') }}/__MATCH__/players/__PT__"
         data-scrape-url-template="{{ url('/admin/matchdata/matches') }}/__ID__/scrape"
+        data-scrape-uefa-url-template="{{ url('/admin/matchdata/matches') }}/__ID__/scrape-uefa"
         data-wf-proxy-url="{{ url('/admin/matchdata/wf-proxy') }}"
         data-csrf="{{ csrf_token() }}"
         data-images-base="{{ $legacyBase }}images/ffb/"
@@ -48,6 +51,20 @@
             <p class="hint">Bitte zuerst unter <a href="{{ url('/admin') }}">Ligen</a> eine Liga auswählen.</p>
         @else
             <p class="muted">Liga: {{ $selectedLeagueTitle }}</p>
+            <nav class="admin-squad-tabs ffb-tabs" aria-label="Spieldaten-Quellen">
+                <a
+                    class="admin-squad-tab ffb-tab{{ $tab === 'wf' ? ' is-active' : '' }}"
+                    href="{{ route('admin.matchdata') }}"
+                >
+                    Spieldaten
+                </a>
+                <a
+                    class="admin-squad-tab ffb-tab{{ $tab === 'uefa' ? ' is-active' : '' }}"
+                    href="{{ route('admin.matchdata', ['tab' => 'uefa']) }}"
+                >
+                    Spieldaten (UEFA)
+                </a>
+            </nav>
         @endif
 
         <div class="admin-mp-select-row">
@@ -110,26 +127,38 @@
                     </div>
                 </div>
             </div>
-            <div class="admin-mp-result-row admin-mp-result-url">
-                <label class="admin-mp-result-label" for="admin-mp-url">Externe Seite</label>
-                <div class="admin-mp-url-row">
-                    <input
-                        type="url"
-                        id="admin-mp-url"
-                        class="admin-mp-url-input"
-                        placeholder="https://www.weltfussball.at/spielbericht/…"
-                        autocomplete="off"
-                    >
-                    <button type="button" id="admin-mp-scrape" class="admin-submit" disabled>Spieldaten laden</button>
+            @if ($tab === 'wf')
+                <div class="admin-mp-result-row admin-mp-result-url">
+                    <label class="admin-mp-result-label" for="admin-mp-url">Externe Seite</label>
+                    <div class="admin-mp-url-row">
+                        <input
+                            type="url"
+                            id="admin-mp-url"
+                            class="admin-mp-url-input"
+                            placeholder="https://www.weltfussball.at/spielbericht/…"
+                            autocomplete="off"
+                        >
+                        <button type="button" id="admin-mp-scrape" class="admin-submit" disabled>Spieldaten laden</button>
+                    </div>
                 </div>
-            </div>
-            <iframe
-                id="admin-mp-cf-frame"
-                class="admin-mp-cf-frame is-hidden"
-                title="Weltfussball Loader"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                aria-hidden="true"
-            ></iframe>
+                <iframe
+                    id="admin-mp-cf-frame"
+                    class="admin-mp-cf-frame is-hidden"
+                    title="Weltfussball Loader"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                    aria-hidden="true"
+                ></iframe>
+            @else
+                <div class="admin-mp-result-row admin-mp-result-url">
+                    <p class="hint" style="margin:0;">
+                        Lädt Ergebnis, Spieldauer, Elfmeterschießen und Spielerdaten (Minuten, Tore, Assists, Karten, …) von der UEFA-API.
+                        Zuordnung über <code>team_uefa_id</code> / Datum und <code>player_uefa_id</code>.
+                    </p>
+                    <div class="admin-mp-url-row">
+                        <button type="button" id="admin-mp-scrape-uefa" class="admin-submit" disabled>UEFA-Spieldaten laden</button>
+                    </div>
+                </div>
+            @endif
             <p class="hint admin-mp-scrape-hint" id="admin-mp-scrape-hint" hidden></p>
         </div>
 

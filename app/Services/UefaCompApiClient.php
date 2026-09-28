@@ -227,9 +227,87 @@ class UefaCompApiClient
         $all = [];
 
         for ($page = 0; $page < $maxPages; $page++) {
-            $batch = $this->getJson('/matches', [
+            $batch = $this->getJsonList('/matches', [
                 'competitionId' => $competitionId,
                 'seasonYear' => $seasonYear,
+                'order' => 'ASC',
+                'limit' => $limit,
+                'offset' => $offset,
+            ], $this->matchBaseUrl());
+
+            $count = 0;
+            foreach ($batch as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                $all[] = $row;
+                $count++;
+            }
+
+            if ($count < $limit) {
+                break;
+            }
+            $offset += $limit;
+        }
+
+        return $all;
+    }
+
+    /**
+     * Single match detail (score, playerEvents, status).
+     *
+     * @return array<string, mixed>
+     */
+    public function match(string $matchId): array
+    {
+        $matchId = trim($matchId);
+        if ($matchId === '') {
+            throw new RuntimeException('UEFA-Match-ID fehlt.');
+        }
+
+        $json = $this->getJsonObject('/matches/'.$matchId, [], $this->matchBaseUrl());
+        if ($json === []) {
+            throw new RuntimeException('UEFA-Match '.$matchId.' nicht gefunden.');
+        }
+
+        return $json;
+    }
+
+    /**
+     * Lineups for a match (field + bench per side).
+     *
+     * @return array<string, mixed>
+     */
+    public function matchLineups(string $matchId): array
+    {
+        $matchId = trim($matchId);
+        if ($matchId === '') {
+            throw new RuntimeException('UEFA-Match-ID fehlt.');
+        }
+
+        return $this->getJsonObject('/matches/'.$matchId.'/lineups', [], $this->matchBaseUrl());
+    }
+
+    /**
+     * Match events after lineup (goals, cards, substitutions, …).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function matchEvents(string $matchId): array
+    {
+        $matchId = trim($matchId);
+        if ($matchId === '') {
+            throw new RuntimeException('UEFA-Match-ID fehlt.');
+        }
+
+        $limit = 200;
+        $offset = 0;
+        $maxPages = max(1, (int) config('services.uefa.max_pages', 40));
+        $all = [];
+
+        for ($page = 0; $page < $maxPages; $page++) {
+            $batch = $this->getJsonList('/matches/'.$matchId.'/events', [
+                'filter' => 'LINEUP',
                 'order' => 'ASC',
                 'limit' => $limit,
                 'offset' => $offset,
@@ -258,6 +336,41 @@ class UefaCompApiClient
      * @return list<mixed>
      */
     private function getJson(string $path, array $query = [], ?string $baseUrl = null): array
+    {
+        return $this->getJsonList($path, $query, $baseUrl);
+    }
+
+    /**
+     * @param  array<string, scalar>  $query
+     * @return list<mixed>
+     */
+    private function getJsonList(string $path, array $query = [], ?string $baseUrl = null): array
+    {
+        $json = $this->requestJson($path, $query, $baseUrl);
+
+        return array_is_list($json) ? $json : [];
+    }
+
+    /**
+     * @param  array<string, scalar>  $query
+     * @return array<string, mixed>
+     */
+    private function getJsonObject(string $path, array $query = [], ?string $baseUrl = null): array
+    {
+        $json = $this->requestJson($path, $query, $baseUrl);
+        if ($json === [] || array_is_list($json)) {
+            return [];
+        }
+
+        /** @var array<string, mixed> $json */
+        return $json;
+    }
+
+    /**
+     * @param  array<string, scalar>  $query
+     * @return array<mixed>
+     */
+    private function requestJson(string $path, array $query = [], ?string $baseUrl = null): array
     {
         $url = rtrim($baseUrl ?? $this->baseUrl(), '/').'/'.ltrim($path, '/');
         $timeout = max(1, (int) config('services.uefa.timeout', 20));
@@ -292,7 +405,7 @@ class UefaCompApiClient
             throw new RuntimeException('UEFA API lieferte ungültiges JSON für '.$path.'.');
         }
 
-        return array_is_list($json) ? $json : [];
+        return $json;
     }
 
     private function baseUrl(): string

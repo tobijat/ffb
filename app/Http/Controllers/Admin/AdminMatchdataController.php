@@ -22,9 +22,11 @@ class AdminMatchdataController extends Controller
     public function show(Request $request): View
     {
         $userId = $this->auth->userId($request);
+        $tab = $request->query('tab') === 'uefa' ? 'uefa' : 'wf';
 
         return view('admin.matchdata', [
             'data' => $this->matchdata->pagePayload($userId),
+            'tab' => $tab,
             'legacyBase' => '/',
         ]);
     }
@@ -101,6 +103,14 @@ class AdminMatchdataController extends Controller
         $status = ($result['ok'] ?? false) || ($result['challenge'] ?? false) ? 200 : 422;
 
         return response()->json($result, $status);
+    }
+
+    public function scrapeUefa(Request $request, int $match): JsonResponse
+    {
+        $userId = $this->auth->userId($request);
+        $result = $this->matchdata->scrapeUefaMatchData($userId, $match);
+
+        return response()->json($result, ($result['ok'] ?? false) ? 200 : 422);
     }
 
     public function wfProxy(Request $request): SymfonyResponse
