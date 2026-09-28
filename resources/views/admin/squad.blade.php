@@ -96,38 +96,6 @@
             <p class="muted">Liga: {{ $squadLeagueTitle }}</p>
         @endif
 
-        <form class="admin-league-picker" method="get" action="{{ route('admin.squad') }}">
-            @if (in_array($tab, ['add', 'auto', 'auto-uefa', 'images'], true))
-                <input type="hidden" name="tab" value="{{ $tab }}">
-            @endif
-            @if ($tab === 'auto-uefa' && $uefaTeamId !== '')
-                <input type="hidden" name="uefa_team_id" value="{{ $uefaTeamId }}">
-            @endif
-            @if ($squadLeagueId > 0)
-                <input type="hidden" name="squad_league_id" value="{{ $squadLeagueId }}">
-            @endif
-            @if ($tab !== 'auto-uefa')
-                <label for="team_id">Team</label>
-                <select id="team_id" name="team_id" onchange="this.form.submit()" @disabled($squadLeagueId <= 0)>
-                    <option value="">— Team wählen —</option>
-                    @foreach ($teams as $team)
-                        <option value="{{ $team['team_id'] }}" @selected($selectedTeamId === (int) $team['team_id'])>
-                            {{ $team['team_label'] }} ({{ (int) ($team['active_count'] ?? 0) }})
-                        </option>
-                    @endforeach
-                </select>
-                <noscript>
-                    <button type="submit" class="admin-submit">Anzeigen</button>
-                </noscript>
-            @elseif ($selectedTeamId > 0)
-                <input type="hidden" name="team_id" value="{{ $selectedTeamId }}">
-                <p class="muted">
-                    FFB-Team:
-                    <strong>{{ $selectedTeam['team_label'] ?? ('#'.$selectedTeamId) }}</strong>
-                    (über UEFA-Zuordnung)
-                </p>
-            @endif
-        </form>
         @if (!empty($data['hint']))
             <p class="hint">{{ $data['hint'] }}</p>
         @endif
@@ -149,9 +117,7 @@
             </div>
         @endif
 
-        @if ($selectedTeamId <= 0 && $tab !== 'auto-uefa')
-            <p class="hint">Wähle oben ein Team, um dessen Kader zu verwalten.</p>
-        @elseif ($squadLeagueId > 0)
+        @if ($squadLeagueId > 0)
             <nav class="admin-squad-tabs ffb-tabs" aria-label="Kader-Bereiche">
                 <a
                     class="admin-squad-tab ffb-tab{{ $tab === 'roster' ? ' is-active' : '' }}"
@@ -173,7 +139,7 @@
                 </a>
                 <a
                     class="admin-squad-tab ffb-tab{{ $tab === 'auto-uefa' ? ' is-active' : '' }}"
-                    href="{{ route('admin.squad', ['tab' => 'auto-uefa', 'squad_league_id' => $squadLeagueId] + ($uefaTeamId !== '' ? ['uefa_team_id' => $uefaTeamId] : [])) }}"
+                    href="{{ route('admin.squad', $autoUefaQuery) }}"
                 >
                     Auto-Kader (UEFA)
                 </a>
@@ -187,11 +153,11 @@
         @endif
     </section>
 
-    @if ($selectedTeamId > 0 && $tab === 'roster')
+    @if ($tab === 'roster' && $squadLeagueId > 0)
         <section class="panel admin-main" aria-labelledby="admin-squad-roster-title" id="squad-roster-section">
             <div class="section-head admin-squad-roster-head">
-                <h2 id="admin-squad-roster-title">{{ $selectedTeam['team_label'] ?? 'Kader' }}</h2>
-                @if (count($items) > 0)
+                <h2 id="admin-squad-roster-title">{{ $selectedTeamId > 0 ? ($selectedTeam['team_label'] ?? 'Kader') : 'Bestand' }}</h2>
+                @if ($selectedTeamId > 0 && count($items) > 0)
                     <div class="admin-squad-toggle" role="group" aria-label="Kader-Anzeige">
                         <button type="button" class="admin-squad-toggle-btn is-active" data-roster-filter="active" aria-pressed="true">
                             Aktiv <span class="admin-squad-count">{{ $rosterActiveCount }}</span>
@@ -203,6 +169,15 @@
                 @endif
             </div>
 
+            @include('admin.partials.squad-team-picker', [
+                'tab' => $tab,
+                'teams' => $teams,
+                'selectedTeamId' => $selectedTeamId,
+                'squadLeagueId' => $squadLeagueId,
+                'teamSelectId' => 'team_id',
+            ])
+
+            @if ($selectedTeamId > 0)
             @if (count($items) === 0)
                 <p class="muted">Noch keine Spieler in diesem Kader.</p>
                 <p>
@@ -360,14 +335,25 @@
                     <p class="muted" id="squad-roster-empty" hidden>Keine aktiven Spieler in diesem Kader.</p>
                 </form>
             @endif
+            @endif
         </section>
     @endif
 
-    @if ($selectedTeamId > 0 && $tab === 'add')
+    @if ($tab === 'add' && $squadLeagueId > 0)
         <section class="panel admin-main" aria-labelledby="admin-squad-add-title">
             <div class="section-head">
                 <h2 id="admin-squad-add-title">Spieler hinzufügen</h2>
             </div>
+
+            @include('admin.partials.squad-team-picker', [
+                'tab' => $tab,
+                'teams' => $teams,
+                'selectedTeamId' => $selectedTeamId,
+                'squadLeagueId' => $squadLeagueId,
+                'teamSelectId' => 'team_id_add',
+            ])
+
+            @if ($selectedTeamId > 0)
             <p class="hint">Standardwerte setzen, Spieler vormerken, Werte je Spieler anpassen, dann übernehmen.</p>
 
             <form
@@ -463,6 +449,7 @@
                     <button type="button" class="admin-cancel" id="squad-candidate-next">Weiter</button>
                 </nav>
             </div>
+            @endif
         </section>
     @endif
 
@@ -483,7 +470,7 @@
             </div>
 
             <p class="hint">
-                Wähle unten ein UEFA-Team der Competition — das ersetzt den FFB-Team-Picker oben.
+                Wähle unten ein UEFA-Team der Competition — das ersetzt den FFB-Team-Picker.
                 Zuordnung über <code>team_uefa_id</code> / Team-Code / Nationalität.
                 Die UEFA-Players-API liefert Kader vor allem für UEFA-Verbände;
                 Nicht-UEFA-Teams (z.&nbsp;B. ARG, EGY bei der WM) haben dort oft noch keine Spieler.
@@ -603,7 +590,7 @@
         </section>
     @endif
 
-    @if ($selectedTeamId > 0 && $tab === 'auto')
+    @if ($tab === 'auto' && $squadLeagueId > 0)
         @php
             $autoSourceLabel = 'JSON';
         @endphp
@@ -612,6 +599,15 @@
                 <h2 id="admin-squad-auto-title">Auto-Kader</h2>
             </div>
 
+            @include('admin.partials.squad-team-picker', [
+                'tab' => $tab,
+                'teams' => $teams,
+                'selectedTeamId' => $selectedTeamId,
+                'squadLeagueId' => $squadLeagueId,
+                'teamSelectId' => 'team_id_auto',
+            ])
+
+            @if ($selectedTeamId > 0)
             <p class="hint">
                 Team: <strong>{{ $selectedTeam['team_label'] ?? '' }}</strong>
                 @if ($selectedTeamNat !== '')
@@ -711,14 +707,25 @@
             @elseif ($autoAnalyzed)
                 <p class="muted">Keine Spieler in JSON für diesen FIFA-Code.</p>
             @endif
+            @endif
         </section>
     @endif
 
-    @if ($selectedTeamId > 0 && $tab === 'images')
+    @if ($tab === 'images' && $squadLeagueId > 0)
         <section class="panel admin-main" aria-labelledby="admin-squad-images-title">
             <div class="section-head">
                 <h2 id="admin-squad-images-title">Auto-Bilder</h2>
             </div>
+
+            @include('admin.partials.squad-team-picker', [
+                'tab' => $tab,
+                'teams' => $teams,
+                'selectedTeamId' => $selectedTeamId,
+                'squadLeagueId' => $squadLeagueId,
+                'teamSelectId' => 'team_id_images',
+            ])
+
+            @if ($selectedTeamId > 0)
             <p class="hint">
                 Alle Spieler von {{ $selectedTeam['team_label'] ?? 'diesem Team' }} in der gewählten Liga.
                 Namen ohne Bild kannst du vor der Suche anpassen (nur für die Wikimedia-Abfrage, nicht in der DB).
@@ -827,6 +834,7 @@
                         </button>
                     </div>
                 </form>
+            @endif
             @endif
         </section>
     @endif
