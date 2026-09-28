@@ -325,11 +325,11 @@
             <p class="hint">
                 Gewichteter Durchschnitt der
                 <code>playerstats_round_performance</code> aus bis zu LOOKBACK_ROUNDS
-                Spielrunden vor der gewählten Runde (Decay newest-first).
-                Voraussetzung: alle Einsätze (Minuten &gt; 0) der gewählten Runde haben eine
-                gespeicherte round_performance, und alle Teams der Runde haben Teampreise.
-                Nur Kaderspieler von Teams mit Match in der gewählten Runde. Vorschau schreibt
-                noch nichts in <code>ffb_playerprice</code>.
+                Spielrunden <strong>vor</strong> der gewählten Runde (Decay newest-first).
+                Voraussetzung: alle Teams der gewählten Runde haben Teampreise.
+                Nur Kaderspieler von Teams mit Match in der gewählten Runde.
+                Spieldaten/Performance der gewählten Runde selbst werden nicht benötigt.
+                Vorschau schreibt noch nichts in <code>ffb_playerprice</code>.
             </p>
 
             <form class="admin-league-picker" method="get" action="{{ route('admin.playerprice') }}">
