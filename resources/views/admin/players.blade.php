@@ -76,8 +76,13 @@
             </div>
 
             <div class="admin-field">
-                <label for="player_foreign_id">TM-ID (transfermarkt.at)</label>
-                <input id="player_foreign_id" type="text" name="player_foreign_id" value="{{ $form['player_foreign_id'] }}" maxlength="255" placeholder="z. B. 232454/nadiem-amiri">
+                <label for="player_uefa_id">UEFA-ID</label>
+                <input id="player_uefa_id" type="text" name="player_uefa_id" value="{{ $form['player_uefa_id'] ?? '' }}" maxlength="64" placeholder="optional">
+            </div>
+
+            <div class="admin-field">
+                <label for="player_fifa_id">FIFA-ID</label>
+                <input id="player_fifa_id" type="text" name="player_fifa_id" value="{{ $form['player_fifa_id'] ?? '' }}" maxlength="64" placeholder="optional">
             </div>
 
             <div class="admin-actions">
@@ -225,11 +230,11 @@
             player_nationality: String(item.player_nationality || ''),
             player_status: String(Number(item.player_status) ? 1 : 0),
             player_status_description: String(item.player_status_description || ''),
-            player_foreign_id: String(item.player_foreign_id || ''),
+            player_uefa_id: String(item.player_uefa_id || ''),
+            player_fifa_id: String(item.player_fifa_id || ''),
             picture_url: String(item.picture_url || ''),
             flag_url: String(item.flag_url || ''),
             flag_html: String(item.flag_html || ''),
-            tm_url: String(item.tm_url || ''),
         };
     }
 
@@ -239,7 +244,8 @@
             && a.player_nationality === b.player_nationality
             && a.player_status === b.player_status
             && a.player_status_description === b.player_status_description
-            && a.player_foreign_id === b.player_foreign_id;
+            && a.player_uefa_id === b.player_uefa_id
+            && a.player_fifa_id === b.player_fifa_id;
     }
 
     function isQueued(id) {
@@ -324,9 +330,6 @@
             : (initial.flag_url
                 ? '<img class="ffb-flag ffb-flag-img" src="' + escapeHtml(initial.flag_url) + '" alt="" width="18" height="13" loading="lazy">'
                 : '');
-        const tm = initial.tm_url
-            ? '<a class="muted" href="' + escapeHtml(initial.tm_url) + '" target="_blank" rel="noopener noreferrer" title="Transfermarkt">TM</a>'
-            : '';
 
         const classes = ['admin-list-item', 'admin-player-row'];
         if (!statusActive) classes.push('is-inactive');
@@ -340,7 +343,6 @@
                     '<div class="admin-player-id-meta">' +
                         flag +
                         '<span class="muted">#' + id + '</span>' +
-                        tm +
                     '</div>' +
                     '<label class="admin-squad-compact admin-player-field-fname">' +
                         '<span class="visually-hidden">Vorname</span>' +
@@ -367,9 +369,13 @@
                         '<span class="visually-hidden">Status-Hinweis</span>' +
                         '<input type="text" data-field="player_status_description" value="' + escapeHtml(values.player_status_description) + '" maxlength="255" placeholder="Hinweis" ' + (pendingDelete ? 'disabled' : '') + '>' +
                     '</label>' +
-                    '<label class="admin-squad-compact admin-player-field-tm">' +
-                        '<span class="visually-hidden">TM-ID</span>' +
-                        '<input type="text" data-field="player_foreign_id" value="' + escapeHtml(values.player_foreign_id) + '" maxlength="255" placeholder="TM-ID" ' + (pendingDelete ? 'disabled' : '') + '>' +
+                    '<label class="admin-squad-compact admin-player-field-uefa">' +
+                        '<span class="visually-hidden">UEFA-ID</span>' +
+                        '<input type="text" data-field="player_uefa_id" value="' + escapeHtml(values.player_uefa_id) + '" maxlength="64" placeholder="UEFA-ID" ' + (pendingDelete ? 'disabled' : '') + '>' +
+                    '</label>' +
+                    '<label class="admin-squad-compact admin-player-field-fifa">' +
+                        '<span class="visually-hidden">FIFA-ID</span>' +
+                        '<input type="text" data-field="player_fifa_id" value="' + escapeHtml(values.player_fifa_id) + '" maxlength="64" placeholder="FIFA-ID" ' + (pendingDelete ? 'disabled' : '') + '>' +
                     '</label>' +
                 '</div>' +
                 '<div class="admin-player-row-tools">' +
@@ -480,7 +486,8 @@
             player_nationality: String((row.querySelector('[data-field="player_nationality"]') || {}).value || ''),
             player_status: String((row.querySelector('[data-field="player_status"]') || {}).value || '1'),
             player_status_description: String((row.querySelector('[data-field="player_status_description"]') || {}).value || ''),
-            player_foreign_id: String((row.querySelector('[data-field="player_foreign_id"]') || {}).value || ''),
+            player_uefa_id: String((row.querySelector('[data-field="player_uefa_id"]') || {}).value || ''),
+            player_fifa_id: String((row.querySelector('[data-field="player_fifa_id"]') || {}).value || ''),
         };
     }
 
@@ -496,7 +503,8 @@
             player_nationality: initial.player_nationality,
             player_status: initial.player_status,
             player_status_description: initial.player_status_description,
-            player_foreign_id: initial.player_foreign_id,
+            player_uefa_id: initial.player_uefa_id,
+            player_fifa_id: initial.player_fifa_id,
         })) {
             edits.delete(id);
             removeFromQueueOrder(id);
@@ -729,7 +737,8 @@
                 appendHidden('items[' + id + '][player_nationality]', values.player_nationality);
                 appendHidden('items[' + id + '][player_status]', values.player_status);
                 appendHidden('items[' + id + '][player_status_description]', values.player_status_description);
-                appendHidden('items[' + id + '][player_foreign_id]', values.player_foreign_id);
+                appendHidden('items[' + id + '][player_uefa_id]', values.player_uefa_id);
+                appendHidden('items[' + id + '][player_fifa_id]', values.player_fifa_id);
             });
             deletes.forEach(function (id) {
                 queued += 1;

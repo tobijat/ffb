@@ -59,6 +59,8 @@ class AdminPlayerTest extends TestCase
                     'player_status' => 1,
                     'player_status_description' => '',
                     'player_foreign_id' => '',
+                    'player_uefa_id' => '',
+                    'player_fifa_id' => '',
                 ],
                 'mode' => 'create',
                 'per_page' => 100,
@@ -70,7 +72,12 @@ class AdminPlayerTest extends TestCase
             ->assertOk()
             ->assertSee('Spieler', false)
             ->assertSee('name="player_fname"', false)
-            ->assertSee('player_foreign_id', false)
+            ->assertSee('name="player_uefa_id"', false)
+            ->assertSee('name="player_fifa_id"', false)
+            ->assertSee('UEFA-ID', false)
+            ->assertSee('FIFA-ID', false)
+            ->assertDontSee('TM-ID', false)
+            ->assertDontSee('player_foreign_id', false)
             ->assertSee('Name oder ID', false)
             ->assertSee('/admin/players/search', false)
             ->assertSee('/admin/players/batch-update', false)
@@ -106,8 +113,8 @@ class AdminPlayerTest extends TestCase
                         'player_nationality_label' => 'Österreich',
                         'player_status' => 1,
                         'player_status_description' => '',
-                        'player_foreign_id' => '232454/nadiem-amiri',
-                        'tm_url' => 'https://www.transfermarkt.at/nadiem-amiri/profil/spieler/232454',
+                        'player_uefa_id' => '25001',
+                        'player_fifa_id' => '12345',
                         'picture_url' => '/images/ffb/players/7/1.jpg',
                         'flag_url' => '/images/ffb/flags/aut.gif',
                     ],
@@ -125,7 +132,8 @@ class AdminPlayerTest extends TestCase
             ->getJson('/admin/players/search?q=12&nationality=AUT&page=2')
             ->assertOk()
             ->assertJsonPath('items.0.player_lname', 'Arnautovic')
-            ->assertJsonPath('items.0.tm_url', 'https://www.transfermarkt.at/nadiem-amiri/profil/spieler/232454')
+            ->assertJsonPath('items.0.player_uefa_id', '25001')
+            ->assertJsonPath('items.0.player_fifa_id', '12345')
             ->assertJsonPath('items.0.picture_url', '/images/ffb/players/7/1.jpg')
             ->assertJsonPath('page', 2)
             ->assertJsonPath('per_page', 100)
@@ -152,7 +160,8 @@ class AdminPlayerTest extends TestCase
                 'player_nationality' => 'AUT',
                 'player_status' => 1,
                 'player_status_description' => '',
-                'player_foreign_id' => '59016',
+                'player_uefa_id' => '25001',
+                'player_fifa_id' => '43948',
             ])
             ->assertRedirect(route('admin.players'))
             ->assertSessionHas('admin_message', 'Spieler erfolgreich hinzugefügt.');
@@ -180,7 +189,8 @@ class AdminPlayerTest extends TestCase
                         'player_nationality' => 'AUT',
                         'player_status' => 1,
                         'player_status_description' => '',
-                        'player_foreign_id' => '123/marko',
+                        'player_uefa_id' => '25001',
+                        'player_fifa_id' => '12345',
                     ],
                 ],
                 'delete_ids' => [99],

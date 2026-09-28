@@ -20,6 +20,7 @@ class League extends Model
         'league_archive',
         'league_symbol',
         'league_uefa_competition_identifier',
+        'league_fifa_competition_identifier',
     ];
 
     public function matchrounds(): HasMany
