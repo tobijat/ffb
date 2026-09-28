@@ -9,6 +9,7 @@
     const savePlayerTpl = root.dataset.savePlayerUrlTemplate || '';
     const scrapeTpl = root.dataset.scrapeUrlTemplate || '';
     const scrapeUefaTpl = root.dataset.scrapeUefaUrlTemplate || '';
+    const scrapeFifaTpl = root.dataset.scrapeFifaUrlTemplate || '';
     const wfProxyUrl = root.dataset.wfProxyUrl || '';
     const csrf = root.dataset.csrf || '';
     const imagesBase = root.dataset.imagesBase || '/images/ffb/';
@@ -38,6 +39,7 @@
     const matchUrlInput = document.getElementById('admin-mp-url');
     const scrapeBtn = document.getElementById('admin-mp-scrape');
     const scrapeUefaBtn = document.getElementById('admin-mp-scrape-uefa');
+    const scrapeFifaBtn = document.getElementById('admin-mp-scrape-fifa');
     const scrapeHint = document.getElementById('admin-mp-scrape-hint');
     const cfFrame = document.getElementById('admin-mp-cf-frame');
     const saveBtn = document.getElementById('admin-mp-save');
@@ -60,6 +62,13 @@
         'penaltyshootout_save', 'penaltyshootout_lost', 'penaltyshootout_hit',
         'minute_in', 'minute_out', 'playerteam_id',
     ];
+    const POSITION_ORDER = ['g', 'd', 'm', 's'];
+    const POSITION_LABELS = {
+        g: 'Tor',
+        d: 'Abwehr',
+        m: 'Mittelfeld',
+        s: 'Angriff',
+    };
 
     function escapeHtml(value) {
         return String(value ?? '')
@@ -193,6 +202,17 @@
             99,
             -1
         );
+        setPlayerPenaltyShootoutVisible(show);
+    }
+
+    function isPenaltyShootoutActive() {
+        return !!(penaltyEnable && penaltyEnable.checked);
+    }
+
+    function setPlayerPenaltyShootoutVisible(show) {
+        document.querySelectorAll('.admin-mp-ps-fields').forEach((el) => {
+            el.hidden = !show;
+        });
     }
 
     function recalculatePlayerMinutesForMatchLength(newLength) {
@@ -237,6 +257,7 @@
         if (matchUrlInput) matchUrlInput.value = '';
         if (scrapeBtn) scrapeBtn.disabled = true;
         if (scrapeUefaBtn) scrapeUefaBtn.disabled = true;
+        if (scrapeFifaBtn) scrapeFifaBtn.disabled = true;
         if (scrapeHint) {
             scrapeHint.hidden = true;
             scrapeHint.textContent = '';
@@ -247,20 +268,58 @@
     }
 
     function cardRadios(side, index, cards) {
+        const titles = {
+            y: 'Gelb',
+            yr: 'Gelb-Rot',
+            r: 'Rot',
+            n: 'Keine Karte',
+        };
         return ['y', 'yr', 'r', 'n'].map((v) => {
             const checked = cards === v ? ' checked' : '';
-            const label = v === 'n' ? 'N' : v.toUpperCase();
             const img = v === 'n'
-                ? ''
+                ? '<span class="admin-mp-card-none" aria-hidden="true">–</span>'
                 : `<img src="${symbols}stats_card_${v}.gif" width="14" height="16" alt="">`;
-            return `<label class="admin-mp-card-opt">${img}<input type="radio" name="cards-${side}-${index}" value="${v}" class="admin-mp-card" data-side="${side}" data-index="${index}"${checked}> ${label}</label>`;
+            return `<label class="admin-mp-card-opt" title="${titles[v]}">${img}<input type="radio" name="cards-${side}-${index}" value="${v}" class="admin-mp-card" data-side="${side}" data-index="${index}"${checked} aria-label="${titles[v]}"></label>`;
         }).join('');
+    }
+
+    function positionKey(player) {
+        const code = String(player.playerteam_player_position || '').toLowerCase();
+        return POSITION_ORDER.includes(code) ? code : '';
+    }
+
+    function sortPlayersByPosition(rows) {
+        return rows.slice().sort((a, b) => {
+            const ia = POSITION_ORDER.indexOf(positionKey(a));
+            const ib = POSITION_ORDER.indexOf(positionKey(b));
+            const orderA = ia < 0 ? POSITION_ORDER.length : ia;
+            const orderB = ib < 0 ? POSITION_ORDER.length : ib;
+            if (orderA !== orderB) {
+                return orderA - orderB;
+            }
+            const last = String(a.player_lname || '').localeCompare(String(b.player_lname || ''), 'de');
+            if (last !== 0) {
+                return last;
+            }
+            return String(a.player_fname || '').localeCompare(String(b.player_fname || ''), 'de');
+        });
+    }
+
+    function syncMinutesFromInOut(side, index) {
+        const start = Number(readField(side, index, 'minute_in'));
+        const end = Number(readField(side, index, 'minute_out'));
+        if (start > 0 && end >= start) {
+            writeField(side, index, 'minutes', String(end - start + 1));
+        } else if (start <= 0 && end <= 0) {
+            writeField(side, index, 'minutes', '0');
+        }
     }
 
     function playerRow(side, index, p) {
         const id = `${side}${index}`;
         const name = `<strong>${escapeHtml(p.player_lname)}</strong>, <em>${escapeHtml(p.player_fname)}</em>`;
         const pos = escapeHtml(String(p.playerteam_player_position || '').toUpperCase());
+        const psHidden = isPenaltyShootoutActive() ? '' : ' hidden';
         return `<div class="admin-mp-player" data-side="${side}" data-index="${index}">
             <div class="admin-mp-player-head">
                 <div class="admin-mp-player-title">
@@ -272,21 +331,44 @@
                 </button>
             </div>
             <div class="admin-mp-player-fields" id="admin-mp-fields-${id}">
-                <label><img src="${symbols}stats_time.png" width="14" height="14" alt=""> <input type="text" class="admin-mp-input" data-field="minutes" maxlength="3" value="${escapeHtml(p.playerstats_minutes)}"></label>
-                <label><img src="${symbols}stats_goal.gif" width="14" height="14" alt=""> <input type="text" class="admin-mp-input admin-mp-input-wide" data-field="goals" value="${escapeHtml(p.playerstats_goals)}"></label>
-                <label><img src="${symbols}stats_assist.gif" width="14" height="14" alt=""> <input type="text" class="admin-mp-input" data-field="assists" maxlength="2" value="${escapeHtml(p.playerstats_assists)}"></label>
-                <span class="admin-mp-cards">${cardRadios(side, index, p.playerstats_cards || 'n')}<input type="hidden" data-field="cards" value="${escapeHtml(p.playerstats_cards || 'n')}"></span>
-                <label><img src="${symbols}stats_owngoal.gif" width="14" height="14" alt=""> <input type="text" class="admin-mp-input admin-mp-input-wide" data-field="owngoals" value="${escapeHtml(p.playerstats_owngoals)}"></label>
-                <label><img src="${symbols}stats_penaltylost.png" width="14" height="14" alt=""> <input type="text" class="admin-mp-input" data-field="penaltieslost" value="${escapeHtml(p.playerstats_penaltieslost)}"></label>
-                <label><img src="${symbols}stats_penaltysaved.png" width="14" height="14" alt=""> <input type="text" class="admin-mp-input" data-field="penaltiessaved" value="${escapeHtml(p.playerstats_penaltiessaved)}"></label>
-                <label title="PS save">PS↓ <input type="text" class="admin-mp-input" data-field="penaltyshootout_save" value="${escapeHtml(p.playerstats_penaltyshootout_save)}"></label>
-                <label title="PS lost">PS× <input type="text" class="admin-mp-input" data-field="penaltyshootout_lost" value="${escapeHtml(p.playerstats_penaltyshootout_lost)}"></label>
-                <label title="PS hit">PS✓ <input type="text" class="admin-mp-input" data-field="penaltyshootout_hit" value="${escapeHtml(p.playerstats_penaltyshootout_hit)}"></label>
-                <label><img src="${symbols}stats_hourglass_add.png" width="14" height="14" alt=""> <input type="text" class="admin-mp-input" data-field="minute_in" value="${escapeHtml(p.playerstats_minute_in)}"></label>
-                <label><img src="${symbols}stats_hourglass_delete.png" width="14" height="14" alt=""> <input type="text" class="admin-mp-input" data-field="minute_out" value="${escapeHtml(p.playerstats_minute_out)}"></label>
+                <span class="admin-mp-field-group admin-mp-time-fields" title="Spielzeit">
+                    <label title="Minute rein"><img src="${symbols}stats_hourglass_add.png" width="14" height="14" alt=""> <input type="text" class="admin-mp-input" data-field="minute_in" value="${escapeHtml(p.playerstats_minute_in)}" aria-label="Minute rein"></label>
+                    <label title="Minute raus"><img src="${symbols}stats_hourglass_delete.png" width="14" height="14" alt=""> <input type="text" class="admin-mp-input" data-field="minute_out" value="${escapeHtml(p.playerstats_minute_out)}" aria-label="Minute raus"></label>
+                    <label title="Minuten gespielt (automatisch)"><img src="${symbols}stats_time.png" width="14" height="14" alt=""> <input type="text" class="admin-mp-input admin-mp-input-readonly" data-field="minutes" maxlength="3" value="${escapeHtml(p.playerstats_minutes)}" readonly tabindex="-1" aria-label="Minuten gespielt"></label>
+                </span>
+                <span class="admin-mp-field-group admin-mp-cards" title="Karten">${cardRadios(side, index, p.playerstats_cards || 'n')}<input type="hidden" data-field="cards" value="${escapeHtml(p.playerstats_cards || 'n')}"></span>
+                <span class="admin-mp-field-group admin-mp-score-fields">
+                    <span class="admin-mp-field-group-title">Tore während Spielzeit</span>
+                    <label><img src="${symbols}stats_goal.gif" width="14" height="14" alt=""> Tor <input type="text" class="admin-mp-input admin-mp-input-wide" data-field="goals" value="${escapeHtml(p.playerstats_goals)}" aria-label="Tor"></label>
+                    <label><img src="${symbols}stats_assist.gif" width="14" height="14" alt=""> Assist <input type="text" class="admin-mp-input" data-field="assists" maxlength="2" value="${escapeHtml(p.playerstats_assists)}" aria-label="Assist"></label>
+                    <label><img src="${symbols}stats_owngoal.gif" width="14" height="14" alt=""> Eigentor <input type="text" class="admin-mp-input admin-mp-input-wide" data-field="owngoals" value="${escapeHtml(p.playerstats_owngoals)}" aria-label="Eigentor"></label>
+                    <label><img src="${symbols}stats_penaltylost.png" width="14" height="14" alt=""> Elfmeter verschossen <input type="text" class="admin-mp-input" data-field="penaltieslost" value="${escapeHtml(p.playerstats_penaltieslost)}" aria-label="Elfmeter verschossen"></label>
+                    <label><img src="${symbols}stats_penaltysaved.png" width="14" height="14" alt=""> Elfmeter gehalten <input type="text" class="admin-mp-input" data-field="penaltiessaved" value="${escapeHtml(p.playerstats_penaltiessaved)}" aria-label="Elfmeter gehalten"></label>
+                </span>
+                <span class="admin-mp-field-group admin-mp-ps-fields"${psHidden}>
+                    <span class="admin-mp-field-group-title">Elfmeterschießen</span>
+                    <label>gehalten <input type="text" class="admin-mp-input" data-field="penaltyshootout_save" value="${escapeHtml(p.playerstats_penaltyshootout_save)}" aria-label="Elfmeterschießen gehalten"></label>
+                    <label>verschossen <input type="text" class="admin-mp-input" data-field="penaltyshootout_lost" value="${escapeHtml(p.playerstats_penaltyshootout_lost)}" aria-label="Elfmeterschießen verschossen"></label>
+                    <label>getroffen <input type="text" class="admin-mp-input" data-field="penaltyshootout_hit" value="${escapeHtml(p.playerstats_penaltyshootout_hit)}" aria-label="Elfmeterschießen getroffen"></label>
+                </span>
                 <input type="hidden" data-field="playerteam_id" value="${escapeHtml(p.playerteam_id)}">
             </div>
         </div>`;
+    }
+
+    function renderPlayersList(side, rows) {
+        let html = '';
+        let lastPos = null;
+        rows.forEach((p, i) => {
+            const pos = positionKey(p);
+            if (pos !== lastPos) {
+                lastPos = pos;
+                const label = POSITION_LABELS[pos] || 'Sonstige';
+                html += `<div class="admin-mp-pos-heading">${escapeHtml(label)}</div>`;
+            }
+            html += playerRow(side, i, p);
+        });
+        return html;
     }
 
     function fieldsEl(side, index) {
@@ -394,8 +476,60 @@
         const undoBtn = row.querySelector('.admin-mp-undo-btn');
         if (undoBtn) undoBtn.hidden = !dirty;
 
+        updatePlayerFieldVisuals(side, index, payload);
+
         refreshSavebar();
         return valid;
+    }
+
+    function fieldChangedFromInitial(side, index, name) {
+        const initial = initials[side][index];
+        if (!initial) {
+            return false;
+        }
+        let current = String(readField(side, index, name) ?? '');
+        let baseline = String(initial[name] ?? '');
+        if (name === 'cards') {
+            current = current || 'n';
+            baseline = baseline || 'n';
+        }
+        return current !== baseline;
+    }
+
+    function updatePlayerFieldVisuals(side, index, payload) {
+        const box = fieldsEl(side, index);
+        if (!box) {
+            return;
+        }
+        const stats = payload || playerPayload(side, index);
+        const cards = String(stats.cards || 'n');
+        const cardsGroup = box.querySelector('.admin-mp-cards');
+        if (cardsGroup) {
+            cardsGroup.classList.remove('is-card-y', 'is-card-yr', 'is-card-r');
+            if (cards === 'y' || cards === 'yr' || cards === 'r') {
+                cardsGroup.classList.add('is-card-'+cards);
+            }
+        }
+
+        const highlightFields = [
+            'goals', 'owngoals', 'assists',
+            'penaltieslost', 'penaltiessaved',
+            'penaltyshootout_save', 'penaltyshootout_lost', 'penaltyshootout_hit',
+        ];
+        highlightFields.forEach((name) => {
+            const input = box.querySelector(`input.admin-mp-input[data-field="${name}"]`);
+            if (!input) {
+                return;
+            }
+            input.classList.toggle('is-changed', fieldChangedFromInitial(side, index, name));
+        });
+
+        const timeGroup = box.querySelector('.admin-mp-time-fields');
+        if (timeGroup) {
+            const played = (Number(stats.minutes) || 0) > 0
+                || ((Number(stats.minute_in) || 0) > 0 && (Number(stats.minute_out) || 0) >= (Number(stats.minute_in) || 0));
+            timeGroup.classList.toggle('has-played', played);
+        }
     }
 
     function applyCardsUi(side, index, cards) {
@@ -422,13 +556,74 @@
             if (stats[name] === undefined || stats[name] === null) return;
             writeField(side, index, name, String(stats[name]));
         });
-        if (stats.cards) {
+        if (stats.cards !== undefined && stats.cards !== null && stats.cards !== '') {
             applyCardsUi(side, index, String(stats.cards));
         }
+        syncMinutesFromInOut(side, index);
         syncPlayerRow(side, index);
     }
 
-    function applyScrapePayload(data) {
+    function clearedPlayerStats() {
+        return {
+            minutes: '0',
+            minute_in: '0',
+            minute_out: '0',
+            goals: '0',
+            owngoals: '0',
+            assists: '0',
+            cards: 'n',
+            penaltieslost: '0',
+            penaltiessaved: '0',
+            penaltyshootout_save: '0',
+            penaltyshootout_lost: '0',
+            penaltyshootout_hit: '0',
+        };
+    }
+
+    function playerHasMeaningfulStats(side, index) {
+        const payload = playerPayload(side, index);
+        if ((Number(payload.minutes) || 0) > 0) return true;
+        if ((Number(payload.minute_in) || 0) > 0) return true;
+        if ((Number(payload.minute_out) || 0) > 0) return true;
+        if ((Number(payload.assists) || 0) > 0) return true;
+        if ((Number(payload.penaltieslost) || 0) > 0) return true;
+        if ((Number(payload.penaltiessaved) || 0) > 0) return true;
+        if ((Number(payload.penaltyshootout_save) || 0) > 0) return true;
+        if ((Number(payload.penaltyshootout_lost) || 0) > 0) return true;
+        if ((Number(payload.penaltyshootout_hit) || 0) > 0) return true;
+        if (String(payload.cards || 'n') !== 'n') return true;
+        const goals = String(payload.goals ?? '').trim();
+        if (goals !== '' && goals !== '0') return true;
+        const owngoals = String(payload.owngoals ?? '').trim();
+        if (owngoals !== '' && owngoals !== '0') return true;
+        return false;
+    }
+
+    /**
+     * Reset squad rows that already have stats but were not present in the scrape map
+     * (e.g. FIFA lineup did not include them).
+     */
+    function invalidateAbsentScrapedPlayers(mappedPlayers) {
+        const present = new Set(Object.keys(mappedPlayers || {}).map(String));
+        let cleared = 0;
+        ['Home', 'Guest'].forEach((side) => {
+            players[side].forEach((player, index) => {
+                const ptId = String(player.playerteam_id ?? '');
+                if (ptId === '' || present.has(ptId)) {
+                    return;
+                }
+                if (!playerHasMeaningfulStats(side, index)) {
+                    return;
+                }
+                applyScrapedPlayer(side, index, clearedPlayerStats());
+                cleared += 1;
+            });
+        });
+        return cleared;
+    }
+
+    function applyScrapePayload(data, options) {
+        const opts = options || {};
         if (data.url && matchUrlInput) {
             matchUrlInput.value = data.url;
         }
@@ -472,6 +667,11 @@
             applyScrapedPlayer(side, index, mapped[ptId]);
         });
 
+        let clearedAbsent = 0;
+        if (opts.invalidateAbsent) {
+            clearedAbsent = invalidateAbsentScrapedPlayers(mapped);
+        }
+
         refreshSavebar();
 
         if (scrapeHint) {
@@ -482,6 +682,11 @@
             else if (unmatched.length > 1) {
                 parts.push('Nicht zugeordnet (' + unmatched.length + '): ' + unmatched.slice(0, 8).join(', ')
                     + (unmatched.length > 8 ? '…' : ''));
+            }
+            if (clearedAbsent === 1) {
+                parts.push('1 vorhandene Spielerzeile ohne geladene Spieldaten zurückgesetzt.');
+            } else if (clearedAbsent > 1) {
+                parts.push(clearedAbsent + ' vorhandene Spielerzeilen ohne geladene Spieldaten zurückgesetzt.');
             }
             scrapeHint.textContent = parts.join(' · ');
             scrapeHint.hidden = parts.length === 0;
@@ -652,7 +857,7 @@
 
             waitingForFrame = false;
             stopFramePoll();
-            applyScrapePayload(data);
+            applyScrapePayload(data, { invalidateAbsent: true });
         } catch (err) {
             if (scrapeHint) {
                 scrapeHint.hidden = false;
@@ -701,7 +906,7 @@
                 const msg = (data.errors && data.errors[0]) || data.message || 'Laden fehlgeschlagen.';
                 throw new Error(msg);
             }
-            applyScrapePayload(data);
+            applyScrapePayload(data, { invalidateAbsent: true });
         } catch (err) {
             if (scrapeHint) {
                 scrapeHint.hidden = false;
@@ -712,6 +917,55 @@
         } finally {
             scrapeInFlight = false;
             if (scrapeUefaBtn) scrapeUefaBtn.disabled = !currentMatchId;
+        }
+    }
+
+    async function scrapeFifa() {
+        if (!currentMatchId) {
+            alert('Bitte zuerst ein Spiel wählen.');
+            return;
+        }
+        if (!scrapeFifaTpl) {
+            alert('FIFA-Laden ist nicht konfiguriert.');
+            return;
+        }
+        if (scrapeInFlight) return;
+        scrapeInFlight = true;
+        if (scrapeFifaBtn) scrapeFifaBtn.disabled = true;
+        if (scrapeHint) {
+            scrapeHint.hidden = false;
+            scrapeHint.textContent = 'FIFA-Spieldaten werden geladen…';
+        }
+        try {
+            const headers = {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrf,
+                'X-XSRF-TOKEN': xsrfToken(),
+            };
+            const response = await fetch(scrapeFifaTpl.replace('__ID__', String(currentMatchId)), {
+                method: 'POST',
+                headers,
+                credentials: 'same-origin',
+                body: JSON.stringify({}),
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || data.ok === false) {
+                const msg = (data.errors && data.errors[0]) || data.message || 'Laden fehlgeschlagen.';
+                throw new Error(msg);
+            }
+            applyScrapePayload(data, { invalidateAbsent: true });
+        } catch (err) {
+            if (scrapeHint) {
+                scrapeHint.hidden = false;
+                scrapeHint.textContent = err.message || 'Laden fehlgeschlagen.';
+            } else {
+                alert(err.message || 'Laden fehlgeschlagen.');
+            }
+        } finally {
+            scrapeInFlight = false;
+            if (scrapeFifaBtn) scrapeFifaBtn.disabled = !currentMatchId;
         }
     }
 
@@ -736,15 +990,17 @@
             input.addEventListener('change', () => {
                 const field = input.dataset.field;
                 if (field === 'minute_in' || field === 'minute_out') {
-                    const start = Number(readField(side, index, 'minute_in'));
-                    const end = Number(readField(side, index, 'minute_out'));
-                    if (start < end && start >= 0) {
-                        writeField(side, index, 'minutes', String(end - start + 1));
-                    }
+                    syncMinutesFromInOut(side, index);
                 }
                 syncPlayerRow(side, index);
             });
-            input.addEventListener('input', () => syncPlayerRow(side, index));
+            input.addEventListener('input', () => {
+                const field = input.dataset.field;
+                if (field === 'minute_in' || field === 'minute_out') {
+                    syncMinutesFromInOut(side, index);
+                }
+                syncPlayerRow(side, index);
+            });
         });
         box.querySelectorAll('.admin-mp-card').forEach((radio) => {
             radio.addEventListener('change', () => {
@@ -767,11 +1023,16 @@
         const data = await fetchJson(url);
         if (lock !== displayLock) return;
         if (data.pointsmode) pointsmode = data.pointsmode;
-        const rows = data.players || [];
+        const rows = sortPlayersByPosition(data.players || []);
         players[side] = rows;
-        initials[side] = rows.map((p) => snapshotFromPlayer(p));
-        listEl.innerHTML = rows.map((p, i) => playerRow(side, i, p)).join('');
-        rows.forEach((_, i) => bindPlayerEvents(side, i));
+        listEl.innerHTML = renderPlayersList(side, rows);
+        initials[side] = [];
+        rows.forEach((_, i) => {
+            syncMinutesFromInOut(side, i);
+            initials[side][i] = playerPayload(side, i);
+            bindPlayerEvents(side, i);
+            syncPlayerRow(side, i);
+        });
     }
 
     async function loadMatch(match) {
@@ -802,6 +1063,7 @@
         if (matchUrlInput) matchUrlInput.value = match.match_url || '';
         if (scrapeBtn) scrapeBtn.disabled = false;
         if (scrapeUefaBtn) scrapeUefaBtn.disabled = false;
+        if (scrapeFifaBtn) scrapeFifaBtn.disabled = false;
         if (scrapeHint) {
             scrapeHint.hidden = true;
             scrapeHint.textContent = '';
@@ -988,6 +1250,7 @@
     }
     if (scrapeBtn) scrapeBtn.addEventListener('click', () => scrapeExternal());
     if (scrapeUefaBtn) scrapeUefaBtn.addEventListener('click', () => scrapeUefa());
+    if (scrapeFifaBtn) scrapeFifaBtn.addEventListener('click', () => scrapeFifa());
 
     window.addEventListener('message', (event) => {
         if (!waitingForFrame || !event.data || event.data.type !== 'ffb-wf-proxy') return;

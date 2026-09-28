@@ -90,6 +90,37 @@ class FifaCompetitionApi
 
     /**
      * @return list<array{
+     *     fifa_match_id: string,
+     *     fifa_stage_id: string,
+     *     home_fifa_id: string,
+     *     away_fifa_id: string,
+     *     home_abbr: string,
+     *     away_abbr: string,
+     *     home_name_de: string,
+     *     away_name_de: string,
+     *     date: string
+     * }>
+     */
+    public function matches(): array
+    {
+        $rows = [];
+        foreach ($this->client->calendarMatches(
+            $this->competitionId,
+            $this->seasonId,
+            500,
+            $this->language,
+        ) as $match) {
+            $mapped = $this->mapMatch($match);
+            if ($mapped !== null) {
+                $rows[] = $mapped;
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return list<array{
      *     fifa_player_id: string,
      *     fifa_team_id: string,
      *     name: string,
@@ -132,6 +163,52 @@ class FifaCompetitionApi
         );
 
         return $rows;
+    }
+
+    /**
+     * @param  array<string, mixed>  $match
+     * @return array{
+     *     fifa_match_id: string,
+     *     fifa_stage_id: string,
+     *     home_fifa_id: string,
+     *     away_fifa_id: string,
+     *     home_abbr: string,
+     *     away_abbr: string,
+     *     home_name_de: string,
+     *     away_name_de: string,
+     *     date: string
+     * }|null
+     */
+    private function mapMatch(array $match): ?array
+    {
+        $matchId = trim((string) ($match['IdMatch'] ?? ''));
+        $stageId = trim((string) ($match['IdStage'] ?? ''));
+        $home = is_array($match['Home'] ?? null) ? $match['Home'] : [];
+        $away = is_array($match['Away'] ?? null) ? $match['Away'] : [];
+        $homeId = trim((string) ($home['IdTeam'] ?? ''));
+        $awayId = trim((string) ($away['IdTeam'] ?? ''));
+        if ($matchId === '' || $stageId === '' || $homeId === '' || $awayId === '') {
+            return null;
+        }
+
+        $dateRaw = trim((string) ($match['Date'] ?? ''));
+        $dateTs = $dateRaw !== '' ? strtotime($dateRaw) : false;
+        $date = $dateTs ? date('Y-m-d', $dateTs) : '';
+        if ($date === '') {
+            return null;
+        }
+
+        return [
+            'fifa_match_id' => $matchId,
+            'fifa_stage_id' => $stageId,
+            'home_fifa_id' => $homeId,
+            'away_fifa_id' => $awayId,
+            'home_abbr' => strtoupper(trim((string) ($home['Abbreviation'] ?? ($home['IdCountry'] ?? '')))),
+            'away_abbr' => strtoupper(trim((string) ($away['Abbreviation'] ?? ($away['IdCountry'] ?? '')))),
+            'home_name_de' => $this->localizedText($home['TeamName'] ?? null),
+            'away_name_de' => $this->localizedText($away['TeamName'] ?? null),
+            'date' => $date,
+        ];
     }
 
     /**

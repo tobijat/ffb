@@ -71,6 +71,88 @@ class FifaCompApiClient
     }
 
     /**
+     * Calendar fixtures for a competition/season.
+     * FIFA pagination is unreliable — pass a high $count for a full list.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function calendarMatches(
+        int $competitionId,
+        int $seasonId,
+        int $count = 500,
+        string $language = 'de',
+    ): array {
+        if ($competitionId <= 0 || $seasonId <= 0) {
+            return [];
+        }
+
+        $json = $this->requestJson('/calendar/matches', [
+            'idCompetition' => $competitionId,
+            'idSeason' => $seasonId,
+            'count' => max(1, $count),
+            'language' => $language,
+        ]);
+
+        $results = $json['Results'] ?? null;
+        if (! is_array($results)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            $results,
+            static fn (mixed $row): bool => is_array($row),
+        ));
+    }
+
+    /**
+     * Live/finished match detail including lineups, goals, bookings, substitutions.
+     *
+     * @return array<string, mixed>
+     */
+    public function liveMatch(
+        int $competitionId,
+        int $seasonId,
+        string $stageId,
+        string $matchId,
+        string $language = 'de',
+    ): array {
+        $stageId = trim($stageId);
+        $matchId = trim($matchId);
+        if ($competitionId <= 0 || $seasonId <= 0 || $stageId === '' || $matchId === '') {
+            throw new RuntimeException('FIFA live match requires competition, season, stage und match id.');
+        }
+
+        return $this->requestJson(
+            '/live/football/'.$competitionId.'/'.$seasonId.'/'.$stageId.'/'.$matchId,
+            ['language' => $language],
+        );
+    }
+
+    /**
+     * Match event timeline (goals, cards, substitutions, penalty shootout, …).
+     *
+     * @return array<string, mixed>
+     */
+    public function matchTimeline(
+        int $competitionId,
+        int $seasonId,
+        string $stageId,
+        string $matchId,
+        string $language = 'de',
+    ): array {
+        $stageId = trim($stageId);
+        $matchId = trim($matchId);
+        if ($competitionId <= 0 || $seasonId <= 0 || $stageId === '' || $matchId === '') {
+            throw new RuntimeException('FIFA timeline requires competition, season, stage und match id.');
+        }
+
+        return $this->requestJson(
+            '/timelines/'.$competitionId.'/'.$seasonId.'/'.$stageId.'/'.$matchId,
+            ['language' => $language],
+        );
+    }
+
+    /**
      * @param  array<string, scalar>  $query
      * @return array<string, mixed>
      */

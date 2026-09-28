@@ -29,6 +29,8 @@ class AdminMatchdataService
         private readonly WeltfussballProxyService $wfProxy,
         private readonly UefaCompApiClient $uefaClient,
         private readonly UefaMatchStatsMapper $uefaMapper,
+        private readonly FifaCompApiClient $fifaClient,
+        private readonly FifaMatchStatsMapper $fifaMapper,
     ) {}
 
     /**
@@ -220,6 +222,7 @@ class AdminMatchdataService
                 'player_fname' => (string) ($player?->player_fname ?? ''),
                 'player_lname' => (string) ($player?->player_lname ?? ''),
                 'player_uefa_id' => trim((string) ($player?->player_uefa_id ?? '')),
+                'player_fifa_id' => trim((string) ($player?->player_fifa_id ?? '')),
                 'playerteam_id' => $playerteamId,
                 'playerteam_player_position' => (string) ($playerteam->playerteam_player_position ?: ''),
                 'player_name_fid_wf' => $wfName !== '' && $wfName !== '0'
@@ -454,6 +457,221 @@ class AdminMatchdataService
     }
 
     /**
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     match_minutes?: int,
+     *     result?: array{
+     *         homescore: int,
+     *         guestscore: int,
+     *         homescore_penalty: int,
+     *         guestscore_penalty: int
+     *     },
+     *     players?: array<string, array<string, int|string>>,
+     *     unmatched?: list<string>,
+     *     matched?: int,
+     *     fifa_match_id?: string
+     * }
+     */
+    public function scrapeFifaMatchData(int $userId, int $matchId): array
+    {
+        if ($matchId <= 0) {
+            return ['ok' => false, 'errors' => ['Kein Spiel gewählt.']];
+        }
+
+        $match = MatchGame::query()->with(['matchround', 'homeTeam', 'guestTeam'])->find($matchId);
+        if (! $match) {
+            return ['ok' => false, 'errors' => ['Spiel nicht gefunden.']];
+        }
+
+        $resolved = $this->resolveFifaMatch($match);
+        if (! ($resolved['ok'] ?? false)) {
+            return [
+                'ok' => false,
+                'errors' => $resolved['errors'] ?? ['FIFA-Spiel konnte nicht zugeordnet werden.'],
+            ];
+        }
+
+        $fifaMatchId = (string) $resolved['fifa_match_id'];
+        $fifaStageId = (string) $resolved['fifa_stage_id'];
+        $competitionId = (int) $resolved['competition_id'];
+        $seasonId = (int) $resolved['season_id'];
+
+        try {
+            $live = $this->fifaClient->liveMatch($competitionId, $seasonId, $fifaStageId, $fifaMatchId);
+            $timeline = null;
+            try {
+                $timeline = $this->fifaClient->matchTimeline($competitionId, $seasonId, $fifaStageId, $fifaMatchId);
+            } catch (Throwable $e) {
+                Log::info('FIFA match timeline unavailable; mapping without shootout misses', [
+                    'match_id' => $matchId,
+                    'fifa_match_id' => $fifaMatchId,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+            $parsed = $this->fifaMapper->map($live, $timeline);
+        } catch (Throwable $e) {
+            Log::warning('FIFA matchdata scrape failed', [
+                'match_id' => $matchId,
+                'fifa_match_id' => $fifaMatchId,
+                'message' => $e->getMessage(),
+            ]);
+
+            return ['ok' => false, 'errors' => ['FIFA-Spieldaten konnten nicht geladen werden: '.$e->getMessage()]];
+        }
+
+        $pm = $this->pointsMode($userId);
+        $homeDb = $this->playersForTeam($userId, (int) $match->match_hometeam_id, $matchId);
+        $guestDb = $this->playersForTeam($userId, (int) $match->match_guestteam_id, $matchId);
+
+        [$homeMapped, $homeUnmatched] = $this->mapScrapedSide($parsed['home'], $homeDb, $pm);
+        [$guestMapped, $guestUnmatched] = $this->mapScrapedSide($parsed['guest'], $guestDb, $pm);
+
+        $players = $homeMapped + $guestMapped;
+        $unmatched = array_values(array_unique(array_merge($homeUnmatched, $guestUnmatched)));
+
+        return [
+            'ok' => true,
+            'message' => count($players) === 1
+                ? '1 Spieler zugeordnet.'
+                : count($players).' Spieler zugeordnet.',
+            'match_minutes' => (int) $parsed['match_minutes'],
+            'result' => $parsed['result'],
+            'players' => $players,
+            'unmatched' => $unmatched,
+            'matched' => count($players),
+            'fifa_match_id' => $fifaMatchId,
+        ];
+    }
+
+    /**
+     * @return array{
+     *     ok: bool,
+     *     fifa_match_id?: string,
+     *     fifa_stage_id?: string,
+     *     competition_id?: int,
+     *     season_id?: int,
+     *     errors?: list<string>
+     * }
+     */
+    private function resolveFifaMatch(MatchGame $match): array
+    {
+        $leagueId = (int) ($match->matchround?->matchround_league_id ?? 0);
+        if ($leagueId <= 0) {
+            return ['ok' => false, 'errors' => ['Spielrunde/Liga für dieses Spiel fehlt.']];
+        }
+
+        $league = League::query()->find($leagueId);
+        $identifier = trim((string) ($league?->league_fifa_competition_identifier ?? ''));
+        if ($identifier === '') {
+            return [
+                'ok' => false,
+                'errors' => ['Für diese Liga ist kein FIFA-Competition-Identifier hinterlegt (Admin → Ligen).'],
+            ];
+        }
+
+        $homeTeam = $match->homeTeam;
+        $awayTeam = $match->guestTeam;
+        if ($homeTeam === null || $awayTeam === null) {
+            return ['ok' => false, 'errors' => ['Heim- und/oder Gastteam fehlen.']];
+        }
+
+        $dateTs = strtotime((string) $match->match_date);
+        $date = $dateTs ? date('Y-m-d', $dateTs) : '';
+        if ($date === '') {
+            return ['ok' => false, 'errors' => ['Spieldatum fehlt.']];
+        }
+
+        try {
+            $api = FifaCompetitionApi::fromIdentifier($identifier, $this->fifaClient);
+            $homeFifaId = $this->resolveFifaTeamIdForFfbTeam($homeTeam, $api);
+            $awayFifaId = $this->resolveFifaTeamIdForFfbTeam($awayTeam, $api);
+            if ($homeFifaId === '' || $awayFifaId === '') {
+                return [
+                    'ok' => false,
+                    'errors' => [
+                        'Heim- und/oder Gastteam konnten nicht der FIFA-API zugeordnet werden '
+                        .'(team_team_code / Nationalität).',
+                    ],
+                ];
+            }
+            $fifaMatches = $api->matches();
+        } catch (InvalidArgumentException $e) {
+            return ['ok' => false, 'errors' => [$e->getMessage()]];
+        } catch (Throwable $e) {
+            return ['ok' => false, 'errors' => ['FIFA-Spiele konnten nicht geladen werden: '.$e->getMessage()]];
+        }
+
+        foreach ($fifaMatches as $fifa) {
+            if (
+                ($fifa['home_fifa_id'] ?? '') === $homeFifaId
+                && ($fifa['away_fifa_id'] ?? '') === $awayFifaId
+                && ($fifa['date'] ?? '') === $date
+            ) {
+                return [
+                    'ok' => true,
+                    'fifa_match_id' => (string) $fifa['fifa_match_id'],
+                    'fifa_stage_id' => (string) $fifa['fifa_stage_id'],
+                    'competition_id' => $api->competitionId,
+                    'season_id' => $api->seasonId,
+                ];
+            }
+        }
+
+        return [
+            'ok' => false,
+            'errors' => [
+                'Kein FIFA-Spiel für '
+                .($homeTeam->team_name ?? 'Heim')
+                .' – '
+                .($awayTeam->team_name ?? 'Gast')
+                .' am '.$date.' gefunden.',
+            ],
+        ];
+    }
+
+    private function resolveFifaTeamIdForFfbTeam(Team $team, FifaCompetitionApi $api): string
+    {
+        $code = strtoupper(trim((string) (
+            ($team->team_team_code ?? '') !== ''
+                ? $team->team_team_code
+                : ($team->team_nationality ?? '')
+        )));
+        $name = mb_strtolower(trim((string) ($team->team_name ?? '')));
+
+        try {
+            $fifaTeams = $api->teams();
+        } catch (Throwable) {
+            return '';
+        }
+
+        foreach ($fifaTeams as $fifa) {
+            $fifaCode = strtoupper(trim((string) (
+                ($fifa['team_code'] ?? '') !== '' ? $fifa['team_code'] : ($fifa['country_code'] ?? '')
+            )));
+            if ($code !== '' && $fifaCode === $code) {
+                return (string) $fifa['fifa_id'];
+            }
+        }
+
+        if ($name !== '') {
+            foreach ($fifaTeams as $fifa) {
+                $candidates = array_filter([
+                    mb_strtolower(trim((string) ($fifa['name_de'] ?? ''))),
+                    mb_strtolower(trim((string) ($fifa['name_en'] ?? ''))),
+                    mb_strtolower(trim((string) ($fifa['international_name'] ?? ''))),
+                ]);
+                if (in_array($name, $candidates, true)) {
+                    return (string) $fifa['fifa_id'];
+                }
+            }
+        }
+
+        return '';
+    }
+
+    /**
      * @return array{ok: bool, uefa_match_id?: string, errors?: list<string>}
      */
     private function resolveUefaMatchId(MatchGame $match): array
@@ -534,16 +752,19 @@ class AdminMatchdataService
         foreach ($scraped as $sp) {
             $name = trim((string) ($sp['player_name'] ?? ''));
             $uefaId = trim((string) ($sp['player_uefa_id'] ?? ''));
-            if ($name === '' && $uefaId === '') {
+            $fifaId = trim((string) ($sp['player_fifa_id'] ?? ''));
+            if ($name === '' && $uefaId === '' && $fifaId === '') {
                 continue;
             }
 
             $goals += (int) ($sp['player_num_goals'] ?? 0);
             $psHits += (int) ($sp['player_penalties_hit'] ?? 0);
 
-            $ptId = $this->findMatchingPlayerteamId($name, $dbPlayers, $usedPt, $uefaId);
+            $ptId = $this->findMatchingPlayerteamId($name, $dbPlayers, $usedPt, $uefaId, $fifaId);
             if ($ptId === null) {
-                $unmatched[] = $name !== '' ? $name : ('UEFA#'.$uefaId);
+                $unmatched[] = $name !== ''
+                    ? $name
+                    : ($fifaId !== '' ? 'FIFA#'.$fifaId : 'UEFA#'.$uefaId);
 
                 continue;
             }
@@ -592,7 +813,21 @@ class AdminMatchdataService
         array $dbPlayers,
         array $usedPt,
         string $uefaId = '',
+        string $fifaId = '',
     ): ?int {
+        $fifaId = trim($fifaId);
+        if ($fifaId !== '') {
+            foreach ($dbPlayers as $db) {
+                $ptId = (int) ($db['playerteam_id'] ?? 0);
+                if ($ptId <= 0 || isset($usedPt[$ptId])) {
+                    continue;
+                }
+                if (trim((string) ($db['player_fifa_id'] ?? '')) === $fifaId) {
+                    return $ptId;
+                }
+            }
+        }
+
         $uefaId = trim($uefaId);
         if ($uefaId !== '') {
             foreach ($dbPlayers as $db) {

@@ -1867,12 +1867,42 @@
     align-items: center;
 }
 
-.admin-mp-player-fields > label {
+.admin-mp-field-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    align-items: center;
+    padding: 3px 6px;
+    border: 1px solid #c5dcc5;
+    background: #f0faf0;
+}
+
+.admin-mp-field-group-title {
+    flex: 0 0 100%;
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: #2f4f2f;
+    line-height: 1.2;
+}
+
+.admin-mp-player-fields > label,
+.admin-mp-field-group > label {
     display: inline-flex;
     align-items: center;
     gap: 3px;
     margin: 0;
     font-size: 9pt;
+}
+
+.admin-mp-pos-heading {
+    margin: 12px 0 4px;
+    font-size: 10pt;
+    font-weight: 700;
+    color: #2f4f2f;
+}
+
+.admin-mp-pos-heading:first-child {
+    margin-top: 0;
 }
 
 .admin-mp-input {
@@ -1888,11 +1918,36 @@
     width: 3.6rem;
 }
 
+.admin-mp-input-readonly,
+.admin-mp-input[readonly] {
+    background: #e8eee8;
+    color: #333;
+    cursor: default;
+}
+
 .admin-mp-cards {
     display: inline-flex;
     flex-wrap: wrap;
     gap: 4px 8px;
     align-items: center;
+}
+
+.admin-mp-cards.is-card-y {
+    background: #ffe566;
+    border-color: #d4a800;
+    box-shadow: 0 0 0 2px rgba(212, 168, 0, 0.45);
+}
+
+.admin-mp-cards.is-card-yr {
+    background: linear-gradient(105deg, #ffe566 0 48%, #ff6b6b 52% 100%);
+    border-color: #c45f00;
+    box-shadow: 0 0 0 2px rgba(196, 95, 0, 0.5);
+}
+
+.admin-mp-cards.is-card-r {
+    background: #ff6b6b;
+    border-color: #c62828;
+    box-shadow: 0 0 0 2px rgba(198, 40, 40, 0.45);
 }
 
 .admin-mp-card-opt {
@@ -1901,6 +1956,34 @@
     gap: 2px;
     margin: 0;
     font-size: 9pt;
+    cursor: pointer;
+}
+
+.admin-mp-card-none {
+    display: inline-block;
+    min-width: 14px;
+    text-align: center;
+    color: #666;
+    line-height: 16px;
+}
+
+.admin-mp-input.is-changed {
+    background: #39ff14;
+    border-color: #149a00;
+    box-shadow: 0 0 0 2px rgba(57, 255, 20, 0.55);
+    font-weight: 700;
+}
+
+.admin-mp-time-fields.has-played {
+    border-width: 3px;
+    border-color: #1b7a1b;
+    box-shadow: 0 0 0 3px rgba(27, 122, 27, 0.28);
+    background: #dff8df;
+    padding: 5px 8px;
+}
+
+.admin-mp-ps-fields[hidden] {
+    display: none !important;
 }
 
 .admin-mp-loading {
