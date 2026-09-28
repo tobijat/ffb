@@ -1019,6 +1019,7 @@ class AdminMatchService
             ];
         }
 
+        $teamsByFifaId = $this->teamsIndexedByFifaId();
         $teamsByCode = $this->teamsIndexedByTeamCode();
         $teamsByName = $this->teamsIndexedByLowerName();
         $leagueMatches = $this->leagueMatchesIndexedByTeamsAndDate($leagueId);
@@ -1030,14 +1031,18 @@ class AdminMatchService
 
         foreach ($fifaMatches as $fifa) {
             $homeTeam = $this->resolveFfbTeamForFifaMatchSide(
+                (string) ($fifa['home_fifa_id'] ?? ''),
                 (string) ($fifa['home_abbr'] ?? ''),
                 (string) ($fifa['home_name_de'] ?? ''),
+                $teamsByFifaId,
                 $teamsByCode,
                 $teamsByName,
             );
             $awayTeam = $this->resolveFfbTeamForFifaMatchSide(
+                (string) ($fifa['away_fifa_id'] ?? ''),
                 (string) ($fifa['away_abbr'] ?? ''),
                 (string) ($fifa['away_name_de'] ?? ''),
+                $teamsByFifaId,
                 $teamsByCode,
                 $teamsByName,
             );
@@ -1126,7 +1131,7 @@ class AdminMatchService
                 'rows' => $rows,
             ],
             'message' => count($rows).' FIFA-Spiele geprüft, '.$matched.' vorhanden, '.$missing.' neu'
-                .($unmapped > 0 ? ', '.$unmapped.' ohne Team-Zuordnung (team_team_code).' : '.'),
+                .($unmapped > 0 ? ', '.$unmapped.' ohne Team-Zuordnung (team_fifa_id / team_team_code).' : '.'),
         ];
     }
 
@@ -1305,11 +1310,29 @@ class AdminMatchService
     /**
      * @return array<string, Team>
      */
+    private function teamsIndexedByFifaId(): array
+    {
+        $indexed = [];
+        foreach (
+            Team::query()->get(['team_id', 'team_name', 'team_team_code', 'team_nationality', 'team_fifa_id']) as $team
+        ) {
+            $fifaId = trim((string) ($team->team_fifa_id ?? ''));
+            if ($fifaId !== '' && ! isset($indexed[$fifaId])) {
+                $indexed[$fifaId] = $team;
+            }
+        }
+
+        return $indexed;
+    }
+
+    /**
+     * @return array<string, Team>
+     */
     private function teamsIndexedByTeamCode(): array
     {
         $indexed = [];
         foreach (
-            Team::query()->get(['team_id', 'team_name', 'team_team_code', 'team_nationality']) as $team
+            Team::query()->get(['team_id', 'team_name', 'team_team_code', 'team_nationality', 'team_fifa_id']) as $team
         ) {
             $code = strtoupper(trim((string) (
                 ($team->team_team_code ?? '') !== ''
@@ -1330,7 +1353,9 @@ class AdminMatchService
     private function teamsIndexedByLowerName(): array
     {
         $indexed = [];
-        foreach (Team::query()->get(['team_id', 'team_name', 'team_team_code', 'team_nationality']) as $team) {
+        foreach (
+            Team::query()->get(['team_id', 'team_name', 'team_team_code', 'team_nationality', 'team_fifa_id']) as $team
+        ) {
             $name = mb_strtolower(trim((string) ($team->team_name ?? '')));
             if ($name !== '' && ! isset($indexed[$name])) {
                 $indexed[$name] = $team;
@@ -1341,23 +1366,38 @@ class AdminMatchService
     }
 
     /**
+     * @param  array<string, Team>  $teamsByFifaId
      * @param  array<string, Team>  $teamsByCode
      * @param  array<string, Team>  $teamsByName
      */
     private function resolveFfbTeamForFifaMatchSide(
+        string $fifaId,
         string $abbr,
         string $nameDe,
+        array $teamsByFifaId,
         array $teamsByCode,
         array $teamsByName,
     ): ?Team {
+        $fifaId = trim($fifaId);
+        if ($fifaId !== '' && isset($teamsByFifaId[$fifaId])) {
+            return $teamsByFifaId[$fifaId];
+        }
+
         $abbr = strtoupper(trim($abbr));
         if ($abbr !== '' && isset($teamsByCode[$abbr])) {
-            return $teamsByCode[$abbr];
+            $candidate = $teamsByCode[$abbr];
+            // Already linked to another FIFA id → only matchable by that id.
+            if (trim((string) ($candidate->team_fifa_id ?? '')) === '') {
+                return $candidate;
+            }
         }
 
         $name = mb_strtolower(trim($nameDe));
         if ($name !== '' && isset($teamsByName[$name])) {
-            return $teamsByName[$name];
+            $candidate = $teamsByName[$name];
+            if (trim((string) ($candidate->team_fifa_id ?? '')) === '') {
+                return $candidate;
+            }
         }
 
         return null;

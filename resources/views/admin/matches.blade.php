@@ -477,8 +477,8 @@
             <p class="hint">
                 Nutzt den FIFA-Competition-Identifier der ausgewählten Liga
                 (<code>{{ $fifaIdentifier !== '' ? $fifaIdentifier : '—' }}</code>).
-                Vorhandene Spiele werden über Heim-/Gast-Team (<code>team_team_code</code> / Nationalität)
-                und Datum (Europe/Berlin-Kalendertag des FIFA-Anstoßes) erkannt.
+                Vorhandene Spiele werden über Heim-/Gast-Team (<code>team_fifa_id</code> /
+                <code>team_team_code</code>) und Datum (Europe/Berlin-Kalendertag des FIFA-Anstoßes) erkannt.
                 Knockout-Runden werden aus dem FIFA-Stage-Namen vorgeschlagen.
             </p>
 

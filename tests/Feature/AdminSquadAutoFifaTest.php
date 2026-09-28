@@ -392,6 +392,7 @@ class AdminSquadAutoFifaTest extends TestCase
             $table->integer('team_num_players')->default(0);
             $table->tinyInteger('team_status')->default(1);
             $table->string('team_uefa_id')->default('');
+            $table->string('team_fifa_id')->default('');
             $table->string('team_team_code')->default('');
         });
 

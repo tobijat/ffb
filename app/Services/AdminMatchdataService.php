@@ -633,6 +633,11 @@ class AdminMatchdataService
 
     private function resolveFifaTeamIdForFfbTeam(Team $team, FifaCompetitionApi $api): string
     {
+        $stored = trim((string) ($team->team_fifa_id ?? ''));
+        if ($stored !== '') {
+            return $stored;
+        }
+
         $code = strtoupper(trim((string) (
             ($team->team_team_code ?? '') !== ''
                 ? $team->team_team_code

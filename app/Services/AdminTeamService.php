@@ -22,12 +22,14 @@ class AdminTeamService
     public function __construct(
         private readonly AdminCenterService $adminCenter,
         private readonly UefaCompApiClient $uefaClient = new UefaCompApiClient,
+        private readonly FifaCompApiClient $fifaClient = new FifaCompApiClient,
     ) {}
 
     /**
      * @param  array<string, mixed>|null  $form
      * @param  array<string, mixed>|null  $auto
      * @param  array<string, mixed>|null  $autoUefa
+     * @param  array<string, mixed>|null  $autoFifa
      * @return array<string, mixed>
      */
     public function pagePayload(
@@ -37,6 +39,7 @@ class AdminTeamService
         string $tab = 'manual',
         ?array $auto = null,
         ?array $autoUefa = null,
+        ?array $autoFifa = null,
     ): array {
         $shell = $this->adminCenter->shellPayload($userId);
         $form = $form ?? $this->emptyForm();
@@ -45,15 +48,22 @@ class AdminTeamService
         $resolvedTab = match ($tab) {
             'auto' => 'auto',
             'auto-uefa' => 'auto-uefa',
+            'auto-fifa' => 'auto-fifa',
             default => 'manual',
         };
 
         $selectedLeagueId = (int) ($shell['selected_league_id'] ?? 0);
         $uefaIdentifier = '';
+        $fifaIdentifier = '';
         if ($selectedLeagueId > 0) {
-            $uefaIdentifier = (string) (League::query()
+            $leagueRow = League::query()
                 ->whereKey($selectedLeagueId)
-                ->value('league_uefa_competition_identifier') ?? '');
+                ->first([
+                    'league_uefa_competition_identifier',
+                    'league_fifa_competition_identifier',
+                ]);
+            $uefaIdentifier = (string) ($leagueRow?->league_uefa_competition_identifier ?? '');
+            $fifaIdentifier = (string) ($leagueRow?->league_fifa_competition_identifier ?? '');
         }
 
         return [
@@ -62,16 +72,20 @@ class AdminTeamService
             'selected_league' => $shell['selected_league'],
             'selected_league_id' => $selectedLeagueId,
             'uefa_competition_identifier' => $uefaIdentifier,
+            'fifa_competition_identifier' => $fifaIdentifier,
             'icons' => $this->iconOptions($selectedKey),
             'selected_symbol' => $this->selectedSymbol($selectedKey, $teamId),
             'uses_icon_picker' => ! $this->isMappedNation($selectedKey),
             'items' => $this->listItems(),
-            'team_options' => $resolvedTab === 'auto-uefa' ? $this->teamSelectOptions() : [],
+            'team_options' => in_array($resolvedTab, ['auto-uefa', 'auto-fifa'], true)
+                ? $this->teamSelectOptions()
+                : [],
             'form' => $form,
             'mode' => $mode === 'update' ? 'update' : 'create',
             'tab' => $resolvedTab,
             'auto' => $auto ?? $this->emptyAutoState(),
             'auto_uefa' => $autoUefa ?? $this->emptyAutoUefaState(),
+            'auto_fifa' => $autoFifa ?? $this->emptyAutoFifaState(),
             'matchplan_files' => $resolvedTab === 'auto' ? $this->matchplanJsonOptions() : [],
         ];
     }
@@ -108,6 +122,24 @@ class AdminTeamService
     }
 
     /**
+     * @return array{
+     *     analyzed: bool,
+     *     source_name: string,
+     *     league_id: int,
+     *     rows: list<array<string, mixed>>
+     * }
+     */
+    public function emptyAutoFifaState(): array
+    {
+        return [
+            'analyzed' => false,
+            'source_name' => '',
+            'league_id' => 0,
+            'rows' => [],
+        ];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function emptyForm(): array
@@ -119,6 +151,7 @@ class AdminTeamService
             'team_icon_key' => '',
             'team_status' => 1,
             'team_uefa_id' => '',
+            'team_fifa_id' => '',
             'team_team_code' => '',
             'teamfid_fid_tm' => '',
             'teamfid_name_tm' => '',
@@ -147,6 +180,7 @@ class AdminTeamService
             'team_icon_key' => '',
             'team_status' => (int) (bool) $item->team_status,
             'team_uefa_id' => (string) ($item->team_uefa_id ?? ''),
+            'team_fifa_id' => (string) ($item->team_fifa_id ?? ''),
             'team_team_code' => (string) ($item->team_team_code ?? ''),
             'teamfid_fid_tm' => (string) ($fid?->teamfid_fid_tm ?? ''),
             'teamfid_name_tm' => (string) ($fid?->teamfid_name_tm ?? ''),
@@ -190,6 +224,7 @@ class AdminTeamService
                 'team_num_players' => 0,
                 'team_status' => (int) $form['team_status'],
                 'team_uefa_id' => $form['team_uefa_id'],
+                'team_fifa_id' => $form['team_fifa_id'],
                 'team_team_code' => $form['team_team_code'],
             ]);
             $createdTeamId = (int) $team->team_id;
@@ -250,6 +285,7 @@ class AdminTeamService
             $item->team_nationality = $form['team_nationality'];
             $item->team_status = (int) $form['team_status'];
             $item->team_uefa_id = $form['team_uefa_id'];
+            $item->team_fifa_id = $form['team_fifa_id'];
             $item->team_team_code = $form['team_team_code'];
             $item->save();
 
@@ -902,11 +938,303 @@ class AdminTeamService
     }
 
     /**
-     * Fallback match candidate: unused FFB team that is not already linked to another UEFA id.
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     auto_fifa?: array<string, mixed>
+     * }
+     */
+    public function analyzeFifaTeams(int $leagueId): array
+    {
+        if ($leagueId <= 0) {
+            return ['ok' => false, 'errors' => ['Bitte zuerst unter Ligen eine Liga auswählen.']];
+        }
+
+        $league = League::query()->find($leagueId);
+        if (! $league) {
+            return ['ok' => false, 'errors' => ['Liga nicht gefunden.']];
+        }
+
+        $identifier = trim((string) ($league->league_fifa_competition_identifier ?? ''));
+        if ($identifier === '') {
+            return [
+                'ok' => false,
+                'errors' => ['Für diese Liga ist kein FIFA-Competition-Identifier hinterlegt (Admin → Ligen).'],
+            ];
+        }
+
+        try {
+            $api = FifaCompetitionApi::fromIdentifier($identifier, $this->fifaClient);
+            $fifaTeams = $api->teams();
+        } catch (InvalidArgumentException $e) {
+            return ['ok' => false, 'errors' => [$e->getMessage()]];
+        } catch (Throwable $e) {
+            Log::warning('FIFA auto-teams analyze failed', [
+                'league_id' => $leagueId,
+                'message' => $e->getMessage(),
+            ]);
+
+            return ['ok' => false, 'errors' => ['FIFA-Teams konnten nicht geladen werden: '.$e->getMessage()]];
+        }
+
+        if ($fifaTeams === []) {
+            return [
+                'ok' => false,
+                'errors' => ['Für '.$identifier.' wurden keine FIFA-Teams gefunden.'],
+            ];
+        }
+
+        $ffbTeams = Team::query()
+            ->orderBy('team_name')
+            ->get([
+                'team_id',
+                'team_name',
+                'team_nationality',
+                'team_fifa_id',
+                'team_team_code',
+                'team_status',
+            ]);
+
+        /** @var array<string, Team> $byFifaId */
+        $byFifaId = [];
+        /** @var array<string, Team> $byTeamCode */
+        $byTeamCode = [];
+        foreach ($ffbTeams as $team) {
+            $fifaId = trim((string) ($team->team_fifa_id ?? ''));
+            if ($fifaId !== '' && ! isset($byFifaId[$fifaId])) {
+                $byFifaId[$fifaId] = $team;
+            }
+            $code = strtoupper(trim((string) ($team->team_team_code ?? '')));
+            if ($code !== '' && ! isset($byTeamCode[$code])) {
+                $byTeamCode[$code] = $team;
+            }
+        }
+
+        $rows = [];
+        $matched = 0;
+        /** @var array<int, true> $usedTeamIds */
+        $usedTeamIds = [];
+
+        foreach ($fifaTeams as $fifa) {
+            $match = null;
+            $fifaId = (string) $fifa['fifa_id'];
+            $teamCode = $fifa['team_code'] !== '' ? $fifa['team_code'] : $fifa['country_code'];
+            $teamCode = strtoupper(trim((string) $teamCode));
+
+            // Prefer an existing DB link via team_fifa_id; fall back only when none exists.
+            if (isset($byFifaId[$fifaId]) && ! isset($usedTeamIds[(int) $byFifaId[$fifaId]->team_id])) {
+                $match = $byFifaId[$fifaId];
+            } elseif ($teamCode !== '') {
+                $match = $this->firstUnusedFallbackTeam($byTeamCode[$teamCode] ?? null, $usedTeamIds, 'team_fifa_id')
+                    ?? $this->matchByNationalityFallback(
+                        $teamCode,
+                        (string) $fifa['name_de'],
+                        $ffbTeams,
+                        $usedTeamIds,
+                        'team_fifa_id',
+                    );
+            }
+
+            $teamId = $match !== null ? (int) $match->team_id : 0;
+            if ($teamId > 0) {
+                $usedTeamIds[$teamId] = true;
+                $matched++;
+            }
+
+            $rows[] = [
+                'match_status' => $teamId > 0 ? 'matched' : 'unmatched',
+                'team_id' => $teamId,
+                'create_new' => 0,
+                'team_name' => $match !== null ? (string) $match->team_name : '',
+                'team_nationality' => $match !== null
+                    ? (string) $match->team_nationality
+                    : strtolower($teamCode),
+                'fifa_name' => $fifa['name_de'],
+                'fifa_id' => $fifaId,
+                'fifa_team_code' => $teamCode,
+                'team_fifa_id' => $fifaId,
+                'team_team_code' => $teamCode,
+            ];
+        }
+
+        $unmatched = count($rows) - $matched;
+
+        return [
+            'ok' => true,
+            'auto_fifa' => [
+                'analyzed' => true,
+                'source_name' => $api->identifier(),
+                'league_id' => $leagueId,
+                'rows' => $rows,
+            ],
+            'message' => count($rows).' FIFA-Teams geprüft, '.$matched.' automatisch zugeordnet'
+                .($unmatched > 0 ? ', '.$unmatched.' ohne Treffer.' : '.'),
+        ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>|array<int, array<string, mixed>>  $rows
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     auto_fifa?: array<string, mixed>
+     * }
+     */
+    public function saveFifaTeams(array $rows, string $sourceName = '', int $leagueId = 0): array
+    {
+        $normalized = [];
+        $errors = [];
+        /** @var array<int, true> $usedTeamIds */
+        $usedTeamIds = [];
+
+        foreach (array_values($rows) as $index => $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+
+            $label = trim((string) ($row['fifa_name'] ?? '')) !== ''
+                ? (string) $row['fifa_name']
+                : 'Zeile '.($index + 1);
+
+            $fifaId = trim((string) ($row['team_fifa_id'] ?? ($row['fifa_id'] ?? '')));
+            $teamCode = strtoupper(trim((string) ($row['team_team_code'] ?? ($row['fifa_team_code'] ?? ''))));
+            $createNew = (int) ($row['create_new'] ?? 0) === 1;
+            $teamId = (int) ($row['team_id'] ?? 0);
+            $teamName = trim((string) ($row['team_name'] ?? ''));
+            $nationality = $this->normalizeIconKey((string) ($row['team_nationality'] ?? ''));
+            if ($nationality === '' && $teamCode !== '') {
+                $nationality = strtolower($teamCode);
+            }
+
+            if ($fifaId === '') {
+                $errors[] = $label.': FIFA-ID fehlt.';
+            }
+            if ($teamCode === '') {
+                $errors[] = $label.': Team-Code fehlt.';
+            }
+
+            if (! $createNew && $teamId <= 0) {
+                $errors[] = $label.': Bitte ein FFB-Team zuordnen oder „Neu anlegen“ wählen.';
+            }
+
+            if ($createNew) {
+                $teamId = 0;
+                if ($teamName === '') {
+                    $teamName = trim((string) ($row['fifa_name'] ?? ''));
+                }
+                if ($teamName === '') {
+                    $errors[] = $label.': Teamname für Neuanlage fehlt.';
+                }
+            } elseif ($teamId > 0) {
+                if (isset($usedTeamIds[$teamId])) {
+                    $errors[] = $label.': FFB-Team #'.$teamId.' ist mehrfach zugeordnet.';
+                }
+                $usedTeamIds[$teamId] = true;
+            }
+
+            $normalized[] = [
+                'team_id' => $teamId,
+                'create_new' => $createNew ? 1 : 0,
+                'team_name' => $teamName,
+                'team_nationality' => $nationality,
+                'fifa_name' => (string) ($row['fifa_name'] ?? ''),
+                'fifa_id' => (string) ($row['fifa_id'] ?? $fifaId),
+                'fifa_team_code' => (string) ($row['fifa_team_code'] ?? $teamCode),
+                'team_fifa_id' => $fifaId,
+                'team_team_code' => $teamCode,
+                'match_status' => ($createNew || $teamId > 0) ? 'matched' : 'unmatched',
+            ];
+        }
+
+        $autoState = [
+            'analyzed' => true,
+            'source_name' => $sourceName,
+            'league_id' => $leagueId,
+            'rows' => $normalized,
+        ];
+
+        if ($normalized === []) {
+            return ['ok' => false, 'errors' => ['Keine Teams zum Speichern.'], 'auto_fifa' => $autoState];
+        }
+
+        if ($errors !== []) {
+            return ['ok' => false, 'errors' => $errors, 'auto_fifa' => $autoState];
+        }
+
+        $updated = 0;
+        $created = 0;
+
+        try {
+            DB::transaction(function () use ($normalized, &$updated, &$created): void {
+                foreach ($normalized as $row) {
+                    if ((int) $row['create_new'] === 1) {
+                        Team::query()->create([
+                            'team_foreign_id' => '',
+                            'team_name' => $row['team_name'],
+                            'team_nationality' => $row['team_nationality'],
+                            'team_num_players' => 0,
+                            'team_status' => 1,
+                            'team_uefa_id' => '',
+                            'team_fifa_id' => $row['team_fifa_id'],
+                            'team_team_code' => $row['team_team_code'],
+                        ]);
+                        $created++;
+
+                        continue;
+                    }
+
+                    $teamId = (int) $row['team_id'];
+                    $team = Team::query()->find($teamId);
+                    if (! $team) {
+                        throw new InvalidArgumentException('Team #'.$teamId.' nicht gefunden.');
+                    }
+
+                    // Existing teams: only persist FIFA link fields — never name/nationality.
+                    $affected = Team::query()
+                        ->whereKey($teamId)
+                        ->update([
+                            'team_fifa_id' => $row['team_fifa_id'],
+                            'team_team_code' => $row['team_team_code'],
+                        ]);
+
+                    if ($affected === 0 && (
+                        (string) $team->team_fifa_id !== (string) $row['team_fifa_id']
+                        || (string) $team->team_team_code !== (string) $row['team_team_code']
+                    )) {
+                        throw new InvalidArgumentException(
+                            'Team #'.$teamId.': team_fifa_id/team_team_code konnten nicht gespeichert werden (Spalten ggf. nicht schreibbar).'
+                        );
+                    }
+
+                    $updated++;
+                }
+            });
+        } catch (InvalidArgumentException $e) {
+            return ['ok' => false, 'errors' => [$e->getMessage()], 'auto_fifa' => $autoState];
+        }
+
+        $parts = [];
+        if ($updated > 0) {
+            $parts[] = $updated === 1 ? '1 Team aktualisiert' : $updated.' Teams aktualisiert';
+        }
+        if ($created > 0) {
+            $parts[] = $created === 1 ? '1 Team angelegt' : $created.' Teams angelegt';
+        }
+
+        return [
+            'ok' => true,
+            'message' => ($parts !== [] ? implode(', ', $parts) : 'Keine Änderungen').'.',
+        ];
+    }
+
+    /**
+     * Fallback match candidate: unused FFB team that is not already linked to another external id.
      *
      * @param  array<int, true>  $usedTeamIds
      */
-    private function firstUnusedFallbackTeam(?Team $candidate, array $usedTeamIds): ?Team
+    private function firstUnusedFallbackTeam(?Team $candidate, array $usedTeamIds, string $linkedIdAttribute = 'team_uefa_id'): ?Team
     {
         if ($candidate === null) {
             return null;
@@ -917,8 +1245,8 @@ class AdminTeamService
             return null;
         }
 
-        // Already linked via team_uefa_id → only matchable by that id, not by code/nationality.
-        if (trim((string) ($candidate->team_uefa_id ?? '')) !== '') {
+        // Already linked via external id → only matchable by that id, not by code/nationality.
+        if (trim((string) ($candidate->{$linkedIdAttribute} ?? '')) !== '') {
             return null;
         }
 
@@ -934,9 +1262,10 @@ class AdminTeamService
      */
     private function matchByNationalityFallback(
         string $teamCode,
-        string $uefaNameDe,
+        string $externalNameDe,
         iterable $ffbTeams,
         array $usedTeamIds,
+        string $linkedIdAttribute = 'team_uefa_id',
     ): ?Team {
         $teamCode = strtoupper(trim($teamCode));
         if ($teamCode === '') {
@@ -950,7 +1279,7 @@ class AdminTeamService
             if ($teamId <= 0 || isset($usedTeamIds[$teamId])) {
                 continue;
             }
-            if (trim((string) ($team->team_uefa_id ?? '')) !== '') {
+            if (trim((string) ($team->{$linkedIdAttribute} ?? '')) !== '') {
                 continue;
             }
             $nat = strtoupper(trim((string) ($team->team_nationality ?? '')));
@@ -964,9 +1293,9 @@ class AdminTeamService
             return null;
         }
 
-        $normalizedUefaName = $this->normalizeMatchName($uefaNameDe);
+        $normalizedExternalName = $this->normalizeMatchName($externalNameDe);
         foreach ($candidates as $team) {
-            if ($this->normalizeMatchName((string) $team->team_name) === $normalizedUefaName) {
+            if ($this->normalizeMatchName((string) $team->team_name) === $normalizedExternalName) {
                 return $team;
             }
         }
@@ -1287,6 +1616,7 @@ class AdminTeamService
             'team_icon_key' => $this->normalizeIconKey((string) ($input['team_icon_key'] ?? '')),
             'team_status' => ((string) ($input['team_status'] ?? '1') === '0') ? 0 : 1,
             'team_uefa_id' => trim((string) ($input['team_uefa_id'] ?? '')),
+            'team_fifa_id' => trim((string) ($input['team_fifa_id'] ?? '')),
             'team_team_code' => strtoupper(trim((string) ($input['team_team_code'] ?? ''))),
             'teamfid_fid_tm' => trim((string) ($input['teamfid_fid_tm'] ?? '')),
             'teamfid_name_tm' => trim((string) ($input['teamfid_name_tm'] ?? '')),

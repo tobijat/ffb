@@ -173,7 +173,7 @@
                 <div class="admin-mp-result-row admin-mp-result-url">
                     <p class="hint" style="margin:0;">
                         Lädt Ergebnis, Spieldauer, Elfmeterschießen und Spielerdaten (Minuten, Tore, Assists, Karten, …) von der FIFA-API.
-                        Zuordnung über <code>team_team_code</code> / Datum und <code>player_fifa_id</code>.
+                        Zuordnung über <code>team_fifa_id</code> / <code>team_team_code</code> / Datum und <code>player_fifa_id</code>.
                     </p>
                     <div class="admin-mp-url-row">
                         <button type="button" id="admin-mp-scrape-fifa" class="admin-submit" disabled>FIFA-Spieldaten laden</button>

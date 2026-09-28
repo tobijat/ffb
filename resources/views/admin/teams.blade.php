@@ -10,10 +10,12 @@
     $tab = match ($data['tab'] ?? 'manual') {
         'auto' => 'auto',
         'auto-uefa' => 'auto-uefa',
+        'auto-fifa' => 'auto-fifa',
         default => 'manual',
     };
     $auto = $data['auto'] ?? ['analyzed' => false, 'source_name' => '', 'present' => [], 'missing' => []];
     $autoUefa = $data['auto_uefa'] ?? ['analyzed' => false, 'source_name' => '', 'league_id' => 0, 'rows' => []];
+    $autoFifa = $data['auto_fifa'] ?? ['analyzed' => false, 'source_name' => '', 'league_id' => 0, 'rows' => []];
     $selectedSymbol = $data['selected_symbol'] ?? null;
     $usesIconPicker = (bool) ($data['uses_icon_picker'] ?? true);
     $flashErrors = $errors ?: (session('admin_errors') ?: []);
@@ -25,7 +27,11 @@
     $autoUefaAnalyzed = (bool) ($autoUefa['analyzed'] ?? false);
     $autoUefaSource = (string) ($autoUefa['source_name'] ?? '');
     $autoUefaRows = is_array($autoUefa['rows'] ?? null) ? $autoUefa['rows'] : [];
+    $autoFifaAnalyzed = (bool) ($autoFifa['analyzed'] ?? false);
+    $autoFifaSource = (string) ($autoFifa['source_name'] ?? '');
+    $autoFifaRows = is_array($autoFifa['rows'] ?? null) ? $autoFifa['rows'] : [];
     $uefaIdentifier = (string) ($data['uefa_competition_identifier'] ?? '');
+    $fifaIdentifier = (string) ($data['fifa_competition_identifier'] ?? '');
     $selectedLeagueId = (int) ($data['selected_league_id'] ?? 0);
     $teamOptions = is_array($data['team_options'] ?? null) ? $data['team_options'] : [];
 @endphp
@@ -54,6 +60,12 @@
                 href="{{ route('admin.teams', ['tab' => 'auto-uefa']) }}"
             >
                 Auto-Teams (UEFA)
+            </a>
+            <a
+                class="admin-squad-tab ffb-tab{{ $tab === 'auto-fifa' ? ' is-active' : '' }}"
+                href="{{ route('admin.teams', ['tab' => 'auto-fifa']) }}"
+            >
+                Auto-Teams (FIFA)
             </a>
         </nav>
 
@@ -402,6 +414,179 @@
             @elseif ($autoUefaAnalyzed)
                 <p class="muted">Keine UEFA-Teams gefunden.</p>
             @endif
+        @elseif ($tab === 'auto-fifa')
+            @php
+                $selectedLeagueTitle = (string) (($data['selected_league']['league_title'] ?? '') ?: '');
+            @endphp
+
+            <p class="hint">
+                Nutzt den FIFA-Competition-Identifier der ausgewählten Liga
+                @if ($selectedLeagueTitle !== '')
+                    (<strong>{{ $selectedLeagueTitle }}</strong>)
+                @endif.
+                Format: <code>idCompetition=…&amp;idSeason=…</code>
+            </p>
+
+            @if ($selectedLeagueId <= 0)
+                <p class="hint">Bitte zuerst unter <a href="{{ url('/admin') }}">Ligen</a> eine Liga auswählen.</p>
+            @elseif ($fifaIdentifier === '')
+                <p class="hint">
+                    Für diese Liga ist kein Identifier hinterlegt.
+                    Bitte unter <a href="{{ route('admin.leagues') }}">Ligen</a> setzen.
+                </p>
+            @else
+                <p class="muted">Identifier: <code>{{ $fifaIdentifier }}</code></p>
+
+                <form
+                    class="admin-form admin-auto-teams-upload"
+                    method="post"
+                    action="{{ route('admin.teams.auto-fifa.analyze') }}"
+                    accept-charset="UTF-8"
+                >
+                    @csrf
+                    <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
+                    <div class="admin-actions">
+                        <button type="submit" class="admin-submit">Teams prüfen</button>
+                    </div>
+                </form>
+            @endif
+
+            @if ($autoFifaAnalyzed && count($autoFifaRows) > 0)
+                <div class="admin-auto-teams-result">
+                    @if ($autoFifaSource !== '')
+                        <p class="muted">Quelle: {{ $autoFifaSource }}</p>
+                    @endif
+
+                    <form
+                        class="admin-form"
+                        id="admin-auto-fifa-teams-form"
+                        method="post"
+                        action="{{ route('admin.teams.auto-fifa.store') }}"
+                        accept-charset="UTF-8"
+                    >
+                        @csrf
+                        <input type="hidden" name="source_name" value="{{ $autoFifaSource }}">
+                        <input type="hidden" name="league_id" value="{{ (int) ($autoFifa['league_id'] ?? $selectedLeagueId) }}">
+                        {{-- One JSON field avoids PHP max_input_vars truncating large team lists. --}}
+                        <input type="hidden" name="rows_json" id="admin-auto-fifa-teams-rows-json" value="">
+
+                        <div class="admin-auto-teams-table-wrap admin-auto-fifa-teams-wrap">
+                            <table class="admin-auto-teams-table admin-auto-fifa-teams-table" id="admin-auto-fifa-teams-table">
+                                <thead>
+                                    <tr>
+                                        <th>Zuordnung (FFB)</th>
+                                        <th>FIFA-Name (DE)</th>
+                                        <th>Nat.</th>
+                                        <th>FIFA-Code</th>
+                                        <th>team_fifa_id</th>
+                                        <th>team_team_code</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($autoFifaRows as $index => $row)
+                                        @php
+                                            $isMatched = (string) ($row['match_status'] ?? '') === 'matched';
+                                            $createNew = (int) ($row['create_new'] ?? 0) === 1;
+                                            $rowTeamId = (int) ($row['team_id'] ?? 0);
+                                            $rowPayload = [
+                                                'fifa_name' => (string) ($row['fifa_name'] ?? ''),
+                                                'fifa_id' => (string) ($row['fifa_id'] ?? ''),
+                                                'fifa_team_code' => (string) ($row['fifa_team_code'] ?? ''),
+                                                'match_status' => (string) ($row['match_status'] ?? 'unmatched'),
+                                                'team_name' => (string) (($row['team_name'] ?? '') !== '' ? $row['team_name'] : ($row['fifa_name'] ?? '')),
+                                                'team_id' => $rowTeamId,
+                                                'create_new' => $createNew ? '1' : '0',
+                                                'team_nationality' => (string) ($row['team_nationality'] ?? ''),
+                                                'team_fifa_id' => (string) ($row['team_fifa_id'] ?? ''),
+                                                'team_team_code' => (string) ($row['team_team_code'] ?? ''),
+                                            ];
+                                        @endphp
+                                        <tr
+                                            class="admin-auto-fifa-row{{ $isMatched ? ' is-matched' : ' is-unmatched' }}"
+                                            data-row='@json($rowPayload)'
+                                        >
+                                            <td class="admin-auto-fifa-match-cell">
+                                                <select
+                                                    class="admin-auto-fifa-team-id"
+                                                    aria-label="FFB-Team {{ $index + 1 }}"
+                                                >
+                                                    <option value="">— zuordnen —</option>
+                                                    <option value="0" data-create-new="1" @selected($createNew)>Neu anlegen</option>
+                                                    @foreach ($teamOptions as $option)
+                                                        <option
+                                                            value="{{ $option['team_id'] }}"
+                                                            @selected(! $createNew && $rowTeamId === (int) $option['team_id'])
+                                                        >
+                                                            {{ $option['team_label'] }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                <input
+                                                    type="hidden"
+                                                    value="{{ $createNew ? '1' : '0' }}"
+                                                    class="admin-auto-fifa-create-new"
+                                                >
+                                                <input
+                                                    type="hidden"
+                                                    value="{{ $rowPayload['match_status'] }}"
+                                                    class="admin-auto-fifa-match-status"
+                                                >
+                                                <input
+                                                    type="hidden"
+                                                    value="{{ $rowPayload['team_name'] }}"
+                                                    class="admin-auto-fifa-team-name"
+                                                >
+                                            </td>
+                                            <td>{{ $row['fifa_name'] ?? '' }}</td>
+                                            <td>
+                                                <input
+                                                    type="text"
+                                                    value="{{ $row['team_nationality'] ?? '' }}"
+                                                    maxlength="32"
+                                                    class="admin-auto-fifa-nat"
+                                                    aria-label="Nationalität {{ $index + 1 }}"
+                                                    readonly
+                                                    title="Nur zur Anzeige — wird bei Zuordnung bestehender Teams nicht gespeichert"
+                                                >
+                                            </td>
+                                            <td><code>{{ $row['fifa_team_code'] ?? '' }}</code></td>
+                                            <td>
+                                                <input
+                                                    type="text"
+                                                    value="{{ $row['team_fifa_id'] ?? '' }}"
+                                                    maxlength="64"
+                                                    required
+                                                    class="admin-auto-fifa-id"
+                                                    aria-label="FIFA-ID {{ $index + 1 }}"
+                                                >
+                                            </td>
+                                            <td>
+                                                <input
+                                                    type="text"
+                                                    value="{{ $row['team_team_code'] ?? '' }}"
+                                                    maxlength="16"
+                                                    required
+                                                    class="admin-auto-fifa-code"
+                                                    aria-label="Team-Code {{ $index + 1 }}"
+                                                >
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="admin-actions">
+                            <button type="submit" class="admin-submit" id="admin-auto-fifa-save" disabled>
+                                Speichern
+                            </button>
+                            <span class="muted" id="admin-auto-fifa-save-hint">Alle Teams müssen zugeordnet oder als neu markiert sein.</span>
+                        </div>
+                    </form>
+                </div>
+            @elseif ($autoFifaAnalyzed)
+                <p class="muted">Keine FIFA-Teams gefunden.</p>
+            @endif
         @else
         <form
             class="admin-form"
@@ -434,6 +619,11 @@
             <div class="admin-field">
                 <label for="team_uefa_id">UEFA-ID</label>
                 <input id="team_uefa_id" type="text" name="team_uefa_id" value="{{ $form['team_uefa_id'] ?? '' }}" maxlength="64">
+            </div>
+
+            <div class="admin-field">
+                <label for="team_fifa_id">FIFA-ID</label>
+                <input id="team_fifa_id" type="text" name="team_fifa_id" value="{{ $form['team_fifa_id'] ?? '' }}" maxlength="64">
             </div>
 
             <div class="admin-field">
@@ -851,6 +1041,94 @@
             team_nationality: '.admin-auto-uefa-nat',
             team_uefa_id: '.admin-auto-uefa-id',
             team_team_code: '.admin-auto-uefa-code'
+        }
+    });
+
+    refreshSaveState();
+})();
+</script>
+@endpush
+@endif
+
+@if ($tab === 'auto-fifa')
+@push('scripts')
+<script src="{{ url('js/admin-bulk-json-form.js') }}"></script>
+<script>
+(function () {
+    const table = document.getElementById('admin-auto-fifa-teams-table');
+    const saveBtn = document.getElementById('admin-auto-fifa-save');
+    const hint = document.getElementById('admin-auto-fifa-save-hint');
+    if (!table || !saveBtn) {
+        return;
+    }
+
+    function refreshSaveState() {
+        const rows = table.querySelectorAll('tr.admin-auto-fifa-row');
+        let ready = rows.length > 0;
+        rows.forEach(function (row) {
+            const select = row.querySelector('select.admin-auto-fifa-team-id');
+            if (!select) {
+                ready = false;
+                return;
+            }
+            const option = select.options[select.selectedIndex];
+            const isCreate = option && option.getAttribute('data-create-new') === '1';
+            const teamId = Number(select.value || 0);
+            if (!isCreate && teamId <= 0) {
+                ready = false;
+            }
+        });
+        saveBtn.disabled = !ready;
+        if (hint) {
+            hint.hidden = ready;
+        }
+    }
+
+    table.addEventListener('change', function (event) {
+        const select = event.target.closest('select.admin-auto-fifa-team-id');
+        if (!select) {
+            return;
+        }
+        const row = select.closest('tr.admin-auto-fifa-row');
+        if (!row) {
+            return;
+        }
+        const createNew = row.querySelector('.admin-auto-fifa-create-new');
+        const teamName = row.querySelector('.admin-auto-fifa-team-name');
+        const matchStatus = row.querySelector('.admin-auto-fifa-match-status');
+        const option = select.options[select.selectedIndex];
+        const isCreate = option && option.getAttribute('data-create-new') === '1';
+        const teamId = Number(select.value || 0);
+        if (createNew) {
+            createNew.value = isCreate ? '1' : '0';
+        }
+        if (matchStatus) {
+            matchStatus.value = (isCreate || teamId > 0) ? 'matched' : 'unmatched';
+        }
+        row.classList.toggle('is-matched', isCreate || teamId > 0);
+        row.classList.toggle('is-unmatched', !isCreate && teamId <= 0);
+        if (teamName && option) {
+            if (isCreate) {
+                // keep FIFA name for new teams
+            } else if (teamId > 0) {
+                teamName.value = option.textContent.trim();
+            }
+        }
+        refreshSaveState();
+    });
+
+    AdminBulkJsonForm.bind({
+        form: '#admin-auto-fifa-teams-form',
+        hidden: '#admin-auto-fifa-teams-rows-json',
+        rowSelector: 'tr.admin-auto-fifa-row',
+        fields: {
+            team_id: 'select.admin-auto-fifa-team-id',
+            create_new: '.admin-auto-fifa-create-new',
+            match_status: '.admin-auto-fifa-match-status',
+            team_name: '.admin-auto-fifa-team-name',
+            team_nationality: '.admin-auto-fifa-nat',
+            team_fifa_id: '.admin-auto-fifa-id',
+            team_team_code: '.admin-auto-fifa-code'
         }
     });
 

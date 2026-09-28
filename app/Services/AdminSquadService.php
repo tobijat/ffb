@@ -1385,6 +1385,14 @@ class AdminSquadService
      */
     private function resolveFfbTeamForFifaTeam(array $fifa): ?Team
     {
+        $fifaId = trim((string) ($fifa['fifa_id'] ?? ''));
+        if ($fifaId !== '') {
+            $byId = Team::query()->where('team_fifa_id', $fifaId)->orderBy('team_id')->first();
+            if ($byId) {
+                return $byId;
+            }
+        }
+
         $code = strtoupper(trim((string) (
             ($fifa['team_code'] ?? '') !== '' ? $fifa['team_code'] : ($fifa['country_code'] ?? '')
         )));
