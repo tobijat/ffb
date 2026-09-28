@@ -26,6 +26,12 @@ class FifaMatchStatsMapper
 
     private const PERIOD_PENALTY_SHOOTOUT = 11;
 
+    /** Open-play / set-piece goal in the timeline. */
+    private const EVENT_GOAL = 0;
+
+    /** Assist credited immediately before a Type 0 goal. */
+    private const EVENT_ASSIST = 1;
+
     private const EVENT_PENALTY_AWARDED = 6;
 
     private const EVENT_PENALTY_GOAL = 41;
@@ -161,7 +167,6 @@ class FifaMatchStatsMapper
         array $events,
         int $matchMinutes,
     ): array {
-        $teamId = trim((string) ($side['IdTeam'] ?? ''));
         $players = is_array($side['Players'] ?? null) ? $side['Players'] : [];
         $bookings = is_array($side['Bookings'] ?? null) ? $side['Bookings'] : [];
         $subs = is_array($side['Substitutions'] ?? null) ? $side['Substitutions'] : [];
@@ -207,10 +212,25 @@ class FifaMatchStatsMapper
         $owngoals = [];
         /** @var array<string, int> $assists */
         $assists = [];
+        /** @var array<string, true> $creditedAssistKeys */
+        $creditedAssistKeys = [];
+
+        [$timelineAssists, $timelineAssistKeys] = $this->resolveAssistsFromTimeline($events);
+        foreach ($timelineAssists as $pid => $count) {
+            if (isset($roster[$pid])) {
+                $assists[$pid] = ($assists[$pid] ?? 0) + $count;
+            }
+        }
+        foreach ($timelineAssistKeys as $key => $_) {
+            $creditedAssistKeys[$key] = true;
+        }
+
         /** @var array<string, int> $psHit */
         $psHit = [];
         /** @var array<string, int> $psLost */
         $psLost = [];
+        /** @var array<string, int> $psSave */
+        $psSave = [];
         /** @var array<string, int> $penaltiesLost */
         $penaltiesLost = [];
         /** @var array<string, int> $penaltiesSaved */
@@ -250,9 +270,15 @@ class FifaMatchStatsMapper
             if ($type === self::GOAL_TYPE_PENALTY || $type === self::GOAL_TYPE_OPEN_PLAY || $type === 0) {
                 $goals[$pid][] = $minute;
                 $assistId = trim((string) ($goal['IdAssistPlayer'] ?? ''));
-                if ($assistId !== '' && isset($roster[$assistId]) && $assistId !== $pid) {
-                    $assists[$assistId] = ($assists[$assistId] ?? 0) + 1;
+                if ($assistId === '' || $assistId === $pid || ! isset($roster[$assistId])) {
+                    continue;
                 }
+                $assistKey = $assistId.'|'.$minute.'|'.$pid;
+                if (isset($creditedAssistKeys[$assistKey])) {
+                    continue;
+                }
+                $assists[$assistId] = ($assists[$assistId] ?? 0) + 1;
+                $creditedAssistKeys[$assistKey] = true;
             }
         }
 
@@ -307,17 +333,25 @@ class FifaMatchStatsMapper
             if ((int) ($event['Period'] ?? 0) !== self::PERIOD_PENALTY_SHOOTOUT) {
                 continue;
             }
-            $eventTeam = trim((string) ($event['IdTeam'] ?? ''));
-            if ($teamId !== '' && $eventTeam !== '' && $eventTeam !== $teamId) {
-                continue;
-            }
-            $pid = trim((string) ($event['IdPlayer'] ?? ''));
-            if ($pid === '' || ! isset($roster[$pid])) {
-                continue;
-            }
             $type = (int) ($event['Type'] ?? 0);
-            if ($type === self::EVENT_PS_MISS_A || $type === self::EVENT_PENALTY_MISSED_SAVED) {
-                $psLost[$pid] = ($psLost[$pid] ?? 0) + 1;
+            $taker = trim((string) ($event['IdPlayer'] ?? ''));
+            $saver = trim((string) ($event['IdSubPlayer'] ?? ''));
+
+            // Type 51 (woodwork) / 60 (saved) / 65 (off target): IdPlayer is the taker who missed.
+            if (
+                $type === self::EVENT_PS_MISS_A
+                || $type === self::EVENT_PENALTY_MISSED_SAVED
+                || $type === self::EVENT_PENALTY_MISSED_OFF_TARGET
+            ) {
+                if ($taker !== '' && isset($roster[$taker])) {
+                    $psLost[$taker] = ($psLost[$taker] ?? 0) + 1;
+                }
+            }
+
+            // Keeper save only for real saves — not woodwork (51) or off-target (65).
+            // IdSubPlayer is often the GK on all three miss types; do not treat that alone as a save.
+            if ($this->isPenaltyShootoutKeeperSave($event) && $saver !== '' && isset($roster[$saver])) {
+                $psSave[$saver] = ($psSave[$saver] ?? 0) + 1;
             }
         }
 
@@ -366,11 +400,192 @@ class FifaMatchStatsMapper
                 'player_penalties_saved' => (int) ($penaltiesSaved[$fifaId] ?? 0),
                 'player_penalties_hit' => (int) ($psHit[$fifaId] ?? 0),
                 'player_penalties_fail' => (int) ($psLost[$fifaId] ?? 0),
+                'player_penalties_shootout_save' => (int) ($psSave[$fifaId] ?? 0),
                 'player_minutes' => $minutes,
             ];
         }
 
         return $playersOut;
+    }
+
+    /**
+     * Resolve open-play assists from the timeline.
+     *
+     * Pattern: Type 1 (assister) then Type 0 (scorer, IdSubPlayer = assister).
+     * Own goals (Type 34) and penalty goals (Type 41) do not credit assists.
+     *
+     * @param  list<array<string, mixed>>  $events
+     * @return array{0: array<string, int>, 1: array<string, true>}
+     */
+    private function resolveAssistsFromTimeline(array $events): array
+    {
+        /** @var array<string, int> $assists */
+        $assists = [];
+        /** @var array<string, true> $keys */
+        $keys = [];
+
+        $count = count($events);
+        for ($i = 0; $i < $count; $i++) {
+            $event = $events[$i];
+            if (! is_array($event)) {
+                continue;
+            }
+            if ((int) ($event['Period'] ?? 0) === self::PERIOD_PENALTY_SHOOTOUT) {
+                continue;
+            }
+            if ((int) ($event['Type'] ?? 0) !== self::EVENT_GOAL) {
+                continue;
+            }
+
+            $scorer = trim((string) ($event['IdPlayer'] ?? ''));
+            $assister = trim((string) ($event['IdSubPlayer'] ?? ''));
+            $minuteRaw = trim((string) ($event['MatchMinute'] ?? ''));
+            $minute = $this->parseMinute($minuteRaw);
+
+            if ($assister === '') {
+                for ($j = $i - 1; $j >= max(0, $i - 5); $j--) {
+                    $prev = $events[$j];
+                    if (! is_array($prev)) {
+                        continue;
+                    }
+                    if ((int) ($prev['Period'] ?? 0) === self::PERIOD_PENALTY_SHOOTOUT) {
+                        continue;
+                    }
+                    $prevMinuteRaw = trim((string) ($prev['MatchMinute'] ?? ''));
+                    if ($minuteRaw !== '' && $prevMinuteRaw !== '' && $prevMinuteRaw !== $minuteRaw) {
+                        break;
+                    }
+                    if ((int) ($prev['Type'] ?? 0) !== self::EVENT_ASSIST) {
+                        continue;
+                    }
+                    $assister = trim((string) ($prev['IdPlayer'] ?? ''));
+                    break;
+                }
+            }
+
+            if ($assister === '' || $assister === $scorer) {
+                continue;
+            }
+
+            $key = $assister.'|'.$minute.'|'.$scorer;
+            if (isset($keys[$key])) {
+                continue;
+            }
+            $keys[$key] = true;
+            $assists[$assister] = ($assists[$assister] ?? 0) + 1;
+        }
+
+        return [$assists, $keys];
+    }
+
+    /**
+     * Whether a period-11 miss event should credit a goalkeeper shootout save.
+     *
+     * FIFA taxonomy (when labeled correctly):
+     * - Type 60 = saved by the keeper
+     * - Type 51 = woodwork / post
+     * - Type 65 = off target
+     *
+     * IdSubPlayer is often the opposing GK on all three, so type (and optional
+     * GoalGate / description signals) decide — not merely IdSubPlayer being set.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function isPenaltyShootoutKeeperSave(array $event): bool
+    {
+        $type = (int) ($event['Type'] ?? 0);
+        if ($type === self::EVENT_PS_MISS_A || $type === self::EVENT_PENALTY_MISSED_OFF_TARGET) {
+            return false;
+        }
+        if ($type !== self::EVENT_PENALTY_MISSED_SAVED) {
+            return false;
+        }
+
+        $description = strtolower($this->timelineEventDescription($event));
+        if ($description !== '' && $this->descriptionIndicatesNonSavePenaltyMiss($description)) {
+            return false;
+        }
+
+        if ($this->goalGateIndicatesOffTarget($event)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param  array<string, mixed>  $event
+     */
+    private function timelineEventDescription(array $event): string
+    {
+        $entries = $event['EventDescription'] ?? null;
+        if (! is_array($entries)) {
+            return '';
+        }
+        foreach ($entries as $entry) {
+            if (! is_array($entry)) {
+                continue;
+            }
+            $text = trim((string) ($entry['Description'] ?? ''));
+            if ($text !== '') {
+                return $text;
+            }
+        }
+
+        return '';
+    }
+
+    private function descriptionIndicatesNonSavePenaltyMiss(string $description): bool
+    {
+        foreach ([
+            'hits the post',
+            'hit the post',
+            'woodwork',
+            'crossbar',
+            'miss the target',
+            'misses the target',
+            'off target',
+            'wide of',
+            'over the bar',
+            'over the crossbar',
+            'blazes over',
+            'skies',
+        ] as $needle) {
+            if (str_contains($description, $needle)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * When FIFA provides GoalGate coordinates, reject shots clearly outside the frame.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function goalGateIndicatesOffTarget(array $event): bool
+    {
+        if (! array_key_exists('GoalGatePositionY', $event) || ! array_key_exists('GoalGatePositionZ', $event)) {
+            return false;
+        }
+        if ($event['GoalGatePositionY'] === null || $event['GoalGatePositionZ'] === null) {
+            return false;
+        }
+
+        $y = abs((float) $event['GoalGatePositionY']);
+        $z = (float) $event['GoalGatePositionZ'];
+
+        // Empirically from WC2022: on-target saves |Y|≲0.09, Z≈0.07;
+        // post ≈0.11 / miss ≳0.12. Treat outside the mouth as not a save.
+        if ($y > 0.102) {
+            return true;
+        }
+        if ($z < 0.0 || $z > 0.14) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

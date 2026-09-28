@@ -155,6 +155,224 @@ class FifaMatchStatsMapperTest extends TestCase
     }
 
     #[Test]
+    public function maps_penalty_shootout_saves_to_goalkeeper_from_type60(): void
+    {
+        // SUI–COL pattern: Type 60 IdPlayer = taker, IdSubPlayer = opposing GK.
+        $live = [
+            'IdMatch' => 'ps-saves',
+            'ResultType' => 2,
+            'HomeTeamPenaltyScore' => 4,
+            'AwayTeamPenaltyScore' => 3,
+            'HomeTeam' => [
+                'IdTeam' => '10',
+                'Score' => 1,
+                'Players' => [
+                    $this->player('1', 'Home GK', 1),
+                    $this->player('2', 'Home Taker Miss', 1),
+                    $this->player('3', 'Home Taker Hit', 1),
+                ],
+                'Goals' => [
+                    [
+                        'Type' => 1,
+                        'IdPlayer' => '3',
+                        'Minute' => "121'",
+                        'IdAssistPlayer' => '',
+                        'Period' => 11,
+                        'IdTeam' => '10',
+                    ],
+                ],
+                'Bookings' => [],
+                'Substitutions' => [],
+            ],
+            'AwayTeam' => [
+                'IdTeam' => '20',
+                'Score' => 1,
+                'Players' => [
+                    $this->player('21', 'Away GK', 1),
+                    $this->player('22', 'Away Taker Miss', 1),
+                    $this->player('23', 'Away Taker Hit', 1),
+                ],
+                'Goals' => [
+                    [
+                        'Type' => 1,
+                        'IdPlayer' => '23',
+                        'Minute' => "122'",
+                        'IdAssistPlayer' => '',
+                        'Period' => 11,
+                        'IdTeam' => '20',
+                    ],
+                ],
+                'Bookings' => [],
+                'Substitutions' => [],
+            ],
+        ];
+
+        $timeline = [
+            'Event' => [
+                [
+                    'Type' => 41,
+                    'Period' => 11,
+                    'MatchMinute' => '',
+                    'IdPlayer' => '23',
+                    'IdSubPlayer' => '1',
+                    'IdTeam' => '20',
+                    'IdSubTeam' => '10',
+                ],
+                [
+                    'Type' => 60,
+                    'Period' => 11,
+                    'MatchMinute' => '',
+                    'IdPlayer' => '22',
+                    'IdSubPlayer' => '1',
+                    'IdTeam' => '20',
+                    'IdSubTeam' => '10',
+                ],
+                [
+                    'Type' => 41,
+                    'Period' => 11,
+                    'MatchMinute' => '',
+                    'IdPlayer' => '3',
+                    'IdSubPlayer' => '21',
+                    'IdTeam' => '10',
+                    'IdSubTeam' => '20',
+                ],
+                [
+                    'Type' => 60,
+                    'Period' => 11,
+                    'MatchMinute' => '',
+                    'IdPlayer' => '2',
+                    'IdSubPlayer' => '21',
+                    'IdTeam' => '10',
+                    'IdSubTeam' => '20',
+                ],
+                [
+                    'Type' => 60,
+                    'Period' => 11,
+                    'MatchMinute' => '',
+                    'IdPlayer' => '22',
+                    'IdSubPlayer' => '1',
+                    'IdTeam' => '20',
+                    'IdSubTeam' => '10',
+                ],
+            ],
+        ];
+
+        $mapped = (new FifaMatchStatsMapper)->map($live, $timeline);
+        $homeById = [];
+        foreach ($mapped['home'] as $row) {
+            $homeById[$row['player_fifa_id']] = $row;
+        }
+        $guestById = [];
+        foreach ($mapped['guest'] as $row) {
+            $guestById[$row['player_fifa_id']] = $row;
+        }
+
+        $this->assertSame(1, $homeById['3']['player_penalties_hit']);
+        $this->assertSame(1, $homeById['2']['player_penalties_fail']);
+        $this->assertSame(0, $homeById['2']['player_penalties_shootout_save']);
+        $this->assertSame(2, $homeById['1']['player_penalties_shootout_save']);
+
+        $this->assertSame(1, $guestById['23']['player_penalties_hit']);
+        $this->assertSame(2, $guestById['22']['player_penalties_fail']);
+        $this->assertSame(1, $guestById['21']['player_penalties_shootout_save']);
+    }
+
+    #[Test]
+    public function penalty_shootout_woodwork_and_off_target_do_not_credit_keeper_save(): void
+    {
+        $live = [
+            'IdMatch' => 'ps-woodwork',
+            'ResultType' => 2,
+            'HomeTeamPenaltyScore' => 4,
+            'AwayTeamPenaltyScore' => 2,
+            'HomeTeam' => [
+                'IdTeam' => '10',
+                'Score' => 1,
+                'Players' => [
+                    $this->player('1', 'Home GK', 1),
+                    $this->player('2', 'Home Taker Save', 1),
+                ],
+                'Goals' => [],
+                'Bookings' => [],
+                'Substitutions' => [],
+            ],
+            'AwayTeam' => [
+                'IdTeam' => '20',
+                'Score' => 1,
+                'Players' => [
+                    $this->player('21', 'Away GK', 1),
+                    $this->player('22', 'Away Post', 1),
+                    $this->player('23', 'Away Wide', 1),
+                ],
+                'Goals' => [],
+                'Bookings' => [],
+                'Substitutions' => [],
+            ],
+        ];
+
+        $timeline = [
+            'Event' => [
+                // Real save — still credits the keeper.
+                [
+                    'Type' => 60,
+                    'Period' => 11,
+                    'MatchMinute' => '',
+                    'IdPlayer' => '2',
+                    'IdSubPlayer' => '21',
+                    'IdTeam' => '10',
+                    'IdSubTeam' => '20',
+                    'EventDescription' => [
+                        ['Locale' => 'en-GB', 'Description' => 'Home Taker Save sees his penalty saved by the goalkeeper.'],
+                    ],
+                ],
+                // Woodwork — IdSubPlayer is still the GK, but must not count as a save.
+                [
+                    'Type' => 51,
+                    'Period' => 11,
+                    'MatchMinute' => '',
+                    'IdPlayer' => '22',
+                    'IdSubPlayer' => '1',
+                    'IdTeam' => '20',
+                    'IdSubTeam' => '10',
+                    'EventDescription' => [
+                        ['Locale' => 'en-GB', 'Description' => 'Away Post hits the post from the spot!'],
+                    ],
+                ],
+                // Off target — same.
+                [
+                    'Type' => 65,
+                    'Period' => 11,
+                    'MatchMinute' => '',
+                    'IdPlayer' => '23',
+                    'IdSubPlayer' => '1',
+                    'IdTeam' => '20',
+                    'IdSubTeam' => '10',
+                    'EventDescription' => [
+                        ['Locale' => 'en-GB', 'Description' => 'Away Wide sees his penalty miss the target.'],
+                    ],
+                ],
+            ],
+        ];
+
+        $mapped = (new FifaMatchStatsMapper)->map($live, $timeline);
+        $homeById = [];
+        foreach ($mapped['home'] as $row) {
+            $homeById[$row['player_fifa_id']] = $row;
+        }
+        $guestById = [];
+        foreach ($mapped['guest'] as $row) {
+            $guestById[$row['player_fifa_id']] = $row;
+        }
+
+        $this->assertSame(1, $homeById['2']['player_penalties_fail']);
+        $this->assertSame(0, $homeById['1']['player_penalties_shootout_save']);
+
+        $this->assertSame(1, $guestById['22']['player_penalties_fail']);
+        $this->assertSame(1, $guestById['23']['player_penalties_fail']);
+        $this->assertSame(1, $guestById['21']['player_penalties_shootout_save']);
+    }
+
+    #[Test]
     public function maps_straight_red_bookings_separately_from_yellow_red(): void
     {
         $live = [
@@ -587,6 +805,190 @@ class FifaMatchStatsMapperTest extends TestCase
 
         $this->assertSame(1, $homeById['2']['player_penalties_lost']);
         $this->assertSame(1, $guestById['21']['player_penalties_saved']);
+    }
+
+    #[Test]
+    public function maps_assists_from_timeline_type1_then_type0(): void
+    {
+        $live = [
+            'IdMatch' => '59',
+            'ResultType' => 1,
+            'HomeTeamPenaltyScore' => 0,
+            'AwayTeamPenaltyScore' => 0,
+            'HomeTeam' => [
+                'IdTeam' => '10',
+                'Score' => 2,
+                'Players' => [
+                    $this->player('2', 'Home Assister', 1),
+                    $this->player('3', 'Home Scorer', 1),
+                    $this->player('4', 'Home Solo', 1),
+                ],
+                'Goals' => [
+                    [
+                        'Type' => 2,
+                        'IdPlayer' => '3',
+                        'Minute' => "79'",
+                        'IdAssistPlayer' => null,
+                        'Period' => 5,
+                        'IdTeam' => '10',
+                    ],
+                    [
+                        'Type' => 2,
+                        'IdPlayer' => '4',
+                        'Minute' => "85'",
+                        'IdAssistPlayer' => null,
+                        'Period' => 5,
+                        'IdTeam' => '10',
+                    ],
+                ],
+                'Bookings' => [],
+                'Substitutions' => [],
+            ],
+            'AwayTeam' => [
+                'IdTeam' => '20',
+                'Score' => 0,
+                'Players' => [
+                    $this->player('21', 'Away GK', 1),
+                ],
+                'Goals' => [],
+                'Bookings' => [],
+                'Substitutions' => [],
+            ],
+        ];
+
+        $timeline = [
+            'Event' => [
+                [
+                    'Type' => 1,
+                    'Period' => 5,
+                    'MatchMinute' => "79'",
+                    'IdPlayer' => '2',
+                    'IdSubPlayer' => '3',
+                    'IdTeam' => '10',
+                ],
+                [
+                    'Type' => 0,
+                    'Period' => 5,
+                    'MatchMinute' => "79'",
+                    'IdPlayer' => '3',
+                    'IdSubPlayer' => '2',
+                    'IdTeam' => '10',
+                ],
+                // Solo goal: Type 0 without assister / Type 1.
+                [
+                    'Type' => 0,
+                    'Period' => 5,
+                    'MatchMinute' => "85'",
+                    'IdPlayer' => '4',
+                    'IdSubPlayer' => null,
+                    'IdTeam' => '10',
+                ],
+                // Penalty goal: no assist.
+                [
+                    'Type' => 41,
+                    'Period' => 5,
+                    'MatchMinute' => "90'",
+                    'IdPlayer' => '3',
+                    'IdSubPlayer' => '21',
+                    'IdTeam' => '10',
+                ],
+                // Own goal: Type 34 must not credit an assist.
+                [
+                    'Type' => 34,
+                    'Period' => 5,
+                    'MatchMinute' => "90'+1'",
+                    'IdPlayer' => '21',
+                    'IdSubPlayer' => '2',
+                    'IdTeam' => '20',
+                ],
+            ],
+        ];
+
+        $mapped = (new FifaMatchStatsMapper)->map($live, $timeline);
+        $homeById = [];
+        foreach ($mapped['home'] as $row) {
+            $homeById[$row['player_fifa_id']] = $row;
+        }
+        $guestById = [];
+        foreach ($mapped['guest'] as $row) {
+            $guestById[$row['player_fifa_id']] = $row;
+        }
+
+        $this->assertSame(1, $homeById['2']['player_num_assists']);
+        $this->assertSame(0, $homeById['3']['player_num_assists']);
+        $this->assertSame(0, $homeById['4']['player_num_assists']);
+        $this->assertSame(0, $guestById['21']['player_num_assists']);
+        $this->assertSame(1, $homeById['3']['player_num_goals']);
+        $this->assertSame(1, $homeById['4']['player_num_goals']);
+    }
+
+    #[Test]
+    public function does_not_double_count_timeline_and_live_assists(): void
+    {
+        $live = [
+            'IdMatch' => '60',
+            'ResultType' => 1,
+            'HomeTeamPenaltyScore' => 0,
+            'AwayTeamPenaltyScore' => 0,
+            'HomeTeam' => [
+                'IdTeam' => '10',
+                'Score' => 1,
+                'Players' => [
+                    $this->player('2', 'Home Assister', 1),
+                    $this->player('3', 'Home Scorer', 1),
+                ],
+                'Goals' => [
+                    [
+                        'Type' => 2,
+                        'IdPlayer' => '3',
+                        'Minute' => "20'",
+                        'IdAssistPlayer' => '2',
+                        'Period' => 3,
+                        'IdTeam' => '10',
+                    ],
+                ],
+                'Bookings' => [],
+                'Substitutions' => [],
+            ],
+            'AwayTeam' => [
+                'IdTeam' => '20',
+                'Score' => 0,
+                'Players' => [
+                    $this->player('21', 'Away GK', 1),
+                ],
+                'Goals' => [],
+                'Bookings' => [],
+                'Substitutions' => [],
+            ],
+        ];
+
+        $timeline = [
+            'Event' => [
+                [
+                    'Type' => 1,
+                    'Period' => 3,
+                    'MatchMinute' => "20'",
+                    'IdPlayer' => '2',
+                    'IdTeam' => '10',
+                ],
+                [
+                    'Type' => 0,
+                    'Period' => 3,
+                    'MatchMinute' => "20'",
+                    'IdPlayer' => '3',
+                    'IdSubPlayer' => '2',
+                    'IdTeam' => '10',
+                ],
+            ],
+        ];
+
+        $mapped = (new FifaMatchStatsMapper)->map($live, $timeline);
+        $homeById = [];
+        foreach ($mapped['home'] as $row) {
+            $homeById[$row['player_fifa_id']] = $row;
+        }
+
+        $this->assertSame(1, $homeById['2']['player_num_assists']);
     }
 
     /**

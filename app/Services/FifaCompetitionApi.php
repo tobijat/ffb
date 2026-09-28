@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use InvalidArgumentException;
 
 /**
@@ -98,7 +99,7 @@ class FifaCompetitionApi
      *     away_abbr: string,
      *     home_name_de: string,
      *     away_name_de: string,
-     *     date: string
+     *     date: string  Europe/Berlin calendar day of kickoff (matches FFB match_date)
      * }>
      */
     public function matches(): array
@@ -176,7 +177,7 @@ class FifaCompetitionApi
      *     away_abbr: string,
      *     home_name_de: string,
      *     away_name_de: string,
-     *     date: string
+     *     date: string  Europe/Berlin calendar day of kickoff
      * }|null
      */
     private function mapMatch(array $match): ?array
@@ -191,9 +192,9 @@ class FifaCompetitionApi
             return null;
         }
 
-        $dateRaw = trim((string) ($match['Date'] ?? ''));
-        $dateTs = $dateRaw !== '' ? strtotime($dateRaw) : false;
-        $date = $dateTs ? date('Y-m-d', $dateTs) : '';
+        // FFB match_date is a Europe/Berlin calendar day; FIFA Date is UTC kickoff.
+        // Late US evenings (22:00–23:00Z) are already the next day in Berlin.
+        $date = $this->europeBerlinCalendarDate(trim((string) ($match['Date'] ?? '')));
         if ($date === '') {
             return null;
         }
@@ -209,6 +210,22 @@ class FifaCompetitionApi
             'away_name_de' => $this->localizedText($away['TeamName'] ?? null),
             'date' => $date,
         ];
+    }
+
+    /**
+     * Calendar day of a FIFA UTC kickoff in Europe/Berlin (FFB match_date convention).
+     */
+    private function europeBerlinCalendarDate(string $dateRaw): string
+    {
+        if ($dateRaw === '') {
+            return '';
+        }
+
+        try {
+            return Carbon::parse($dateRaw)->timezone('Europe/Berlin')->toDateString();
+        } catch (\Throwable) {
+            return '';
+        }
     }
 
     /**
