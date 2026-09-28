@@ -70,8 +70,11 @@ class AdminMatchdataTest extends TestCase
             ->assertOk()
             ->assertSee('Spieldaten')
             ->assertSee('Spieldaten (UEFA)', false)
+            ->assertSee('Spieldaten (FIFA)', false)
             ->assertSee('Liga: Testliga')
             ->assertSee('Spieldaten laden')
+            ->assertSee('Min (auto)', false)
+            ->assertSee('Tore während Spielzeit / Elfmeterschießen', false)
             ->assertSee('Änderungen speichern (0)');
     }
 
@@ -111,6 +114,46 @@ class AdminMatchdataTest extends TestCase
             ->assertOk()
             ->assertSee('Spieldaten (UEFA)', false)
             ->assertSee('UEFA-Spieldaten laden', false)
+            ->assertDontSee('weltfussball.at', false);
+    }
+
+    public function test_matchdata_fifa_tab_renders_load_button(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminMatchdataService::class, function ($mock) {
+            $mock->shouldReceive('pagePayload')->once()->with(7)->andReturn([
+                'user' => [
+                    'user_id' => 7,
+                    'user_nickname' => 'admin',
+                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                ],
+                'navigation' => [],
+                'selected_league_id' => 1,
+                'selected_league' => [
+                    'league_id' => 1,
+                    'league_title' => 'Testliga',
+                    'symbol_url' => '/images/ffb/symbols/x.png',
+                ],
+                'leagues' => [
+                    [
+                        'league_id' => 1,
+                        'league_title' => 'Testliga',
+                        'league_archive' => 0,
+                    ],
+                ],
+                'pointsmode' => 'new',
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 7])
+            ->get('/admin/matchdata?tab=fifa')
+            ->assertOk()
+            ->assertSee('Spieldaten (FIFA)', false)
+            ->assertSee('FIFA-Spieldaten laden', false)
+            ->assertSee('player_fifa_id', false)
             ->assertDontSee('weltfussball.at', false);
     }
 
@@ -163,6 +206,57 @@ class AdminMatchdataTest extends TestCase
             ->assertJsonPath('match_minutes', 120)
             ->assertJsonPath('uefa_match_id', '2036208')
             ->assertJsonPath('result.homescore_penalty', 5);
+    }
+
+    public function test_scrape_fifa_json(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminMatchdataService::class, function ($mock) {
+            $mock->shouldReceive('scrapeFifaMatchData')
+                ->once()
+                ->with(7, 9)
+                ->andReturn([
+                    'ok' => true,
+                    'message' => '2 Spieler zugeordnet.',
+                    'match_minutes' => 90,
+                    'result' => [
+                        'homescore' => 2,
+                        'guestscore' => 0,
+                        'homescore_penalty' => -1,
+                        'guestscore_penalty' => -1,
+                    ],
+                    'players' => [
+                        '11' => [
+                            'minutes' => 90,
+                            'minute_in' => 1,
+                            'minute_out' => 90,
+                            'goals' => '16',
+                            'owngoals' => '0',
+                            'assists' => 0,
+                            'cards' => 'y',
+                            'penaltieslost' => 0,
+                            'penaltiessaved' => 0,
+                            'penaltyshootout_save' => 0,
+                            'penaltyshootout_lost' => 0,
+                            'penaltyshootout_hit' => 0,
+                        ],
+                    ],
+                    'unmatched' => [],
+                    'matched' => 1,
+                    'fifa_match_id' => '400128082',
+                ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 7])
+            ->postJson('/admin/matchdata/matches/9/scrape-fifa')
+            ->assertOk()
+            ->assertJsonPath('ok', true)
+            ->assertJsonPath('match_minutes', 90)
+            ->assertJsonPath('fifa_match_id', '400128082')
+            ->assertJsonPath('result.homescore', 2);
     }
 
     public function test_rounds_json(): void

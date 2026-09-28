@@ -22,7 +22,11 @@ class AdminMatchdataController extends Controller
     public function show(Request $request): View
     {
         $userId = $this->auth->userId($request);
-        $tab = $request->query('tab') === 'uefa' ? 'uefa' : 'wf';
+        $tab = match ($request->query('tab')) {
+            'uefa' => 'uefa',
+            'fifa' => 'fifa',
+            default => 'wf',
+        };
 
         return view('admin.matchdata', [
             'data' => $this->matchdata->pagePayload($userId),
@@ -109,6 +113,14 @@ class AdminMatchdataController extends Controller
     {
         $userId = $this->auth->userId($request);
         $result = $this->matchdata->scrapeUefaMatchData($userId, $match);
+
+        return response()->json($result, ($result['ok'] ?? false) ? 200 : 422);
+    }
+
+    public function scrapeFifa(Request $request, int $match): JsonResponse
+    {
+        $userId = $this->auth->userId($request);
+        $result = $this->matchdata->scrapeFifaMatchData($userId, $match);
 
         return response()->json($result, ($result['ok'] ?? false) ? 200 : 422);
     }

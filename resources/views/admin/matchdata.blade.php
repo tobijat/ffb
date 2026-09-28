@@ -3,7 +3,7 @@
 @section('title', 'Spieldaten')
 
 @push('scripts')
-    <script src="{{ url('js/admin-matchdata.js') }}?v=17" defer></script>
+    <script src="{{ url('js/admin-matchdata.js') }}?v=24" defer></script>
 @endpush
 
 @section('content')
@@ -11,7 +11,11 @@
         $leagues = $data['leagues'] ?? [];
         $selectedLeagueId = (int) ($data['selected_league_id'] ?? 0);
         $pointsmode = $data['pointsmode'] ?? 'new';
-        $tab = ($tab ?? 'wf') === 'uefa' ? 'uefa' : 'wf';
+        $tab = match ($tab ?? 'wf') {
+            'uefa' => 'uefa',
+            'fifa' => 'fifa',
+            default => 'wf',
+        };
     @endphp
 
     <section
@@ -25,6 +29,7 @@
         data-save-player-url-template="{{ url('/admin/matchdata/matches') }}/__MATCH__/players/__PT__"
         data-scrape-url-template="{{ url('/admin/matchdata/matches') }}/__ID__/scrape"
         data-scrape-uefa-url-template="{{ url('/admin/matchdata/matches') }}/__ID__/scrape-uefa"
+        data-scrape-fifa-url-template="{{ url('/admin/matchdata/matches') }}/__ID__/scrape-fifa"
         data-wf-proxy-url="{{ url('/admin/matchdata/wf-proxy') }}"
         data-csrf="{{ csrf_token() }}"
         data-images-base="{{ $legacyBase }}images/ffb/"
@@ -63,6 +68,12 @@
                     href="{{ route('admin.matchdata', ['tab' => 'uefa']) }}"
                 >
                     Spieldaten (UEFA)
+                </a>
+                <a
+                    class="admin-squad-tab ffb-tab{{ $tab === 'fifa' ? ' is-active' : '' }}"
+                    href="{{ route('admin.matchdata', ['tab' => 'fifa']) }}"
+                >
+                    Spieldaten (FIFA)
                 </a>
             </nav>
         @endif
@@ -148,7 +159,7 @@
                     sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                     aria-hidden="true"
                 ></iframe>
-            @else
+            @elseif ($tab === 'uefa')
                 <div class="admin-mp-result-row admin-mp-result-url">
                     <p class="hint" style="margin:0;">
                         Lädt Ergebnis, Spieldauer, Elfmeterschießen und Spielerdaten (Minuten, Tore, Assists, Karten, …) von der UEFA-API.
@@ -158,21 +169,26 @@
                         <button type="button" id="admin-mp-scrape-uefa" class="admin-submit" disabled>UEFA-Spieldaten laden</button>
                     </div>
                 </div>
+            @else
+                <div class="admin-mp-result-row admin-mp-result-url">
+                    <p class="hint" style="margin:0;">
+                        Lädt Ergebnis, Spieldauer, Elfmeterschießen und Spielerdaten (Minuten, Tore, Assists, Karten, …) von der FIFA-API.
+                        Zuordnung über <code>team_team_code</code> / Datum und <code>player_fifa_id</code>.
+                    </p>
+                    <div class="admin-mp-url-row">
+                        <button type="button" id="admin-mp-scrape-fifa" class="admin-submit" disabled>FIFA-Spieldaten laden</button>
+                    </div>
+                </div>
             @endif
             <p class="hint admin-mp-scrape-hint" id="admin-mp-scrape-hint" hidden></p>
         </div>
 
         <div class="admin-mp-legend" id="admin-mp-legend" hidden>
-            <img src="{{ $legacyBase }}images/ffb/symbols/stats_time.png" width="15" height="15" alt=""> Min
-            <img src="{{ $legacyBase }}images/ffb/symbols/stats_goal.gif" width="15" height="15" alt=""> Tore
-            <img src="{{ $legacyBase }}images/ffb/symbols/stats_assist.gif" width="15" height="15" alt=""> Assists
-            <img src="{{ $legacyBase }}images/ffb/symbols/stats_card_y.gif" width="15" height="18" alt=""> Karten
-            <img src="{{ $legacyBase }}images/ffb/symbols/stats_owngoal.gif" width="15" height="15" alt=""> ET
-            <img src="{{ $legacyBase }}images/ffb/symbols/stats_penaltylost.png" width="15" height="15" alt=""> Elfm. verschossen
-            <img src="{{ $legacyBase }}images/ffb/symbols/stats_penaltysaved.png" width="15" height="15" alt=""> Elfm. gehalten
-            · PS save/lost/hit
             <img src="{{ $legacyBase }}images/ffb/symbols/stats_hourglass_add.png" width="16" height="16" alt=""> rein
             <img src="{{ $legacyBase }}images/ffb/symbols/stats_hourglass_delete.png" width="16" height="16" alt=""> raus
+            <img src="{{ $legacyBase }}images/ffb/symbols/stats_time.png" width="15" height="15" alt=""> Min (auto)
+            <img src="{{ $legacyBase }}images/ffb/symbols/stats_card_y.gif" width="15" height="18" alt=""> Karten
+            · Tore während Spielzeit / Elfmeterschießen
         </div>
 
         <div id="admin-mp-loading" class="admin-mp-loading" hidden>Spieler werden geladen…</div>
