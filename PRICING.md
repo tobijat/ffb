@@ -249,12 +249,10 @@ player_price       = max(1.0, round(8.0 + 0.786, 1)) = 8.8
 
 The calculation refuses to run unless:
 
-- every minutes > 0 entry of the **selected** round already has a saved `round_performance` (step 3 must be done first), and
-- **all** teams playing in that round have a team price (step 2 must be done first).
+- **all** teams playing in the selected round have a team price (step 2 must be done first), and
+- the selected round has matches (so the priced squad is defined).
 
-Both are hard requirements because the price formula reads both values directly. The error message names which one is missing.
-
-The first condition also means the selected round must be one that has already been played and processed in **Spieler-Performance**. Prices are therefore stored per played round: the price attached to round N reflects the form the player brought *into* round N.
+Spieldaten / Spieler-Performance for the selected round itself are not required — prices for round N reflect the form the player brought *into* round N (prior rounds only).
 
 Only active squad players (`playerteam_status = 1`) of teams that actually have a match in the selected round are priced.
 

@@ -579,42 +579,6 @@ class AdminPlayerpriceService
             ];
         }
 
-        $missingSelected = Playerstats::query()
-            ->where('playerstats_matchround_id', $matchroundId)
-            ->where('playerstats_minutes', '>', 0)
-            ->whereNull('playerstats_round_performance')
-            ->count();
-        if ($missingSelected > 0) {
-            return [
-                'ok' => false,
-                'errors' => [
-                    sprintf(
-                        'Für die gewählte Spielrunde fehlen noch %d playerstats_round_performance-Werte (Spieler mit Minuten > 0). Bitte zuerst im Tab Spieler-Performance berechnen und speichern.',
-                        $missingSelected,
-                    ),
-                ],
-                'price_league_id' => $leagueId,
-                'matchround_id' => $matchroundId,
-                'tab' => 'recent',
-            ];
-        }
-
-        $hasAnySelectedStats = Playerstats::query()
-            ->where('playerstats_matchround_id', $matchroundId)
-            ->where('playerstats_minutes', '>', 0)
-            ->exists();
-        if (! $hasAnySelectedStats) {
-            return [
-                'ok' => false,
-                'errors' => [
-                    'Für die gewählte Spielrunde gibt es keine Spielerstats mit Einsatz (Minuten > 0).',
-                ],
-                'price_league_id' => $leagueId,
-                'matchround_id' => $matchroundId,
-                'tab' => 'recent',
-            ];
-        }
-
         $matchTeamIds = $this->teamIdsForMatchround($matchroundId);
         if ($matchTeamIds === []) {
             return [

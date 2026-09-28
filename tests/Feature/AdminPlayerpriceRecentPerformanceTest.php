@@ -103,27 +103,26 @@ class AdminPlayerpriceRecentPerformanceTest extends TestCase
     }
 
     #[Test]
-    public function preview_rejects_when_selected_round_performance_incomplete(): void
+    public function preview_succeeds_without_selected_round_playerstats(): void
     {
-        [$leagueId, $_prior, $selectedId] = $this->seedLeagueWithRounds(2);
+        [$leagueId, $priorId, $selectedId] = $this->seedLeagueWithRounds(2);
         $team = Team::query()->firstOrFail();
-        $this->addSquadPlayer($leagueId, (int) $team->team_id, 'Ada', 'Alaba', 'd');
-        Playerstats::query()->forceCreate([
-            'playerstats_playerteam_id' => 1,
-            'playerstats_matchround_id' => $selectedId,
-            'playerstats_match_id' => 1,
-            'playerstats_minutes' => 90,
-            'playerstats_score' => 5,
-            'playerstats_round_performance' => null,
-        ]);
+        $teamId = (int) $team->team_id;
+        $this->addMatch($selectedId, $teamId, $teamId);
+        $this->setTeamprice($teamId, $selectedId, 10.0);
+        $pt = $this->addSquadPlayer($leagueId, $teamId, 'Ada', 'Alaba', 'd');
+        // Prior-round performance only — selected round has no playerstats.
+        $this->stats($pt, $priorId, 90, 0.5);
 
         $result = $this->service($leagueId)->previewRecentPerformance(544, [
             'matchround_id' => $selectedId,
+            'lookback_rounds' => 1,
+            'decay_factor' => 0.7,
         ]);
 
-        $this->assertFalse($result['ok']);
-        $this->assertSame('recent', $result['tab']);
-        $this->assertStringContainsString('round_performance', $result['errors'][0] ?? '');
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        $this->assertSame([$priorId], $result['preview']['prior_matchround_ids']);
+        $this->assertSame(0.5, $result['preview']['players'][0]['recent_performance']);
     }
 
     #[Test]
