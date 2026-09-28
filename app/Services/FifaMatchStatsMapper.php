@@ -376,11 +376,14 @@ class FifaMatchStatsMapper
     /**
      * Detect open-play (non-shootout) penalty outcomes from the timeline.
      *
-     * - Type 6 (awarded) then Type 41 (penalty goal) → scored (ignored here)
-     * - Type 6 then Type 57 (goal prevention) → taker missed, preventing player saved
-     * - Type 6 without Type 41 → taker missed
+     * - Type 6 (awarded) then Type 41 (same minute) → scored (ignored here)
+     * - Type 6 then Type 57 (same minute) → taker missed, preventing player saved
+     * - Type 6 without same-minute Type 41/57 → taker missed (wide / woodwork / no save)
      * - Type 60 (penalty missed / saved) → taker missed, IdSubPlayer saved
      * - Type 65 (penalty missed off target) → taker missed only
+     *
+     * Type 57 is also used for regular open-play saves, so it must share MatchMinute
+     * with the Type 6 award (and IdSubPlayer when FIFA sets it on the award).
      *
      * @param  list<array<string, mixed>>  $events
      * @return array{0: array<string, int>, 1: array<string, int>}
@@ -409,7 +412,9 @@ class FifaMatchStatsMapper
 
             $taker = trim((string) ($event['IdPlayer'] ?? ''));
             $gkHint = trim((string) ($event['IdSubPlayer'] ?? ''));
-            $minute = $this->parseMinute((string) ($event['MatchMinute'] ?? ''));
+            $awardMinuteRaw = trim((string) ($event['MatchMinute'] ?? ''));
+            $awardMinuteNum = $this->parseMinute($awardMinuteRaw);
+            $minute = $awardMinuteNum;
             $outcome = 'miss';
             $saver = '';
 
@@ -425,16 +430,30 @@ class FifaMatchStatsMapper
                 if ($nextType === self::EVENT_PENALTY_AWARDED) {
                     break;
                 }
+
+                $nextMinuteRaw = trim((string) ($next['MatchMinute'] ?? ''));
+                $nextMinuteNum = $this->parseMinute($nextMinuteRaw);
+                // Unrelated open-play Type 57s often appear later; leave the award minute.
+                if ($nextMinuteNum > $awardMinuteNum) {
+                    break;
+                }
+
+                $sameMinute = $awardMinuteRaw !== '' && $nextMinuteRaw === $awardMinuteRaw;
+                if (! $sameMinute) {
+                    continue;
+                }
+
                 if ($nextType === self::EVENT_PENALTY_GOAL) {
                     $outcome = 'goal';
                     break;
                 }
                 if ($nextType === self::EVENT_GOAL_PREVENTION) {
-                    $outcome = 'save';
-                    $saver = trim((string) ($next['IdPlayer'] ?? ''));
-                    if ($saver === '') {
-                        $saver = $gkHint;
+                    $saverCandidate = trim((string) ($next['IdPlayer'] ?? ''));
+                    if ($gkHint !== '' && $saverCandidate !== '' && $saverCandidate !== $gkHint) {
+                        continue;
                     }
+                    $outcome = 'save';
+                    $saver = $saverCandidate !== '' ? $saverCandidate : $gkHint;
                     break;
                 }
             }
