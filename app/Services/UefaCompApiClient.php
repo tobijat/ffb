@@ -332,6 +332,33 @@ class UefaCompApiClient
     }
 
     /**
+     * Per-player match statistics (assists, cards, …) from matchstats.uefa.com.
+     *
+     * @return list<array{
+     *     playerId?: string,
+     *     teamId?: string,
+     *     statistics?: list<array{name?: string, value?: string}>
+     * }>
+     */
+    public function matchPlayerStatistics(string $matchId): array
+    {
+        $matchId = trim($matchId);
+        if ($matchId === '') {
+            throw new RuntimeException('UEFA-Match-ID fehlt.');
+        }
+
+        $json = $this->getJson('/player-statistics/'.$matchId, [], $this->matchstatsBaseUrl());
+        $rows = [];
+        foreach ($json as $row) {
+            if (is_array($row)) {
+                $rows[] = $row;
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
      * @param  array<string, scalar>  $query
      * @return list<mixed>
      */
@@ -418,6 +445,11 @@ class UefaCompApiClient
     private function matchBaseUrl(): string
     {
         return rtrim((string) config('services.uefa.match_base_url', 'https://match.uefa.com/v5'), '/');
+    }
+
+    private function matchstatsBaseUrl(): string
+    {
+        return rtrim((string) config('services.uefa.matchstats_base_url', 'https://matchstats.uefa.com/v1'), '/');
     }
 
     private function caBundlePath(): ?string

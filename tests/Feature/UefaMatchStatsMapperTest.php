@@ -147,7 +147,26 @@ class UefaMatchStatsMapperTest extends TestCase
             ],
         ];
 
-        $mapped = (new UefaMatchStatsMapper)->map($match, $lineups, $events);
+        $playerStatistics = [
+            [
+                'playerId' => '101',
+                'teamId' => '10',
+                'statistics' => [
+                    ['name' => 'assists', 'value' => '1'],
+                    ['name' => 'goals', 'value' => '0'],
+                ],
+            ],
+            [
+                'playerId' => '100',
+                'teamId' => '10',
+                'statistics' => [
+                    ['name' => 'assists', 'value' => '0'],
+                    ['name' => 'goals', 'value' => '1'],
+                ],
+            ],
+        ];
+
+        $mapped = (new UefaMatchStatsMapper)->map($match, $lineups, $events, $playerStatistics);
 
         $this->assertSame(120, $mapped['match_minutes']);
         $this->assertSame([
@@ -176,6 +195,7 @@ class UefaMatchStatsMapperTest extends TestCase
         $this->assertSame(60, $homeById['100']['player_change_out']);
         $this->assertSame(60, $homeById['102']['player_change_in']);
         $this->assertSame(1, $homeById['101']['player_num_assists']);
+        $this->assertSame(0, $homeById['100']['player_num_assists']);
         $this->assertSame(1, $homeById['101']['player_penalties_hit']);
 
         $this->assertSame('40', $guestById['200']['player_owngoal']);
@@ -185,6 +205,137 @@ class UefaMatchStatsMapperTest extends TestCase
         $this->assertSame(70, $guestById['200']['player_minutes']);
         $this->assertSame(1, $guestById['201']['player_penalties_fail']);
         $this->assertSame(1, $guestById['201']['player_penalties_hit']);
+    }
+
+    #[Test]
+    public function ignores_goal_secondary_actor_for_assists_without_matchstats(): void
+    {
+        $match = [
+            'id' => '1',
+            'homeTeam' => ['id' => '10'],
+            'awayTeam' => ['id' => '20'],
+            'score' => [
+                'regular' => ['home' => 1, 'away' => 0],
+                'total' => ['home' => 1, 'away' => 0],
+            ],
+            'playerEvents' => [],
+        ];
+        $lineups = [
+            'homeTeam' => [
+                'team' => ['id' => '10'],
+                'field' => [
+                    ['player' => [
+                        'id' => '100',
+                        'internationalName' => 'Scorer',
+                        'translations' => [
+                            'firstName' => ['DE' => 'Home'],
+                            'lastName' => ['DE' => 'Scorer'],
+                        ],
+                    ]],
+                    ['player' => [
+                        'id' => '101',
+                        'internationalName' => 'Keeper',
+                        'translations' => [
+                            'firstName' => ['DE' => 'Home'],
+                            'lastName' => ['DE' => 'Keeper'],
+                        ],
+                    ]],
+                ],
+                'bench' => [],
+            ],
+            'awayTeam' => [
+                'team' => ['id' => '20'],
+                'field' => [],
+                'bench' => [],
+            ],
+        ];
+        $events = [
+            [
+                'type' => 'GOAL',
+                'phase' => 'FIRST_HALF',
+                'time' => ['minute' => 12],
+                'primaryActor' => ['type' => 'PLAYER', 'person' => ['id' => '100'], 'team' => ['id' => '10']],
+                // UEFA often puts the opposing/own GK here — not an assist.
+                'secondaryActor' => ['type' => 'PLAYER', 'person' => ['id' => '101'], 'team' => ['id' => '10']],
+            ],
+        ];
+
+        $mapped = (new UefaMatchStatsMapper)->map($match, $lineups, $events);
+
+        $homeById = [];
+        foreach ($mapped['home'] as $row) {
+            $homeById[$row['player_uefa_id']] = $row;
+        }
+
+        $this->assertSame(1, $homeById['100']['player_num_goals']);
+        $this->assertSame(0, $homeById['101']['player_num_assists']);
+    }
+
+    #[Test]
+    public function maps_assists_from_matchstats_player_statistics(): void
+    {
+        $match = [
+            'id' => '2045230',
+            'homeTeam' => ['id' => '10'],
+            'awayTeam' => ['id' => '20'],
+            'score' => [
+                'regular' => ['home' => 2, 'away' => 0],
+                'total' => ['home' => 2, 'away' => 0],
+            ],
+            'playerEvents' => [],
+        ];
+        $lineups = [
+            'homeTeam' => [
+                'team' => ['id' => '10'],
+                'field' => [
+                    ['player' => [
+                        'id' => '250179341',
+                        'internationalName' => 'One Assist',
+                        'translations' => [
+                            'firstName' => ['DE' => 'One'],
+                            'lastName' => ['DE' => 'Assist'],
+                        ],
+                    ]],
+                    ['player' => [
+                        'id' => '250184619',
+                        'internationalName' => 'Two Assists',
+                        'translations' => [
+                            'firstName' => ['DE' => 'Two'],
+                            'lastName' => ['DE' => 'Assists'],
+                        ],
+                    ]],
+                ],
+                'bench' => [],
+            ],
+            'awayTeam' => ['team' => ['id' => '20'], 'field' => [], 'bench' => []],
+        ];
+        $playerStatistics = [
+            [
+                'playerId' => '250179341',
+                'teamId' => '10',
+                'statistics' => [['name' => 'assists', 'value' => '1']],
+            ],
+            [
+                'playerId' => '250184619',
+                'teamId' => '10',
+                'statistics' => [['name' => 'assists', 'value' => '2']],
+            ],
+            [
+                'playerId' => '999',
+                'teamId' => '10',
+                'statistics' => [['name' => 'assists', 'value' => '5']],
+            ],
+        ];
+
+        $mapped = (new UefaMatchStatsMapper)->map($match, $lineups, [], $playerStatistics);
+
+        $homeById = [];
+        foreach ($mapped['home'] as $row) {
+            $homeById[$row['player_uefa_id']] = $row;
+        }
+
+        $this->assertSame(1, $homeById['250179341']['player_num_assists']);
+        $this->assertSame(2, $homeById['250184619']['player_num_assists']);
     }
 
     #[Test]
