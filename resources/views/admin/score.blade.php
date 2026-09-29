@@ -2,20 +2,42 @@
 
 @section('title', 'UserScore Settings')
 
-@section('content')
-    @php
-        $selectedLeague = $data['selected_league'] ?? null;
-        $flashErrors = $errors ?: (session('admin_errors') ?: []);
-        $flashDetails = is_array($details ?? null) ? $details : [];
-    @endphp
+@php
+    $selectedLeague = $data['selected_league'] ?? null;
+    $tab = ($data['tab'] ?? 'userteam') === 'user' ? 'user' : 'userteam';
+    $userteamPreview = is_array($data['userteam_preview'] ?? null) ? $data['userteam_preview'] : null;
+    $userPreview = is_array($data['user_preview'] ?? null) ? $data['user_preview'] : null;
+    $userteamRows = is_array($userteamPreview['rows'] ?? null) ? $userteamPreview['rows'] : [];
+    $userRows = is_array($userPreview['rows'] ?? null) ? $userPreview['rows'] : [];
+    $flashErrors = $errors ?: (session('admin_errors') ?: []);
+    $flashDetails = is_array($details ?? null) ? $details : [];
+@endphp
 
+@section('content')
     <section class="panel admin-main" aria-labelledby="admin-score-title">
         <div class="section-head">
             <h2 id="admin-score-title">UserScore Settings</h2>
         </div>
+
+        <nav class="admin-squad-tabs ffb-tabs" aria-label="Score-Bereiche">
+            <a
+                class="admin-squad-tab ffb-tab{{ $tab === 'userteam' ? ' is-active' : '' }}"
+                href="{{ route('admin.score', ['tab' => 'userteam']) }}"
+            >
+                Userteam Score
+            </a>
+            <a
+                class="admin-squad-tab ffb-tab{{ $tab === 'user' ? ' is-active' : '' }}"
+                href="{{ route('admin.score', ['tab' => 'user']) }}"
+            >
+                User Score
+            </a>
+        </nav>
+
         <p class="hint">
-            Berechnet Userteam- und User-Scores für die im Admin-Center ausgewählte Liga
+            Berechnet Scores für die im Admin-Center ausgewählte Liga
             (entspricht dem Legacy-Menü „UserScore / configuration“).
+            Zuerst berechnen, prüfen, dann speichern.
         </p>
         @if ($selectedLeague)
             <p class="muted">Aktive Liga: {{ $selectedLeague['league_title'] }}</p>
@@ -46,44 +68,145 @@
                 @endif
             </div>
         @endif
-    </section>
 
-    <section class="panel admin-main" aria-labelledby="admin-score-userteam-title">
-        <div class="section-head">
-            <h2 id="admin-score-userteam-title">Userteam Score</h2>
-        </div>
-        <p class="hint">
-            Summiert die Spieler-Punkte der Aufstellung je Userteam und schreibt
-            <code>userteam_score</code>. Anschließend werden LC-Punkte für beendete
-            Spielrunden neu vergeben.
-        </p>
-        <form class="admin-form" method="post" action="{{ route('admin.score.setUserteamScores') }}" accept-charset="UTF-8">
-            @csrf
-            <div class="admin-actions admin-actions-flush">
-                <button type="submit" class="admin-submit" name="set_userteamscores_submit" value="1" @disabled(! $selectedLeague)>
-                    Set Userteam Score
-                </button>
+        @if ($tab === 'userteam')
+            <div class="section-head">
+                <h3 id="admin-score-userteam-title">Userteam Score</h3>
             </div>
-            <p class="hint">(do only click once!)</p>
-        </form>
-    </section>
+            <p class="hint">
+                Summiert die Spieler-Punkte der Aufstellung je Userteam
+                (<code>userteam_score</code>) und vergibt LC-Punkte für beendete Spielrunden.
+                Speichern schreibt die berechneten Werte.
+            </p>
+            <form class="admin-form" method="post" action="{{ route('admin.score.calculateUserteamScores') }}" accept-charset="UTF-8">
+                @csrf
+                <div class="admin-actions admin-actions-flush">
+                    <button type="submit" class="admin-submit" name="calculate_userteamscores" value="1" @disabled(! $selectedLeague)>
+                        Score berechnen
+                    </button>
+                    <button
+                        type="submit"
+                        class="admin-submit"
+                        formaction="{{ route('admin.score.saveUserteamScores') }}"
+                        name="save_userteamscores"
+                        value="1"
+                        @disabled(! $selectedLeague || $userteamPreview === null)
+                        title="{{ $userteamPreview === null ? 'Zuerst Score berechnen' : 'Berechnete Scores speichern' }}"
+                    >
+                        Speichern
+                    </button>
+                </div>
+            </form>
 
-    <section class="panel admin-main" aria-labelledby="admin-score-user-title">
-        <div class="section-head">
-            <h2 id="admin-score-user-title">User Score</h2>
-        </div>
-        <p class="hint">
-            Summiert die Userteam-Scores und LC-Punkte je User über alle Spielrunden der Liga
-            und schreibt <code>ffb_userscore</code>.
-        </p>
-        <form class="admin-form" method="post" action="{{ route('admin.score.setUserScores') }}" accept-charset="UTF-8">
-            @csrf
-            <div class="admin-actions admin-actions-flush">
-                <button type="submit" class="admin-submit" name="set_userscores_submit" value="1" @disabled(! $selectedLeague)>
-                    Set User Score
-                </button>
+            @if ($userteamPreview !== null)
+                @if ($userteamRows === [])
+                    <p class="muted">Keine Userteams in dieser Liga.</p>
+                @else
+                    <div class="admin-squad-table-wrap">
+                        <table class="admin-squad-table">
+                            <thead>
+                                <tr>
+                                    <th>Userteam</th>
+                                    <th>User</th>
+                                    <th>Runde</th>
+                                    <th>Score (alt → neu)</th>
+                                    <th>LC (alt → neu)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($userteamRows as $row)
+                                    <tr>
+                                        <td>#{{ (int) ($row['userteam_id'] ?? 0) }}</td>
+                                        <td>
+                                            {{ ($row['user_nickname'] ?? '') !== '' ? $row['user_nickname'] : '—' }}
+                                            <span class="muted">(#{{ (int) ($row['user_id'] ?? 0) }})</span>
+                                        </td>
+                                        <td>#{{ (int) ($row['matchround_id'] ?? 0) }}</td>
+                                        <td>
+                                            {{ (int) ($row['previous_score'] ?? 0) }}
+                                            →
+                                            <strong>{{ (int) ($row['score'] ?? 0) }}</strong>
+                                        </td>
+                                        <td>
+                                            {{ (int) ($row['previous_lc_points'] ?? 0) }}
+                                            →
+                                            <strong>{{ (int) ($row['lc_points'] ?? 0) }}</strong>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            @endif
+        @else
+            <div class="section-head">
+                <h3 id="admin-score-user-title">User Score</h3>
             </div>
-            <p class="hint">(do only click once!)</p>
-        </form>
+            <p class="hint">
+                Summiert die gespeicherten Userteam-Scores und LC-Punkte je User über alle
+                Spielrunden der Liga und schreibt <code>ffb_userscore</code>.
+                Vorher Userteam Score speichern, falls neu berechnet.
+            </p>
+            <form class="admin-form" method="post" action="{{ route('admin.score.calculateUserScores') }}" accept-charset="UTF-8">
+                @csrf
+                <div class="admin-actions admin-actions-flush">
+                    <button type="submit" class="admin-submit" name="calculate_userscores" value="1" @disabled(! $selectedLeague)>
+                        Score berechnen
+                    </button>
+                    <button
+                        type="submit"
+                        class="admin-submit"
+                        formaction="{{ route('admin.score.saveUserScores') }}"
+                        name="save_userscores"
+                        value="1"
+                        @disabled(! $selectedLeague || $userPreview === null)
+                        title="{{ $userPreview === null ? 'Zuerst Score berechnen' : 'Berechnete Scores speichern' }}"
+                    >
+                        Speichern
+                    </button>
+                </div>
+            </form>
+
+            @if ($userPreview !== null)
+                @if ($userRows === [])
+                    <p class="muted">Keine User-Scores in dieser Liga.</p>
+                @else
+                    <div class="admin-squad-table-wrap">
+                        <table class="admin-squad-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Score (alt → neu)</th>
+                                    <th>LC (alt → neu)</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($userRows as $row)
+                                    <tr>
+                                        <td>
+                                            {{ ($row['user_nickname'] ?? '') !== '' ? $row['user_nickname'] : '—' }}
+                                            <span class="muted">(#{{ (int) ($row['user_id'] ?? 0) }})</span>
+                                        </td>
+                                        <td>
+                                            {{ $row['previous_score'] === null ? '—' : (int) $row['previous_score'] }}
+                                            →
+                                            <strong>{{ (int) ($row['score'] ?? 0) }}</strong>
+                                        </td>
+                                        <td>
+                                            {{ $row['previous_lc_points'] === null ? '—' : (int) $row['previous_lc_points'] }}
+                                            →
+                                            <strong>{{ (int) ($row['lc_points'] ?? 0) }}</strong>
+                                        </td>
+                                        <td>{{ ! empty($row['is_new']) ? 'neu' : 'update' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            @endif
+        @endif
     </section>
 @endsection
