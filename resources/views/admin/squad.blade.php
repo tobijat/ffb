@@ -235,7 +235,6 @@
                                     <th scope="col">Spieler</th>
                                     <th scope="col">Pos.</th>
                                     <th scope="col">Status</th>
-                                    <th scope="col">Transfer</th>
                                 </tr>
                             </thead>
                             @foreach ($positionOrder as $posCode)
@@ -245,7 +244,7 @@
                                 @endif
                                 <tbody class="admin-squad-group" data-group-total="{{ count($group) }}">
                                     <tr class="admin-squad-group-head">
-                                        <th colspan="5" scope="colgroup">
+                                        <th colspan="4" scope="colgroup">
                                             {{ $positions[$posCode] ?? strtoupper($posCode) }}
                                             <span class="admin-squad-count admin-squad-group-count">{{ count($group) }}</span>
                                         </th>
@@ -258,10 +257,9 @@
                                             data-playerteam-id="{{ $ptId }}"
                                             data-initial-position="{{ $item['playerteam_player_position'] }}"
                                             data-initial-status="{{ (int) $item['playerteam_status'] }}"
-                                            data-initial-transfer="{{ $item['playerteam_date_transfer'] }}"
                                             data-initial-picture="{{ $item['picture_url'] }}"
                                         >
-                                            <td colspan="5" class="admin-squad-player-cell">
+                                            <td colspan="4" class="admin-squad-player-cell">
                                                 <div class="admin-squad-grid">
                                                     <div class="admin-squad-photo-cell">
                                                         <img
@@ -314,17 +312,6 @@
                                                             <option value="1" @selected((int) $item['playerteam_status'] === 1)>aktiv</option>
                                                             <option value="0" @selected((int) $item['playerteam_status'] === 0)>inaktiv</option>
                                                         </select>
-                                                    </label>
-
-                                                    <label class="admin-squad-compact admin-squad-date admin-squad-field-date">
-                                                        <span class="visually-hidden">Transferdatum</span>
-                                                        <input
-                                                            type="date"
-                                                            name="items[{{ $ptId }}][playerteam_date_transfer]"
-                                                            value="{{ $item['playerteam_date_transfer'] }}"
-                                                            aria-label="Transferdatum"
-                                                            data-field="transfer"
-                                                        >
                                                     </label>
                                                 </div>
 
@@ -418,10 +405,6 @@
                                     <option value="1" @selected((int) $defaults['playerteam_status'] === 1)>aktiv</option>
                                     <option value="0" @selected((int) $defaults['playerteam_status'] === 0)>inaktiv</option>
                                 </select>
-                            </label>
-                            <label class="admin-squad-compact admin-squad-date">
-                                <span>Transfer</span>
-                                <input id="batch_transfer" type="date" value="{{ $defaults['playerteam_date_transfer'] }}" aria-label="Standard-Transferdatum">
                             </label>
                         </div>
                     </article>
@@ -1106,8 +1089,7 @@
         function isRowEdited(row) {
             if (fieldValue(row, 'picture') === '1') return true;
             return fieldValue(row, 'position') !== String(row.getAttribute('data-initial-position') || '')
-                || fieldValue(row, 'status') !== String(row.getAttribute('data-initial-status') || '')
-                || fieldValue(row, 'transfer') !== String(row.getAttribute('data-initial-transfer') || '');
+                || fieldValue(row, 'status') !== String(row.getAttribute('data-initial-status') || '');
         }
 
         function isRowQueued(row) {
@@ -1132,13 +1114,11 @@
         function restoreRow(row) {
             const position = fieldEl(row, 'position');
             const status = fieldEl(row, 'status');
-            const transfer = fieldEl(row, 'transfer');
             const picture = fieldEl(row, 'picture');
             const preview = row.querySelector('[data-field="picture-preview"]');
 
             if (position) position.value = String(row.getAttribute('data-initial-position') || '');
             if (status) status.value = String(row.getAttribute('data-initial-status') || '');
-            if (transfer) transfer.value = String(row.getAttribute('data-initial-transfer') || '');
             if (picture) picture.value = '';
             if (preview) preview.src = String(row.getAttribute('data-initial-picture') || preview.src);
 
@@ -1355,7 +1335,6 @@
         return {
             position: String((document.getElementById('batch_pos') || {}).value || 'd'),
             status: String((document.getElementById('batch_status') || {}).value || '1'),
-            transfer: String((document.getElementById('batch_transfer') || {}).value || '2008-01-01'),
         };
     }
 
@@ -1433,10 +1412,6 @@
                             '<option value="0"' + (String(entry.status) === '0' ? ' selected' : '') + '>inaktiv</option>' +
                         '</select>' +
                     '</label>' +
-                    '<label class="admin-squad-compact admin-squad-date">' +
-                        '<span class="visually-hidden">Transferdatum</span>' +
-                        '<input type="date" name="items[' + id + '][playerteam_date_transfer]" value="' + escapeHtml(entry.transfer) + '" aria-label="Transferdatum" data-field="transfer">' +
-                    '</label>' +
                 '</div>' +
                 '<button type="button" class="admin-icon-btn admin-squad-pick-remove" title="Aus Auswahl entfernen" data-remove-id="' + id + '">' +
                     '<img src="' + escapeHtml(pickLegacyBase) + 'images/ffb/symbols/delete.png" alt="Entfernen" width="16" height="16">' +
@@ -1468,7 +1443,6 @@
             tm_url: String(item.tm_url || ''),
             position: defaults.position,
             status: defaults.status,
-            transfer: defaults.transfer,
         };
         selected.set(id, entry);
         if (selectedList) {
