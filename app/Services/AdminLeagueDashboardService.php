@@ -2,16 +2,22 @@
 
 namespace App\Services;
 
+use App\Models\Goal;
 use App\Models\League;
 use App\Models\LeagueOptions;
 use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\MatchroundOptions;
+use App\Models\Playerprice;
+use App\Models\Playerstats;
 use App\Models\Playerteam;
+use App\Models\Psgoal;
 use App\Models\Team;
+use App\Models\Teamprice;
 use App\Support\Flag;
 use App\Support\TeamShirt;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 class AdminLeagueDashboardService
 {
@@ -52,8 +58,8 @@ class AdminLeagueDashboardService
             $this->matchesSection($leagueId),
             $this->teamsSection($leagueId),
             $this->squadSection($leagueId),
-            ['key' => 'playerprice', 'title' => 'Preis/Performance', 'ok' => false],
-            ['key' => 'matchdata', 'title' => 'Spieldaten', 'ok' => false],
+            $this->playerpriceSection($leagueId),
+            $this->matchdataSection($leagueId),
             ['key' => 'extremeteam', 'title' => 'Top&Flop', 'ok' => false],
             ['key' => 'score', 'title' => 'Score', 'ok' => false],
         ];
@@ -652,6 +658,595 @@ class AdminLeagueDashboardService
                 ],
             ],
         ];
+    }
+
+    /**
+     * @return array{
+     *     key: string,
+     *     title: string,
+     *     ok: bool,
+     *     checklist: list<array{key: string, label: string, ok: bool, match_list?: list<array{label: string, detail: string}>, match_list_summary?: string}>
+     * }
+     */
+    private function playerpriceSection(int $leagueId): array
+    {
+        if ($leagueId <= 0) {
+            return [
+                'key' => 'playerprice',
+                'title' => 'Preis/Performance',
+                'ok' => false,
+                'checklist' => [],
+            ];
+        }
+
+        $priceMode = (string) (LeagueOptions::query()
+            ->where('options_league_id', $leagueId)
+            ->value('options_league_pricemode') ?: '');
+        $isDynamic = $priceMode === 'dynamic';
+
+        $teamIds = $this->leagueMatchTeamIds($leagueId);
+        $teams = $teamIds === []
+            ? collect()
+            : Team::query()
+                ->whereIn('team_id', $teamIds)
+                ->orderBy('team_name')
+                ->orderBy('team_id')
+                ->get(['team_id', 'team_name'])
+                ->keyBy(fn (Team $team): int => (int) $team->team_id);
+
+        $roundIds = Matchround::query()
+            ->where('matchround_league_id', $leagueId)
+            ->pluck('matchround_id')
+            ->map(fn ($id): int => (int) $id)
+            ->all();
+
+        $teamsWithPrice = $roundIds === []
+            ? []
+            : Teamprice::query()
+                ->whereIn('teamprice_matchround_id', $roundIds)
+                ->whereIn('teamprice_team_id', $teamIds ?: [0])
+                ->pluck('teamprice_team_id')
+                ->map(fn ($id): int => (int) $id)
+                ->unique()
+                ->all();
+
+        $teamsWithPriceLookup = array_fill_keys($teamsWithPrice, true);
+        $missingTeamPrices = [];
+        foreach ($teamIds as $teamId) {
+            if (isset($teamsWithPriceLookup[$teamId])) {
+                continue;
+            }
+
+            $missingTeamPrices[] = [
+                'label' => $this->teamLabel($teams->get($teamId), $teamId),
+                'detail' => 'kein Teampreis in dieser Liga',
+            ];
+        }
+
+        $missingPerformance = [];
+        $missingPlayerPrices = [];
+
+        if ($isDynamic) {
+            $missingPerformance = $this->missingRoundPerformanceEntries($roundIds);
+            $missingPlayerPrices = $this->missingPlayerpriceEntries($leagueId, $teams);
+        }
+
+        $teamPricesOk = $missingTeamPrices === [];
+        $performanceOk = $missingPerformance === [];
+        $playerPricesOk = $missingPlayerPrices === [];
+
+        return [
+            'key' => 'playerprice',
+            'title' => 'Preis/Performance',
+            'ok' => $teamPricesOk && $performanceOk && $playerPricesOk,
+            'checklist' => [
+                [
+                    'key' => 'team-prices',
+                    'label' => 'Jede Mannschaft hat einen Teampreis',
+                    'ok' => $teamPricesOk,
+                    'match_list' => $missingTeamPrices,
+                    'match_list_summary' => 'Mannschaften ohne Teampreis',
+                ],
+                [
+                    'key' => 'round-performance',
+                    'label' => 'Dynamisch: Round-Performance für vergangene Spiele gesetzt',
+                    'ok' => $performanceOk,
+                    'match_list' => $missingPerformance,
+                    'match_list_summary' => 'Stats ohne Round-Performance',
+                ],
+                [
+                    'key' => 'player-prices',
+                    'label' => 'Dynamisch: Spielerpreise für nächste Spielrunde gesetzt',
+                    'ok' => $playerPricesOk,
+                    'match_list' => $missingPlayerPrices,
+                    'match_list_summary' => 'Aktive Spieler ohne Spielerpreis',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @param  list<int>  $roundIds
+     * @return list<array{label: string, detail: string}>
+     */
+    private function missingRoundPerformanceEntries(array $roundIds): array
+    {
+        if ($roundIds === []) {
+            return [];
+        }
+
+        $today = Carbon::now()->startOfDay();
+        $pastMatchIds = MatchGame::query()
+            ->whereIn('match_round', $roundIds)
+            ->get(['match_id', 'match_date'])
+            ->filter(fn (MatchGame $match): bool => $this->matchIsAtLeastOneDayOld($match, $today))
+            ->map(fn (MatchGame $match): int => (int) $match->match_id)
+            ->values()
+            ->all();
+
+        if ($pastMatchIds === []) {
+            return [];
+        }
+
+        $rows = Playerstats::query()
+            ->with([
+                'playerteam.player:player_id,player_fname,player_lname',
+                'playerteam.team:team_id,team_name',
+                'match:match_id,match_date,match_round',
+            ])
+            ->whereIn('playerstats_match_id', $pastMatchIds)
+            ->whereNull('playerstats_round_performance')
+            ->orderBy('playerstats_match_id')
+            ->orderBy('playerstats_id')
+            ->get([
+                'playerstats_id',
+                'playerstats_playerteam_id',
+                'playerstats_match_id',
+                'playerstats_round_performance',
+            ]);
+
+        $entries = [];
+        foreach ($rows as $row) {
+            /** @var Playerteam|null $playerteam */
+            $playerteam = $row->playerteam;
+            $playerLabel = $playerteam !== null
+                ? $this->playerLabel($playerteam, (int) $playerteam->playerteam_player_id)
+                : 'Spielerteam #'.(int) $row->playerstats_playerteam_id;
+            $teamLabel = $playerteam !== null
+                ? $this->teamLabel($playerteam->team, (int) $playerteam->playerteam_team_id)
+                : '';
+            $matchDate = MatchGame::formatDisplayDate(
+                $row->match?->match_date !== null ? (string) $row->match->match_date : null
+            ) ?? 'ohne Datum';
+
+            $entries[] = [
+                'label' => $playerLabel.($teamLabel !== '' ? ' · '.$teamLabel : ''),
+                'detail' => 'Spiel '.$matchDate.' · Round-Performance fehlt',
+            ];
+        }
+
+        return $entries;
+    }
+
+    /**
+     * @param  Collection<int, Team>  $teams
+     * @return list<array{label: string, detail: string}>
+     */
+    private function missingPlayerpriceEntries(int $leagueId, $teams): array
+    {
+        $targetRound = $this->nextUpcomingMatchround($leagueId);
+        if ($targetRound === null) {
+            return [];
+        }
+
+        $roundId = (int) $targetRound->matchround_id;
+        $participatingTeamIds = MatchGame::query()
+            ->where('match_round', $roundId)
+            ->get(['match_hometeam_id', 'match_guestteam_id'])
+            ->flatMap(fn (MatchGame $match): array => [
+                (int) $match->match_hometeam_id,
+                (int) $match->match_guestteam_id,
+            ])
+            ->filter(fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($participatingTeamIds === []) {
+            return [];
+        }
+
+        $activePlayers = Playerteam::query()
+            ->with('player:player_id,player_fname,player_lname')
+            ->where('playerteam_league_id', $leagueId)
+            ->where('playerteam_status', 1)
+            ->whereIn('playerteam_team_id', $participatingTeamIds)
+            ->orderBy('playerteam_team_id')
+            ->orderBy('playerteam_id')
+            ->get([
+                'playerteam_id',
+                'playerteam_player_id',
+                'playerteam_team_id',
+                'playerteam_status',
+            ]);
+
+        if ($activePlayers->isEmpty()) {
+            return [];
+        }
+
+        $pricedIds = Playerprice::query()
+            ->where('playerprice_matchround_id', $roundId)
+            ->whereIn('playerprice_playerteam_id', $activePlayers->modelKeys())
+            ->pluck('playerprice_playerteam_id')
+            ->map(fn ($id): int => (int) $id)
+            ->all();
+        $pricedLookup = array_fill_keys($pricedIds, true);
+
+        $roundTitle = trim((string) $targetRound->matchround_title);
+        $entries = [];
+        foreach ($activePlayers as $playerteam) {
+            $playerteamId = (int) $playerteam->playerteam_id;
+            if (isset($pricedLookup[$playerteamId])) {
+                continue;
+            }
+
+            $teamId = (int) $playerteam->playerteam_team_id;
+            $entries[] = [
+                'label' => $this->playerLabel($playerteam, (int) $playerteam->playerteam_player_id)
+                    .' · '.$this->teamLabel($teams->get($teamId), $teamId),
+                'detail' => 'kein Spielerpreis'
+                    .($roundTitle !== '' ? ' · '.$roundTitle : ''),
+            ];
+        }
+
+        return $entries;
+    }
+
+    /**
+     * @return array{
+     *     key: string,
+     *     title: string,
+     *     ok: bool,
+     *     checklist: list<array{key: string, label: string, ok: bool, match_list?: list<array{label: string, detail: string}>, match_list_summary?: string}>
+     * }
+     */
+    private function matchdataSection(int $leagueId): array
+    {
+        if ($leagueId <= 0) {
+            return [
+                'key' => 'matchdata',
+                'title' => 'Spieldaten',
+                'ok' => false,
+                'checklist' => [],
+            ];
+        }
+
+        $pointsMode = (string) (LeagueOptions::query()
+            ->where('options_league_id', $leagueId)
+            ->value('options_league_pointsmode') ?: 'new');
+        $isNewPointsMode = $pointsMode === 'new';
+
+        $roundIds = Matchround::query()
+            ->where('matchround_league_id', $leagueId)
+            ->pluck('matchround_id')
+            ->map(fn ($id): int => (int) $id)
+            ->all();
+
+        $matches = $roundIds === []
+            ? collect()
+            : MatchGame::query()
+                ->with([
+                    'homeTeam:team_id,team_name',
+                    'guestTeam:team_id,team_name',
+                ])
+                ->whereIn('match_round', $roundIds)
+                ->orderBy('match_date')
+                ->orderBy('match_id')
+                ->get([
+                    'match_id',
+                    'match_round',
+                    'match_hometeam_id',
+                    'match_guestteam_id',
+                    'match_date',
+                    'match_homescore',
+                    'match_guestscore',
+                    'match_homescore_penalty',
+                    'match_guestscore_penalty',
+                ]);
+
+        $matchesWithResult = $matches->filter(
+            fn (MatchGame $match): bool => $this->matchHasResult($match)
+        );
+
+        $matchIds = $matchesWithResult
+            ->map(fn (MatchGame $match): int => (int) $match->match_id)
+            ->values()
+            ->all();
+
+        $statsByMatch = $matchIds === []
+            ? collect()
+            : Playerstats::query()
+                ->with('playerteam:playerteam_id,playerteam_team_id')
+                ->whereIn('playerstats_match_id', $matchIds)
+                ->get([
+                    'playerstats_id',
+                    'playerstats_match_id',
+                    'playerstats_playerteam_id',
+                    'playerstats_goals',
+                    'playerstats_owngoals',
+                    'playerstats_penaltyshootout_hit',
+                ])
+                ->groupBy(fn (Playerstats $row): int => (int) $row->playerstats_match_id);
+
+        $goalsByMatch = ($isNewPointsMode && $matchIds !== [])
+            ? Goal::query()
+                ->with('playerteam:playerteam_id,playerteam_team_id')
+                ->whereIn('goal_match_id', $matchIds)
+                ->get(['goal_id', 'goal_match_id', 'goal_playerteam_id', 'goal_owngoal'])
+                ->groupBy(fn (Goal $goal): int => (int) $goal->goal_match_id)
+            : collect();
+
+        $psGoalsByMatch = ($isNewPointsMode && $matchIds !== [])
+            ? Psgoal::query()
+                ->with('playerteam:playerteam_id,playerteam_team_id')
+                ->whereIn('psgoal_match_id', $matchIds)
+                ->where('psgoal_hit', 1)
+                ->get(['psgoal_id', 'psgoal_match_id', 'psgoal_playerteam_id', 'psgoal_hit'])
+                ->groupBy(fn (Psgoal $goal): int => (int) $goal->psgoal_match_id)
+            : collect();
+
+        $missingStats = [];
+        $missingPlayerstatsGoals = [];
+        $missingPsHits = [];
+        $missingTableGoals = [];
+        $missingTablePsGoals = [];
+
+        foreach ($matchesWithResult as $match) {
+            $matchId = (int) $match->match_id;
+            $homeId = (int) $match->match_hometeam_id;
+            $guestId = (int) $match->match_guestteam_id;
+            $label = $this->matchFixtureLabel($match);
+
+            $stats = $statsByMatch->get($matchId) ?? collect();
+            $countsByTeam = [];
+            $goalsByTeam = [];
+            $owngoalsByTeam = [];
+            $psHitsByTeam = [];
+            foreach ($stats as $stat) {
+                $teamId = (int) ($stat->playerteam?->playerteam_team_id ?? 0);
+                if ($teamId <= 0) {
+                    continue;
+                }
+                $countsByTeam[$teamId] = ($countsByTeam[$teamId] ?? 0) + 1;
+                $goalsByTeam[$teamId] = ($goalsByTeam[$teamId] ?? 0) + (int) ($stat->playerstats_goals ?? 0);
+                $owngoalsByTeam[$teamId] = ($owngoalsByTeam[$teamId] ?? 0) + (int) ($stat->playerstats_owngoals ?? 0);
+                $psHitsByTeam[$teamId] = ($psHitsByTeam[$teamId] ?? 0) + (int) ($stat->playerstats_penaltyshootout_hit ?? 0);
+            }
+
+            $homeStats = $countsByTeam[$homeId] ?? 0;
+            $guestStats = $countsByTeam[$guestId] ?? 0;
+            if ($homeStats < 11 || $guestStats < 11) {
+                $missingStats[] = [
+                    'label' => $label,
+                    'detail' => sprintf(
+                        'Playerstats Heim %d / Gast %d (je ≥ 11 nötig)',
+                        $homeStats,
+                        $guestStats,
+                    ),
+                ];
+            }
+
+            $homeScore = (int) $match->match_homescore;
+            $guestScore = (int) $match->match_guestscore;
+            if ($homeScore !== 0 || $guestScore !== 0) {
+                $homeFromStats = ($goalsByTeam[$homeId] ?? 0) + ($owngoalsByTeam[$guestId] ?? 0);
+                $guestFromStats = ($goalsByTeam[$guestId] ?? 0) + ($owngoalsByTeam[$homeId] ?? 0);
+                if ($homeFromStats !== $homeScore || $guestFromStats !== $guestScore) {
+                    $missingPlayerstatsGoals[] = [
+                        'label' => $label,
+                        'detail' => sprintf(
+                            'Ergebnis %d:%d · Tore in playerstats Heim %d / Gast %d (erwartet %d / %d)',
+                            $homeScore,
+                            $guestScore,
+                            $homeFromStats,
+                            $guestFromStats,
+                            $homeScore,
+                            $guestScore,
+                        ),
+                    ];
+                }
+            }
+
+            if ($this->matchHasPenaltyShootoutResult($match)) {
+                $homePs = (int) $match->match_homescore_penalty;
+                $guestPs = (int) $match->match_guestscore_penalty;
+                $homeHits = $psHitsByTeam[$homeId] ?? 0;
+                $guestHits = $psHitsByTeam[$guestId] ?? 0;
+                if ($homeHits !== $homePs || $guestHits !== $guestPs) {
+                    $missingPsHits[] = [
+                        'label' => $label,
+                        'detail' => sprintf(
+                            'Elfmeter %d:%d · Treffer in playerstats Heim %d / Gast %d (erwartet %d / %d)',
+                            $homePs,
+                            $guestPs,
+                            $homeHits,
+                            $guestHits,
+                            $homePs,
+                            $guestPs,
+                        ),
+                    ];
+                }
+            }
+
+            if (! $isNewPointsMode) {
+                continue;
+            }
+
+            if ($homeScore !== 0 || $guestScore !== 0) {
+                /** @var Collection<int, Goal> $goals */
+                $goals = $goalsByMatch->get($matchId) ?? collect();
+                $tableGoalsByTeam = [];
+                $tableOwngoalsByTeam = [];
+                foreach ($goals as $goal) {
+                    $teamId = (int) ($goal->playerteam?->playerteam_team_id ?? 0);
+                    if ($teamId <= 0) {
+                        continue;
+                    }
+                    if ((int) ($goal->goal_owngoal ?? 0) === 1) {
+                        $tableOwngoalsByTeam[$teamId] = ($tableOwngoalsByTeam[$teamId] ?? 0) + 1;
+                    } else {
+                        $tableGoalsByTeam[$teamId] = ($tableGoalsByTeam[$teamId] ?? 0) + 1;
+                    }
+                }
+                $homeFromTable = ($tableGoalsByTeam[$homeId] ?? 0) + ($tableOwngoalsByTeam[$guestId] ?? 0);
+                $guestFromTable = ($tableGoalsByTeam[$guestId] ?? 0) + ($tableOwngoalsByTeam[$homeId] ?? 0);
+                if ($homeFromTable !== $homeScore || $guestFromTable !== $guestScore) {
+                    $missingTableGoals[] = [
+                        'label' => $label,
+                        'detail' => sprintf(
+                            'Ergebnis %d:%d · Tore in ffb_goal Heim %d / Gast %d (erwartet %d / %d)',
+                            $homeScore,
+                            $guestScore,
+                            $homeFromTable,
+                            $guestFromTable,
+                            $homeScore,
+                            $guestScore,
+                        ),
+                    ];
+                }
+            }
+
+            if ($this->matchHasPenaltyShootoutResult($match)) {
+                $homePs = (int) $match->match_homescore_penalty;
+                $guestPs = (int) $match->match_guestscore_penalty;
+                /** @var Collection<int, Psgoal> $psGoals */
+                $psGoals = $psGoalsByMatch->get($matchId) ?? collect();
+                $tableHitsByTeam = [];
+                foreach ($psGoals as $psGoal) {
+                    $teamId = (int) ($psGoal->playerteam?->playerteam_team_id ?? 0);
+                    if ($teamId <= 0) {
+                        continue;
+                    }
+                    $tableHitsByTeam[$teamId] = ($tableHitsByTeam[$teamId] ?? 0) + 1;
+                }
+                $homeTableHits = $tableHitsByTeam[$homeId] ?? 0;
+                $guestTableHits = $tableHitsByTeam[$guestId] ?? 0;
+                if ($homeTableHits !== $homePs || $guestTableHits !== $guestPs) {
+                    $missingTablePsGoals[] = [
+                        'label' => $label,
+                        'detail' => sprintf(
+                            'Elfmeter %d:%d · Treffer in ffb_psgoal Heim %d / Gast %d (erwartet %d / %d)',
+                            $homePs,
+                            $guestPs,
+                            $homeTableHits,
+                            $guestTableHits,
+                            $homePs,
+                            $guestPs,
+                        ),
+                    ];
+                }
+            }
+        }
+
+        $statsOk = $missingStats === [];
+        $playerstatsGoalsOk = $missingPlayerstatsGoals === [];
+        $psHitsOk = $missingPsHits === [];
+        $tableGoalsOk = $missingTableGoals === [];
+        $tablePsGoalsOk = $missingTablePsGoals === [];
+
+        $checklist = [
+            [
+                'key' => 'match-playerstats',
+                'label' => 'Spiele mit Ergebnis haben ≥11 Playerstats je Mannschaft',
+                'ok' => $statsOk,
+                'match_list' => $missingStats,
+                'match_list_summary' => 'Spiele mit unzureichenden Playerstats',
+            ],
+            [
+                'key' => 'match-playerstats-goals',
+                'label' => 'Tore in Playerstats passen zum Ergebnis',
+                'ok' => $playerstatsGoalsOk,
+                'match_list' => $missingPlayerstatsGoals,
+                'match_list_summary' => 'Spiele mit fehlenden/abweichenden Toren in Playerstats',
+            ],
+            [
+                'key' => 'match-playerstats-ps-hits',
+                'label' => 'Elfmeterschießen-Treffer in Playerstats passen zum Elfmeter-Ergebnis',
+                'ok' => $psHitsOk,
+                'match_list' => $missingPsHits,
+                'match_list_summary' => 'Spiele mit fehlenden/abweichenden Elfmeter-Treffern in Playerstats',
+            ],
+        ];
+
+        if ($isNewPointsMode) {
+            $checklist[] = [
+                'key' => 'match-ffb-goal',
+                'label' => 'Neu: Tore in ffb_goal passen zum Ergebnis',
+                'ok' => $tableGoalsOk,
+                'match_list' => $missingTableGoals,
+                'match_list_summary' => 'Spiele mit fehlenden/abweichenden Toren in ffb_goal',
+            ];
+            $checklist[] = [
+                'key' => 'match-ffb-psgoal',
+                'label' => 'Neu: Elfmeterschießen-Treffer in ffb_psgoal passen zum Elfmeter-Ergebnis',
+                'ok' => $tablePsGoalsOk,
+                'match_list' => $missingTablePsGoals,
+                'match_list_summary' => 'Spiele mit fehlenden/abweichenden Elfmeter-Treffern in ffb_psgoal',
+            ];
+        }
+
+        return [
+            'key' => 'matchdata',
+            'title' => 'Spieldaten',
+            'ok' => $statsOk
+                && $playerstatsGoalsOk
+                && $psHitsOk
+                && $tableGoalsOk
+                && $tablePsGoalsOk,
+            'checklist' => $checklist,
+        ];
+    }
+
+    private function matchHasResult(MatchGame $match): bool
+    {
+        return (int) ($match->match_homescore ?? -1) >= 0
+            && (int) ($match->match_guestscore ?? -1) >= 0;
+    }
+
+    private function matchHasPenaltyShootoutResult(MatchGame $match): bool
+    {
+        return (int) ($match->match_homescore_penalty ?? -1) >= 0
+            && (int) ($match->match_guestscore_penalty ?? -1) >= 0;
+    }
+
+    private function matchFixtureLabel(MatchGame $match): string
+    {
+        $home = trim((string) ($match->homeTeam?->team_name ?? ''));
+        $guest = trim((string) ($match->guestTeam?->team_name ?? ''));
+        $fixture = ($home !== '' ? $home : '?').' – '.($guest !== '' ? $guest : '?');
+        $date = MatchGame::formatDisplayDate(
+            $match->match_date !== null ? (string) $match->match_date : null
+        );
+
+        return $date !== null ? $fixture.' · '.$date : $fixture;
+    }
+
+    private function nextUpcomingMatchround(int $leagueId): ?Matchround
+    {
+        $now = Carbon::now();
+        $rounds = Matchround::query()
+            ->where('matchround_league_id', $leagueId)
+            ->orderBy('matchround_startdate')
+            ->orderBy('matchround_id')
+            ->get();
+
+        foreach ($rounds as $round) {
+            if ($this->matchroundPeriod($round, $now) === 'future') {
+                return $round;
+            }
+        }
+
+        return null;
     }
 
     /**
