@@ -588,8 +588,9 @@ class AdminMatchdataService
             return ['ok' => false, 'errors' => ['Heim- und/oder Gastteam fehlen.']];
         }
 
-        $dateTs = strtotime((string) $match->match_date);
-        $date = $dateTs ? date('Y-m-d', $dateTs) : '';
+        // Stored match_date and FIFA mapped dates are Europe/Berlin wall times
+        // (possibly with kickoff); match on calendar day only.
+        $date = MatchGame::calendarDate((string) $match->match_date);
         if ($date === '') {
             return ['ok' => false, 'errors' => ['Spieldatum fehlt.']];
         }
@@ -618,7 +619,7 @@ class AdminMatchdataService
             if (
                 ($fifa['home_fifa_id'] ?? '') === $homeFifaId
                 && ($fifa['away_fifa_id'] ?? '') === $awayFifaId
-                && ($fifa['date'] ?? '') === $date
+                && MatchGame::calendarDate((string) ($fifa['date'] ?? '')) === $date
             ) {
                 return [
                     'ok' => true,
@@ -715,8 +716,9 @@ class AdminMatchdataService
             ];
         }
 
-        $dateTs = strtotime((string) $match->match_date);
-        $date = $dateTs ? date('Y-m-d', $dateTs) : '';
+        // Stored match_date and UEFA mapped dates are Europe/Berlin wall times
+        // (possibly with kickoff); match on calendar day only.
+        $date = MatchGame::calendarDate((string) $match->match_date);
         if ($date === '') {
             return ['ok' => false, 'errors' => ['Spieldatum fehlt.']];
         }
@@ -734,7 +736,7 @@ class AdminMatchdataService
             if (
                 ($uefa['home_uefa_id'] ?? '') === $homeUefaId
                 && ($uefa['away_uefa_id'] ?? '') === $awayUefaId
-                && ($uefa['date'] ?? '') === $date
+                && MatchGame::calendarDate((string) ($uefa['date'] ?? '')) === $date
             ) {
                 return ['ok' => true, 'uefa_match_id' => (string) $uefa['uefa_match_id']];
             }
