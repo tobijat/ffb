@@ -419,7 +419,18 @@ class AdminMatchdataService
             $uefaMatch = $this->uefaClient->match($uefaMatchId);
             $lineups = $this->uefaClient->matchLineups($uefaMatchId);
             $events = $this->uefaClient->matchEvents($uefaMatchId);
-            $parsed = $this->uefaMapper->map($uefaMatch, $lineups, $events);
+            $playerStatistics = [];
+            try {
+                $playerStatistics = $this->uefaClient->matchPlayerStatistics($uefaMatchId);
+            } catch (Throwable $e) {
+                // Assists need matchstats; continue without them rather than failing the scrape.
+                Log::info('UEFA match player-statistics unavailable; assists will be zero', [
+                    'match_id' => $matchId,
+                    'uefa_match_id' => $uefaMatchId,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+            $parsed = $this->uefaMapper->map($uefaMatch, $lineups, $events, $playerStatistics);
         } catch (Throwable $e) {
             Log::warning('UEFA matchdata scrape failed', [
                 'match_id' => $matchId,

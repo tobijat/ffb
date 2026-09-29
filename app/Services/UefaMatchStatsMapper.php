@@ -12,6 +12,7 @@ class UefaMatchStatsMapper
      * @param  array<string, mixed>  $match
      * @param  array<string, mixed>  $lineups
      * @param  list<array<string, mixed>>  $events
+     * @param  list<array<string, mixed>>  $playerStatistics  matchstats.uefa.com player-statistics rows
      * @return array{
      *     match_minutes: int,
      *     home: list<array<string, mixed>>,
@@ -25,7 +26,7 @@ class UefaMatchStatsMapper
      *     uefa_match_id: string
      * }
      */
-    public function map(array $match, array $lineups, array $events): array
+    public function map(array $match, array $lineups, array $events, array $playerStatistics = []): array
     {
         $matchMinutes = $this->resolveMatchMinutes($match, $events);
         $homeTeamId = trim((string) ($lineups['homeTeam']['team']['id']
@@ -35,12 +36,15 @@ class UefaMatchStatsMapper
             ?? $match['awayTeam']['id']
             ?? ''));
 
+        $assistsByPlayerId = $this->assistsFromPlayerStatistics($playerStatistics);
+
         $homePlayers = $this->buildSidePlayers(
             is_array($lineups['homeTeam'] ?? null) ? $lineups['homeTeam'] : [],
             $homeTeamId,
             $events,
             is_array($match['playerEvents'] ?? null) ? $match['playerEvents'] : [],
             $matchMinutes,
+            $assistsByPlayerId,
         );
         $guestPlayers = $this->buildSidePlayers(
             is_array($lineups['awayTeam'] ?? null) ? $lineups['awayTeam'] : [],
@@ -48,6 +52,7 @@ class UefaMatchStatsMapper
             $events,
             is_array($match['playerEvents'] ?? null) ? $match['playerEvents'] : [],
             $matchMinutes,
+            $assistsByPlayerId,
         );
 
         $score = is_array($match['score'] ?? null) ? $match['score'] : [];
@@ -162,6 +167,7 @@ class UefaMatchStatsMapper
      * @param  array<string, mixed>  $side
      * @param  list<array<string, mixed>>  $events
      * @param  array<string, mixed>  $playerEvents
+     * @param  array<string, int>  $assistsByPlayerId
      * @return list<array<string, mixed>>
      */
     private function buildSidePlayers(
@@ -170,6 +176,7 @@ class UefaMatchStatsMapper
         array $events,
         array $playerEvents,
         int $matchMinutes,
+        array $assistsByPlayerId = [],
     ): array {
         $field = is_array($side['field'] ?? null) ? $side['field'] : [];
         $bench = is_array($side['bench'] ?? null) ? $side['bench'] : [];
@@ -213,8 +220,6 @@ class UefaMatchStatsMapper
         $goals = [];
         /** @var array<string, list<int>> $owngoals */
         $owngoals = [];
-        /** @var array<string, int> $assists */
-        $assists = [];
         /** @var array<string, list<string>> $cardEvents */
         $cardEvents = [];
         /** @var array<string, int> $dismissedAt */
@@ -263,9 +268,8 @@ class UefaMatchStatsMapper
                 } elseif ($primaryId !== '' && isset($roster[$primaryId])) {
                     $goals[$primaryId][] = $minute;
                 }
-                if ($goalType !== 'OWN' && $secondaryId !== '' && isset($roster[$secondaryId])) {
-                    $assists[$secondaryId] = ($assists[$secondaryId] ?? 0) + 1;
-                }
+                // Assists come from matchstats (player-statistics), not GOAL secondaryActor
+                // — secondaryActor is often the opposing goalkeeper, not the assister.
 
                 continue;
             }
@@ -408,7 +412,7 @@ class UefaMatchStatsMapper
                 'player_goal' => $goalMinutes === [] ? '0' : implode(';', $goalMinutes),
                 'player_num_owngoals' => count($ownMinutes),
                 'player_owngoal' => $ownMinutes === [] ? '0' : implode(';', $ownMinutes),
-                'player_num_assists' => (int) ($assists[$uefaId] ?? 0),
+                'player_num_assists' => (int) ($assistsByPlayerId[$uefaId] ?? 0),
                 'player_penalties_lost' => (int) ($penaltiesLost[$uefaId] ?? 0),
                 'player_penalties_saved' => (int) ($penaltiesSaved[$uefaId] ?? 0),
                 'player_penalties_hit' => (int) ($psHit[$uefaId] ?? 0),
@@ -418,6 +422,41 @@ class UefaMatchStatsMapper
         }
 
         return $players;
+    }
+
+    /**
+     * Official assist totals from matchstats.uefa.com/v1/player-statistics/{matchId}.
+     *
+     * @param  list<array<string, mixed>>  $playerStatistics
+     * @return array<string, int>
+     */
+    private function assistsFromPlayerStatistics(array $playerStatistics): array
+    {
+        $assists = [];
+        foreach ($playerStatistics as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $playerId = trim((string) ($row['playerId'] ?? ''));
+            if ($playerId === '') {
+                continue;
+            }
+            foreach (is_array($row['statistics'] ?? null) ? $row['statistics'] : [] as $stat) {
+                if (! is_array($stat)) {
+                    continue;
+                }
+                if ((string) ($stat['name'] ?? '') !== 'assists') {
+                    continue;
+                }
+                $value = (int) ($stat['value'] ?? 0);
+                if ($value > 0) {
+                    $assists[$playerId] = $value;
+                }
+                break;
+            }
+        }
+
+        return $assists;
     }
 
     /**
