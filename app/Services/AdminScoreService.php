@@ -26,9 +26,16 @@ class AdminScoreService
         string $tab = 'userteam',
         ?array $userteamPreview = null,
         ?array $userPreview = null,
+        ?int $matchroundId = null,
     ): array {
         $shell = $this->adminCenter->shellPayload($userId);
         $tab = $this->normalizeTab($tab);
+        $leagueId = (int) ($shell['selected_league_id'] ?? 0);
+        $candidateMatchroundId = $matchroundId ?? (int) ($userteamPreview['matchround_id'] ?? 0);
+        $resolvedMatchroundId = $this->resolveMatchroundId($leagueId, $candidateMatchroundId);
+        if ($resolvedMatchroundId < 0) {
+            $resolvedMatchroundId = 0;
+        }
 
         return [
             'user' => $shell['user'],
@@ -36,6 +43,10 @@ class AdminScoreService
             'selected_league_id' => $shell['selected_league_id'],
             'selected_league' => $shell['selected_league'],
             'tab' => $tab,
+            'matchrounds' => $tab === 'userteam' && $leagueId > 0
+                ? $this->matchroundsForLeague($leagueId)
+                : [],
+            'matchround_id' => $resolvedMatchroundId,
             'userteam_preview' => $tab === 'userteam' ? $userteamPreview : null,
             'user_preview' => $tab === 'user' ? $userPreview : null,
         ];
@@ -47,30 +58,43 @@ class AdminScoreService
     }
 
     /**
-     * Compute userteam scores + finished-round LC points without writing.
-     *
+     * @param  array<string, mixed>  $input
      * @return array{
      *     ok: bool,
      *     message?: string,
      *     errors?: list<string>,
      *     details?: list<string>,
      *     tab?: string,
-     *     preview?: array{league_id: int, rows: list<array<string, mixed>>}
+     *     matchround_id?: int,
+     *     preview?: array{league_id: int, matchround_id: int, rows: list<array<string, mixed>>}
      * }
      */
-    public function calculateUserteamScores(int $userId): array
+    public function calculateUserteamScores(int $userId, array $input = []): array
     {
         $leagueId = $this->adminCenter->selectedLeagueId($userId);
         if ($leagueId <= 0) {
             return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga auswählen.'], 'tab' => 'userteam'];
         }
 
-        $built = $this->buildUserteamScorePreview($leagueId);
-        if (! ($built['ok'] ?? false)) {
-            return $built + ['tab' => 'userteam'];
+        $matchroundId = $this->resolveMatchroundId(
+            $leagueId,
+            (int) ($input['matchround_id'] ?? 0),
+        );
+        if ($matchroundId < 0) {
+            return [
+                'ok' => false,
+                'errors' => ['Ungültige Spielrunde für die aktive Liga.'],
+                'tab' => 'userteam',
+                'matchround_id' => 0,
+            ];
         }
 
-        /** @var array{league_id: int, rows: list<array<string, mixed>>} $preview */
+        $built = $this->buildUserteamScorePreview($leagueId, $matchroundId);
+        if (! ($built['ok'] ?? false)) {
+            return $built + ['tab' => 'userteam', 'matchround_id' => $matchroundId];
+        }
+
+        /** @var array{league_id: int, matchround_id: int, rows: list<array<string, mixed>>} $preview */
         $preview = $built['preview'];
         $details = [];
         foreach ($preview['rows'] as $row) {
@@ -79,36 +103,42 @@ class AdminScoreService
                 .' lc: '.(int) $row['lc_points'];
         }
 
+        $scope = $matchroundId > 0
+            ? 'für die gewählte Spielrunde'
+            : 'für alle Spielrunden';
+
         return [
             'ok' => true,
-            'message' => 'Userteam-Scores berechnet (noch nicht gespeichert).',
+            'message' => 'Userteam-Scores '.$scope.' berechnet (noch nicht gespeichert).',
             'details' => $details,
             'tab' => 'userteam',
+            'matchround_id' => $matchroundId,
             'preview' => $preview,
         ];
     }
 
     /**
-     * Recalculate and persist userteam scores + LC points for finished rounds.
-     *
+     * @param  array<string, mixed>  $input
      * @return array{
      *     ok: bool,
      *     message?: string,
      *     errors?: list<string>,
      *     details?: list<string>,
      *     tab?: string,
-     *     preview?: array{league_id: int, rows: list<array<string, mixed>>}
+     *     matchround_id?: int,
+     *     preview?: array{league_id: int, matchround_id: int, rows: list<array<string, mixed>>}
      * }
      */
-    public function saveUserteamScores(int $userId): array
+    public function saveUserteamScores(int $userId, array $input = []): array
     {
-        $built = $this->calculateUserteamScores($userId);
+        $built = $this->calculateUserteamScores($userId, $input);
         if (! ($built['ok'] ?? false)) {
             return $built;
         }
 
-        /** @var array{league_id: int, rows: list<array<string, mixed>>} $preview */
+        /** @var array{league_id: int, matchround_id: int, rows: list<array<string, mixed>>} $preview */
         $preview = $built['preview'];
+        $matchroundId = (int) ($preview['matchround_id'] ?? 0);
         $details = [];
 
         DB::transaction(function () use ($preview, &$details): void {
@@ -129,11 +159,16 @@ class AdminScoreService
             }
         });
 
+        $scope = $matchroundId > 0
+            ? 'für die gewählte Spielrunde'
+            : 'für alle Spielrunden';
+
         return [
             'ok' => true,
-            'message' => 'Userteam-Scores erfolgreich gespeichert (inkl. LC-Punkte für beendete Runden).',
+            'message' => 'Userteam-Scores '.$scope.' erfolgreich gespeichert (inkl. LC-Punkte für beendete Runden).',
             'details' => $details,
             'tab' => 'userteam',
+            'matchround_id' => $matchroundId,
             'preview' => $preview,
         ];
     }
@@ -248,27 +283,51 @@ class AdminScoreService
     }
 
     /**
-     * @return array{ok: bool, message?: string, errors?: list<string>, preview?: array{league_id: int, rows: list<array<string, mixed>>}}
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     preview?: array{league_id: int, matchround_id: int, rows: list<array<string, mixed>>}
+     * }
      */
-    private function buildUserteamScorePreview(int $leagueId): array
+    private function buildUserteamScorePreview(int $leagueId, int $matchroundId = 0): array
     {
-        $matchroundIds = Matchround::query()
-            ->where('matchround_league_id', $leagueId)
-            ->pluck('matchround_id')
-            ->map(fn ($id) => (int) $id)
+        $roundsQuery = Matchround::query()->where('matchround_league_id', $leagueId);
+        if ($matchroundId > 0) {
+            $roundsQuery->whereKey($matchroundId);
+        }
+
+        $rounds = $roundsQuery
+            ->orderBy('matchround_startdate')
+            ->get(['matchround_id', 'matchround_title']);
+
+        $matchroundIds = $rounds
+            ->map(static fn (Matchround $round): int => (int) $round->matchround_id)
+            ->all();
+        $titlesById = $rounds
+            ->mapWithKeys(static fn (Matchround $round): array => [
+                (int) $round->matchround_id => (string) $round->matchround_title,
+            ])
             ->all();
 
         if ($matchroundIds === []) {
             return [
                 'ok' => true,
-                'message' => 'Keine Spielrunden in dieser Liga.',
-                'preview' => ['league_id' => $leagueId, 'rows' => []],
+                'message' => $matchroundId > 0
+                    ? 'Keine Userteams für diese Spielrunde.'
+                    : 'Keine Spielrunden in dieser Liga.',
+                'preview' => [
+                    'league_id' => $leagueId,
+                    'matchround_id' => $matchroundId,
+                    'rows' => [],
+                ],
             ];
         }
 
         $userteams = Userteam::query()
             ->with('user')
             ->whereIn('userteam_matchround_id', $matchroundIds)
+            ->orderBy('userteam_matchround_id')
             ->orderBy('userteam_id')
             ->get();
 
@@ -279,11 +338,12 @@ class AdminScoreService
 
         foreach ($userteams as $userteam) {
             $userteamId = (int) $userteam->userteam_id;
+            $roundId = (int) $userteam->userteam_matchround_id;
             $playerteamIds = $userteam->playerteamIdsInSlotOrder();
             $score = 0;
             if ($playerteamIds !== []) {
                 $score = (int) Playerstats::query()
-                    ->where('playerstats_matchround_id', (int) $userteam->userteam_matchround_id)
+                    ->where('playerstats_matchround_id', $roundId)
                     ->whereIn('playerstats_playerteam_id', $playerteamIds)
                     ->sum('playerstats_score');
             }
@@ -293,7 +353,8 @@ class AdminScoreService
                 'userteam_id' => $userteamId,
                 'user_id' => (int) $userteam->userteam_user_id,
                 'user_nickname' => (string) ($userteam->user?->user_nickname ?? ''),
-                'matchround_id' => (int) $userteam->userteam_matchround_id,
+                'matchround_id' => $roundId,
+                'matchround_title' => (string) ($titlesById[$roundId] ?? ''),
                 'score' => $score,
                 'lc_points' => (int) ($userteam->userteam_lc_points ?? 0),
                 'previous_score' => (int) ($userteam->userteam_score ?? 0),
@@ -313,9 +374,46 @@ class AdminScoreService
             'ok' => true,
             'preview' => [
                 'league_id' => $leagueId,
+                'matchround_id' => $matchroundId,
                 'rows' => $rows,
             ],
         ];
+    }
+
+    /**
+     * 0 = all rounds; positive id must belong to the league; -1 = invalid.
+     */
+    private function resolveMatchroundId(int $leagueId, int $matchroundId): int
+    {
+        if ($matchroundId <= 0) {
+            return 0;
+        }
+        if ($leagueId <= 0) {
+            return -1;
+        }
+
+        $exists = Matchround::query()
+            ->whereKey($matchroundId)
+            ->where('matchround_league_id', $leagueId)
+            ->exists();
+
+        return $exists ? $matchroundId : -1;
+    }
+
+    /**
+     * @return list<array{matchround_id: int, matchround_title: string}>
+     */
+    private function matchroundsForLeague(int $leagueId): array
+    {
+        return Matchround::query()
+            ->where('matchround_league_id', $leagueId)
+            ->orderBy('matchround_startdate')
+            ->get(['matchround_id', 'matchround_title'])
+            ->map(static fn (Matchround $round): array => [
+                'matchround_id' => (int) $round->matchround_id,
+                'matchround_title' => (string) $round->matchround_title,
+            ])
+            ->all();
     }
 
     /**
