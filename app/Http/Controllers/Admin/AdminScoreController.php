@@ -21,17 +21,27 @@ class AdminScoreController extends Controller
         return $this->render(
             $request,
             $this->score->normalizeTab($request->query('tab')),
+            null,
+            [],
+            null,
+            null,
+            (int) $request->query('matchround_id', 0),
         );
     }
 
     public function calculateUserteamScores(Request $request): View|RedirectResponse
     {
         $userId = $this->auth->userId($request);
-        $result = $this->score->calculateUserteamScores($userId);
+        $input = $request->all();
+        $result = $this->score->calculateUserteamScores($userId, $input);
+        $matchroundId = (int) ($result['matchround_id'] ?? $request->input('matchround_id', 0));
 
         if (! ($result['ok'] ?? false)) {
             return redirect()
-                ->route('admin.score', ['tab' => 'userteam'])
+                ->route('admin.score', array_filter([
+                    'tab' => 'userteam',
+                    'matchround_id' => $matchroundId > 0 ? $matchroundId : null,
+                ]))
                 ->with('admin_errors', $result['errors'] ?? ['Berechnung fehlgeschlagen.']);
         }
 
@@ -41,17 +51,24 @@ class AdminScoreController extends Controller
             (string) ($result['message'] ?? ''),
             is_array($result['details'] ?? null) ? $result['details'] : [],
             is_array($result['preview'] ?? null) ? $result['preview'] : null,
+            null,
+            $matchroundId,
         );
     }
 
     public function saveUserteamScores(Request $request): View|RedirectResponse
     {
         $userId = $this->auth->userId($request);
-        $result = $this->score->saveUserteamScores($userId);
+        $input = $request->all();
+        $result = $this->score->saveUserteamScores($userId, $input);
+        $matchroundId = (int) ($result['matchround_id'] ?? $request->input('matchround_id', 0));
 
         if (! ($result['ok'] ?? false)) {
             return redirect()
-                ->route('admin.score', ['tab' => 'userteam'])
+                ->route('admin.score', array_filter([
+                    'tab' => 'userteam',
+                    'matchround_id' => $matchroundId > 0 ? $matchroundId : null,
+                ]))
                 ->with('admin_errors', $result['errors'] ?? ['Speichern fehlgeschlagen.']);
         }
 
@@ -61,6 +78,8 @@ class AdminScoreController extends Controller
             (string) ($result['message'] ?? ''),
             is_array($result['details'] ?? null) ? $result['details'] : [],
             is_array($result['preview'] ?? null) ? $result['preview'] : null,
+            null,
+            $matchroundId,
         );
     }
 
@@ -118,13 +137,20 @@ class AdminScoreController extends Controller
         array $details = [],
         ?array $userteamPreview = null,
         ?array $userPreview = null,
+        ?int $matchroundId = null,
     ): View {
         $userId = $this->auth->userId($request);
         $errors = session('admin_errors');
         $sessionDetails = session('admin_details');
 
         return view('admin.score', [
-            'data' => $this->score->pagePayload($userId, $tab, $userteamPreview, $userPreview),
+            'data' => $this->score->pagePayload(
+                $userId,
+                $tab,
+                $userteamPreview,
+                $userPreview,
+                $matchroundId,
+            ),
             'errors' => is_array($errors) ? $errors : [],
             'answer' => $answer ?? session('admin_message'),
             'details' => $details !== [] ? $details : (is_array($sessionDetails) ? $sessionDetails : []),

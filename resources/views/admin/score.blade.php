@@ -5,6 +5,8 @@
 @php
     $selectedLeague = $data['selected_league'] ?? null;
     $tab = ($data['tab'] ?? 'userteam') === 'user' ? 'user' : 'userteam';
+    $matchrounds = is_array($data['matchrounds'] ?? null) ? $data['matchrounds'] : [];
+    $matchroundId = (int) ($data['matchround_id'] ?? 0);
     $userteamPreview = is_array($data['userteam_preview'] ?? null) ? $data['userteam_preview'] : null;
     $userPreview = is_array($data['user_preview'] ?? null) ? $data['user_preview'] : null;
     $userteamRows = is_array($userteamPreview['rows'] ?? null) ? $userteamPreview['rows'] : [];
@@ -22,7 +24,7 @@
         <nav class="admin-squad-tabs ffb-tabs" aria-label="Score-Bereiche">
             <a
                 class="admin-squad-tab ffb-tab{{ $tab === 'userteam' ? ' is-active' : '' }}"
-                href="{{ route('admin.score', ['tab' => 'userteam']) }}"
+                href="{{ route('admin.score', array_filter(['tab' => 'userteam', 'matchround_id' => $matchroundId > 0 ? $matchroundId : null])) }}"
             >
                 Userteam Score
             </a>
@@ -78,29 +80,46 @@
                 (<code>userteam_score</code>) und vergibt LC-Punkte für beendete Spielrunden.
                 Speichern schreibt die berechneten Werte.
             </p>
-            <form class="admin-form" method="post" action="{{ route('admin.score.calculateUserteamScores') }}" accept-charset="UTF-8">
-                @csrf
-                <div class="admin-actions admin-actions-flush">
-                    <button type="submit" class="admin-submit" name="calculate_userteamscores" value="1" @disabled(! $selectedLeague)>
-                        Score berechnen
-                    </button>
-                    <button
-                        type="submit"
-                        class="admin-submit"
-                        formaction="{{ route('admin.score.saveUserteamScores') }}"
-                        name="save_userteamscores"
-                        value="1"
-                        @disabled(! $selectedLeague || $userteamPreview === null)
-                        title="{{ $userteamPreview === null ? 'Zuerst Score berechnen' : 'Berechnete Scores speichern' }}"
-                    >
-                        Speichern
-                    </button>
-                </div>
-            </form>
+
+            @if ($selectedLeague)
+                <form class="admin-form" method="post" action="{{ route('admin.score.calculateUserteamScores') }}" accept-charset="UTF-8">
+                    @csrf
+                    <div class="admin-field">
+                        <label for="score_userteam_matchround">Spielrunde</label>
+                        <select id="score_userteam_matchround" name="matchround_id">
+                            <option value="0" @selected($matchroundId === 0)>Alle Spielrunden</option>
+                            @foreach ($matchrounds as $round)
+                                <option
+                                    value="{{ (int) $round['matchround_id'] }}"
+                                    @selected($matchroundId === (int) $round['matchround_id'])
+                                >
+                                    {{ $round['matchround_title'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="admin-actions admin-actions-flush">
+                        <button type="submit" class="admin-submit" name="calculate_userteamscores" value="1">
+                            Score berechnen
+                        </button>
+                        <button
+                            type="submit"
+                            class="admin-submit"
+                            formaction="{{ route('admin.score.saveUserteamScores') }}"
+                            name="save_userteamscores"
+                            value="1"
+                            @disabled($userteamPreview === null)
+                            title="{{ $userteamPreview === null ? 'Zuerst Score berechnen' : 'Berechnete Scores speichern' }}"
+                        >
+                            Speichern
+                        </button>
+                    </div>
+                </form>
+            @endif
 
             @if ($userteamPreview !== null)
                 @if ($userteamRows === [])
-                    <p class="muted">Keine Userteams in dieser Liga.</p>
+                    <p class="muted">Keine Userteams für die gewählte Auswahl.</p>
                 @else
                     <div class="admin-squad-table-wrap">
                         <table class="admin-squad-table">
@@ -121,7 +140,9 @@
                                             {{ ($row['user_nickname'] ?? '') !== '' ? $row['user_nickname'] : '—' }}
                                             <span class="muted">(#{{ (int) ($row['user_id'] ?? 0) }})</span>
                                         </td>
-                                        <td>#{{ (int) ($row['matchround_id'] ?? 0) }}</td>
+                                        <td>
+                                            {{ ($row['matchround_title'] ?? '') !== '' ? $row['matchround_title'] : '#'.(int) ($row['matchround_id'] ?? 0) }}
+                                        </td>
                                         <td>
                                             {{ (int) ($row['previous_score'] ?? 0) }}
                                             →
