@@ -251,10 +251,55 @@ class AdminMatchAutoUefaTest extends TestCase
         $this->assertDatabaseHas('ffb_match', [
             'match_hometeam_id' => (int) $otherHome->team_id,
             'match_guestteam_id' => (int) $otherGuest->team_id,
-            'match_date' => '2026-09-25 00:00:00',
+            'match_date' => '2026-09-25 11:11:11.111',
             'match_round' => $roundId,
         ]);
         $this->assertSame(2, MatchGame::query()->count());
+    }
+
+    #[Test]
+    public function save_stores_kickoff_time_from_uefa_datetime(): void
+    {
+        [$leagueId, $roundId] = $this->seedLeague();
+        $home = Team::query()->create([
+            'team_foreign_id' => '',
+            'team_name' => 'Deutschland',
+            'team_nationality' => 'ger',
+            'team_num_players' => 0,
+            'team_status' => 1,
+            'team_uefa_id' => '47',
+            'team_team_code' => 'GER',
+        ]);
+        $guest = Team::query()->create([
+            'team_foreign_id' => '',
+            'team_name' => 'Malta',
+            'team_nationality' => 'mlt',
+            'team_num_players' => 0,
+            'team_status' => 1,
+            'team_uefa_id' => '88',
+            'team_team_code' => 'MLT',
+        ]);
+
+        $result = $this->service()->saveUefaMatches([
+            [
+                'row_status' => 'new',
+                'match_id' => 0,
+                'match_round' => $roundId,
+                'match_date' => '2026-09-24 18:00:00.000',
+                'match_hometeam_id' => (int) $home->team_id,
+                'match_guestteam_id' => (int) $guest->team_id,
+                'match_status' => '',
+                'home_name' => 'Deutschland',
+                'guest_name' => 'Malta',
+            ],
+        ], $leagueId);
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        $this->assertDatabaseHas('ffb_match', [
+            'match_hometeam_id' => (int) $home->team_id,
+            'match_guestteam_id' => (int) $guest->team_id,
+            'match_date' => '2026-09-24 18:00:00.000',
+        ]);
     }
 
     #[Test]

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\MatchGame;
 use App\Services\MatchPopupService;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
@@ -62,7 +63,7 @@ class MatchPopupLeagueRelationTest extends TestCase
             'match_guestscore' => 1,
             'match_homescore_penalty' => -1,
             'match_guestscore_penalty' => -1,
-            'match_date' => now()->subHour()->toDateTimeString(),
+            'match_date' => '2026-09-24 18:00:00.000',
             'match_status' => 'finished',
         ]);
     }
@@ -76,5 +77,19 @@ class MatchPopupLeagueRelationTest extends TestCase
         $this->assertSame('Bundesliga Test', $result['data']['match']['match_league_title']);
         $this->assertSame('Home FC', $result['data']['match']['match_hometeam_name']);
         $this->assertSame('Away FC', $result['data']['match']['match_guestteam_name']);
+        $this->assertSame('24.09.2026 18:00', $result['data']['match']['match_date']);
+    }
+
+    #[Test]
+    public function match_popup_hides_sentinel_kickoff_time(): void
+    {
+        DB::table('ffb_match')->where('match_id', 50)->update([
+            'match_date' => '2026-09-24 '.MatchGame::DEFAULT_TIME,
+        ]);
+
+        $result = app(MatchPopupService::class)->forMatch(50);
+
+        $this->assertTrue($result['ok']);
+        $this->assertSame('24.09.2026', $result['data']['match']['match_date']);
     }
 }

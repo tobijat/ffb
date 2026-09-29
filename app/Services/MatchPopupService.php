@@ -45,9 +45,9 @@ class MatchPopupService
                     'match_hometeam_score_penalty' => $this->nullableScore($match->match_homescore_penalty),
                     'match_guestteam_score_penalty' => $this->nullableScore($match->match_guestscore_penalty),
                     'match_minutes' => (int) ($match->match_minutes ?? 0),
-                    'match_date' => $match->match_date
-                        ? date('d.m.Y', strtotime((string) $match->match_date))
-                        : null,
+                    'match_date' => MatchGame::formatDisplayDate(
+                        $match->match_date !== null ? (string) $match->match_date : null
+                    ),
                     'match_matchround_id' => (int) $match->match_round,
                     'match_matchround_name' => (string) $match->matchround->matchround_title,
                     'match_league_title' => (string) ($match->matchround->league?->league_title ?? ''),
@@ -186,9 +186,9 @@ class MatchPopupService
         return $matches->map(function (MatchGame $item) {
             return [
                 'match_id' => (int) $item->match_id,
-                'match_date' => $item->match_date
-                    ? date('d.m.Y', strtotime((string) $item->match_date))
-                    : null,
+                'match_date' => MatchGame::formatDisplayDate(
+                    $item->match_date !== null ? (string) $item->match_date : null
+                ),
                 'match_hometeam_id' => (int) $item->match_hometeam_id,
                 'match_guestteam_id' => (int) $item->match_guestteam_id,
                 'match_hometeam_name' => (string) ($item->homeTeam?->team_name ?? ''),

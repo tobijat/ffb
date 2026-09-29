@@ -290,7 +290,7 @@ class UefaCompetitionApiTest extends TestCase
         $this->assertSame('47', $matches[0]['home_uefa_id']);
         $this->assertSame('88', $matches[0]['away_uefa_id']);
         $this->assertSame('Deutschland', $matches[0]['home_name_de']);
-        $this->assertSame('2026-09-24', $matches[0]['date']);
+        $this->assertSame('2026-09-24 18:00:00.000', $matches[0]['date']);
         $this->assertSame(1, $matches[0]['matchday']);
         $this->assertSame('TOURNAMENT', $matches[0]['round_phase']);
     }
