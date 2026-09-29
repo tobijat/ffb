@@ -6,6 +6,206 @@
     padding: 8px 10px 10px;
 }
 
+.admin-brand-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    min-width: 0;
+}
+
+.admin-brand-dashboard {
+    margin: 0 0 0 50px;
+    font-size: 8pt;
+    line-height: 1.2;
+}
+
+.admin-brand-dashboard a {
+    color: var(--ink);
+    font-weight: bold;
+}
+
+.admin-dashboard-section {
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.admin-dashboard-details {
+    margin: 0;
+}
+
+.admin-dashboard-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.admin-dashboard-summary::-webkit-details-marker {
+    display: none;
+}
+
+.admin-dashboard-summary::marker {
+    content: '';
+}
+
+.admin-dashboard-status {
+    display: block;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+}
+
+.admin-dashboard-title {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 12pt;
+    font-weight: bold;
+}
+
+.admin-dashboard-body {
+    margin: 6px 0 0 24px;
+    min-height: 0;
+}
+
+.admin-dashboard-checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+}
+
+.admin-dashboard-check-item {
+    display: grid;
+    grid-template-columns: 14px 1fr;
+    gap: 6px 8px;
+    align-items: start;
+    font-size: 10pt;
+}
+
+.admin-dashboard-check-icon {
+    display: block;
+    width: 14px;
+    height: 14px;
+    margin-top: 2px;
+}
+
+.admin-dashboard-options {
+    grid-column: 2;
+    margin: 2px 0 0;
+}
+
+.admin-dashboard-options > summary {
+    cursor: pointer;
+    font-size: 9pt;
+    font-weight: bold;
+}
+
+.admin-dashboard-options-body {
+    margin: 6px 0 0;
+    display: grid;
+    gap: 10px;
+}
+
+.admin-dashboard-options-group h3 {
+    margin: 0 0 4px;
+    font-size: 9pt;
+}
+
+.admin-dashboard-options-group dl {
+    margin: 0;
+    display: grid;
+    gap: 2px;
+}
+
+.admin-dashboard-options-row {
+    display: grid;
+    grid-template-columns: minmax(8rem, 12rem) 1fr;
+    gap: 8px;
+    font-size: 8pt;
+}
+
+.admin-dashboard-options-row dt {
+    margin: 0;
+    color: #355535;
+}
+
+.admin-dashboard-options-row dd {
+    margin: 0;
+}
+
+.admin-dashboard-details[open] .admin-dashboard-body:empty {
+    min-height: 0.5rem;
+}
+
+.admin-dashboard-groups {
+    margin-top: 10px;
+    display: grid;
+    gap: 12px;
+}
+
+.admin-dashboard-group-title {
+    margin: 0 0 4px;
+    font-family: var(--font-body);
+    font-size: 10pt;
+    font-weight: bold;
+}
+
+.admin-dashboard-rounds {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.admin-dashboard-round {
+    padding: 6px 0;
+    border-top: 1px solid #b5d5b5;
+}
+
+.admin-dashboard-round:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.admin-dashboard-round-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    align-items: baseline;
+    font-size: 10pt;
+}
+
+.admin-dashboard-round-meta {
+    margin-top: 2px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    font-size: 8pt;
+    color: #355535;
+}
+
+.admin-dashboard-round .admin-dashboard-options {
+    margin-top: 4px;
+}
+
+.admin-dashboard-match-list {
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 4px;
+    font-size: 8pt;
+}
+
+.admin-dashboard-match-list li {
+    margin: 0;
+}
+
+
 .admin-fieldset legend {
     font-size: 10pt;
     font-weight: bold;

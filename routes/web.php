@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminCenterController;
 use App\Http\Controllers\Admin\AdminDbCleanupController;
 use App\Http\Controllers\Admin\AdminExtremeteamController;
 use App\Http\Controllers\Admin\AdminLeagueController;
+use App\Http\Controllers\Admin\AdminLeagueDashboardController;
 use App\Http\Controllers\Admin\AdminMailserviceController;
 use App\Http\Controllers\Admin\AdminMatchController;
 use App\Http\Controllers\Admin\AdminMatchdataController;
@@ -69,6 +70,7 @@ Route::post('/profile', [AccountPageController::class, 'updateProfile'])->name('
 
 Route::middleware('ffb.admin')->group(function () {
     Route::get('/admin', [AdminCenterController::class, 'show'])->name('admin.center');
+    Route::get('/admin/league-dashboard', [AdminLeagueDashboardController::class, 'show'])->name('admin.leagueDashboard');
     Route::post('/admin/leagues/{league}/select', [AdminCenterController::class, 'selectLeague'])->name('admin.leagues.select');
 
     Route::get('/admin/leagues', [AdminLeagueController::class, 'show'])->name('admin.leagues');
