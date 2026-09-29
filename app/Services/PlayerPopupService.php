@@ -479,17 +479,41 @@ class PlayerPopupService
     }
 
     /**
+     * Pick the roster row whose transfer date best matches the matchround.
+     * Rows without a transfer date are ignored for dating; if none have a date,
+     * prefer an active row then the lowest playerteam_id.
+     *
      * @param  list<int>  $ptIds
      */
     private function teamForPlayerAndRound(Matchround $matchround, array $ptIds): ?Playerteam
     {
         $playerteams = Playerteam::query()->whereIn('playerteam_id', $ptIds)->get();
-        $mrTime = strtotime((string) $matchround->matchround_startdate);
+        if ($playerteams->isEmpty()) {
+            return null;
+        }
+
+        $dated = $playerteams->filter(
+            fn (Playerteam $pt): bool => $this->transferTimestamp($pt) !== null
+        );
+
+        if ($dated->isEmpty()) {
+            return $playerteams
+                ->sortBy([
+                    fn (Playerteam $pt): int => (int) $pt->playerteam_status === 1 ? 0 : 1,
+                    fn (Playerteam $pt): int => (int) $pt->playerteam_id,
+                ])
+                ->first();
+        }
+
+        $mrTime = strtotime((string) $matchround->matchround_startdate) ?: 0;
         $dist = 1000000000;
         $ptNear = null;
 
-        foreach ($playerteams as $pt) {
-            $ptTime = strtotime((string) $pt->playerteam_date_transfer);
+        foreach ($dated as $pt) {
+            $ptTime = $this->transferTimestamp($pt);
+            if ($ptTime === null) {
+                continue;
+            }
             $d = $mrTime - $ptTime;
             if ($d < $dist && $d >= 0) {
                 $ptNear = $pt;
@@ -499,8 +523,11 @@ class PlayerPopupService
 
         if ($ptNear === null) {
             $dist = 1000000000;
-            foreach ($playerteams as $pt) {
-                $ptTime = strtotime((string) $pt->playerteam_date_transfer);
+            foreach ($dated as $pt) {
+                $ptTime = $this->transferTimestamp($pt);
+                if ($ptTime === null) {
+                    continue;
+                }
                 $d = -1 * ($mrTime - $ptTime);
                 if ($d < $dist) {
                     $ptNear = $pt;
@@ -510,6 +537,23 @@ class PlayerPopupService
         }
 
         return $ptNear;
+    }
+
+    private function transferTimestamp(Playerteam $playerteam): ?int
+    {
+        $raw = $playerteam->playerteam_date_transfer;
+        if ($raw === null) {
+            return null;
+        }
+
+        $value = trim((string) $raw);
+        if ($value === '') {
+            return null;
+        }
+
+        $timestamp = strtotime($value);
+
+        return $timestamp !== false ? $timestamp : null;
     }
 
     /**

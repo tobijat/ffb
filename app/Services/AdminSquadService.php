@@ -10,7 +10,6 @@ use App\Models\Team;
 use App\Models\Userteam;
 use App\Support\Flag;
 use App\Support\PlayerPicture;
-use DateTimeImmutable;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -20,8 +19,6 @@ use Throwable;
 
 class AdminSquadService
 {
-    private const DEFAULT_TRANSFER = '2008-01-01';
-
     /** @var list<string> */
     private const POSITIONS = ['g', 'd', 'm', 's'];
 
@@ -180,7 +177,6 @@ class AdminSquadService
             'defaults' => [
                 'playerteam_status' => 1,
                 'playerteam_player_position' => 'd',
-                'playerteam_date_transfer' => self::DEFAULT_TRANSFER,
             ],
             'hint' => 'Position gilt pro Liga.',
             'tab' => $resolvedTab,
@@ -912,7 +908,6 @@ class AdminSquadService
                 'playerteam_player_id',
                 'playerteam_player_position',
                 'playerteam_status',
-                'playerteam_date_transfer',
             ])
             ->keyBy(fn (Playerteam $row): int => (int) $row->playerteam_player_id);
 
@@ -1049,14 +1044,6 @@ class AdminSquadService
             // Name near-matches always need manual review — including players already on the
             // squad (otherwise typos / Jr / token-duplicates look "accepted").
             if ($matchKind === 'almost') {
-                $almostTransfer = self::DEFAULT_TRANSFER;
-                if ($squadRow !== null) {
-                    $transferTs = strtotime((string) $squadRow->playerteam_date_transfer);
-                    if ($transferTs) {
-                        $almostTransfer = date('Y-m-d', $transferTs);
-                    }
-                }
-
                 $almost[] = [
                     'use_existing' => false,
                     'match_reason' => $this->almostMatchReason(
@@ -1089,7 +1076,6 @@ class AdminSquadService
                     'playerteam_status' => $squadRow !== null
                         ? (int) $squadRow->playerteam_status
                         : 1,
-                    'playerteam_date_transfer' => $almostTransfer,
                 ];
 
                 continue;
@@ -1097,14 +1083,6 @@ class AdminSquadService
 
             if ($onSquad) {
                 $alreadyOnSquad++;
-            }
-
-            $transfer = self::DEFAULT_TRANSFER;
-            if ($squadRow !== null) {
-                $transferTs = strtotime((string) $squadRow->playerteam_date_transfer);
-                if ($transferTs) {
-                    $transfer = date('Y-m-d', $transferTs);
-                }
             }
 
             $isNew = $existing === null;
@@ -1138,7 +1116,6 @@ class AdminSquadService
                 'playerteam_status' => $squadRow !== null
                     ? (int) $squadRow->playerteam_status
                     : 1,
-                'playerteam_date_transfer' => $transfer,
                 'json_number' => (int) ($rawPlayer['number'] ?? 0),
                 'json_name' => $fullName,
             ];
@@ -1695,7 +1672,6 @@ class AdminSquadService
             $items[$playerId] = [
                 'playerteam_status' => $row['playerteam_status'],
                 'playerteam_player_position' => $row['playerteam_player_position'],
-                'playerteam_date_transfer' => $row['playerteam_date_transfer'],
             ];
         }
 
@@ -1958,7 +1934,6 @@ class AdminSquadService
 
         $item->playerteam_status = (int) $form['playerteam_status'];
         $item->playerteam_player_position = $form['playerteam_player_position'];
-        $item->playerteam_date_transfer = $form['playerteam_date_transfer'].' 00:00:00';
 
         if ($pictureFile !== null) {
             if (! $this->storePicture($pictureFile, $teamId, (int) $item->playerteam_player_id)) {
@@ -2121,7 +2096,7 @@ class AdminSquadService
                     'playerteam_player_picture' => '',
                     'playerteam_status' => (int) $form['playerteam_status'],
                     'playerteam_player_position' => $form['playerteam_player_position'],
-                    'playerteam_date_transfer' => $form['playerteam_date_transfer'].' 00:00:00',
+                    'playerteam_date_transfer' => null,
                 ]);
             }
         });
@@ -2278,7 +2253,6 @@ class AdminSquadService
             ->map(function (Playerteam $item) use ($teamId) {
                 $player = $item->player;
                 $nat = strtoupper(trim((string) ($player?->player_nationality ?? '')));
-                $transfer = strtotime((string) $item->playerteam_date_transfer);
                 $playerId = (int) $item->playerteam_player_id;
                 $pictureUrl = PlayerPicture::url($teamId, $playerId);
                 $hasPicture = ! str_ends_with($pictureUrl, 'image_na.gif');
@@ -2293,7 +2267,6 @@ class AdminSquadService
                     'player_flag_html' => $nat !== '' ? Flag::html($nat) : '',
                     'playerteam_status' => (int) $item->playerteam_status ? 1 : 0,
                     'playerteam_player_position' => (string) $item->playerteam_player_position,
-                    'playerteam_date_transfer' => $transfer ? date('Y-m-d', $transfer) : self::DEFAULT_TRANSFER,
                     'playerteam_league_id' => (int) $item->playerteam_league_id,
                     'picture_url' => $pictureUrl,
                     'has_picture' => $hasPicture,
@@ -2308,14 +2281,6 @@ class AdminSquadService
      */
     private function normalizeRosterInput(array $input): array
     {
-        $date = trim((string) ($input['playerteam_date_transfer'] ?? self::DEFAULT_TRANSFER));
-        if (preg_match('/^(\d{4}-\d{2}-\d{2})/', $date, $m)) {
-            $date = $m[1];
-        }
-        if ($date === '') {
-            $date = self::DEFAULT_TRANSFER;
-        }
-
         $position = strtolower(trim((string) ($input['playerteam_player_position'] ?? 'd')));
         if (! in_array($position, self::POSITIONS, true)) {
             $position = 'd';
@@ -2324,7 +2289,6 @@ class AdminSquadService
         return [
             'playerteam_status' => ((string) ($input['playerteam_status'] ?? '1') === '0') ? 0 : 1,
             'playerteam_player_position' => $position,
-            'playerteam_date_transfer' => $date,
         ];
     }
 
@@ -2335,11 +2299,6 @@ class AdminSquadService
     private function validateRosterFields(array $form, ?UploadedFile $pictureFile): array
     {
         $errors = [];
-
-        $dt = DateTimeImmutable::createFromFormat('Y-m-d', $form['playerteam_date_transfer']);
-        if (! $dt || $dt->format('Y-m-d') !== $form['playerteam_date_transfer']) {
-            $errors[] = 'Das Transferdatum ist ungültig.';
-        }
 
         if (! in_array($form['playerteam_player_position'], self::POSITIONS, true)) {
             $errors[] = 'Ungültige Position.';
@@ -3273,7 +3232,6 @@ class AdminSquadService
             'player_fifa_id' => trim((string) ($row['player_fifa_id'] ?? '')),
             'playerteam_player_position' => $roster['playerteam_player_position'],
             'playerteam_status' => $roster['playerteam_status'],
-            'playerteam_date_transfer' => $roster['playerteam_date_transfer'],
         ];
     }
 
@@ -3306,7 +3264,6 @@ class AdminSquadService
                 'player_fifa_id' => $almost['player_fifa_id'] ?? '',
                 'playerteam_player_position' => $almost['playerteam_player_position'],
                 'playerteam_status' => $almost['playerteam_status'],
-                'playerteam_date_transfer' => $almost['playerteam_date_transfer'],
                 'json_number' => $almost['json_number'],
                 'json_name' => $almost['json_name'],
             ]);
@@ -3325,7 +3282,6 @@ class AdminSquadService
             'player_fifa_id' => $almost['player_fifa_id'] ?? '',
             'playerteam_player_position' => $almost['playerteam_player_position'],
             'playerteam_status' => $almost['playerteam_status'],
-            'playerteam_date_transfer' => $almost['playerteam_date_transfer'],
             'json_number' => $almost['json_number'],
             'json_name' => $almost['json_name'],
         ]);
@@ -3360,7 +3316,6 @@ class AdminSquadService
             'player_fifa_id' => trim((string) ($row['player_fifa_id'] ?? '')),
             'playerteam_player_position' => $roster['playerteam_player_position'],
             'playerteam_status' => $roster['playerteam_status'],
-            'playerteam_date_transfer' => $roster['playerteam_date_transfer'],
             'json_number' => (int) ($row['json_number'] ?? 0),
             'json_name' => trim((string) ($row['json_name'] ?? '')),
         ];
@@ -3414,12 +3369,6 @@ class AdminSquadService
                 continue;
             }
 
-            $transfer = self::DEFAULT_TRANSFER;
-            $transferTs = strtotime((string) $squadRow->playerteam_date_transfer);
-            if ($transferTs) {
-                $transfer = date('Y-m-d', $transferTs);
-            }
-
             $fname = (string) $player->player_fname;
             $lname = (string) $player->player_lname;
             $displayName = trim($fname.' '.$lname);
@@ -3440,7 +3389,6 @@ class AdminSquadService
                 'player_fifa_id' => (string) ($player->player_fifa_id ?? ''),
                 'playerteam_player_position' => (string) $squadRow->playerteam_player_position,
                 'playerteam_status' => 0,
-                'playerteam_date_transfer' => $transfer,
                 'json_number' => 0,
                 'json_name' => $displayName,
             ];
