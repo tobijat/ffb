@@ -59,7 +59,7 @@ class FifaCompetitionApiMatchesTest extends TestCase
         $this->assertSame('43927', $matches[0]['away_fifa_id']);
         $this->assertSame('QAT', $matches[0]['home_abbr']);
         $this->assertSame('ECU', $matches[0]['away_abbr']);
-        $this->assertSame('2022-11-20', $matches[0]['date']);
+        $this->assertSame('2022-11-20 17:00:00.000', $matches[0]['date']);
         $this->assertSame('Katar', $matches[0]['home_name_de']);
         $this->assertSame('', $matches[0]['stage_name']);
     }
@@ -101,6 +101,6 @@ class FifaCompetitionApiMatchesTest extends TestCase
         $matches = $api->matches();
 
         $this->assertCount(1, $matches);
-        $this->assertSame('2026-06-14', $matches[0]['date']);
+        $this->assertSame('2026-06-14 00:00:00.000', $matches[0]['date']);
     }
 }

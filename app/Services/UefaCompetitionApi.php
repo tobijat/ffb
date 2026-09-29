@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use InvalidArgumentException;
 
 /**
@@ -155,7 +156,7 @@ class UefaCompetitionApi
      *     away_uefa_id: string,
      *     home_name_de: string,
      *     away_name_de: string,
-     *     date: string,
+     *     date: string,  Europe/Berlin kickoff as Y-m-d H:i:s.v, or Y-m-d when time unknown
      *     matchday: int,
      *     round_phase: string,
      *     round_order: int
@@ -299,7 +300,7 @@ class UefaCompetitionApi
      *     away_uefa_id: string,
      *     home_name_de: string,
      *     away_name_de: string,
-     *     date: string,
+     *     date: string,  Europe/Berlin kickoff as Y-m-d H:i:s.v, or Y-m-d when time unknown
      *     matchday: int,
      *     round_phase: string,
      *     round_order: int
@@ -329,14 +330,8 @@ class UefaCompetitionApi
         }
 
         $kickOff = is_array($match['kickOffTime'] ?? null) ? $match['kickOffTime'] : [];
-        $date = trim((string) ($kickOff['date'] ?? ''));
-        if ($date === '' && isset($kickOff['dateTime'])) {
-            $dateTime = trim((string) $kickOff['dateTime']);
-            if (preg_match('/^(\d{4}-\d{2}-\d{2})/', $dateTime, $m) === 1) {
-                $date = $m[1];
-            }
-        }
-        if ($date === '' || preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) !== 1) {
+        $date = $this->europeBerlinKickoffDateTime($kickOff);
+        if ($date === '') {
             return null;
         }
 
@@ -356,6 +351,30 @@ class UefaCompetitionApi
             'round_phase' => $phase,
             'round_order' => (int) ($round['orderInCompetition'] ?? 0),
         ];
+    }
+
+    /**
+     * UEFA kickOffTime as Europe/Berlin Y-m-d H:i:s.v, or Y-m-d when only a date is known.
+     *
+     * @param  array<string, mixed>  $kickOff
+     */
+    private function europeBerlinKickoffDateTime(array $kickOff): string
+    {
+        $dateTimeRaw = trim((string) ($kickOff['dateTime'] ?? ''));
+        if ($dateTimeRaw !== '') {
+            try {
+                return Carbon::parse($dateTimeRaw)->timezone('Europe/Berlin')->format('Y-m-d H:i:s.v');
+            } catch (\Throwable) {
+                // Fall through to date-only.
+            }
+        }
+
+        $date = trim((string) ($kickOff['date'] ?? ''));
+        if ($date !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) === 1) {
+            return $date;
+        }
+
+        return '';
     }
 
     /**

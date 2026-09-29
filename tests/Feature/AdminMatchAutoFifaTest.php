@@ -119,13 +119,14 @@ class AdminMatchAutoFifaTest extends TestCase
         $this->assertSame('matched', $byFifaId['1']['row_status']);
         $this->assertSame((int) $existing->match_id, $byFifaId['1']['match_id']);
         $this->assertSame((int) $knockout->matchround_id, $byFifaId['1']['match_round']);
-        $this->assertSame('2026-07-03', $byFifaId['1']['match_date']);
+        $this->assertSame('2026-07-03 05:00:00.000', $byFifaId['1']['match_date']);
 
         $this->assertSame('new', $byFifaId['2']['row_status']);
         $this->assertSame(0, $byFifaId['2']['match_id']);
         $this->assertSame((int) $otherHome->team_id, $byFifaId['2']['match_hometeam_id']);
         $this->assertSame((int) $otherGuest->team_id, $byFifaId['2']['match_guestteam_id']);
         $this->assertSame((int) $knockout->matchround_id, $byFifaId['2']['match_round']);
+        $this->assertSame('2026-07-02 21:00:00.000', $byFifaId['2']['match_date']);
     }
 
     #[Test]
@@ -183,7 +184,7 @@ class AdminMatchAutoFifaTest extends TestCase
         $result = $this->service()->analyzeFifaMatches($leagueId);
 
         $this->assertTrue($result['ok']);
-        $this->assertSame('2026-06-14', $result['auto_fifa']['rows'][0]['match_date']);
+        $this->assertSame('2026-06-14 00:00:00.000', $result['auto_fifa']['rows'][0]['match_date']);
         $this->assertSame('new', $result['auto_fifa']['rows'][0]['row_status']);
     }
 
@@ -294,10 +295,55 @@ class AdminMatchAutoFifaTest extends TestCase
         $this->assertDatabaseHas('ffb_match', [
             'match_hometeam_id' => (int) $otherHome->team_id,
             'match_guestteam_id' => (int) $otherGuest->team_id,
-            'match_date' => '2026-07-02 00:00:00',
+            'match_date' => '2026-07-02 11:11:11.111',
             'match_round' => (int) $round2->matchround_id,
         ]);
         $this->assertSame(2, MatchGame::query()->count());
+    }
+
+    #[Test]
+    public function save_stores_kickoff_time_from_fifa_datetime(): void
+    {
+        [$leagueId, $roundId] = $this->seedLeague();
+        $home = Team::query()->create([
+            'team_foreign_id' => '',
+            'team_name' => 'Schweiz',
+            'team_nationality' => 'sui',
+            'team_num_players' => 0,
+            'team_status' => 1,
+            'team_fifa_id' => '43969',
+            'team_team_code' => 'SUI',
+        ]);
+        $guest = Team::query()->create([
+            'team_foreign_id' => '',
+            'team_name' => 'Algerien',
+            'team_nationality' => 'alg',
+            'team_num_players' => 0,
+            'team_status' => 1,
+            'team_fifa_id' => '43843',
+            'team_team_code' => 'ALG',
+        ]);
+
+        $result = $this->service()->saveFifaMatches([
+            [
+                'row_status' => 'new',
+                'match_id' => 0,
+                'match_round' => $roundId,
+                'match_date' => '2026-07-03 18:00:00.000',
+                'match_hometeam_id' => (int) $home->team_id,
+                'match_guestteam_id' => (int) $guest->team_id,
+                'match_status' => '',
+                'home_name' => 'Schweiz',
+                'guest_name' => 'Algerien',
+            ],
+        ], $leagueId);
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        $this->assertDatabaseHas('ffb_match', [
+            'match_hometeam_id' => (int) $home->team_id,
+            'match_guestteam_id' => (int) $guest->team_id,
+            'match_date' => '2026-07-03 18:00:00.000',
+        ]);
     }
 
     #[Test]

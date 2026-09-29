@@ -349,7 +349,7 @@ class AdminMatchAutoTest extends TestCase
         $this->assertDatabaseHas('ffb_match', [
             'match_hometeam_id' => (int) $other->team_id,
             'match_guestteam_id' => (int) $fourth->team_id,
-            'match_date' => '2026-09-25 00:00:00',
+            'match_date' => '2026-09-25 11:11:11.111',
         ]);
     }
 

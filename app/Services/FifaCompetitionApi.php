@@ -100,7 +100,7 @@ class FifaCompetitionApi
      *     home_name_de: string,
      *     away_name_de: string,
      *     stage_name: string,
-     *     date: string  Europe/Berlin calendar day of kickoff (matches FFB match_date)
+     *     date: string  Europe/Berlin kickoff as Y-m-d H:i:s.v (FFB match_date)
      * }>
      */
     public function matches(): array
@@ -179,7 +179,7 @@ class FifaCompetitionApi
      *     home_name_de: string,
      *     away_name_de: string,
      *     stage_name: string,
-     *     date: string  Europe/Berlin calendar day of kickoff
+     *     date: string  Europe/Berlin kickoff as Y-m-d H:i:s.v
      * }|null
      */
     private function mapMatch(array $match): ?array
@@ -194,9 +194,8 @@ class FifaCompetitionApi
             return null;
         }
 
-        // FFB match_date is a Europe/Berlin calendar day; FIFA Date is UTC kickoff.
-        // Late US evenings (22:00–23:00Z) are already the next day in Berlin.
-        $date = $this->europeBerlinCalendarDate(trim((string) ($match['Date'] ?? '')));
+        // FIFA Date is UTC kickoff; FFB stores Europe/Berlin wall time (incl. day rollover).
+        $date = $this->europeBerlinKickoffDateTime(trim((string) ($match['Date'] ?? '')));
         if ($date === '') {
             return null;
         }
@@ -216,16 +215,16 @@ class FifaCompetitionApi
     }
 
     /**
-     * Calendar day of a FIFA UTC kickoff in Europe/Berlin (FFB match_date convention).
+     * FIFA UTC kickoff as Europe/Berlin Y-m-d H:i:s.v (FFB match_date convention).
      */
-    private function europeBerlinCalendarDate(string $dateRaw): string
+    private function europeBerlinKickoffDateTime(string $dateRaw): string
     {
         if ($dateRaw === '') {
             return '';
         }
 
         try {
-            return Carbon::parse($dateRaw)->timezone('Europe/Berlin')->toDateString();
+            return Carbon::parse($dateRaw)->timezone('Europe/Berlin')->format('Y-m-d H:i:s.v');
         } catch (\Throwable) {
             return '';
         }

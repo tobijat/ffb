@@ -197,7 +197,7 @@ class AdminMatchService
 
         MatchGame::query()->create([
             'match_round' => (int) $form['match_round'],
-            'match_date' => $form['match_date'].' 00:00:00',
+            'match_date' => MatchGame::composeDateTime($form['match_date']),
             'match_hometeam_id' => (int) $form['match_hometeam_id'],
             'match_guestteam_id' => (int) $form['match_guestteam_id'],
             'match_status' => $form['match_status'],
@@ -249,7 +249,7 @@ class AdminMatchService
         }
 
         $item->match_round = (int) $form['match_round'];
-        $item->match_date = $form['match_date'].' 00:00:00';
+        $item->match_date = MatchGame::composeDateTime($form['match_date']);
         $item->match_hometeam_id = (int) $form['match_hometeam_id'];
         $item->match_guestteam_id = (int) $form['match_guestteam_id'];
         $item->match_status = $form['match_status'];
@@ -409,8 +409,21 @@ class AdminMatchService
                     continue;
                 }
 
-                if (preg_match('/^(\d{4}-\d{2}-\d{2})/', $date, $m)) {
+                if (preg_match(
+                    '/^(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?))?/',
+                    $date,
+                    $m
+                ) === 1) {
                     $date = $m[1];
+                    if (! empty($m[2])) {
+                        $time = $m[2];
+                        if (preg_match('/^\d{2}:\d{2}$/', $time) === 1) {
+                            $time .= ':00';
+                        }
+                        $date .= ' '.$time;
+                    }
+                } else {
+                    continue;
                 }
 
                 $homeId = $teamIds[mb_strtolower($homeName)] ?? 0;
@@ -705,6 +718,7 @@ class AdminMatchService
             $homeName = $homeTeam !== null ? (string) $homeTeam->team_name : $uefa['home_name_de'];
             $guestName = $awayTeam !== null ? (string) $awayTeam->team_name : $uefa['away_name_de'];
             $date = $uefa['date'];
+            $calendarDate = MatchGame::calendarDate($date);
             $matchday = (int) $uefa['matchday'];
             $suggestedRound = $matchday > 0 ? ($this->resolveMatchroundId($matchday, $rounds) ?? 0) : 0;
 
@@ -729,7 +743,7 @@ class AdminMatchService
                 continue;
             }
 
-            $existing = $leagueMatches[$this->teamsDateKey($homeId, $guestId, $date)] ?? null;
+            $existing = $leagueMatches[$this->teamsDateKey($homeId, $guestId, $calendarDate)] ?? null;
             if ($existing !== null) {
                 $matched++;
                 $rows[] = [
@@ -1051,6 +1065,7 @@ class AdminMatchService
             $homeName = $homeTeam !== null ? (string) $homeTeam->team_name : (string) $fifa['home_name_de'];
             $guestName = $awayTeam !== null ? (string) $awayTeam->team_name : (string) $fifa['away_name_de'];
             $date = (string) $fifa['date'];
+            $calendarDate = MatchGame::calendarDate($date);
             $stageName = (string) ($fifa['stage_name'] ?? '');
             $suggestedRound = $this->resolveMatchroundFromFifaStage($stageName, $rounds) ?? 0;
 
@@ -1077,7 +1092,7 @@ class AdminMatchService
                 continue;
             }
 
-            $existing = $leagueMatches[$this->teamsDateKey($homeId, $guestId, $date)] ?? null;
+            $existing = $leagueMatches[$this->teamsDateKey($homeId, $guestId, $calendarDate)] ?? null;
             if ($existing !== null) {
                 $matched++;
                 $rows[] = [
@@ -1499,8 +1514,7 @@ class AdminMatchService
                     'match_status',
                 ]) as $match
         ) {
-            $dateTs = strtotime((string) $match->match_date);
-            $date = $dateTs ? date('Y-m-d', $dateTs) : '';
+            $date = MatchGame::calendarDate((string) $match->match_date);
             if ($date === '') {
                 continue;
             }
@@ -1648,8 +1662,21 @@ class AdminMatchService
     private function normalizeInput(array $input): array
     {
         $date = trim((string) ($input['match_date'] ?? ''));
-        if (preg_match('/^(\d{4}-\d{2}-\d{2})/', $date, $m)) {
+        if (preg_match(
+            '/^(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?))?/',
+            $date,
+            $m
+        ) === 1) {
             $date = $m[1];
+            if (! empty($m[2])) {
+                $time = $m[2];
+                if (preg_match('/^\d{2}:\d{2}$/', $time) === 1) {
+                    $time .= ':00';
+                }
+                $date .= ' '.$time;
+            }
+        } else {
+            $date = '';
         }
 
         return [
@@ -1680,8 +1707,11 @@ class AdminMatchService
         }
 
         if ($form['match_date'] !== '') {
-            $dt = DateTimeImmutable::createFromFormat('Y-m-d', $form['match_date']);
-            if (! $dt || $dt->format('Y-m-d') !== $form['match_date']) {
+            $calendarDate = MatchGame::calendarDate($form['match_date']);
+            $dt = $calendarDate !== ''
+                ? DateTimeImmutable::createFromFormat('Y-m-d', $calendarDate)
+                : false;
+            if (! $dt || $dt->format('Y-m-d') !== $calendarDate) {
                 $errors[] = 'Das Datum ist ungültig.';
             }
         }
@@ -1815,9 +1845,14 @@ class AdminMatchService
             return null;
         }
 
+        $calendarDate = MatchGame::calendarDate($form['match_date']);
+        if ($calendarDate === '') {
+            return null;
+        }
+
         $matchId = MatchGame::query()
             ->where('match_round', (int) $form['match_round'])
-            ->where('match_date', $form['match_date'].' 00:00:00')
+            ->whereDate('match_date', $calendarDate)
             ->where('match_hometeam_id', (int) $form['match_hometeam_id'])
             ->where('match_guestteam_id', (int) $form['match_guestteam_id'])
             ->value('match_id');
