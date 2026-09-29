@@ -33,9 +33,7 @@ class AdminCenterController extends Controller
         $result = $this->adminCenter->selectLeague($league);
 
         if ($result['ok']) {
-            return redirect()
-                ->route('admin.center')
-                ->with('admin_message', $result['message']);
+            return redirect()->route('admin.leagueDashboard');
         }
 
         return redirect()

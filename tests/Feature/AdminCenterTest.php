@@ -111,7 +111,9 @@ class AdminCenterTest extends TestCase
             ->assertSee('Testliga', false)
             ->assertSee('symbol_game_na.png', false)
             ->assertSee('Soccer Sportsfan', false)
-            ->assertSee('href="/"', false);
+            ->assertSee('href="/"', false)
+            ->assertSee('Dashboard', false)
+            ->assertSee('/admin/league-dashboard', false);
     }
 
     public function test_admin_center_selects_league(): void
@@ -130,8 +132,8 @@ class AdminCenterTest extends TestCase
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->post('/admin/leagues/26/select')
-            ->assertRedirect(route('admin.center'))
-            ->assertSessionHas('admin_message', 'Liga „Testliga“ ausgewählt.');
+            ->assertRedirect(route('admin.leagueDashboard'))
+            ->assertSessionMissing('admin_message');
     }
 
     public function test_user_card_shows_admin_center_link_when_flag_set(): void
