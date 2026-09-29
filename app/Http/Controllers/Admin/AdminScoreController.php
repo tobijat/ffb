@@ -14,56 +14,120 @@ class AdminScoreController extends Controller
     public function __construct(
         private readonly FfbAuth $auth,
         private readonly AdminScoreService $score,
-    ) {
-    }
+    ) {}
 
     public function show(Request $request): View
     {
-        return $this->render($request);
+        return $this->render(
+            $request,
+            $this->score->normalizeTab($request->query('tab')),
+        );
     }
 
-    public function setUserteamScores(Request $request): RedirectResponse
+    public function calculateUserteamScores(Request $request): View|RedirectResponse
     {
         $userId = $this->auth->userId($request);
-        $result = $this->score->setUserteamScores($userId);
+        $result = $this->score->calculateUserteamScores($userId);
 
-        return $this->redirectFromResult($result);
+        if (! ($result['ok'] ?? false)) {
+            return redirect()
+                ->route('admin.score', ['tab' => 'userteam'])
+                ->with('admin_errors', $result['errors'] ?? ['Berechnung fehlgeschlagen.']);
+        }
+
+        return $this->render(
+            $request,
+            'userteam',
+            (string) ($result['message'] ?? ''),
+            is_array($result['details'] ?? null) ? $result['details'] : [],
+            is_array($result['preview'] ?? null) ? $result['preview'] : null,
+        );
     }
 
-    public function setUserScores(Request $request): RedirectResponse
+    public function saveUserteamScores(Request $request): View|RedirectResponse
     {
         $userId = $this->auth->userId($request);
-        $result = $this->score->setUserScores($userId);
+        $result = $this->score->saveUserteamScores($userId);
 
-        return $this->redirectFromResult($result);
+        if (! ($result['ok'] ?? false)) {
+            return redirect()
+                ->route('admin.score', ['tab' => 'userteam'])
+                ->with('admin_errors', $result['errors'] ?? ['Speichern fehlgeschlagen.']);
+        }
+
+        return $this->render(
+            $request,
+            'userteam',
+            (string) ($result['message'] ?? ''),
+            is_array($result['details'] ?? null) ? $result['details'] : [],
+            is_array($result['preview'] ?? null) ? $result['preview'] : null,
+        );
+    }
+
+    public function calculateUserScores(Request $request): View|RedirectResponse
+    {
+        $userId = $this->auth->userId($request);
+        $result = $this->score->calculateUserScores($userId);
+
+        if (! ($result['ok'] ?? false)) {
+            return redirect()
+                ->route('admin.score', ['tab' => 'user'])
+                ->with('admin_errors', $result['errors'] ?? ['Berechnung fehlgeschlagen.']);
+        }
+
+        return $this->render(
+            $request,
+            'user',
+            (string) ($result['message'] ?? ''),
+            is_array($result['details'] ?? null) ? $result['details'] : [],
+            null,
+            is_array($result['preview'] ?? null) ? $result['preview'] : null,
+        );
+    }
+
+    public function saveUserScores(Request $request): View|RedirectResponse
+    {
+        $userId = $this->auth->userId($request);
+        $result = $this->score->saveUserScores($userId);
+
+        if (! ($result['ok'] ?? false)) {
+            return redirect()
+                ->route('admin.score', ['tab' => 'user'])
+                ->with('admin_errors', $result['errors'] ?? ['Speichern fehlgeschlagen.']);
+        }
+
+        return $this->render(
+            $request,
+            'user',
+            (string) ($result['message'] ?? ''),
+            is_array($result['details'] ?? null) ? $result['details'] : [],
+            null,
+            is_array($result['preview'] ?? null) ? $result['preview'] : null,
+        );
     }
 
     /**
-     * @param  array{ok: bool, message?: string, errors?: list<string>, details?: list<string>}  $result
+     * @param  list<string>  $details
+     * @param  array<string, mixed>|null  $userteamPreview
+     * @param  array<string, mixed>|null  $userPreview
      */
-    private function redirectFromResult(array $result): RedirectResponse
-    {
-        $redirect = redirect()->route('admin.score');
-
-        if (! ($result['ok'] ?? false)) {
-            return $redirect->with('admin_errors', $result['errors'] ?? ['Unbekannter Fehler.']);
-        }
-
-        return $redirect
-            ->with('admin_message', $result['message'] ?? 'OK')
-            ->with('admin_details', $result['details'] ?? []);
-    }
-
-    private function render(Request $request): View
-    {
+    private function render(
+        Request $request,
+        string $tab,
+        ?string $answer = null,
+        array $details = [],
+        ?array $userteamPreview = null,
+        ?array $userPreview = null,
+    ): View {
         $userId = $this->auth->userId($request);
         $errors = session('admin_errors');
+        $sessionDetails = session('admin_details');
 
         return view('admin.score', [
-            'data' => $this->score->pagePayload($userId),
+            'data' => $this->score->pagePayload($userId, $tab, $userteamPreview, $userPreview),
             'errors' => is_array($errors) ? $errors : [],
-            'answer' => session('admin_message'),
-            'details' => session('admin_details') ?: [],
+            'answer' => $answer ?? session('admin_message'),
+            'details' => $details !== [] ? $details : (is_array($sessionDetails) ? $sessionDetails : []),
             'legacyBase' => '/',
         ]);
     }

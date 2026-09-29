@@ -26,14 +26,15 @@ class AdminScoreTest extends TestCase
             ->assertRedirect(route('start'));
     }
 
-    public function test_score_page_renders(): void
+    public function test_score_page_renders_userteam_tab(): void
     {
         $this->mock(FfbAdminAccess::class, function ($mock) {
             $mock->shouldReceive('isAdmin')->andReturn(true);
         });
 
         $this->mock(AdminScoreService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544)->andReturn([
+            $mock->shouldReceive('normalizeTab')->once()->with(null)->andReturn('userteam');
+            $mock->shouldReceive('pagePayload')->once()->with(544, 'userteam', null, null)->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -55,6 +56,9 @@ class AdminScoreTest extends TestCase
                     'league_title' => 'Bundesliga Test',
                     'symbol_url' => '/images/ffb/games/na.png',
                 ],
+                'tab' => 'userteam',
+                'userteam_preview' => null,
+                'user_preview' => null,
             ]);
         });
 
@@ -62,70 +66,344 @@ class AdminScoreTest extends TestCase
             ->get('/admin/score')
             ->assertOk()
             ->assertSee('UserScore Settings', false)
-            ->assertSee('Set Userteam Score', false)
-            ->assertSee('Set User Score', false)
-            ->assertSee('Bundesliga Test', false)
-            ->assertSee('do only click once!', false);
+            ->assertSee('Userteam Score', false)
+            ->assertSee('User Score', false)
+            ->assertSee('Score berechnen', false)
+            ->assertSee('Speichern', false)
+            ->assertSee('Bundesliga Test', false);
     }
 
-    public function test_set_userteam_scores_posts_and_flashes_result(): void
+    public function test_score_page_renders_user_tab(): void
     {
         $this->mock(FfbAdminAccess::class, function ($mock) {
             $mock->shouldReceive('isAdmin')->andReturn(true);
         });
 
         $this->mock(AdminScoreService::class, function ($mock) {
-            $mock->shouldReceive('setUserteamScores')->once()->with(544)->andReturn([
-                'ok' => true,
-                'message' => 'Userteam-Scores erfolgreich aktualisiert (inkl. LC-Punkte für beendete Runden).',
-                'details' => ['userteam_id: 11 score: 42'],
+            $mock->shouldReceive('normalizeTab')->once()->with('user')->andReturn('user');
+            $mock->shouldReceive('pagePayload')->once()->with(544, 'user', null, null)->andReturn([
+                'user' => [
+                    'user_id' => 544,
+                    'user_nickname' => 'adminuser',
+                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'is_ffb_admin' => true,
+                ],
+                'navigation' => [],
+                'selected_league_id' => 7,
+                'selected_league' => [
+                    'league_id' => 7,
+                    'league_title' => 'Bundesliga Test',
+                    'symbol_url' => '/images/ffb/games/na.png',
+                ],
+                'tab' => 'user',
+                'userteam_preview' => null,
+                'user_preview' => null,
             ]);
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->post('/admin/score/userteam-scores')
-            ->assertRedirect(route('admin.score'))
-            ->assertSessionHas('admin_message')
-            ->assertSessionHas('admin_details', ['userteam_id: 11 score: 42']);
+            ->get('/admin/score?tab=user')
+            ->assertOk()
+            ->assertSee('ffb_userscore', false)
+            ->assertSee('Score berechnen', false);
     }
 
-    public function test_set_user_scores_posts_and_flashes_result(): void
+    public function test_calculate_userteam_scores_shows_preview_without_redirect_message_only(): void
     {
         $this->mock(FfbAdminAccess::class, function ($mock) {
             $mock->shouldReceive('isAdmin')->andReturn(true);
         });
 
-        $this->mock(AdminScoreService::class, function ($mock) {
-            $mock->shouldReceive('setUserScores')->once()->with(544)->andReturn([
+        $preview = [
+            'league_id' => 7,
+            'rows' => [
+                [
+                    'userteam_id' => 11,
+                    'user_id' => 9,
+                    'user_nickname' => 'alice',
+                    'matchround_id' => 3,
+                    'score' => 42,
+                    'lc_points' => 5,
+                    'previous_score' => 10,
+                    'previous_lc_points' => 0,
+                ],
+            ],
+        ];
+
+        $this->mock(AdminScoreService::class, function ($mock) use ($preview) {
+            $mock->shouldReceive('calculateUserteamScores')->once()->with(544)->andReturn([
                 'ok' => true,
-                'message' => 'User-Scores erfolgreich aktualisiert.',
+                'message' => 'Userteam-Scores berechnet (noch nicht gespeichert).',
+                'details' => ['userteam_id: 11 score: 42 lc: 5'],
+                'tab' => 'userteam',
+                'preview' => $preview,
+            ]);
+            $mock->shouldReceive('pagePayload')
+                ->once()
+                ->with(544, 'userteam', $preview, null)
+                ->andReturn([
+                    'user' => [
+                        'user_id' => 544,
+                        'user_nickname' => 'adminuser',
+                        'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                        'is_ffb_admin' => true,
+                    ],
+                    'navigation' => [],
+                    'selected_league_id' => 7,
+                    'selected_league' => [
+                        'league_id' => 7,
+                        'league_title' => 'Bundesliga Test',
+                        'symbol_url' => '/images/ffb/games/na.png',
+                    ],
+                    'tab' => 'userteam',
+                    'userteam_preview' => $preview,
+                    'user_preview' => null,
+                ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->post('/admin/score/userteam-scores/calculate')
+            ->assertOk()
+            ->assertSee('Userteam-Scores berechnet (noch nicht gespeichert).', false)
+            ->assertSee('alice', false)
+            ->assertSee('42', false)
+            ->assertSee('10', false);
+    }
+
+    public function test_save_userteam_scores_persists_and_shows_result(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $preview = [
+            'league_id' => 7,
+            'rows' => [
+                [
+                    'userteam_id' => 11,
+                    'user_id' => 9,
+                    'user_nickname' => 'alice',
+                    'matchround_id' => 3,
+                    'score' => 42,
+                    'lc_points' => 5,
+                    'previous_score' => 10,
+                    'previous_lc_points' => 0,
+                ],
+            ],
+        ];
+
+        $this->mock(AdminScoreService::class, function ($mock) use ($preview) {
+            $mock->shouldReceive('saveUserteamScores')->once()->with(544)->andReturn([
+                'ok' => true,
+                'message' => 'Userteam-Scores erfolgreich gespeichert (inkl. LC-Punkte für beendete Runden).',
+                'details' => ['userteam_id: 11 score: 42 lc: 5'],
+                'tab' => 'userteam',
+                'preview' => $preview,
+            ]);
+            $mock->shouldReceive('pagePayload')
+                ->once()
+                ->with(544, 'userteam', $preview, null)
+                ->andReturn([
+                    'user' => [
+                        'user_id' => 544,
+                        'user_nickname' => 'adminuser',
+                        'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                        'is_ffb_admin' => true,
+                    ],
+                    'navigation' => [],
+                    'selected_league_id' => 7,
+                    'selected_league' => [
+                        'league_id' => 7,
+                        'league_title' => 'Bundesliga Test',
+                        'symbol_url' => '/images/ffb/games/na.png',
+                    ],
+                    'tab' => 'userteam',
+                    'userteam_preview' => $preview,
+                    'user_preview' => null,
+                ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->post('/admin/score/userteam-scores/save')
+            ->assertOk()
+            ->assertSee('Userteam-Scores erfolgreich gespeichert', false);
+    }
+
+    public function test_calculate_user_scores_shows_preview(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $preview = [
+            'league_id' => 7,
+            'rows' => [
+                [
+                    'user_id' => 9,
+                    'user_nickname' => 'alice',
+                    'score' => 100,
+                    'lc_points' => 8,
+                    'previous_score' => 80,
+                    'previous_lc_points' => 3,
+                    'is_new' => false,
+                ],
+            ],
+        ];
+
+        $this->mock(AdminScoreService::class, function ($mock) use ($preview) {
+            $mock->shouldReceive('calculateUserScores')->once()->with(544)->andReturn([
+                'ok' => true,
+                'message' => 'User-Scores berechnet (noch nicht gespeichert).',
                 'details' => ['user_id: 9 score: 100'],
+                'tab' => 'user',
+                'preview' => $preview,
             ]);
+            $mock->shouldReceive('pagePayload')
+                ->once()
+                ->with(544, 'user', null, $preview)
+                ->andReturn([
+                    'user' => [
+                        'user_id' => 544,
+                        'user_nickname' => 'adminuser',
+                        'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                        'is_ffb_admin' => true,
+                    ],
+                    'navigation' => [],
+                    'selected_league_id' => 7,
+                    'selected_league' => [
+                        'league_id' => 7,
+                        'league_title' => 'Bundesliga Test',
+                        'symbol_url' => '/images/ffb/games/na.png',
+                    ],
+                    'tab' => 'user',
+                    'userteam_preview' => null,
+                    'user_preview' => $preview,
+                ]);
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->post('/admin/score/user-scores')
-            ->assertRedirect(route('admin.score'))
-            ->assertSessionHas('admin_message', 'User-Scores erfolgreich aktualisiert.')
-            ->assertSessionHas('admin_details', ['user_id: 9 score: 100']);
+            ->post('/admin/score/user-scores/calculate')
+            ->assertOk()
+            ->assertSee('User-Scores berechnet (noch nicht gespeichert).', false)
+            ->assertSee('alice', false)
+            ->assertSee('100', false);
     }
 
-    public function test_set_userteam_scores_without_league_flashes_errors(): void
+    public function test_save_user_scores_persists(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $preview = [
+            'league_id' => 7,
+            'rows' => [
+                [
+                    'user_id' => 9,
+                    'user_nickname' => 'alice',
+                    'score' => 100,
+                    'lc_points' => 8,
+                    'previous_score' => 80,
+                    'previous_lc_points' => 3,
+                    'is_new' => false,
+                ],
+            ],
+        ];
+
+        $this->mock(AdminScoreService::class, function ($mock) use ($preview) {
+            $mock->shouldReceive('saveUserScores')->once()->with(544)->andReturn([
+                'ok' => true,
+                'message' => 'User-Scores erfolgreich gespeichert.',
+                'details' => ['user_id: 9 score: 100'],
+                'tab' => 'user',
+                'preview' => $preview,
+            ]);
+            $mock->shouldReceive('pagePayload')
+                ->once()
+                ->with(544, 'user', null, $preview)
+                ->andReturn([
+                    'user' => [
+                        'user_id' => 544,
+                        'user_nickname' => 'adminuser',
+                        'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                        'is_ffb_admin' => true,
+                    ],
+                    'navigation' => [],
+                    'selected_league_id' => 7,
+                    'selected_league' => [
+                        'league_id' => 7,
+                        'league_title' => 'Bundesliga Test',
+                        'symbol_url' => '/images/ffb/games/na.png',
+                    ],
+                    'tab' => 'user',
+                    'userteam_preview' => null,
+                    'user_preview' => $preview,
+                ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->post('/admin/score/user-scores/save')
+            ->assertOk()
+            ->assertSee('User-Scores erfolgreich gespeichert.', false);
+    }
+
+    public function test_calculate_userteam_scores_without_league_flashes_errors(): void
     {
         $this->mock(FfbAdminAccess::class, function ($mock) {
             $mock->shouldReceive('isAdmin')->andReturn(true);
         });
 
         $this->mock(AdminScoreService::class, function ($mock) {
-            $mock->shouldReceive('setUserteamScores')->once()->with(544)->andReturn([
+            $mock->shouldReceive('calculateUserteamScores')->once()->with(544)->andReturn([
                 'ok' => false,
                 'errors' => ['Bitte zuerst eine Liga auswählen.'],
+                'tab' => 'userteam',
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->post('/admin/score/userteam-scores/calculate')
+            ->assertRedirect(route('admin.score', ['tab' => 'userteam']))
+            ->assertSessionHas('admin_errors', ['Bitte zuerst eine Liga auswählen.']);
+    }
+
+    public function test_legacy_userteam_scores_route_still_saves(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminScoreService::class, function ($mock) {
+            $mock->shouldReceive('saveUserteamScores')->once()->with(544)->andReturn([
+                'ok' => true,
+                'message' => 'Userteam-Scores erfolgreich gespeichert (inkl. LC-Punkte für beendete Runden).',
+                'details' => [],
+                'tab' => 'userteam',
+                'preview' => ['league_id' => 7, 'rows' => []],
+            ]);
+            $mock->shouldReceive('pagePayload')->once()->andReturn([
+                'user' => [
+                    'user_id' => 544,
+                    'user_nickname' => 'adminuser',
+                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'is_ffb_admin' => true,
+                ],
+                'navigation' => [],
+                'selected_league_id' => 7,
+                'selected_league' => [
+                    'league_id' => 7,
+                    'league_title' => 'Bundesliga Test',
+                    'symbol_url' => '/images/ffb/games/na.png',
+                ],
+                'tab' => 'userteam',
+                'userteam_preview' => ['league_id' => 7, 'rows' => []],
+                'user_preview' => null,
             ]);
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->post('/admin/score/userteam-scores')
-            ->assertRedirect(route('admin.score'))
-            ->assertSessionHas('admin_errors', ['Bitte zuerst eine Liga auswählen.']);
+            ->assertOk()
+            ->assertSee('Userteam-Scores erfolgreich gespeichert', false);
     }
 }

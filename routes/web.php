@@ -144,8 +144,13 @@ Route::middleware('ffb.admin')->group(function () {
     Route::match(['get', 'post'], '/admin/matchdata/wf-proxy', [AdminMatchdataController::class, 'wfProxy'])->name('admin.matchdata.wfProxy');
 
     Route::get('/admin/score', [AdminScoreController::class, 'show'])->name('admin.score');
-    Route::post('/admin/score/userteam-scores', [AdminScoreController::class, 'setUserteamScores'])->name('admin.score.setUserteamScores');
-    Route::post('/admin/score/user-scores', [AdminScoreController::class, 'setUserScores'])->name('admin.score.setUserScores');
+    Route::post('/admin/score/userteam-scores/calculate', [AdminScoreController::class, 'calculateUserteamScores'])->name('admin.score.calculateUserteamScores');
+    Route::post('/admin/score/userteam-scores/save', [AdminScoreController::class, 'saveUserteamScores'])->name('admin.score.saveUserteamScores');
+    Route::post('/admin/score/user-scores/calculate', [AdminScoreController::class, 'calculateUserScores'])->name('admin.score.calculateUserScores');
+    Route::post('/admin/score/user-scores/save', [AdminScoreController::class, 'saveUserScores'])->name('admin.score.saveUserScores');
+    // Legacy aliases (still write immediately).
+    Route::post('/admin/score/userteam-scores', [AdminScoreController::class, 'saveUserteamScores'])->name('admin.score.setUserteamScores');
+    Route::post('/admin/score/user-scores', [AdminScoreController::class, 'saveUserScores'])->name('admin.score.setUserScores');
 
     Route::get('/admin/playerprice', [AdminPlayerpriceController::class, 'show'])->name('admin.playerprice');
     Route::post('/admin/playerprice/matchround-performance/preview', [AdminPlayerpriceController::class, 'previewMatchroundPerformance'])->name('admin.playerprice.previewMatchroundPerformance');
