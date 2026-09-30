@@ -3,10 +3,14 @@
 namespace App\Services;
 
 use App\Models\Extremeteam;
+use App\Models\Goal;
 use App\Models\League;
 use App\Models\Player;
+use App\Models\Playerfid;
+use App\Models\Playerprice;
 use App\Models\Playerstats;
 use App\Models\Playerteam;
+use App\Models\Psgoal;
 use App\Models\Team;
 use App\Models\Userteam;
 use App\Support\Flag;
@@ -1998,6 +2002,26 @@ class AdminSquadService
             return 'Löschen nicht möglich: Es gibt zugehörige Spielstatistiken (Playerstats-IDs: '.$this->formatIdList($playerstatsIds).').';
         }
 
+        $goalIds = Goal::query()
+            ->where('goal_playerteam_id', $playerteamId)
+            ->orderBy('goal_id')
+            ->pluck('goal_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+        if ($goalIds !== []) {
+            return 'Löschen nicht möglich: Es gibt zugehörige Tore (Goal-IDs: '.$this->formatIdList($goalIds).').';
+        }
+
+        $psgoalIds = Psgoal::query()
+            ->where('psgoal_playerteam_id', $playerteamId)
+            ->orderBy('psgoal_id')
+            ->pluck('psgoal_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+        if ($psgoalIds !== []) {
+            return 'Löschen nicht möglich: Es gibt zugehörige Elfmeter (Psgoal-IDs: '.$this->formatIdList($psgoalIds).').';
+        }
+
         return null;
     }
 
@@ -2007,7 +2031,13 @@ class AdminSquadService
         $playerteamId = (int) $item->playerteam_id;
         $pictureName = (string) ($item->playerteam_player_picture ?? '');
         $playerId = (int) $item->playerteam_player_id;
-        $item->delete();
+
+        DB::transaction(function () use ($item, $playerteamId) {
+            Playerprice::query()->where('playerprice_playerteam_id', $playerteamId)->delete();
+            Playerfid::query()->where('playerfid_playerteam_id', $playerteamId)->delete();
+            $item->delete();
+        });
+
         if ($pictureName !== '') {
             // Only delete file if no other league row for same team+player remains.
             $stillUsed = Playerteam::query()
