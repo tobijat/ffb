@@ -192,8 +192,11 @@ class AdminSquadTest extends TestCase
                         'player_lname' => 'Arnautovic',
                         'player_nationality' => 'AUT',
                         'player_flag_url' => '/images/ffb/flags/aut.gif',
+                        'player_uefa_id' => '250024429',
+                        'player_fifa_id' => '358004',
                         'playerteam_status' => 1,
                         'playerteam_player_position' => 's',
+                        'playerteam_player_note' => 'Testnotiz',
                         'playerteam_date_transfer' => '2008-01-01',
                         'picture_url' => '/images/ffb/players/image_na.gif',
                         'has_picture' => false,
@@ -222,8 +225,15 @@ class AdminSquadTest extends TestCase
             ->get('/admin/squad?team_id=3')
             ->assertOk()
             ->assertSee('Arnautovic', false)
+            ->assertSee('P-ID: 12 | PT-ID: 44', false)
+            ->assertSee('| UEFA: 250024429', false)
+            ->assertSee('| FIFA: 358004', false)
             ->assertSee('Bestand', false)
             ->assertSee('Angriff', false)
+            ->assertSee('Notiz', false)
+            ->assertSee('playerteam_player_note', false)
+            ->assertSee('Testnotiz', false)
+            ->assertSee('admin-squad-head-grid', false)
             ->assertSee('data-roster-filter="active"', false)
             ->assertSee('data-roster-filter="all"', false)
             ->assertDontSee('playerteam_date_transfer', false)

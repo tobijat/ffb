@@ -8,6 +8,7 @@ use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\Player;
 use App\Models\Playerprice;
+use App\Models\Playerstats;
 use App\Models\Playerteam;
 use App\Models\Team;
 use App\Models\Teamprice;
@@ -183,6 +184,214 @@ class LineupDynamicPriceModeTest extends TestCase
         $this->assertTrue($result['data']['show_recent_performance']);
     }
 
+    #[Test]
+    public function team_players_are_ordered_by_lastname_within_position(): void
+    {
+        [$leagueId, $roundId, $teamId] = $this->seedDynamicSquad();
+
+        $secondPlayerId = (int) Player::query()->insertGetId([
+            'player_foreign_id' => '',
+            'player_fname' => 'Anna',
+            'player_lname' => 'Alaba',
+            'player_nationality' => 'AUT',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ], 'player_id');
+        $secondPtId = (int) Playerteam::query()->insertGetId([
+            'playerteam_player_id' => $secondPlayerId,
+            'playerteam_team_id' => $teamId,
+            'playerteam_league_id' => $leagueId,
+            'playerteam_player_picture' => '',
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 'm',
+            'playerteam_date_transfer' => '2008-01-01 00:00:00',
+        ], 'playerteam_id');
+
+        $firstPtId = (int) Playerteam::query()
+            ->where('playerteam_team_id', $teamId)
+            ->where('playerteam_player_position', 'm')
+            ->where('playerteam_id', '!=', $secondPtId)
+            ->value('playerteam_id');
+
+        Playerprice::query()->insert([
+            [
+                'playerprice_playerteam_id' => $firstPtId,
+                'playerprice_matchround_id' => $roundId,
+                'playerprice_price' => 12.0,
+                'playerprice_player_power' => 1,
+                'playerprice_av_power' => 1,
+            ],
+            [
+                'playerprice_playerteam_id' => $secondPtId,
+                'playerprice_matchround_id' => $roundId,
+                'playerprice_price' => 3.0,
+                'playerprice_player_power' => 1,
+                'playerprice_av_power' => 1,
+            ],
+        ]);
+
+        $result = $this->app->make(LineupService::class)->teamPlayers(544, $teamId, $roundId);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $midfield = array_values(array_filter(
+            $result['data']['players'],
+            static fn (array $p): bool => $p['playerteam_player_position'] === 'm',
+        ));
+        $this->assertCount(2, $midfield);
+        $this->assertSame('Alaba', $midfield[0]['player_lname']);
+        $this->assertSame('Muster', $midfield[1]['player_lname']);
+    }
+
+    #[Test]
+    public function team_players_warn_for_two_yellows_in_previous_two_rounds(): void
+    {
+        [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();
+        [$prev1, $prev2] = $this->seedPastRounds($leagueId, 2);
+        $this->seedPlayerprice($ptId, $roundId, 5.0);
+        $this->seedCard($ptId, $prev1, 'y');
+        $this->seedCard($ptId, $prev2, 'y');
+
+        $result = $this->app->make(LineupService::class)->teamPlayers(544, $teamId, $roundId);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $this->assertSame(
+            '2 gelbe Karten in den beiden vorhergehenden Spielen.',
+            $result['data']['players'][0]['card_warning'],
+        );
+    }
+
+    #[Test]
+    public function team_players_warn_for_yellow_red_in_previous_round(): void
+    {
+        [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();
+        [$prev1] = $this->seedPastRounds($leagueId, 1);
+        $this->seedPlayerprice($ptId, $roundId, 5.0);
+        $this->seedCard($ptId, $prev1, 'yr');
+
+        $result = $this->app->make(LineupService::class)->teamPlayers(544, $teamId, $roundId);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $this->assertSame(
+            'Gelb-Rot im vorhergehenden Spiel.',
+            $result['data']['players'][0]['card_warning'],
+        );
+    }
+
+    #[Test]
+    public function team_players_warn_for_red_in_previous_three_rounds(): void
+    {
+        [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();
+        [$prev1, $prev2, $prev3] = $this->seedPastRounds($leagueId, 3);
+        $this->seedPlayerprice($ptId, $roundId, 5.0);
+        $this->seedCard($ptId, $prev3, 'r');
+
+        $result = $this->app->make(LineupService::class)->teamPlayers(544, $teamId, $roundId);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $this->assertSame(
+            'Rot in Past 3.',
+            $result['data']['players'][0]['card_warning'],
+        );
+        unset($prev1, $prev2);
+    }
+
+    #[Test]
+    public function team_players_prefer_red_warning_over_two_yellows(): void
+    {
+        [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();
+        [$prev1, $prev2] = $this->seedPastRounds($leagueId, 2);
+        $this->seedPlayerprice($ptId, $roundId, 5.0);
+        $this->seedCard($ptId, $prev1, 'y');
+        $this->seedCard($ptId, $prev2, 'r');
+
+        $result = $this->app->make(LineupService::class)->teamPlayers(544, $teamId, $roundId);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $this->assertSame(
+            'Rot in Past 2.',
+            $result['data']['players'][0]['card_warning'],
+        );
+    }
+
+    #[Test]
+    public function team_players_include_player_note(): void
+    {
+        [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();
+        $this->seedPlayerprice($ptId, $roundId, 5.0);
+
+        Playerteam::query()->whereKey($ptId)->update([
+            'playerteam_player_note' => 'Knieprobleme',
+        ]);
+
+        $result = $this->app->make(LineupService::class)->teamPlayers(544, $teamId, $roundId);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $this->assertSame('Knieprobleme', $result['data']['players'][0]['playerteam_player_note']);
+        $this->assertNull($result['data']['players'][0]['card_warning']);
+    }
+
+    #[Test]
+    public function team_players_keep_card_warning_alongside_player_note(): void
+    {
+        [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();
+        [$prev1] = $this->seedPastRounds($leagueId, 1);
+        $this->seedPlayerprice($ptId, $roundId, 5.0);
+        $this->seedCard($ptId, $prev1, 'yr');
+
+        Playerteam::query()->whereKey($ptId)->update([
+            'playerteam_player_note' => 'Manuell gesetzt',
+        ]);
+
+        $result = $this->app->make(LineupService::class)->teamPlayers(544, $teamId, $roundId);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $this->assertSame('Manuell gesetzt', $result['data']['players'][0]['playerteam_player_note']);
+        $this->assertSame(
+            'Gelb-Rot im vorhergehenden Spiel.',
+            $result['data']['players'][0]['card_warning'],
+        );
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function seedPastRounds(int $leagueId, int $count): array
+    {
+        $ids = [];
+        for ($i = 1; $i <= $count; $i++) {
+            $ids[] = (int) Matchround::query()->insertGetId([
+                'matchround_league_id' => $leagueId,
+                'matchround_title' => 'Past '.$i,
+                'matchround_startdate' => sprintf('2026-09-%02d 00:00:00', 28 - (($i - 1) * 7)),
+                'matchround_enddate' => sprintf('2026-09-%02d 00:00:00', 29 - (($i - 1) * 7)),
+                'matchround_status' => 1,
+            ], 'matchround_id');
+        }
+
+        return $ids;
+    }
+
+    private function seedPlayerprice(int $ptId, int $roundId, float $price): void
+    {
+        Playerprice::query()->insert([
+            'playerprice_playerteam_id' => $ptId,
+            'playerprice_matchround_id' => $roundId,
+            'playerprice_price' => $price,
+            'playerprice_player_power' => 1,
+            'playerprice_av_power' => 1,
+        ]);
+    }
+
+    private function seedCard(int $ptId, int $roundId, string $card): void
+    {
+        Playerstats::query()->forceCreate([
+            'playerstats_playerteam_id' => $ptId,
+            'playerstats_matchround_id' => $roundId,
+            'playerstats_score' => 0,
+            'playerstats_cards' => $card,
+        ]);
+    }
+
     private function seedLeague(string $priceMode): int
     {
         $leagueId = (int) League::query()->insertGetId([
@@ -344,6 +553,7 @@ class LineupDynamicPriceModeTest extends TestCase
             $table->string('playerteam_player_picture')->default('');
             $table->integer('playerteam_status')->default(1);
             $table->string('playerteam_player_position', 1)->default('d');
+            $table->string('playerteam_player_note')->default('');
             $table->string('playerteam_date_transfer')->default('2008-01-01 00:00:00');
         });
 
@@ -352,6 +562,7 @@ class LineupDynamicPriceModeTest extends TestCase
             $table->unsignedInteger('playerstats_playerteam_id');
             $table->unsignedInteger('playerstats_matchround_id');
             $table->integer('playerstats_score')->default(0);
+            $table->string('playerstats_cards')->default('n');
         });
 
         Schema::create('ffb_playerprice', function (Blueprint $table) {

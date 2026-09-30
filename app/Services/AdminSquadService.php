@@ -1934,6 +1934,7 @@ class AdminSquadService
 
         $item->playerteam_status = (int) $form['playerteam_status'];
         $item->playerteam_player_position = $form['playerteam_player_position'];
+        $item->playerteam_player_note = (string) $form['playerteam_player_note'];
 
         if ($pictureFile !== null) {
             if (! $this->storePicture($pictureFile, $teamId, (int) $item->playerteam_player_id)) {
@@ -2263,10 +2264,13 @@ class AdminSquadService
                     'player_fname' => (string) ($player?->player_fname ?? ''),
                     'player_lname' => (string) ($player?->player_lname ?? ''),
                     'player_nationality' => $nat,
+                    'player_uefa_id' => trim((string) ($player?->player_uefa_id ?? '')),
+                    'player_fifa_id' => trim((string) ($player?->player_fifa_id ?? '')),
                     'player_flag_url' => $nat !== '' ? Flag::imageUrl($nat) : null,
                     'player_flag_html' => $nat !== '' ? Flag::html($nat) : '',
                     'playerteam_status' => (int) $item->playerteam_status ? 1 : 0,
                     'playerteam_player_position' => (string) $item->playerteam_player_position,
+                    'playerteam_player_note' => (string) ($item->playerteam_player_note ?? ''),
                     'playerteam_league_id' => (int) $item->playerteam_league_id,
                     'picture_url' => $pictureUrl,
                     'has_picture' => $hasPicture,
@@ -2289,6 +2293,7 @@ class AdminSquadService
         return [
             'playerteam_status' => ((string) ($input['playerteam_status'] ?? '1') === '0') ? 0 : 1,
             'playerteam_player_position' => $position,
+            'playerteam_player_note' => trim((string) ($input['playerteam_player_note'] ?? '')),
         ];
     }
 
@@ -2302,6 +2307,10 @@ class AdminSquadService
 
         if (! in_array($form['playerteam_player_position'], self::POSITIONS, true)) {
             $errors[] = 'Ungültige Position.';
+        }
+
+        if (mb_strlen((string) $form['playerteam_player_note']) > 255) {
+            $errors[] = 'Notiz darf maximal 255 Zeichen lang sein.';
         }
 
         if ($pictureFile !== null) {

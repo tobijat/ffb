@@ -184,10 +184,22 @@
     text-align: right;
 }
 
-.playerline .trend,
+.playerline .trend {
+    text-align: center;
+}
+
 .playerline .status,
 .playerline .info {
     text-align: center;
+}
+
+.playerline .card-warn,
+.pitch-player .card-warn {
+    color: #c00;
+    font-weight: 700;
+    font-size: 11pt;
+    line-height: 1;
+    cursor: help;
 }
 
 .perf-trend {

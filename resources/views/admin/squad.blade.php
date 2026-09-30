@@ -231,10 +231,15 @@
                         <table class="admin-squad-table" id="squad-roster-table">
                             <thead>
                                 <tr>
-                                    <th scope="col" class="admin-squad-col-photo">Bild</th>
-                                    <th scope="col">Spieler</th>
-                                    <th scope="col">Pos.</th>
-                                    <th scope="col">Status</th>
+                                    <th colspan="5" scope="colgroup" class="admin-squad-head-cell">
+                                        <div class="admin-squad-grid admin-squad-head-grid">
+                                            <span class="admin-squad-col-photo">Bild</span>
+                                            <span>Spieler</span>
+                                            <span>Pos.</span>
+                                            <span>Status</span>
+                                            <span>Notiz</span>
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
                             @foreach ($positionOrder as $posCode)
@@ -244,7 +249,7 @@
                                 @endif
                                 <tbody class="admin-squad-group" data-group-total="{{ count($group) }}">
                                     <tr class="admin-squad-group-head">
-                                        <th colspan="4" scope="colgroup">
+                                        <th colspan="5" scope="colgroup">
                                             {{ $positions[$posCode] ?? strtoupper($posCode) }}
                                             <span class="admin-squad-count admin-squad-group-count">{{ count($group) }}</span>
                                         </th>
@@ -257,9 +262,10 @@
                                             data-playerteam-id="{{ $ptId }}"
                                             data-initial-position="{{ $item['playerteam_player_position'] }}"
                                             data-initial-status="{{ (int) $item['playerteam_status'] }}"
+                                            data-initial-note="{{ $item['playerteam_player_note'] ?? '' }}"
                                             data-initial-picture="{{ $item['picture_url'] }}"
                                         >
-                                            <td colspan="4" class="admin-squad-player-cell">
+                                            <td colspan="5" class="admin-squad-player-cell">
                                                 <div class="admin-squad-grid">
                                                     <div class="admin-squad-photo-cell">
                                                         <img
@@ -294,7 +300,21 @@
                                                             <strong>{{ $item['player_lname'] }}</strong>
                                                             <span>{{ $item['player_fname'] }}</span>
                                                         </div>
-                                                        <span class="muted admin-squad-ids">#{{ $ptId }}</span>
+                                                        @php
+                                                            $idParts = [
+                                                                'P-ID: '.(int) $item['player_id'],
+                                                                'PT-ID: '.$ptId,
+                                                            ];
+                                                            $uefaId = trim((string) ($item['player_uefa_id'] ?? ''));
+                                                            $fifaId = trim((string) ($item['player_fifa_id'] ?? ''));
+                                                            if ($uefaId !== '') {
+                                                                $idParts[] = 'UEFA: '.$uefaId;
+                                                            }
+                                                            if ($fifaId !== '') {
+                                                                $idParts[] = 'FIFA: '.$fifaId;
+                                                            }
+                                                        @endphp
+                                                        <span class="muted admin-squad-ids">{{ implode(' | ', $idParts) }}</span>
                                                     </div>
 
                                                     <label class="admin-squad-compact admin-squad-field-pos">
@@ -312,6 +332,19 @@
                                                             <option value="1" @selected((int) $item['playerteam_status'] === 1)>aktiv</option>
                                                             <option value="0" @selected((int) $item['playerteam_status'] === 0)>inaktiv</option>
                                                         </select>
+                                                    </label>
+
+                                                    <label class="admin-squad-compact admin-squad-field-note">
+                                                        <span class="visually-hidden">Notiz</span>
+                                                        <input
+                                                            type="text"
+                                                            name="items[{{ $ptId }}][playerteam_player_note]"
+                                                            value="{{ $item['playerteam_player_note'] ?? '' }}"
+                                                            maxlength="255"
+                                                            aria-label="Notiz"
+                                                            placeholder="Notiz"
+                                                            data-field="note"
+                                                        >
                                                     </label>
                                                 </div>
 
@@ -1089,7 +1122,8 @@
         function isRowEdited(row) {
             if (fieldValue(row, 'picture') === '1') return true;
             return fieldValue(row, 'position') !== String(row.getAttribute('data-initial-position') || '')
-                || fieldValue(row, 'status') !== String(row.getAttribute('data-initial-status') || '');
+                || fieldValue(row, 'status') !== String(row.getAttribute('data-initial-status') || '')
+                || fieldValue(row, 'note') !== String(row.getAttribute('data-initial-note') || '');
         }
 
         function isRowQueued(row) {
@@ -1114,11 +1148,13 @@
         function restoreRow(row) {
             const position = fieldEl(row, 'position');
             const status = fieldEl(row, 'status');
+            const note = fieldEl(row, 'note');
             const picture = fieldEl(row, 'picture');
             const preview = row.querySelector('[data-field="picture-preview"]');
 
             if (position) position.value = String(row.getAttribute('data-initial-position') || '');
             if (status) status.value = String(row.getAttribute('data-initial-status') || '');
+            if (note) note.value = String(row.getAttribute('data-initial-note') || '');
             if (picture) picture.value = '';
             if (preview) preview.src = String(row.getAttribute('data-initial-picture') || preview.src);
 
@@ -1150,7 +1186,9 @@
                 row.classList.toggle('is-pending-delete', pendingDelete);
 
                 const undoBtn = row.querySelector('.admin-squad-undo-btn');
-                if (undoBtn) undoBtn.hidden = !queued;
+                if (undoBtn) {
+                    undoBtn.hidden = !queued;
+                }
 
                 const deleteBtn = row.querySelector('.admin-squad-delete-btn');
                 if (deleteBtn) deleteBtn.hidden = pendingDelete;

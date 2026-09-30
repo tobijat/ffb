@@ -250,6 +250,38 @@
         );
     }
 
+    function buildCardWarning(warning) {
+        if (!warning) {
+            return '';
+        }
+
+        const text = String(warning);
+
+        return (
+            '<span class="card-warn" title="' +
+            escapeHtml(text) +
+            '" aria-label="' +
+            escapeHtml(text) +
+            '">!</span>'
+        );
+    }
+
+    function selectionWarningText(player) {
+        const note = String(player.playerteam_player_note || '').trim();
+        if (note !== '') {
+            return note;
+        }
+        const card = player.card_warning;
+        if (card) {
+            return String(card);
+        }
+        return '';
+    }
+
+    function buildSelectionWarning(player) {
+        return buildCardWarning(selectionWarningText(player) || null);
+    }
+
     function hasPenaltyScore(match) {
         const homePen = parseInt(match.match_homescore_penalty, 10);
         const guestPen = parseInt(match.match_guestscore_penalty, 10);
@@ -345,9 +377,9 @@
     }
 
     function playerCard(player) {
-        const statusOk = Number(player.player_status) === 1;
         const nat = player.playerteam_team_nationality || 'AUT';
         const teamId = player.playerteam_team_id;
+        const warn = buildSelectionWarning(player);
         return (
             '<div class="pitch-player">' +
             '<a href="#" data-remove="' +
@@ -369,11 +401,7 @@
             player.player_price +
             '</span>' +
             flagHtml(nat, player.playerteam_team || '') +
-            '<img src="' +
-            symbolUrl(statusOk ? 'status_pos.png' : 'status_hurt.png') +
-            '" width="16" height="16" alt="" title="status: ' +
-            escapeHtml(statusOk ? 'Einsatzbereit' : player.player_status_description || '') +
-            '">' +
+            warn +
             '<a href="#" data-modal="player" data-id="' +
             player.playerteam_id +
             '"><img src="' +
@@ -589,6 +617,8 @@
             playerteam_team: player.playerteam_team,
             playerteam_team_nationality: player.playerteam_team_nationality,
             playerteam_id: player.playerteam_id,
+            playerteam_player_note: player.playerteam_player_note || '',
+            card_warning: player.card_warning || null,
         });
         credits -= lineuplist[lineuplist.length - 1].player_price;
         updateLineupDisplay();
@@ -651,8 +681,8 @@
         playerlistEl.classList.toggle('playerlist--with-perf', showRecentPerformance);
 
         let html = showRecentPerformance
-            ? '<div class="playerlist-head"><span></span><span>Name</span><span>Preis</span><span>St.</span><span>Info</span><span>Leistung</span></div>'
-            : '<div class="playerlist-head"><span>Name</span><span>Preis</span><span>St.</span><span>Info</span></div>';
+            ? '<div class="playerlist-head"><span></span><span>Name</span><span>Preis</span><span></span><span>Info</span><span>Leistung</span></div>'
+            : '<div class="playerlist-head"><span>Name</span><span>Preis</span><span></span><span>Info</span></div>';
         const sections = [
             { key: 'g', title: 'Torhüter' },
             { key: 'd', title: 'Verteidiger' },
@@ -666,7 +696,6 @@
                     return p.playerteam_player_position === sec.key;
                 })
                 .forEach(function (p) {
-                    const statusOk = Number(p.player_status) === 1;
                     html += '<div class="playerline">';
                     if (showRecentPerformance) {
                         html +=
@@ -683,11 +712,9 @@
                         '<span class="price">' +
                         escapeHtml(p.playerteam_player_price) +
                         '</span>' +
-                        '<span class="status"><img src="' +
-                        symbolUrl(statusOk ? 'status_pos.png' : 'status_hurt.png') +
-                        '" width="16" height="16" alt="" title="status: ' +
-                        escapeHtml(statusOk ? 'ok' : p.player_status_description || '') +
-                        '"></span>' +
+                        '<span class="status">' +
+                        buildSelectionWarning(p) +
+                        '</span>' +
                         '<span class="info"><a href="#" data-modal="player" data-id="' +
                         p.playerteam_id +
                         '"><img src="' +
@@ -775,6 +802,8 @@
                     playerteam_team: p.playerteam_team,
                     playerteam_team_nationality: p.playerteam_team_nationality,
                     playerteam_id: p.playerteam_id,
+                    playerteam_player_note: p.playerteam_player_note || '',
+                    card_warning: p.card_warning || null,
                 };
             });
             updateLineupDisplay();

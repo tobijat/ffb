@@ -270,18 +270,14 @@ class LineupService
         $ptIds = $playerteams->keys()->map(fn ($id) => (int) $id)->all();
         $prices = $this->resolvePlayerPrices($ptIds, $matchroundId, $playerteams);
         $recentByPt = $this->resolveRecentPerformances($ptIds, $matchroundId);
+        $cardWarnings = $this->resolveCardWarnings($playerteams, $matchroundId, $leagueId);
 
-        $playerteams = $playerteams->sort(function (Playerteam $a, Playerteam $b) use ($prices) {
+        $playerteams = $playerteams->sort(function (Playerteam $a, Playerteam $b): int {
             $pos = strcmp((string) $a->playerteam_player_position, (string) $b->playerteam_player_position);
             if ($pos !== 0) {
                 return $pos;
             }
-            $priceA = (float) ($prices->get((int) $a->playerteam_id) ?? 0);
-            $priceB = (float) ($prices->get((int) $b->playerteam_id) ?? 0);
-            $priceCmp = $priceB <=> $priceA;
-            if ($priceCmp !== 0) {
-                return $priceCmp;
-            }
+
             $ln = strcasecmp((string) ($a->player?->player_lname ?? ''), (string) ($b->player?->player_lname ?? ''));
             if ($ln !== 0) {
                 return $ln;
@@ -314,7 +310,9 @@ class LineupService
                 'playerteam_player_position' => (string) $pt->playerteam_player_position,
                 'playerteam_player_picture' => (string) ($pt->playerteam_player_picture ?: ''),
                 'playerteam_player_price' => (float) $prices->get($ptId),
+                'playerteam_player_note' => (string) ($pt->playerteam_player_note ?? ''),
                 'recent_performance' => (float) ($recentByPt->get($ptId) ?? 0.0),
+                'card_warning' => $cardWarnings->get($ptId),
             ];
         }
 
@@ -370,6 +368,8 @@ class LineupService
 
         $prices = $this->resolvePlayerPrices($slotIds, $matchroundId, $playerteams);
         $scores = $this->scoresForRound($slotIds, $matchroundId);
+        $leagueId = (int) (Matchround::query()->whereKey($matchroundId)->value('matchround_league_id') ?? 0);
+        $cardWarnings = $this->resolveCardWarnings($playerteams, $matchroundId, $leagueId);
 
         $players = [];
         foreach ($slotIds as $slot => $playerteamId) {
@@ -395,7 +395,9 @@ class LineupService
                 'playerteam_player_picture' => (string) ($pt->playerteam_player_picture ?: ''),
                 'playerteam_status' => (int) ($pt->playerteam_status ? 1 : 0),
                 'playerteam_player_price' => (float) ($prices->get($playerteamId) ?? 0),
+                'playerteam_player_note' => (string) ($pt->playerteam_player_note ?? ''),
                 'playerstats_score' => (int) ($scores->get($playerteamId) ?? 0),
+                'card_warning' => $cardWarnings->get((int) $pt->playerteam_id),
             ];
         }
 
@@ -814,6 +816,125 @@ class LineupService
         }
 
         return $resolved;
+    }
+
+    /**
+     * Card-based lineup warnings for the selected matchround (past league rounds only).
+     *
+     * @param  Collection<int, Playerteam>  $playerteams
+     * @return Collection<int, string|null>
+     */
+    private function resolveCardWarnings(Collection $playerteams, int $matchroundId, int $leagueId): Collection
+    {
+        $warnings = collect();
+        foreach ($playerteams as $ptId => $pt) {
+            $warnings->put((int) $ptId, null);
+        }
+
+        if ($playerteams->isEmpty() || $matchroundId <= 0 || $leagueId <= 0) {
+            return $warnings;
+        }
+
+        $selected = Matchround::query()->find($matchroundId);
+        if (! $selected || $selected->matchround_startdate === null) {
+            return $warnings;
+        }
+
+        $pastRounds = Matchround::query()
+            ->where('matchround_league_id', $leagueId)
+            ->where('matchround_startdate', '<', $selected->matchround_startdate)
+            ->orderByDesc('matchround_startdate')
+            ->limit(3)
+            ->get(['matchround_id', 'matchround_title'])
+            ->values();
+
+        if ($pastRounds->isEmpty()) {
+            return $warnings;
+        }
+
+        $playerIds = $playerteams
+            ->map(static fn (Playerteam $pt): int => (int) $pt->playerteam_player_id)
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($playerIds === []) {
+            return $warnings;
+        }
+
+        $allPtIds = Playerteam::query()
+            ->whereIn('playerteam_player_id', $playerIds)
+            ->pluck('playerteam_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+
+        $roundIds = $pastRounds->pluck('matchround_id')->map(static fn ($id): int => (int) $id)->all();
+        $titlesByRound = $pastRounds->mapWithKeys(
+            static fn (Matchround $round): array => [
+                (int) $round->matchround_id => (string) $round->matchround_title,
+            ],
+        );
+
+        $ptToPlayer = Playerteam::query()
+            ->whereIn('playerteam_id', $allPtIds)
+            ->get(['playerteam_id', 'playerteam_player_id'])
+            ->mapWithKeys(static fn (Playerteam $pt): array => [
+                (int) $pt->playerteam_id => (int) $pt->playerteam_player_id,
+            ]);
+
+        /** @var array<int, array<int, string>> $cardsByPlayerRound */
+        $cardsByPlayerRound = [];
+        foreach (
+            Playerstats::query()
+                ->whereIn('playerstats_matchround_id', $roundIds)
+                ->whereIn('playerstats_playerteam_id', $allPtIds)
+                ->get(['playerstats_matchround_id', 'playerstats_playerteam_id', 'playerstats_cards']) as $stat
+        ) {
+            $playerId = (int) ($ptToPlayer->get((int) $stat->playerstats_playerteam_id) ?? 0);
+            if ($playerId <= 0) {
+                continue;
+            }
+
+            $roundId = (int) $stat->playerstats_matchround_id;
+            $card = strtolower((string) ($stat->playerstats_cards ?: 'n'));
+            if (! in_array($card, ['y', 'yr', 'r'], true)) {
+                continue;
+            }
+
+            $cardsByPlayerRound[$playerId][$roundId] = $card;
+        }
+
+        foreach ($playerteams as $ptId => $pt) {
+            $playerId = (int) $pt->playerteam_player_id;
+            $cards = $cardsByPlayerRound[$playerId] ?? [];
+            $warning = null;
+
+            foreach ($roundIds as $roundId) {
+                if (($cards[$roundId] ?? null) === 'r') {
+                    $title = (string) ($titlesByRound->get($roundId) ?? ('#'.$roundId));
+                    $warning = 'Rot in '.$title.'.';
+                    break;
+                }
+            }
+
+            if ($warning === null && isset($roundIds[0]) && ($cards[$roundIds[0]] ?? null) === 'yr') {
+                $warning = 'Gelb-Rot im vorhergehenden Spiel.';
+            }
+
+            if (
+                $warning === null
+                && isset($roundIds[0], $roundIds[1])
+                && ($cards[$roundIds[0]] ?? null) === 'y'
+                && ($cards[$roundIds[1]] ?? null) === 'y'
+            ) {
+                $warning = '2 gelbe Karten in den beiden vorhergehenden Spielen.';
+            }
+
+            $warnings->put((int) $ptId, $warning);
+        }
+
+        return $warnings;
     }
 
     private function shouldShowRecentPerformance(?LeagueOptions $options, int $matchroundId): bool
