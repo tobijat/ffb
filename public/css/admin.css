@@ -1316,6 +1316,42 @@
     border-bottom-width: 1px;
 }
 
+.admin-table-sort {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+
+.admin-table-sort:hover,
+.admin-table-sort:focus-visible {
+    color: #064;
+}
+
+.admin-table-sort.is-active {
+    color: #043;
+    text-decoration: none;
+}
+
+.admin-table-sort.is-asc::after {
+    content: ' ↑';
+    font-weight: 700;
+}
+
+.admin-table-sort.is-desc::after {
+    content: ' ↓';
+    font-weight: 700;
+}
+
 .admin-ms-answers {
     margin-top: 0.75rem;
 }

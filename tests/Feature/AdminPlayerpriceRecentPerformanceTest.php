@@ -103,6 +103,120 @@ class AdminPlayerpriceRecentPerformanceTest extends TestCase
     }
 
     #[Test]
+    public function recent_preview_table_exposes_client_sort_controls(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $preview = [
+            'matchround_id' => 3,
+            'lookback_rounds' => 5,
+            'decay_factor' => 0.7,
+            'max_price_adjustment' => 2.0,
+            'prior_matchround_ids' => [2],
+            'prior_matchrounds' => [
+                ['matchround_id' => 2, 'matchround_title' => 'Runde 0', 'weight' => 1],
+            ],
+            'weights' => [1],
+            'include_external_rounds' => false,
+            'players' => [
+                [
+                    'player_name' => 'Ada Alaba',
+                    'team_name' => 'Österreich',
+                    'position' => 'd',
+                    'round_performance' => [0.5],
+                    'recent_performance' => 0.5,
+                    'rounds_played' => 1,
+                    'price_adjustment' => 1.0,
+                    'player_price' => 11.0,
+                ],
+                [
+                    'player_name' => 'Bob Bauer',
+                    'team_name' => 'Österreich',
+                    'position' => 'm',
+                    'round_performance' => [0.2],
+                    'recent_performance' => 0.2,
+                    'rounds_played' => 1,
+                    'price_adjustment' => 0.4,
+                    'player_price' => 10.4,
+                ],
+            ],
+        ];
+
+        $this->mock(AdminPlayerpriceService::class, function ($mock) use ($preview) {
+            $mock->shouldReceive('previewRecentPerformance')
+                ->once()
+                ->andReturn([
+                    'ok' => true,
+                    'message' => 'Recent-Performance berechnet (Vorschau).',
+                    'price_league_id' => 7,
+                    'matchround_id' => 3,
+                    'tab' => 'recent',
+                    'preview' => $preview,
+                ]);
+
+            $mock->shouldReceive('pagePayload')
+                ->once()
+                ->andReturn([
+                    'user' => [
+                        'user_id' => 544,
+                        'user_nickname' => 'adminuser',
+                        'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                        'is_ffb_admin' => true,
+                    ],
+                    'navigation' => [],
+                    'selected_league_id' => 7,
+                    'selected_league' => [
+                        'league_id' => 7,
+                        'league_title' => 'Bundesliga Test',
+                    ],
+                    'price_league_id' => 7,
+                    'leagues' => [
+                        ['league_id' => 7, 'league_title' => 'Bundesliga Test'],
+                    ],
+                    'tab' => 'recent',
+                    'matchrounds' => [
+                        ['matchround_id' => 3, 'matchround_title' => 'Runde 1'],
+                    ],
+                    'matchround_id' => 3,
+                    'lineup_max_credits' => 100.0,
+                    'lineup_max_players_team' => 3,
+                    'lineup_limits_source' => 'league',
+                    'elo_exponent' => 2.0,
+                    'elo_dream_team_ratio' => 1.5,
+                    'elo_min_price' => 1.0,
+                    'team_price_preview' => null,
+                    'performance_preview' => null,
+                    'performance_has_teamelos' => false,
+                    'performance_opponent_weight' => 0.25,
+                    'recent_performance_preview' => $preview,
+                    'recent_lookback_rounds' => 5,
+                    'recent_decay_factor' => 0.7,
+                    'recent_max_price_adjustment' => 2.0,
+                ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->post('/admin/playerprice/recent-performance/preview', [
+                'price_league_id' => 7,
+                'matchround_id' => 3,
+                'lookback_rounds' => 5,
+                'decay_factor' => 0.7,
+                'max_price_adjustment' => 2,
+                'tab' => 'recent',
+            ])
+            ->assertOk()
+            ->assertSee('id="admin-playerprice-recent-table"', false)
+            ->assertSee('data-sort-key="recent"', false)
+            ->assertSee('data-sort-key="price"', false)
+            ->assertSee('data-sort-key="team"', false)
+            ->assertSee('data-sort-recent="0.5"', false)
+            ->assertSee('data-sort-price="11"', false)
+            ->assertSee('admin-table-sort', false);
+    }
+
+    #[Test]
     public function preview_succeeds_without_selected_round_playerstats(): void
     {
         [$leagueId, $priorId, $selectedId] = $this->seedLeagueWithRounds(2);

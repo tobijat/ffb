@@ -475,12 +475,20 @@
                     <p class="muted">Keine aktiven Kaderspieler in dieser Liga gefunden.</p>
                 @else
                     <div class="admin-auto-squad-table-wrap">
-                        <table class="admin-auto-squad-table admin-playerprice-preview-table admin-playerprice-recent-table">
+                        <table class="admin-auto-squad-table admin-playerprice-preview-table admin-playerprice-recent-table" id="admin-playerprice-recent-table">
                             <thead>
                                 <tr>
                                     <th>#</th>
                                     <th>Spieler</th>
-                                    <th>Team</th>
+                                    <th>
+                                        <button
+                                            type="button"
+                                            class="admin-table-sort"
+                                            data-sort-key="team"
+                                            data-sort-type="default"
+                                            title="Standard-Sortierung (Team, Position)"
+                                        >Team</button>
+                                    </th>
                                     <th>Pos.</th>
                                     @foreach ($recentPriorRounds as $prior)
                                         <th
@@ -493,10 +501,26 @@
                                     @if ($recentPriorRounds === [])
                                         <th class="admin-playerprice-rp-col"></th>
                                     @endif
-                                    <th>recent</th>
+                                    <th>
+                                        <button
+                                            type="button"
+                                            class="admin-table-sort"
+                                            data-sort-key="recent"
+                                            data-sort-type="number"
+                                            title="Nach recent sortieren"
+                                        >recent</button>
+                                    </th>
                                     <th>n</th>
                                     <th class="admin-playerprice-rp-col">adj</th>
-                                    <th class="admin-playerprice-rp-col">price</th>
+                                    <th class="admin-playerprice-rp-col">
+                                        <button
+                                            type="button"
+                                            class="admin-table-sort"
+                                            data-sort-key="price"
+                                            data-sort-type="number"
+                                            title="Nach price sortieren"
+                                        >price</button>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -506,8 +530,12 @@
                                             ? $row['round_performance']
                                             : [];
                                     @endphp
-                                    <tr>
-                                        <td>{{ $index + 1 }}</td>
+                                    <tr
+                                        data-sort-index="{{ $index }}"
+                                        data-sort-recent="{{ $row['recent_performance'] ?? '' }}"
+                                        data-sort-price="{{ $row['player_price'] ?? '' }}"
+                                    >
+                                        <td class="admin-playerprice-row-index">{{ $index + 1 }}</td>
                                         <td>{{ $row['player_name'] ?? '' }}</td>
                                         <td>{{ $row['team_name'] ?? '' }}</td>
                                         <td>{{ strtoupper((string) ($row['position'] ?? '')) }}</td>
@@ -749,3 +777,93 @@
         </section>
     @endif
 @endsection
+
+@push('scripts')
+    <script>
+        (function () {
+            const table = document.getElementById('admin-playerprice-recent-table');
+            if (!table) {
+                return;
+            }
+
+            const tbody = table.tBodies[0];
+            if (!tbody) {
+                return;
+            }
+
+            const buttons = table.querySelectorAll('.admin-table-sort');
+            let activeKey = null;
+            let direction = null;
+
+            const parseNumber = (value) => {
+                const n = Number.parseFloat(String(value ?? '').replace(',', '.'));
+                return Number.isFinite(n) ? n : Number.NEGATIVE_INFINITY;
+            };
+
+            const renumber = () => {
+                tbody.querySelectorAll('tr').forEach((row, index) => {
+                    const cell = row.querySelector('.admin-playerprice-row-index');
+                    if (cell) {
+                        cell.textContent = String(index + 1);
+                    }
+                });
+            };
+
+            const applySortClasses = () => {
+                buttons.forEach((button) => {
+                    const key = button.getAttribute('data-sort-key');
+                    button.classList.remove('is-asc', 'is-desc', 'is-active');
+                    button.removeAttribute('aria-sort');
+                    if (key === activeKey && direction) {
+                        button.classList.add('is-active', direction === 'asc' ? 'is-asc' : 'is-desc');
+                        button.setAttribute('aria-sort', direction === 'asc' ? 'ascending' : 'descending');
+                    }
+                });
+            };
+
+            const sortRows = (compare) => {
+                const rows = Array.from(tbody.rows);
+                rows.sort(compare);
+                rows.forEach((row) => tbody.appendChild(row));
+                renumber();
+            };
+
+            buttons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    const key = button.getAttribute('data-sort-key');
+                    const type = button.getAttribute('data-sort-type');
+
+                    if (type === 'default' || key === 'team') {
+                        activeKey = null;
+                        direction = null;
+                        sortRows((a, b) => {
+                            return Number(a.dataset.sortIndex || 0) - Number(b.dataset.sortIndex || 0);
+                        });
+                        applySortClasses();
+                        return;
+                    }
+
+                    if (activeKey === key) {
+                        direction = direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        activeKey = key;
+                        direction = 'asc';
+                    }
+
+                    const factor = direction === 'asc' ? 1 : -1;
+                    const attr = key === 'price' ? 'sortPrice' : 'sortRecent';
+
+                    sortRows((a, b) => {
+                        const av = parseNumber(a.dataset[attr]);
+                        const bv = parseNumber(b.dataset[attr]);
+                        if (av === bv) {
+                            return Number(a.dataset.sortIndex || 0) - Number(b.dataset.sortIndex || 0);
+                        }
+                        return (av - bv) * factor;
+                    });
+                    applySortClasses();
+                });
+            });
+        })();
+    </script>
+@endpush
