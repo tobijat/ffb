@@ -7,20 +7,16 @@ use App\Models\League;
 use App\Models\Matchround;
 use App\Models\Playerprice;
 use App\Models\Playerstats;
+use App\Models\Playerteam;
+use App\Models\Teamprice;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ExtremeTeamService
 {
-    /** @var list<list<int>> g,d,m,s counts per formation */
-    private const SYSTEMS = [
-        [1, 3, 4, 3],
-        [1, 3, 5, 2],
-        [1, 4, 3, 3],
-        [1, 4, 4, 2],
-        [1, 4, 5, 1],
-        [1, 5, 3, 2],
-        [1, 5, 4, 1],
-    ];
+    public function __construct(
+        private readonly LineupOptionsResolver $lineupOptions,
+    ) {}
 
     /**
      * Load a stored top/flop XI for the player API.
@@ -102,19 +98,22 @@ class ExtremeTeamService
         }
 
         $computed = $this->computeTeam($matchroundId, $type);
-        if ($computed === null) {
+        if (! ($computed['ok'] ?? false)) {
+            $reason = (string) ($computed['reason'] ?? 'Unbekannter Grund.');
+
             return [
                 'ok' => true,
                 'status' => 'skipped',
-                'message' => 'Nicht genug Spieler mit Punkten für ein vollständiges '.$type.'-Team.',
+                'message' => $reason,
                 'matchround_id' => $matchroundId,
                 'type' => $type,
             ];
         }
 
         $extremeteamId = 0;
+        $teamData = $computed['team'];
 
-        DB::transaction(function () use ($matchroundId, $type, $computed, &$extremeteamId) {
+        DB::transaction(function () use ($matchroundId, $type, $teamData, &$extremeteamId) {
             $team = Extremeteam::query()
                 ->where('extremeteam_matchround_id', $matchroundId)
                 ->where('extremeteam_top_or_flop', $type)
@@ -126,18 +125,18 @@ class ExtremeTeamService
                 $team->extremeteam_top_or_flop = $type;
             }
 
-            $team->extremeteam_score = $computed['score'];
-            $team->extremeteam_price = $computed['price'];
+            $team->extremeteam_score = $teamData['score'];
+            $team->extremeteam_price = $teamData['price'];
             $team->save();
 
-            $team->syncSlots($computed['playerteam_ids']);
+            $team->syncSlots($teamData['playerteam_ids']);
             $extremeteamId = (int) $team->extremeteam_id;
         });
 
         return [
             'ok' => true,
             'status' => 'stored',
-            'message' => ucfirst($type).'-Team gespeichert.',
+            'message' => ucfirst($type).'-Team gespeichert ('.$teamData['score'].' Pkt · '.$teamData['price'].' Cr).',
             'matchround_id' => $matchroundId,
             'type' => $type,
             'extremeteam_id' => $extremeteamId,
@@ -212,12 +211,9 @@ class ExtremeTeamService
                     } else {
                         $skipped++;
                     }
-                    $details[] = sprintf(
-                        'league %d round %d %s: %s',
-                        $leagueId,
-                        $roundId,
-                        $result['type'] ?? '?',
-                        $result['status'] ?? (($result['ok'] ?? false) ? 'ok' : 'error'),
+                    $details[] = $this->formatResultDetail(
+                        sprintf('league %d round %d', $leagueId, $roundId),
+                        $result,
                     );
                 }
             }
@@ -272,18 +268,18 @@ class ExtremeTeamService
                 $result = $this->computeAndStore($matchroundId, $type);
                 if (! ($result['ok'] ?? false)) {
                     $errors = array_merge($errors, $result['errors'] ?? ['Fehler.']);
-                    $details[] = "round {$matchroundId} {$type}: error";
+                    $details[] = $this->formatResultDetail("Runde {$matchroundId}", $result);
 
                     continue;
                 }
 
                 if (($result['status'] ?? '') === 'stored') {
                     $stored++;
-                    $details[] = "round {$matchroundId} {$type}: stored";
                 } else {
                     $skipped++;
-                    $details[] = "round {$matchroundId} {$type}: skipped";
                 }
+
+                $details[] = $this->formatResultDetail("Runde {$matchroundId}", $result);
             }
         }
 
@@ -297,30 +293,65 @@ class ExtremeTeamService
     }
 
     /**
-     * @return array{score: int, price: float, playerteam_ids: list<int>, players: list<array<string, mixed>>}|null
+     * @return array{
+     *     ok: true,
+     *     team: array{score: int, price: float, playerteam_ids: list<int>, players: list<array<string, mixed>>}
+     * }|array{ok: false, reason: string}
      */
-    public function computeTeam(int $matchroundId, string $type): ?array
+    public function computeTeam(int $matchroundId, string $type): array
     {
         $type = $this->normalizeType($type);
+        $typeLabel = $type === 'top' ? 'Top' : 'Flop';
 
         $matchround = Matchround::query()->find($matchroundId);
         if (! $matchround) {
-            return null;
+            return ['ok' => false, 'reason' => 'Spielrunde nicht gefunden.'];
         }
 
-        $pricesByPt = Playerprice::query()
-            ->where('playerprice_matchround_id', $matchroundId)
-            ->get()
-            ->keyBy(fn (Playerprice $p) => (int) $p->playerprice_playerteam_id);
-
-        if ($pricesByPt->isEmpty()) {
-            return null;
+        $options = $this->lineupOptions->forMatchround($matchroundId);
+        $formations = $this->formationsFromOptions($options);
+        if ($formations === []) {
+            return [
+                'ok' => false,
+                'reason' => sprintf(
+                    'Keine gültige Formation aus den Aufstellungs-Optionen (max. %d Spieler, Positions-Min/Max).',
+                    (int) $options['lineup_max_players'],
+                ),
+            ];
         }
 
         $stats = Playerstats::query()
             ->where('playerstats_matchround_id', $matchroundId)
             ->with(['playerteam.player', 'playerteam.team'])
             ->get();
+
+        if ($stats->isEmpty()) {
+            return [
+                'ok' => false,
+                'reason' => 'Keine Spielerstatistiken/Punkte für diese Spielrunde – '.$typeLabel.'-Team nicht berechenbar.',
+            ];
+        }
+
+        $playerteamsById = collect();
+        foreach ($stats as $stat) {
+            $pt = $stat->playerteam;
+            if ($pt) {
+                $playerteamsById->put((int) $pt->playerteam_id, $pt);
+            }
+        }
+
+        $pricesByPt = $this->resolvePricesForPlayerteams(
+            $matchroundId,
+            $playerteamsById->keys()->map(static fn ($id): int => (int) $id)->all(),
+            $playerteamsById,
+        );
+
+        if ($pricesByPt->isEmpty()) {
+            return [
+                'ok' => false,
+                'reason' => 'Keine Spieler- oder Teampreise für diese Spielrunde – '.$typeLabel.'-Team nicht berechenbar.',
+            ];
+        }
 
         /** @var array<string, list<array<string, mixed>>> $byPosition */
         $byPosition = ['g' => [], 'd' => [], 'm' => [], 's' => []];
@@ -330,7 +361,10 @@ class ExtremeTeamService
             if (! $pt || ! $pt->player || ! $pt->team) {
                 continue;
             }
-            $pos = (string) $pt->playerteam_player_position;
+            if ((int) ($pt->playerteam_status ?: 0) !== 1) {
+                continue;
+            }
+            $pos = strtolower((string) $pt->playerteam_player_position);
             if (! isset($byPosition[$pos])) {
                 continue;
             }
@@ -340,8 +374,7 @@ class ExtremeTeamService
                 continue;
             }
 
-            $price = (float) $pricesByPt->get($ptId)->playerprice_price;
-
+            $price = (float) $pricesByPt->get($ptId);
             $player = $pt->player;
             $team = $pt->team;
             $byPosition[$pos][] = [
@@ -361,78 +394,489 @@ class ExtremeTeamService
             ];
         }
 
+        $eligibleCounts = [
+            'g' => count($byPosition['g']),
+            'd' => count($byPosition['d']),
+            'm' => count($byPosition['m']),
+            's' => count($byPosition['s']),
+        ];
+        $eligibleTotal = array_sum($eligibleCounts);
+        if ($eligibleTotal === 0) {
+            return [
+                'ok' => false,
+                'reason' => 'Keine aktiven Spieler mit Punkten und Preis für diese Spielrunde.',
+            ];
+        }
+
+        $fillableFormations = array_values(array_filter(
+            $formations,
+            fn (array $formation): bool => $this->formationHasEnoughCandidates($formation, $byPosition),
+        ));
+        if ($fillableFormations === []) {
+            return [
+                'ok' => false,
+                'reason' => sprintf(
+                    'Zu wenig Spieler mit Punkten und Preis für eine vollständige Formation (T:%d Abw:%d Mf:%d St:%d).',
+                    $eligibleCounts['g'],
+                    $eligibleCounts['d'],
+                    $eligibleCounts['m'],
+                    $eligibleCounts['s'],
+                ),
+            ];
+        }
+
         foreach ($byPosition as $pos => $rows) {
             usort($rows, function (array $a, array $b) use ($type): int {
                 if ($type === 'top') {
-                    return [$b['playerstats_score'], $a['playerteam_player_price']]
-                        <=> [$a['playerstats_score'], $b['playerteam_player_price']];
+                    return [$b['playerstats_score'], $a['playerteam_player_price'], $a['playerteam_id']]
+                        <=> [$a['playerstats_score'], $b['playerteam_player_price'], $b['playerteam_id']];
                 }
 
-                return [$a['playerstats_score'], $b['playerteam_player_price']]
-                    <=> [$b['playerstats_score'], $a['playerteam_player_price']];
+                return [$a['playerstats_score'], $b['playerteam_player_price'], $a['playerteam_id']]
+                    <=> [$b['playerstats_score'], $a['playerteam_player_price'], $b['playerteam_id']];
             });
-            $byPosition[$pos] = $rows;
+            $byPosition[$pos] = array_slice($rows, 0, 8);
         }
 
-        $bestPlayers = [];
-        $teamScore = $type === 'top' ? -100000 : 100000;
-        $teamPrice = 0.0;
+        $maxCredits = (float) $options['lineup_max_credits'];
+        $maxPerTeam = (int) $options['lineup_max_players_team'];
+        $maxPlayers = (int) $options['lineup_max_players'];
 
-        foreach (self::SYSTEMS as $system) {
-            $picked = [];
-            $sumScore = 0;
-            $sumPrice = 0.0;
-            $limits = [
-                'g' => $system[0],
-                'd' => $system[1],
-                'm' => $system[2],
-                's' => $system[3],
-            ];
+        $bestPlayers = null;
+        $bestScore = 0;
+        $bestPrice = 0.0;
 
-            $enough = true;
-            foreach ($limits as $pos => $limit) {
-                if (count($byPosition[$pos]) < $limit) {
-                    $enough = false;
-                    break;
-                }
-            }
-            if (! $enough) {
+        foreach ($fillableFormations as $formation) {
+            $result = $this->searchFormation(
+                $formation,
+                $byPosition,
+                $type,
+                $maxCredits,
+                $maxPerTeam,
+            );
+            if ($result === null) {
                 continue;
             }
 
-            foreach ($limits as $pos => $limit) {
-                $slice = array_slice($byPosition[$pos], 0, $limit);
-                foreach ($slice as $row) {
-                    $picked[] = $row;
-                    $sumScore += (int) $row['playerstats_score'];
-                    $sumPrice += (float) $row['playerteam_player_price'];
-                }
-            }
-
-            $better = $type === 'top'
-                ? $sumScore >= $teamScore
-                : $sumScore < $teamScore;
-
-            if ($better) {
-                $bestPlayers = $picked;
-                $teamScore = $sumScore;
-                $teamPrice = $sumPrice;
+            if ($bestPlayers === null
+                || $this->isBetterTeam($type, $result['score'], $result['price'], $bestScore, $bestPrice)) {
+                $bestPlayers = $result['players'];
+                $bestScore = $result['score'];
+                $bestPrice = $result['price'];
             }
         }
 
-        if (count($bestPlayers) < 11) {
+        if ($bestPlayers === null || count($bestPlayers) !== $maxPlayers) {
+            return [
+                'ok' => false,
+                'reason' => sprintf(
+                    'Kein gültiges %s-Team innerhalb der Limits (max. %.1f Credits, max. %d Spieler/Verein).',
+                    $typeLabel,
+                    $maxCredits,
+                    $maxPerTeam,
+                ),
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'team' => [
+                'score' => $bestScore,
+                'price' => round($bestPrice, 1),
+                'playerteam_ids' => array_map(
+                    static fn (array $row): int => (int) $row['playerteam_id'],
+                    $bestPlayers,
+                ),
+                'players' => $bestPlayers,
+            ],
+        ];
+    }
+
+    /**
+     * Validate a stored top/flop team against lineup options and credit limit.
+     *
+     * @return list<string>
+     */
+    public function complianceIssues(Extremeteam $team): array
+    {
+        $matchroundId = (int) $team->extremeteam_matchround_id;
+        $options = $this->lineupOptions->forMatchround($matchroundId);
+        $slotIds = $team->playerteamIdsInSlotOrder();
+        $issues = [];
+
+        $maxPlayers = (int) $options['lineup_max_players'];
+        if (count($slotIds) !== $maxPlayers) {
+            $issues[] = sprintf('%d Spieler (erwartet %d)', count($slotIds), $maxPlayers);
+        }
+
+        if ($slotIds === []) {
+            return $issues !== [] ? $issues : ['keine Spieler'];
+        }
+
+        $playerteams = Playerteam::query()
+            ->whereIn('playerteam_id', $slotIds)
+            ->get(['playerteam_id', 'playerteam_team_id', 'playerteam_player_position', 'playerteam_status'])
+            ->keyBy(fn (Playerteam $pt): int => (int) $pt->playerteam_id);
+
+        $prices = $this->resolvePricesForPlayerteams($matchroundId, $slotIds, $playerteams);
+
+        $counts = ['g' => 0, 'd' => 0, 'm' => 0, 's' => 0];
+        $perTeam = [];
+        $sumPrice = 0.0;
+
+        foreach ($slotIds as $ptId) {
+            $pt = $playerteams->get($ptId);
+            if ($pt === null) {
+                $issues[] = 'Spielerteam #'.$ptId.' fehlt';
+
+                continue;
+            }
+
+            $pos = strtolower((string) $pt->playerteam_player_position);
+            if (! isset($counts[$pos])) {
+                $issues[] = 'unbekannte Position für Spielerteam #'.$ptId;
+            } else {
+                $counts[$pos]++;
+            }
+
+            $teamId = (int) $pt->playerteam_team_id;
+            $perTeam[$teamId] = ($perTeam[$teamId] ?? 0) + 1;
+
+            if ($prices->has($ptId)) {
+                $sumPrice += (float) $prices->get($ptId);
+            } else {
+                $issues[] = 'kein Preis für Spielerteam #'.$ptId;
+            }
+        }
+
+        $maxPerTeam = (int) $options['lineup_max_players_team'];
+        foreach ($perTeam as $count) {
+            if ($count > $maxPerTeam) {
+                $issues[] = sprintf('mehr als %d Spieler aus einem Team', $maxPerTeam);
+                break;
+            }
+        }
+
+        $rules = [
+            'g' => [(int) $options['lineup_min_g'], (int) $options['lineup_max_g']],
+            'd' => [(int) $options['lineup_min_d'], (int) $options['lineup_max_d']],
+            'm' => [(int) $options['lineup_min_m'], (int) $options['lineup_max_m']],
+            's' => [(int) $options['lineup_min_s'], (int) $options['lineup_max_s']],
+        ];
+        foreach ($rules as $position => [$min, $max]) {
+            if ($counts[$position] < $min || $counts[$position] > $max) {
+                $issues[] = sprintf(
+                    'Position %s: %d (erlaubt %d–%d)',
+                    strtoupper($position),
+                    $counts[$position],
+                    $min,
+                    $max,
+                );
+            }
+        }
+
+        $maxCredits = (float) $options['lineup_max_credits'];
+        $storedPrice = round((float) $team->extremeteam_price, 1);
+        $sumPrice = round($sumPrice, 1);
+        if ($sumPrice > $maxCredits || $storedPrice > $maxCredits) {
+            $issues[] = sprintf(
+                'Credits %.1f / gespeichert %.1f (Limit %.1f)',
+                $sumPrice,
+                $storedPrice,
+                $maxCredits,
+            );
+        }
+
+        return array_values(array_unique($issues));
+    }
+
+    /**
+     * @param  array{g: int, d: int, m: int, s: int}  $formation
+     * @param  array<string, list<array<string, mixed>>>  $byPosition
+     * @return array{score: int, price: float, players: list<array<string, mixed>>}|null
+     */
+    private function searchFormation(
+        array $formation,
+        array $byPosition,
+        string $type,
+        float $maxCredits,
+        int $maxPerTeam,
+    ): ?array {
+        $order = ['g', 'd', 'm', 's'];
+        $best = null;
+        $bestScore = 0;
+        $bestPrice = 0.0;
+
+        /** @var array<string, float> $minCostForNeed */
+        $minCostForNeed = [];
+        foreach ($order as $pos) {
+            $need = $formation[$pos];
+            $candidates = $byPosition[$pos];
+            if (count($candidates) < $need) {
+                return null;
+            }
+
+            $prices = array_map(
+                static fn (array $row): float => (float) $row['playerteam_player_price'],
+                $candidates,
+            );
+            sort($prices);
+            $sum = 0.0;
+            for ($k = 0; $k < $need; $k++) {
+                $sum += $prices[$k];
+            }
+            $minCostForNeed[$pos] = $sum;
+        }
+
+        $search = function (
+            int $posIndex,
+            array $picked,
+            int $sumScore,
+            float $sumPrice,
+            array $teamCounts,
+        ) use (
+            &$search,
+            &$best,
+            &$bestScore,
+            &$bestPrice,
+            $order,
+            $formation,
+            $byPosition,
+            $type,
+            $maxCredits,
+            $maxPerTeam,
+            $minCostForNeed,
+        ): void {
+            if ($posIndex >= count($order)) {
+                if ($best === null || $this->isBetterTeam($type, $sumScore, $sumPrice, $bestScore, $bestPrice)) {
+                    $best = $picked;
+                    $bestScore = $sumScore;
+                    $bestPrice = $sumPrice;
+                }
+
+                return;
+            }
+
+            $minRemaining = 0.0;
+            for ($j = $posIndex; $j < count($order); $j++) {
+                $minRemaining += $minCostForNeed[$order[$j]];
+            }
+            if ($sumPrice + $minRemaining > $maxCredits) {
+                return;
+            }
+
+            $pos = $order[$posIndex];
+            $need = $formation[$pos];
+            $candidates = $byPosition[$pos];
+
+            $this->choosePlayers(
+                $candidates,
+                $need,
+                0,
+                [],
+                $picked,
+                $sumScore,
+                $sumPrice,
+                $teamCounts,
+                $maxCredits,
+                $maxPerTeam,
+                function (
+                    array $nextPicked,
+                    int $nextScore,
+                    float $nextPrice,
+                    array $nextTeamCounts,
+                ) use ($search, $posIndex): void {
+                    $search($posIndex + 1, $nextPicked, $nextScore, $nextPrice, $nextTeamCounts);
+                },
+            );
+        };
+
+        $search(0, [], 0, 0.0, []);
+
+        if ($best === null) {
             return null;
         }
 
         return [
-            'score' => $teamScore,
-            'price' => round($teamPrice, 1),
-            'playerteam_ids' => array_map(
-                static fn (array $row): int => (int) $row['playerteam_id'],
-                $bestPlayers,
-            ),
-            'players' => $bestPlayers,
+            'score' => $bestScore,
+            'price' => $bestPrice,
+            'players' => $best,
         ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $candidates
+     * @param  list<array<string, mixed>>  $chosen
+     * @param  list<array<string, mixed>>  $picked
+     * @param  array<int, int>  $teamCounts
+     * @param  callable(list<array<string, mixed>>, int, float, array<int, int>): void  $onComplete
+     */
+    private function choosePlayers(
+        array $candidates,
+        int $need,
+        int $start,
+        array $chosen,
+        array $picked,
+        int $sumScore,
+        float $sumPrice,
+        array $teamCounts,
+        float $maxCredits,
+        int $maxPerTeam,
+        callable $onComplete,
+    ): void {
+        if (count($chosen) === $need) {
+            $onComplete(
+                array_merge($picked, $chosen),
+                $sumScore,
+                $sumPrice,
+                $teamCounts,
+            );
+
+            return;
+        }
+
+        $remaining = $need - count($chosen);
+        $available = count($candidates) - $start;
+        if ($available < $remaining) {
+            return;
+        }
+
+        for ($i = $start; $i < count($candidates); $i++) {
+            if ($available - ($i - $start) < $remaining) {
+                break;
+            }
+
+            $row = $candidates[$i];
+            $price = (float) $row['playerteam_player_price'];
+            $nextPrice = $sumPrice + $price;
+            if ($nextPrice > $maxCredits) {
+                continue;
+            }
+
+            $teamId = (int) $row['playerteam_team_id'];
+            $teamCount = ($teamCounts[$teamId] ?? 0) + 1;
+            if ($teamCount > $maxPerTeam) {
+                continue;
+            }
+
+            $nextTeamCounts = $teamCounts;
+            $nextTeamCounts[$teamId] = $teamCount;
+            $nextChosen = $chosen;
+            $nextChosen[] = $row;
+
+            $this->choosePlayers(
+                $candidates,
+                $need,
+                $i + 1,
+                $nextChosen,
+                $picked,
+                $sumScore + (int) $row['playerstats_score'],
+                $nextPrice,
+                $nextTeamCounts,
+                $maxCredits,
+                $maxPerTeam,
+                $onComplete,
+            );
+        }
+    }
+
+    /**
+     * @param  array{
+     *     lineup_max_players: int,
+     *     lineup_min_g: int,
+     *     lineup_min_d: int,
+     *     lineup_min_m: int,
+     *     lineup_min_s: int,
+     *     lineup_max_g: int,
+     *     lineup_max_d: int,
+     *     lineup_max_m: int,
+     *     lineup_max_s: int
+     * }  $options
+     * @return list<array{g: int, d: int, m: int, s: int}>
+     */
+    private function formationsFromOptions(array $options): array
+    {
+        $maxPlayers = (int) $options['lineup_max_players'];
+        $formations = [];
+
+        for ($g = (int) $options['lineup_min_g']; $g <= (int) $options['lineup_max_g']; $g++) {
+            for ($d = (int) $options['lineup_min_d']; $d <= (int) $options['lineup_max_d']; $d++) {
+                for ($m = (int) $options['lineup_min_m']; $m <= (int) $options['lineup_max_m']; $m++) {
+                    for ($s = (int) $options['lineup_min_s']; $s <= (int) $options['lineup_max_s']; $s++) {
+                        if ($g + $d + $m + $s === $maxPlayers) {
+                            $formations[] = ['g' => $g, 'd' => $d, 'm' => $m, 's' => $s];
+                        }
+                    }
+                }
+            }
+        }
+
+        return $formations;
+    }
+
+    /**
+     * @param  array{g: int, d: int, m: int, s: int}  $formation
+     * @param  array<string, list<array<string, mixed>>>  $byPosition
+     */
+    private function formationHasEnoughCandidates(array $formation, array $byPosition): bool
+    {
+        foreach ($formation as $pos => $need) {
+            if (count($byPosition[$pos] ?? []) < $need) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param  array<string, mixed>  $result
+     */
+    private function formatResultDetail(string $prefix, array $result): string
+    {
+        $type = (string) ($result['type'] ?? '?');
+        $status = (string) ($result['status'] ?? ((! ($result['ok'] ?? false)) ? 'error' : 'ok'));
+        $message = trim((string) ($result['message'] ?? ''));
+
+        if ($status === 'skipped' && $message !== '') {
+            return sprintf('%s %s: übersprungen — %s', $prefix, $type, $message);
+        }
+
+        if ($status === 'stored' && $message !== '') {
+            return sprintf('%s %s: gespeichert — %s', $prefix, $type, $message);
+        }
+
+        if ($status === 'error' || ! ($result['ok'] ?? false)) {
+            $error = $message !== ''
+                ? $message
+                : implode(' ', $result['errors'] ?? ['Fehler.']);
+
+            return sprintf('%s %s: Fehler — %s', $prefix, $type, $error);
+        }
+
+        return sprintf('%s %s: %s', $prefix, $type, $status);
+    }
+
+    private function isBetterTeam(
+        string $type,
+        int $score,
+        float $price,
+        int $bestScore,
+        float $bestPrice,
+    ): bool {
+        if ($type === 'top') {
+            if ($score !== $bestScore) {
+                return $score > $bestScore;
+            }
+
+            return $price < $bestPrice;
+        }
+
+        if ($score !== $bestScore) {
+            return $score < $bestScore;
+        }
+
+        return $price > $bestPrice;
     }
 
     /**
@@ -452,11 +896,15 @@ class ExtremeTeamService
             ->get()
             ->keyBy(fn (Playerstats $s) => (int) $s->playerstats_playerteam_id);
 
-        $pricesByPt = Playerprice::query()
-            ->where('playerprice_matchround_id', $matchroundId)
-            ->whereIn('playerprice_playerteam_id', $slotIds)
-            ->get()
-            ->keyBy(fn (Playerprice $p) => (int) $p->playerprice_playerteam_id);
+        $playerteamsById = collect();
+        foreach ($slotIds as $ptId) {
+            $pt = $stats->get($ptId)?->playerteam;
+            if ($pt) {
+                $playerteamsById->put($ptId, $pt);
+            }
+        }
+
+        $pricesByPt = $this->resolvePricesForPlayerteams($matchroundId, $slotIds, $playerteamsById);
 
         $players = [];
         foreach ($slotIds as $ptId) {
@@ -467,7 +915,7 @@ class ExtremeTeamService
             }
 
             $price = $pricesByPt->has($ptId)
-                ? (float) $pricesByPt->get($ptId)->playerprice_price
+                ? (float) $pricesByPt->get($ptId)
                 : 0.0;
 
             $player = $pt->player;
@@ -490,6 +938,61 @@ class ExtremeTeamService
         }
 
         return $players;
+    }
+
+    /**
+     * Resolve credits: ffb_playerprice, else ffb_teamprice for the player's team.
+     *
+     * @param  list<int>  $playerteamIds
+     * @param  Collection<int, Playerteam>  $playerteams
+     * @return Collection<int, float>
+     */
+    private function resolvePricesForPlayerteams(int $matchroundId, array $playerteamIds, Collection $playerteams): Collection
+    {
+        if ($playerteamIds === [] || $matchroundId <= 0) {
+            return collect();
+        }
+
+        $fromPlayer = Playerprice::query()
+            ->where('playerprice_matchround_id', $matchroundId)
+            ->whereIn('playerprice_playerteam_id', $playerteamIds)
+            ->get()
+            ->mapWithKeys(fn (Playerprice $row): array => [
+                (int) $row->playerprice_playerteam_id => (float) $row->playerprice_price,
+            ]);
+
+        $teamIds = $playerteams
+            ->map(static fn (Playerteam $pt): int => (int) $pt->playerteam_team_id)
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        $fromTeam = $teamIds === []
+            ? collect()
+            : Teamprice::query()
+                ->where('teamprice_matchround_id', $matchroundId)
+                ->whereIn('teamprice_team_id', $teamIds)
+                ->get()
+                ->mapWithKeys(fn (Teamprice $row): array => [
+                    (int) $row->teamprice_team_id => (float) $row->teamprice_price,
+                ]);
+
+        $resolved = collect();
+        foreach ($playerteamIds as $ptId) {
+            if ($fromPlayer->has($ptId)) {
+                $resolved->put($ptId, (float) $fromPlayer->get($ptId));
+
+                continue;
+            }
+
+            $teamId = (int) ($playerteams->get($ptId)?->playerteam_team_id ?? 0);
+            if ($teamId > 0 && $fromTeam->has($teamId)) {
+                $resolved->put($ptId, (float) $fromTeam->get($teamId));
+            }
+        }
+
+        return $resolved;
     }
 
     private function normalizeType(string $type): string

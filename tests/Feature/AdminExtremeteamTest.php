@@ -70,7 +70,7 @@ class AdminExtremeteamTest extends TestCase
             $mock->shouldReceive('populate')->once()->andReturn([
                 'ok' => true,
                 'message' => 'Extreme Teams: 2 gespeichert · 0 übersprungen.',
-                'details' => ['round 12 top: stored'],
+                'details' => ['Runde 12 top: gespeichert — Top-Team gespeichert (88 Pkt · 40.0 Cr).'],
             ]);
         });
 
