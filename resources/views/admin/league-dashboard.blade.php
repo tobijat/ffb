@@ -34,9 +34,10 @@
                 $statusLabel = $ok ? 'ok' : 'offen';
                 $checklist = is_array($section['checklist'] ?? null) ? $section['checklist'] : [];
                 $groups = is_array($section['groups'] ?? null) ? $section['groups'] : [];
+                $sectionOpenAttr = $ok ? '' : ' open';
             @endphp
             <section class="panel admin-main admin-dashboard-section" data-section="{{ $section['key'] }}">
-                <details class="admin-dashboard-details">
+                <details class="admin-dashboard-details"{{ $sectionOpenAttr }}>
                     <summary class="admin-dashboard-summary">
                         <img
                             class="admin-dashboard-status"

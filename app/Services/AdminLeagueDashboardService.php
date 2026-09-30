@@ -15,6 +15,8 @@ use App\Models\Playerteam;
 use App\Models\Psgoal;
 use App\Models\Team;
 use App\Models\Teamprice;
+use App\Models\Userscore;
+use App\Models\Userteam;
 use App\Support\Flag;
 use App\Support\TeamShirt;
 use Illuminate\Support\Carbon;
@@ -62,7 +64,7 @@ class AdminLeagueDashboardService
             $this->playerpriceSection($leagueId),
             $this->matchdataSection($leagueId),
             $this->extremeteamSection($leagueId),
-            ['key' => 'score', 'title' => 'Score', 'ok' => false],
+            $this->scoreSection($leagueId),
         ];
     }
 
@@ -319,7 +321,7 @@ class AdminLeagueDashboardService
         $outsideRoundDates = [];
         $incompletePastMatches = [];
         $incompletePastWithStatus = [];
-        $today = Carbon::now()->startOfDay();
+        $now = Carbon::now();
 
         foreach ($matches as $match) {
             $round = $rounds->get((int) $match->match_round);
@@ -327,7 +329,7 @@ class AdminLeagueDashboardService
                 $outsideRoundDates[] = $this->matchListEntry($match, $round, $this->matchOutsideRoundDetail($match, $round));
             }
 
-            if (! $this->matchIsAtLeastOneDayOld($match, $today)
+            if (! $this->matchIsPast($match, $now)
                 || $this->matchHasResultAndDuration($match)) {
                 continue;
             }
@@ -776,11 +778,11 @@ class AdminLeagueDashboardService
             return [];
         }
 
-        $today = Carbon::now()->startOfDay();
+        $now = Carbon::now();
         $pastMatchIds = MatchGame::query()
             ->whereIn('match_round', $roundIds)
             ->get(['match_id', 'match_date'])
-            ->filter(fn (MatchGame $match): bool => $this->matchIsAtLeastOneDayOld($match, $today))
+            ->filter(fn (MatchGame $match): bool => $this->matchIsPast($match, $now))
             ->map(fn (MatchGame $match): int => (int) $match->match_id)
             ->values()
             ->all();
@@ -1286,6 +1288,263 @@ class AdminLeagueDashboardService
         ];
     }
 
+    private function scoreSection(int $leagueId): array
+    {
+        if ($leagueId <= 0) {
+            return [
+                'key' => 'score',
+                'title' => 'Rangliste: 0 Mitspieler',
+                'ok' => false,
+                'checklist' => [],
+            ];
+        }
+
+        $isLcMode = (string) (LeagueOptions::query()
+            ->where('options_league_id', $leagueId)
+            ->value('options_league_rankmode') ?: '') === 'lc';
+
+        $roundIds = Matchround::query()
+            ->where('matchround_league_id', $leagueId)
+            ->pluck('matchround_id')
+            ->map(fn ($id): int => (int) $id)
+            ->all();
+
+        $participantCount = $roundIds === []
+            ? 0
+            : (int) Userteam::query()
+                ->whereIn('userteam_matchround_id', $roundIds)
+                ->distinct()
+                ->count('userteam_user_id');
+
+        $title = 'Rangliste: '.$participantCount.' Mitspieler';
+
+        $now = Carbon::now();
+        $dueRoundIds = $this->scoreDueMatchroundIds($leagueId, $now);
+        $dueRounds = $dueRoundIds === []
+            ? collect()
+            : Matchround::query()
+                ->whereIn('matchround_id', $dueRoundIds)
+                ->orderBy('matchround_startdate')
+                ->orderBy('matchround_id')
+                ->get(['matchround_id', 'matchround_title'])
+                ->keyBy(fn (Matchround $round): int => (int) $round->matchround_id);
+
+        $missingLineupScores = [];
+        if ($dueRoundIds !== []) {
+            $lineups = Userteam::query()
+                ->with('user:user_id,user_nickname')
+                ->whereIn('userteam_matchround_id', $dueRoundIds)
+                ->orderBy('userteam_matchround_id')
+                ->orderBy('userteam_user_id')
+                ->get([
+                    'userteam_id',
+                    'userteam_user_id',
+                    'userteam_matchround_id',
+                    'userteam_score',
+                    'userteam_lc_points',
+                ]);
+
+            foreach ($lineups as $lineup) {
+                $missing = [];
+                if ($lineup->userteam_score === null) {
+                    $missing[] = 'Score fehlt';
+                }
+                if ($isLcMode && $lineup->userteam_lc_points === null) {
+                    $missing[] = 'LC-Punkte fehlen';
+                }
+                if ($missing === []) {
+                    continue;
+                }
+
+                $roundId = (int) $lineup->userteam_matchround_id;
+                $roundTitle = (string) ($dueRounds->get($roundId)?->matchround_title ?? 'Runde #'.$roundId);
+                $nickname = trim((string) ($lineup->user?->user_nickname ?? ''));
+                $userLabel = $nickname !== ''
+                    ? $nickname
+                    : 'User #'.(int) $lineup->userteam_user_id;
+
+                $missingLineupScores[] = [
+                    'label' => $roundTitle.' · '.$userLabel,
+                    'detail' => implode(' · ', $missing),
+                ];
+            }
+        }
+
+        $lineupScoresOk = $missingLineupScores === [];
+        $lineupScoresLabel = $isLcMode
+            ? 'Aufstellungen fälliger Spielrunden haben Score und LC-Punkte'
+            : 'Aufstellungen fälliger Spielrunden haben Score';
+
+        $userscoreMismatches = [];
+        if ($roundIds !== []) {
+            $sums = Userteam::query()
+                ->whereIn('userteam_matchround_id', $roundIds)
+                ->selectRaw('userteam_user_id, COALESCE(SUM(userteam_score), 0) as total_score, COALESCE(SUM(userteam_lc_points), 0) as total_lc')
+                ->groupBy('userteam_user_id')
+                ->orderBy('userteam_user_id')
+                ->get()
+                ->keyBy(fn ($row): int => (int) $row->userteam_user_id);
+
+            $userscores = Userscore::query()
+                ->with('user:user_id,user_nickname')
+                ->where('userscore_league_id', $leagueId)
+                ->get()
+                ->keyBy(fn (Userscore $row): int => (int) $row->userscore_user_id);
+
+            $nicknameByUserId = Userteam::query()
+                ->with('user:user_id,user_nickname')
+                ->whereIn('userteam_matchround_id', $roundIds)
+                ->get(['userteam_id', 'userteam_user_id'])
+                ->groupBy(fn (Userteam $row): int => (int) $row->userteam_user_id)
+                ->map(static fn (Collection $group): string => trim((string) ($group->first()?->user?->user_nickname ?? '')));
+
+            $userIds = $sums->keys()->merge($userscores->keys())->unique()->sort()->values();
+
+            foreach ($userIds as $userId) {
+                $uid = (int) $userId;
+                $sumRow = $sums->get($uid);
+                $expectedTotal = $sumRow !== null ? (int) $sumRow->total_score : 0;
+                $expectedLc = $sumRow !== null ? (int) $sumRow->total_lc : 0;
+                $scoreRow = $userscores->get($uid);
+                $actualTotal = $scoreRow !== null ? (int) $scoreRow->userscore_total : null;
+                $actualLc = $scoreRow !== null ? (int) $scoreRow->userscore_lc_points : null;
+
+                $parts = [];
+                if ($actualTotal === null) {
+                    $parts[] = sprintf('userscore fehlt (erwartet Summe %d)', $expectedTotal);
+                } elseif ($actualTotal !== $expectedTotal) {
+                    $parts[] = sprintf('Total %d ≠ Summe userteam %d', $actualTotal, $expectedTotal);
+                }
+
+                if ($isLcMode) {
+                    if ($actualLc === null) {
+                        $parts[] = sprintf('LC fehlt (erwartet Summe %d)', $expectedLc);
+                    } elseif ($actualLc !== $expectedLc) {
+                        $parts[] = sprintf('LC %d ≠ Summe userteam %d', $actualLc, $expectedLc);
+                    }
+                }
+
+                if ($parts === []) {
+                    continue;
+                }
+
+                $nickname = trim((string) ($scoreRow?->user?->user_nickname ?? ''));
+                if ($nickname === '') {
+                    $nickname = (string) ($nicknameByUserId->get($uid) ?? '');
+                }
+                $userLabel = $nickname !== '' ? $nickname : 'User #'.$uid;
+
+                $userscoreMismatches[] = [
+                    'label' => $userLabel,
+                    'detail' => implode(' · ', $parts),
+                ];
+            }
+        }
+
+        $userscoreOk = $userscoreMismatches === [];
+        $userscoreLabel = $isLcMode
+            ? 'Userscore Total/LC entspricht Summe der Aufstellungen'
+            : 'Userscore Total entspricht Summe der Aufstellungen';
+
+        return [
+            'key' => 'score',
+            'title' => $title,
+            'ok' => $lineupScoresOk && $userscoreOk,
+            'checklist' => [
+                [
+                    'key' => 'lineup-scores',
+                    'label' => $lineupScoresLabel,
+                    'ok' => $lineupScoresOk,
+                    'match_list' => $missingLineupScores,
+                    'match_list_summary' => 'Aufstellungen ohne Score',
+                ],
+                [
+                    'key' => 'userscore-sums',
+                    'label' => $userscoreLabel,
+                    'ok' => $userscoreOk,
+                    'match_list' => $userscoreMismatches,
+                    'match_list_summary' => 'Userscores mit Abweichung',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Past matchrounds whose matches are all past (day-only / timed grace).
+     *
+     * @return list<int>
+     */
+    private function scoreDueMatchroundIds(int $leagueId, Carbon $now): array
+    {
+        $rounds = Matchround::query()
+            ->where('matchround_league_id', $leagueId)
+            ->orderBy('matchround_startdate')
+            ->orderBy('matchround_id')
+            ->get(['matchround_id', 'matchround_startdate', 'matchround_enddate']);
+
+        $pastRoundIds = $rounds
+            ->filter(fn (Matchround $round): bool => $this->matchroundPeriod($round, $now) === 'past')
+            ->map(fn (Matchround $round): int => (int) $round->matchround_id)
+            ->values()
+            ->all();
+
+        if ($pastRoundIds === []) {
+            return [];
+        }
+
+        $matchesByRound = MatchGame::query()
+            ->whereIn('match_round', $pastRoundIds)
+            ->get(['match_id', 'match_round', 'match_date'])
+            ->groupBy(fn (MatchGame $match): int => (int) $match->match_round);
+
+        $due = [];
+        foreach ($pastRoundIds as $roundId) {
+            /** @var Collection<int, MatchGame> $matches */
+            $matches = $matchesByRound->get($roundId) ?? collect();
+            if ($matches->isEmpty()) {
+                continue;
+            }
+
+            $allReady = true;
+            foreach ($matches as $match) {
+                if (! $this->matchIsPast($match, $now)) {
+                    $allReady = false;
+                    break;
+                }
+            }
+
+            if ($allReady) {
+                $due[] = $roundId;
+            }
+        }
+
+        return $due;
+    }
+
+    /**
+     * A match is past once unknown-time fixtures are at least one calendar day old,
+     * or timed fixtures are at least two hours past kickoff.
+     */
+    private function matchIsPast(MatchGame $match, Carbon $now): bool
+    {
+        $raw = $match->match_date;
+        if ($raw === null || trim((string) $raw) === '') {
+            return false;
+        }
+
+        $value = (string) $raw;
+        if (! MatchGame::hasKnownKickoffTime($value)) {
+            $calendar = MatchGame::calendarDate($value);
+            if ($calendar === '') {
+                return false;
+            }
+
+            return Carbon::parse($calendar)->startOfDay()->lt($now->copy()->startOfDay());
+        }
+
+        return Carbon::parse($value)->addHours(2)->lte($now);
+    }
+
     private function matchHasResult(MatchGame $match): bool
     {
         return (int) ($match->match_homescore ?? -1) >= 0
@@ -1492,21 +1751,6 @@ class AdminLeagueDashboardService
         $matchAt = Carbon::parse($matchRawString);
 
         return $matchAt->betweenIncluded($startAt, $endAt);
-    }
-
-    private function matchIsAtLeastOneDayOld(MatchGame $match, Carbon $today): bool
-    {
-        $raw = $match->match_date;
-        if ($raw === null || trim((string) $raw) === '') {
-            return false;
-        }
-
-        $calendar = MatchGame::calendarDate((string) $raw);
-        if ($calendar === '') {
-            return false;
-        }
-
-        return Carbon::parse($calendar)->startOfDay()->lt($today);
     }
 
     private function matchHasResultAndDuration(MatchGame $match): bool

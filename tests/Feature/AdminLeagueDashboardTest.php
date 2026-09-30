@@ -16,6 +16,9 @@ use App\Models\Playerteam;
 use App\Models\Psgoal;
 use App\Models\Team;
 use App\Models\Teamprice;
+use App\Models\Userscore;
+use App\Models\Userteam;
+use App\Models\WebUser;
 use App\Services\AdminCenterService;
 use App\Services\AdminLeagueDashboardService;
 use App\Services\FfbAdminAccess;
@@ -54,6 +57,9 @@ class AdminLeagueDashboardTest extends TestCase
             $this->removeDirectory($this->imagesRoot);
         }
 
+        Schema::dropIfExists('ffb_userscore');
+        Schema::dropIfExists('ffb_userteam');
+        Schema::dropIfExists('web_user');
         Schema::dropIfExists('ffb_match');
         Schema::dropIfExists('ffb_matchround_options');
         Schema::dropIfExists('ffb_matchround');
@@ -452,7 +458,27 @@ class AdminLeagueDashboardTest extends TestCase
                             ],
                         ],
                     ],
-                    ['key' => 'score', 'title' => 'Score', 'ok' => false],
+                    [
+                        'key' => 'score',
+                        'title' => 'Rangliste: 12 Mitspieler',
+                        'ok' => true,
+                        'checklist' => [
+                            [
+                                'key' => 'lineup-scores',
+                                'label' => 'Aufstellungen fälliger Spielrunden haben Score und LC-Punkte',
+                                'ok' => true,
+                                'match_list' => [],
+                                'match_list_summary' => 'Aufstellungen ohne Score',
+                            ],
+                            [
+                                'key' => 'userscore-sums',
+                                'label' => 'Userscore Total/LC entspricht Summe der Aufstellungen',
+                                'ok' => true,
+                                'match_list' => [],
+                                'match_list_summary' => 'Userscores mit Abweichung',
+                            ],
+                        ],
+                    ],
                 ],
             ]);
         });
@@ -484,20 +510,15 @@ class AdminLeagueDashboardTest extends TestCase
             ->assertSee('Mannschaften ohne Teampreis', false)
             ->assertSee('Spiele mit unzureichenden Playerstats', false)
             ->assertSee('Vergangene Spielrunden haben Top- und Flop-Team', false)
+            ->assertSee('Rangliste: 12 Mitspieler', false)
             ->assertSee('Runde A', false)
             ->assertSee('Aufstellungslimits (Runde)', false)
             ->assertSee('Aktuell', false)
             ->assertSee('Zukünftig', false)
             ->assertSee('Vergangen', false)
             ->assertSee('admin-dashboard-details', false)
-            ->assertDontSee('<details class="admin-dashboard-details" open', false)
+            ->assertSee('<details class="admin-dashboard-details" open>', false)
             ->assertDontSee('ausgewählt', false);
-
-        foreach ([
-            'Score',
-        ] as $title) {
-            $response->assertSee($title, false);
-        }
 
         $response->assertSee('Top&Flop');
     }
@@ -995,6 +1016,107 @@ class AdminLeagueDashboardTest extends TestCase
             'kein Ergebnis, keine Spieldauer · Status: abgesagt',
             $section['checklist'][2]['info_list'][0]['detail'],
         );
+    }
+
+    #[Test]
+    public function matches_section_treats_timed_matches_as_past_only_after_two_hours(): void
+    {
+        $this->createSchema();
+        $this->travelTo('2026-06-10 19:30:00');
+
+        $league = League::query()->create([
+            'league_title' => 'WM 2026',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_symbol' => '',
+        ]);
+        $home = Team::query()->create(['team_name' => 'Alpha']);
+        $guest = Team::query()->create(['team_name' => 'Beta']);
+        $round = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'Runde 1',
+            'matchround_startdate' => '2026-06-01 00:00:00',
+            'matchround_enddate' => '2026-06-30 23:59:59',
+            'matchround_status' => 1,
+        ]);
+        MatchGame::query()->create([
+            'match_round' => (int) $round->matchround_id,
+            'match_hometeam_id' => (int) $home->team_id,
+            'match_guestteam_id' => (int) $guest->team_id,
+            'match_date' => '2026-06-10 18:00:00',
+            'match_homescore' => -1,
+            'match_guestscore' => -1,
+            'match_minutes' => 0,
+        ]);
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('shellPayload')->once()->with(7)->andReturn([
+            'user' => ['user_id' => 7, 'user_nickname' => 'admin', 'photo_url' => '', 'is_ffb_admin' => true],
+            'navigation' => [],
+            'selected_league_id' => (int) $league->league_id,
+            'selected_league' => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => 'WM 2026',
+                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+            ],
+        ]);
+
+        $payload = (new AdminLeagueDashboardService($adminCenter))->pagePayload(7);
+        $section = $payload['sections'][2];
+
+        $this->assertTrue($section['checklist'][2]['ok']);
+        $this->assertSame([], $section['checklist'][2]['match_list']);
+        $this->assertSame([], $section['checklist'][2]['info_list']);
+    }
+
+    #[Test]
+    public function matches_section_treats_day_only_matches_as_past_from_next_calendar_day(): void
+    {
+        $this->createSchema();
+        $this->travelTo('2026-06-11 00:30:00');
+
+        $league = League::query()->create([
+            'league_title' => 'WM 2026',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_symbol' => '',
+        ]);
+        $home = Team::query()->create(['team_name' => 'Alpha']);
+        $guest = Team::query()->create(['team_name' => 'Beta']);
+        $round = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'Runde 1',
+            'matchround_startdate' => '2026-06-01 00:00:00',
+            'matchround_enddate' => '2026-06-30 23:59:59',
+            'matchround_status' => 1,
+        ]);
+        MatchGame::query()->create([
+            'match_round' => (int) $round->matchround_id,
+            'match_hometeam_id' => (int) $home->team_id,
+            'match_guestteam_id' => (int) $guest->team_id,
+            'match_date' => '2026-06-10 '.MatchGame::DEFAULT_TIME,
+            'match_homescore' => -1,
+            'match_guestscore' => -1,
+            'match_minutes' => 0,
+        ]);
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('shellPayload')->once()->with(7)->andReturn([
+            'user' => ['user_id' => 7, 'user_nickname' => 'admin', 'photo_url' => '', 'is_ffb_admin' => true],
+            'navigation' => [],
+            'selected_league_id' => (int) $league->league_id,
+            'selected_league' => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => 'WM 2026',
+                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+            ],
+        ]);
+
+        $payload = (new AdminLeagueDashboardService($adminCenter))->pagePayload(7);
+        $section = $payload['sections'][2];
+
+        $this->assertFalse($section['checklist'][2]['ok']);
+        $this->assertCount(1, $section['checklist'][2]['match_list']);
     }
 
     #[Test]
@@ -1944,6 +2066,155 @@ class AdminLeagueDashboardTest extends TestCase
         $this->assertStringContainsString('Flop fehlt', $section['checklist'][0]['match_list'][0]['detail']);
     }
 
+    #[Test]
+    public function score_section_is_ok_when_lineup_and_userscores_match(): void
+    {
+        $this->createSchema();
+
+        $league = League::query()->create([
+            'league_title' => 'WM 2026',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_symbol' => '',
+        ]);
+        LeagueOptions::query()->create([
+            'options_league_id' => (int) $league->league_id,
+            'options_league_rankmode' => 'lc',
+            'options_league_pointsmode' => 'new',
+        ]);
+        $home = Team::query()->create(['team_name' => 'Alpha', 'team_status' => 1]);
+        $guest = Team::query()->create(['team_name' => 'Beta', 'team_status' => 1]);
+        $round = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'Runde 1',
+            'matchround_startdate' => '2026-06-01 00:00:00',
+            'matchround_enddate' => '2026-06-30 23:59:59',
+            'matchround_status' => 1,
+        ]);
+        MatchGame::query()->create([
+            'match_round' => (int) $round->matchround_id,
+            'match_hometeam_id' => (int) $home->team_id,
+            'match_guestteam_id' => (int) $guest->team_id,
+            'match_date' => '2026-06-10 '.MatchGame::DEFAULT_TIME,
+            'match_homescore' => 1,
+            'match_guestscore' => 0,
+        ]);
+
+        $user = WebUser::query()->forceCreate([
+            'user_nickname' => 'PlayerOne',
+            'user_email' => 'one@example.com',
+        ]);
+        Userteam::query()->forceCreate([
+            'userteam_user_id' => (int) $user->user_id,
+            'userteam_matchround_id' => (int) $round->matchround_id,
+            'userteam_score' => 42,
+            'userteam_lc_points' => 5,
+            'userteam_price' => 100,
+        ]);
+        Userscore::query()->forceCreate([
+            'userscore_user_id' => (int) $user->user_id,
+            'userscore_league_id' => (int) $league->league_id,
+            'userscore_total' => 42,
+            'userscore_lc_points' => 5,
+        ]);
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('shellPayload')->once()->with(7)->andReturn([
+            'user' => ['user_id' => 7, 'user_nickname' => 'admin', 'photo_url' => '', 'is_ffb_admin' => true],
+            'navigation' => [],
+            'selected_league_id' => (int) $league->league_id,
+            'selected_league' => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => 'WM 2026',
+                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+            ],
+        ]);
+
+        $payload = (new AdminLeagueDashboardService($adminCenter))->pagePayload(7);
+        $section = $payload['sections'][8];
+
+        $this->assertSame('score', $section['key']);
+        $this->assertSame('Rangliste: 1 Mitspieler', $section['title']);
+        $this->assertTrue($section['ok']);
+        $this->assertTrue($section['checklist'][0]['ok']);
+        $this->assertTrue($section['checklist'][1]['ok']);
+    }
+
+    #[Test]
+    public function score_section_lists_missing_lineup_scores_and_userscore_mismatches(): void
+    {
+        $this->createSchema();
+
+        $league = League::query()->create([
+            'league_title' => 'WM 2026',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_symbol' => '',
+        ]);
+        LeagueOptions::query()->create([
+            'options_league_id' => (int) $league->league_id,
+            'options_league_rankmode' => 'lc',
+            'options_league_pointsmode' => 'new',
+        ]);
+        $home = Team::query()->create(['team_name' => 'Alpha', 'team_status' => 1]);
+        $guest = Team::query()->create(['team_name' => 'Beta', 'team_status' => 1]);
+        $round = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'Runde 1',
+            'matchround_startdate' => '2026-06-01 00:00:00',
+            'matchround_enddate' => '2026-06-30 23:59:59',
+            'matchround_status' => 1,
+        ]);
+        MatchGame::query()->create([
+            'match_round' => (int) $round->matchround_id,
+            'match_hometeam_id' => (int) $home->team_id,
+            'match_guestteam_id' => (int) $guest->team_id,
+            'match_date' => '2026-06-10 '.MatchGame::DEFAULT_TIME,
+            'match_homescore' => 1,
+            'match_guestscore' => 0,
+        ]);
+
+        $user = WebUser::query()->forceCreate([
+            'user_nickname' => 'PlayerOne',
+            'user_email' => 'one@example.com',
+        ]);
+        Userteam::query()->forceCreate([
+            'userteam_user_id' => (int) $user->user_id,
+            'userteam_matchround_id' => (int) $round->matchround_id,
+            'userteam_score' => null,
+            'userteam_lc_points' => null,
+            'userteam_price' => 100,
+        ]);
+        Userscore::query()->forceCreate([
+            'userscore_user_id' => (int) $user->user_id,
+            'userscore_league_id' => (int) $league->league_id,
+            'userscore_total' => 10,
+            'userscore_lc_points' => 2,
+        ]);
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('shellPayload')->once()->with(7)->andReturn([
+            'user' => ['user_id' => 7, 'user_nickname' => 'admin', 'photo_url' => '', 'is_ffb_admin' => true],
+            'navigation' => [],
+            'selected_league_id' => (int) $league->league_id,
+            'selected_league' => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => 'WM 2026',
+                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+            ],
+        ]);
+
+        $payload = (new AdminLeagueDashboardService($adminCenter))->pagePayload(7);
+        $section = $payload['sections'][8];
+
+        $this->assertFalse($section['ok']);
+        $this->assertFalse($section['checklist'][0]['ok']);
+        $this->assertStringContainsString('Score fehlt', $section['checklist'][0]['match_list'][0]['detail']);
+        $this->assertStringContainsString('LC-Punkte fehlen', $section['checklist'][0]['match_list'][0]['detail']);
+        $this->assertFalse($section['checklist'][1]['ok']);
+        $this->assertStringContainsString('Total 10 ≠ Summe userteam 0', $section['checklist'][1]['match_list'][0]['detail']);
+    }
+
     private function seedMatchPlayerstats(int $matchId, int $leagueId, int $teamId, int $count, string $prefix): void
     {
         for ($i = 0; $i < $count; $i++) {
@@ -2027,6 +2298,9 @@ class AdminLeagueDashboardTest extends TestCase
 
     private function createSchema(): void
     {
+        Schema::dropIfExists('ffb_userscore');
+        Schema::dropIfExists('ffb_userteam');
+        Schema::dropIfExists('web_user');
         Schema::dropIfExists('ffb_match');
         Schema::dropIfExists('ffb_matchround_options');
         Schema::dropIfExists('ffb_matchround');
@@ -2207,6 +2481,30 @@ class AdminLeagueDashboardTest extends TestCase
             $table->decimal('extremeteam_price', 9, 2)->default(0);
             $table->unsignedInteger('extremeteam_matchround_id');
             $table->integer('extremeteam_score')->default(-1);
+        });
+
+        Schema::create('web_user', function (Blueprint $table) {
+            $table->increments('user_id');
+            $table->string('user_nickname')->default('');
+            $table->string('user_email')->default('');
+        });
+
+        Schema::create('ffb_userteam', function (Blueprint $table) {
+            $table->increments('userteam_id');
+            $table->unsignedInteger('userteam_user_id')->default(0);
+            $table->unsignedInteger('userteam_matchround_id')->nullable();
+            $table->double('userteam_price')->default(0);
+            $table->double('userteam_score')->nullable();
+            $table->double('userteam_lc_points')->nullable();
+            $table->string('userteam_date')->nullable();
+        });
+
+        Schema::create('ffb_userscore', function (Blueprint $table) {
+            $table->increments('userscore_id');
+            $table->unsignedInteger('userscore_user_id');
+            $table->unsignedInteger('userscore_league_id');
+            $table->integer('userscore_total')->default(0);
+            $table->integer('userscore_lc_points')->default(0);
         });
     }
 }

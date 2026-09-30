@@ -501,8 +501,8 @@ class LineupService
             }
 
             $userteam->userteam_date = now()->format('Y-m-d H:i:s');
-            $userteam->userteam_score = 0;
-            $userteam->userteam_lc_points = 0;
+            $userteam->userteam_score = null;
+            $userteam->userteam_lc_points = null;
             $userteam->userteam_price = $sumPrice;
             $userteam->save();
             $userteam->syncSlots($ids);
