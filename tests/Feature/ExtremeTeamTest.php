@@ -11,6 +11,7 @@ use App\Models\Playerprice;
 use App\Models\Playerstats;
 use App\Models\Playerteam;
 use App\Models\Team;
+use App\Models\Teamprice;
 use App\Services\ExtremeTeamService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -31,9 +32,11 @@ class ExtremeTeamTest extends TestCase
         Schema::dropIfExists('ffb_extremeteam');
         Schema::dropIfExists('ffb_playerstats');
         Schema::dropIfExists('ffb_playerprice');
+        Schema::dropIfExists('ffb_teamprice');
         Schema::dropIfExists('ffb_playerteam');
         Schema::dropIfExists('ffb_player');
         Schema::dropIfExists('ffb_team');
+        Schema::dropIfExists('ffb_matchround_options');
         Schema::dropIfExists('ffb_league_options');
         Schema::dropIfExists('ffb_matchround');
         Schema::dropIfExists('ffb_league');
@@ -81,12 +84,208 @@ class ExtremeTeamTest extends TestCase
             'matchround_enddate' => now()->subDays(3),
             'matchround_status' => 1,
         ]);
+        $roundId = (int) $round->matchround_id;
+        $club = Team::query()->create([
+            'team_foreign_id' => '',
+            'team_name' => 'Club',
+            'team_nationality' => 'aut',
+            'team_num_players' => 0,
+            'team_status' => 1,
+        ]);
+        $player = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'A',
+            'player_lname' => 'B',
+            'player_nationality' => 'AUT',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+        $pt = Playerteam::query()->create([
+            'playerteam_player_id' => (int) $player->player_id,
+            'playerteam_team_id' => (int) $club->team_id,
+            'playerteam_player_picture' => '',
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 'm',
+            'playerteam_date_transfer' => '2008-01-01',
+        ]);
+        Playerstats::query()->forceCreate([
+            'playerstats_playerteam_id' => (int) $pt->playerteam_id,
+            'playerstats_matchround_id' => $roundId,
+            'playerstats_match_id' => 0,
+            'playerstats_minutes' => 90,
+            'playerstats_goals' => 0,
+            'playerstats_assists' => 0,
+            'playerstats_score' => 5,
+            'playerstats_cards' => 'n',
+        ]);
 
-        $result = app(ExtremeTeamService::class)->computeAndStore((int) $round->matchround_id, 'top');
+        $result = app(ExtremeTeamService::class)->computeAndStore($roundId, 'top');
 
         $this->assertTrue($result['ok']);
         $this->assertSame('skipped', $result['status']);
+        $this->assertStringContainsString('Keine Spieler- oder Teampreise', (string) $result['message']);
         $this->assertSame(0, Extremeteam::query()->count());
+    }
+
+    #[Test]
+    public function compute_and_store_for_matchrounds_includes_skip_reason_in_details(): void
+    {
+        $league = League::query()->create([
+            'league_title' => 'Thin',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_symbol' => '',
+        ]);
+        LeagueOptions::query()->create([
+            'options_league_id' => (int) $league->league_id,
+            'options_league_pointsmode' => 'new',
+            'options_league_pricemode' => 'dynamic',
+        ]);
+        $round = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'R1',
+            'matchround_startdate' => now()->subDays(10),
+            'matchround_enddate' => now()->subDays(3),
+            'matchround_status' => 1,
+        ]);
+        $roundId = (int) $round->matchround_id;
+        $club = Team::query()->create([
+            'team_foreign_id' => '',
+            'team_name' => 'Club',
+            'team_nationality' => 'aut',
+            'team_num_players' => 0,
+            'team_status' => 1,
+        ]);
+        $player = Player::query()->create([
+            'player_foreign_id' => '',
+            'player_fname' => 'A',
+            'player_lname' => 'B',
+            'player_nationality' => 'AUT',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+        $pt = Playerteam::query()->create([
+            'playerteam_player_id' => (int) $player->player_id,
+            'playerteam_team_id' => (int) $club->team_id,
+            'playerteam_player_picture' => '',
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 'm',
+            'playerteam_date_transfer' => '2008-01-01',
+        ]);
+        Playerstats::query()->forceCreate([
+            'playerstats_playerteam_id' => (int) $pt->playerteam_id,
+            'playerstats_matchround_id' => $roundId,
+            'playerstats_match_id' => 0,
+            'playerstats_minutes' => 90,
+            'playerstats_goals' => 0,
+            'playerstats_assists' => 0,
+            'playerstats_score' => 5,
+            'playerstats_cards' => 'n',
+        ]);
+
+        $result = app(ExtremeTeamService::class)->computeAndStoreForMatchrounds(
+            [$roundId],
+            top: true,
+            flop: false,
+        );
+
+        $this->assertSame(0, $result['stored']);
+        $this->assertSame(1, $result['skipped']);
+        $this->assertNotEmpty($result['details']);
+        $this->assertStringContainsString('übersprungen', $result['details'][0]);
+        $this->assertStringContainsString('Keine Spieler- oder Teampreise', $result['details'][0]);
+    }
+
+    #[Test]
+    public function compute_falls_back_to_teamprice_when_playerprice_missing(): void
+    {
+        $league = League::query()->create([
+            'league_title' => 'Teamprice Liga',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_symbol' => '',
+        ]);
+        LeagueOptions::query()->create([
+            'options_league_id' => (int) $league->league_id,
+            'options_league_pointsmode' => 'new',
+            'options_league_pricemode' => 'dynamic',
+            'options_lineup_max_players' => 11,
+            'options_lineup_max_credits' => 100,
+            'options_lineup_max_players_team' => 11,
+            'options_lineup_min_g' => 1,
+            'options_lineup_max_g' => 1,
+            'options_lineup_min_d' => 4,
+            'options_lineup_max_d' => 4,
+            'options_lineup_min_m' => 4,
+            'options_lineup_max_m' => 4,
+            'options_lineup_min_s' => 2,
+            'options_lineup_max_s' => 2,
+        ]);
+        $round = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'R1',
+            'matchround_startdate' => now()->subDays(10),
+            'matchround_enddate' => now()->subDays(2),
+            'matchround_status' => 1,
+        ]);
+        $roundId = (int) $round->matchround_id;
+        $club = Team::query()->create([
+            'team_foreign_id' => '',
+            'team_name' => 'Only',
+            'team_nationality' => 'aut',
+            'team_num_players' => 0,
+            'team_status' => 1,
+        ]);
+        Teamprice::query()->create([
+            'teamprice_team_id' => (int) $club->team_id,
+            'teamprice_matchround_id' => $roundId,
+            'teamprice_price' => 4.5,
+        ]);
+
+        $positions = array_merge(
+            ['g'],
+            array_fill(0, 4, 'd'),
+            array_fill(0, 4, 'm'),
+            array_fill(0, 2, 's'),
+        );
+        foreach ($positions as $index => $pos) {
+            $player = Player::query()->create([
+                'player_foreign_id' => '',
+                'player_fname' => 'F'.$index,
+                'player_lname' => 'L'.$index,
+                'player_nationality' => 'AUT',
+                'player_status' => 1,
+                'player_status_description' => '',
+            ]);
+            $pt = Playerteam::query()->create([
+                'playerteam_player_id' => (int) $player->player_id,
+                'playerteam_team_id' => (int) $club->team_id,
+                'playerteam_player_picture' => '',
+                'playerteam_status' => 1,
+                'playerteam_player_position' => $pos,
+                'playerteam_date_transfer' => '2008-01-01',
+            ]);
+            Playerstats::query()->forceCreate([
+                'playerstats_playerteam_id' => (int) $pt->playerteam_id,
+                'playerstats_matchround_id' => $roundId,
+                'playerstats_match_id' => 0,
+                'playerstats_minutes' => 90,
+                'playerstats_goals' => 0,
+                'playerstats_assists' => 0,
+                'playerstats_score' => 8,
+                'playerstats_cards' => 'n',
+            ]);
+        }
+
+        $result = app(ExtremeTeamService::class)->computeAndStore($roundId, 'top');
+
+        $this->assertTrue($result['ok']);
+        $this->assertSame('stored', $result['status']);
+
+        $team = Extremeteam::query()->first();
+        $this->assertNotNull($team);
+        $this->assertSame(49.5, (float) $team->extremeteam_price);
+        $this->assertSame([], app(ExtremeTeamService::class)->complianceIssues($team));
     }
 
     #[Test]
@@ -172,6 +371,17 @@ class ExtremeTeamTest extends TestCase
             'options_league_id' => (int) $league->league_id,
             'options_league_pointsmode' => 'new',
             'options_league_pricemode' => 'dynamic',
+            'options_lineup_max_players' => 11,
+            'options_lineup_max_credits' => 100,
+            'options_lineup_max_players_team' => 3,
+            'options_lineup_min_g' => 1,
+            'options_lineup_max_g' => 1,
+            'options_lineup_min_d' => 3,
+            'options_lineup_max_d' => 5,
+            'options_lineup_min_m' => 3,
+            'options_lineup_max_m' => 5,
+            'options_lineup_min_s' => 1,
+            'options_lineup_max_s' => 3,
         ]);
 
         $round = Matchround::query()->create([
@@ -183,22 +393,26 @@ class ExtremeTeamTest extends TestCase
         ]);
         $roundId = (int) $round->matchround_id;
 
-        $club = Team::query()->create([
-            'team_foreign_id' => '',
-            'team_name' => 'Club'.$titleSuffix,
-            'team_nationality' => 'aut',
-            'team_num_players' => 0,
-            'team_status' => 1,
-        ]);
+        $clubs = [];
+        for ($c = 0; $c < 4; $c++) {
+            $clubs[] = Team::query()->create([
+                'team_foreign_id' => '',
+                'team_name' => 'Club'.$c.$titleSuffix,
+                'team_nationality' => 'aut',
+                'team_num_players' => 0,
+                'team_status' => 1,
+            ]);
+        }
 
         $positions = array_merge(
-            array_fill(0, 1, 'g'),
-            array_fill(0, 5, 'd'),
-            array_fill(0, 5, 'm'),
-            array_fill(0, 3, 's'),
+            array_fill(0, 2, 'g'),
+            array_fill(0, 6, 'd'),
+            array_fill(0, 6, 'm'),
+            array_fill(0, 4, 's'),
         );
 
         foreach ($positions as $index => $pos) {
+            $club = $clubs[$index % count($clubs)];
             $player = Player::query()->create([
                 'player_foreign_id' => '',
                 'player_fname' => 'F'.$index,
@@ -228,7 +442,7 @@ class ExtremeTeamTest extends TestCase
             Playerprice::query()->create([
                 'playerprice_playerteam_id' => (int) $pt->playerteam_id,
                 'playerprice_matchround_id' => $roundId,
-                'playerprice_price' => 5.0,
+                'playerprice_price' => 5.0 + ($index % 3),
                 'playerprice_player_power' => 1,
                 'playerprice_av_power' => 1,
             ]);
@@ -237,15 +451,111 @@ class ExtremeTeamTest extends TestCase
         return $roundId;
     }
 
+    #[Test]
+    public function compute_top_team_stays_within_credit_limit_and_prefers_cheaper_tie(): void
+    {
+        $league = League::query()->create([
+            'league_title' => 'Budget',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_symbol' => '',
+        ]);
+        LeagueOptions::query()->create([
+            'options_league_id' => (int) $league->league_id,
+            'options_league_pointsmode' => 'new',
+            'options_league_pricemode' => 'dynamic',
+            'options_lineup_max_players' => 11,
+            'options_lineup_max_credits' => 55,
+            'options_lineup_max_players_team' => 11,
+            'options_lineup_min_g' => 1,
+            'options_lineup_max_g' => 1,
+            'options_lineup_min_d' => 4,
+            'options_lineup_max_d' => 4,
+            'options_lineup_min_m' => 4,
+            'options_lineup_max_m' => 4,
+            'options_lineup_min_s' => 2,
+            'options_lineup_max_s' => 2,
+        ]);
+        $round = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'R1',
+            'matchround_startdate' => now()->subDays(10),
+            'matchround_enddate' => now()->subDays(2),
+            'matchround_status' => 1,
+        ]);
+        $roundId = (int) $round->matchround_id;
+        $club = Team::query()->create([
+            'team_foreign_id' => '',
+            'team_name' => 'Only',
+            'team_nationality' => 'aut',
+            'team_num_players' => 0,
+            'team_status' => 1,
+        ]);
+
+        $spec = [
+            ['g', 10, 5.0],
+            ['d', 10, 5.0], ['d', 10, 5.0], ['d', 10, 5.0], ['d', 10, 5.0],
+            ['m', 10, 5.0], ['m', 10, 5.0], ['m', 10, 5.0], ['m', 10, 5.0],
+            ['s', 10, 5.0], ['s', 10, 5.0],
+            ['s', 10, 20.0],
+        ];
+        foreach ($spec as $index => [$pos, $score, $price]) {
+            $player = Player::query()->create([
+                'player_foreign_id' => '',
+                'player_fname' => 'F'.$index,
+                'player_lname' => 'L'.$index,
+                'player_nationality' => 'AUT',
+                'player_status' => 1,
+                'player_status_description' => '',
+            ]);
+            $pt = Playerteam::query()->create([
+                'playerteam_player_id' => (int) $player->player_id,
+                'playerteam_team_id' => (int) $club->team_id,
+                'playerteam_player_picture' => '',
+                'playerteam_status' => 1,
+                'playerteam_player_position' => $pos,
+                'playerteam_date_transfer' => '2008-01-01',
+            ]);
+            Playerstats::query()->forceCreate([
+                'playerstats_playerteam_id' => (int) $pt->playerteam_id,
+                'playerstats_matchround_id' => $roundId,
+                'playerstats_match_id' => 0,
+                'playerstats_minutes' => 90,
+                'playerstats_goals' => 0,
+                'playerstats_assists' => 0,
+                'playerstats_score' => $score,
+                'playerstats_cards' => 'n',
+            ]);
+            Playerprice::query()->create([
+                'playerprice_playerteam_id' => (int) $pt->playerteam_id,
+                'playerprice_matchround_id' => $roundId,
+                'playerprice_price' => $price,
+                'playerprice_player_power' => 1,
+                'playerprice_av_power' => 1,
+            ]);
+        }
+
+        $result = app(ExtremeTeamService::class)->computeAndStore($roundId, 'top');
+
+        $this->assertTrue($result['ok']);
+        $this->assertSame('stored', $result['status']);
+        $team = Extremeteam::query()->first();
+        $this->assertNotNull($team);
+        $this->assertLessThanOrEqual(55.0, (float) $team->extremeteam_price);
+        $this->assertSame([], app(ExtremeTeamService::class)->complianceIssues($team));
+    }
+
     private function createSchema(): void
     {
         Schema::dropIfExists('ffb_extremeteam_slot');
         Schema::dropIfExists('ffb_extremeteam');
         Schema::dropIfExists('ffb_playerstats');
         Schema::dropIfExists('ffb_playerprice');
+        Schema::dropIfExists('ffb_teamprice');
         Schema::dropIfExists('ffb_playerteam');
         Schema::dropIfExists('ffb_player');
         Schema::dropIfExists('ffb_team');
+        Schema::dropIfExists('ffb_matchround_options');
         Schema::dropIfExists('ffb_league_options');
         Schema::dropIfExists('ffb_matchround');
         Schema::dropIfExists('ffb_league');
@@ -263,6 +573,33 @@ class ExtremeTeamTest extends TestCase
             $table->unsignedInteger('options_league_id');
             $table->string('options_league_pricemode')->default('static');
             $table->string('options_league_pointsmode')->default('new');
+            $table->integer('options_lineup_max_players')->default(11);
+            $table->double('options_lineup_max_credits')->default(100);
+            $table->integer('options_lineup_max_players_team')->default(3);
+            $table->integer('options_lineup_min_g')->default(1);
+            $table->integer('options_lineup_max_g')->default(1);
+            $table->integer('options_lineup_min_d')->default(3);
+            $table->integer('options_lineup_max_d')->default(5);
+            $table->integer('options_lineup_min_m')->default(3);
+            $table->integer('options_lineup_max_m')->default(5);
+            $table->integer('options_lineup_min_s')->default(1);
+            $table->integer('options_lineup_max_s')->default(3);
+        });
+
+        Schema::create('ffb_matchround_options', function (Blueprint $table) {
+            $table->increments('matchround_options_id');
+            $table->unsignedInteger('matchround_options_matchround_id');
+            $table->integer('matchround_options_lineup_max_players')->default(11);
+            $table->double('matchround_options_lineup_max_credits')->default(100);
+            $table->integer('matchround_options_lineup_max_players_team')->default(3);
+            $table->integer('matchround_options_lineup_min_g')->default(1);
+            $table->integer('matchround_options_lineup_max_g')->default(1);
+            $table->integer('matchround_options_lineup_min_d')->default(3);
+            $table->integer('matchround_options_lineup_max_d')->default(5);
+            $table->integer('matchround_options_lineup_min_m')->default(3);
+            $table->integer('matchround_options_lineup_max_m')->default(5);
+            $table->integer('matchround_options_lineup_min_s')->default(1);
+            $table->integer('matchround_options_lineup_max_s')->default(3);
         });
 
         Schema::create('ffb_matchround', function (Blueprint $table) {
@@ -322,6 +659,13 @@ class ExtremeTeamTest extends TestCase
             $table->double('playerprice_price')->default(0);
             $table->double('playerprice_player_power')->default(0);
             $table->double('playerprice_av_power')->default(0);
+        });
+
+        Schema::create('ffb_teamprice', function (Blueprint $table) {
+            $table->increments('teamprice_id');
+            $table->unsignedInteger('teamprice_team_id');
+            $table->unsignedInteger('teamprice_matchround_id');
+            $table->double('teamprice_price')->default(0);
         });
 
         Schema::create('ffb_extremeteam', function (Blueprint $table) {

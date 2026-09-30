@@ -28,6 +28,7 @@ class AdminLeagueDashboardService
 
     public function __construct(
         private readonly AdminCenterService $adminCenter,
+        private readonly ExtremeTeamService $extremeTeams,
     ) {}
 
     /**
@@ -1238,51 +1239,82 @@ class AdminLeagueDashboardService
         if ($pastRoundIds !== []) {
             $rows = Extremeteam::query()
                 ->whereIn('extremeteam_matchround_id', $pastRoundIds)
-                ->get(['extremeteam_matchround_id', 'extremeteam_top_or_flop']);
+                ->get([
+                    'extremeteam_id',
+                    'extremeteam_matchround_id',
+                    'extremeteam_top_or_flop',
+                    'extremeteam_price',
+                    'extremeteam_score',
+                ]);
 
             foreach ($rows as $row) {
                 $roundId = (int) $row->extremeteam_matchround_id;
                 $type = (string) $row->extremeteam_top_or_flop;
-                $existingByRound[$roundId][$type] = true;
+                $existingByRound[$roundId][$type] = $row;
             }
         }
 
         $missing = [];
+        $invalid = [];
         foreach ($pastRounds as $round) {
             $roundId = (int) $round->matchround_id;
+            $roundTitle = (string) $round->matchround_title;
             $hasTop = isset($existingByRound[$roundId]['top']);
             $hasFlop = isset($existingByRound[$roundId]['flop']);
-            if ($hasTop && $hasFlop) {
-                continue;
+            if (! $hasTop || ! $hasFlop) {
+                $parts = [];
+                if (! $hasTop) {
+                    $parts[] = 'Top fehlt';
+                }
+                if (! $hasFlop) {
+                    $parts[] = 'Flop fehlt';
+                }
+
+                $missing[] = [
+                    'label' => $roundTitle,
+                    'detail' => implode(' · ', $parts),
+                ];
             }
 
-            $parts = [];
-            if (! $hasTop) {
-                $parts[] = 'Top fehlt';
-            }
-            if (! $hasFlop) {
-                $parts[] = 'Flop fehlt';
-            }
+            foreach (['top', 'flop'] as $type) {
+                $team = $existingByRound[$roundId][$type] ?? null;
+                if (! $team instanceof Extremeteam) {
+                    continue;
+                }
 
-            $missing[] = [
-                'label' => (string) $round->matchround_title,
-                'detail' => implode(' · ', $parts),
-            ];
+                $issues = $this->extremeTeams->complianceIssues($team);
+                if ($issues === []) {
+                    continue;
+                }
+
+                $invalid[] = [
+                    'label' => $roundTitle.' · '.ucfirst($type),
+                    'detail' => implode(' · ', $issues),
+                ];
+            }
         }
 
-        $ok = $missing === [];
+        $presenceOk = $missing === [];
+        $complianceOk = $invalid === [];
 
         return [
             'key' => 'extremeteam',
             'title' => 'Top&Flop',
-            'ok' => $ok,
+            'ok' => $presenceOk && $complianceOk,
             'checklist' => [
                 [
                     'key' => 'extremeteam-past-rounds',
                     'label' => 'Vergangene Spielrunden haben Top- und Flop-Team',
-                    'ok' => $ok,
+                    'ok' => $presenceOk,
                     'match_list' => $missing,
                     'match_list_summary' => 'Spielrunden ohne Top/Flop',
+                ],
+                [
+                    'key' => 'extremeteam-options',
+                    'label' => 'Top/Flop-Teams erfüllen Limits und Credit-Rahmen',
+                    'ok' => $complianceOk,
+                    'match_list' => $invalid,
+                    'match_list_summary' => 'Top/Flop außerhalb der Limits',
                 ],
             ],
         ];
