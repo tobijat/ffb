@@ -29,6 +29,7 @@ class LineupTeamPriceTest extends TestCase
     {
         Carbon::setTestNow();
         Schema::dropIfExists('ffb_teamprice');
+        Schema::dropIfExists('ffb_playerprice');
         Schema::dropIfExists('ffb_match');
         Schema::dropIfExists('ffb_matchround_options');
         Schema::dropIfExists('ffb_matchround');
@@ -100,6 +101,7 @@ class LineupTeamPriceTest extends TestCase
         $result = $this->app->make(LineupService::class)->matchroundAndTeams(544);
 
         $this->assertTrue($result['ok']);
+        $this->assertFalse($result['data']['show_recent_performance']);
         $teams = collect($result['data']['matchround']['teams'])->keyBy('team_id');
 
         $this->assertSame(7.5, $teams[$pricedTeam]['team_price']);
@@ -164,6 +166,14 @@ class LineupTeamPriceTest extends TestCase
             $table->unsignedInteger('teamprice_team_id');
             $table->unsignedInteger('teamprice_matchround_id');
             $table->double('teamprice_price')->default(0);
+        });
+
+        Schema::create('ffb_playerprice', function (Blueprint $table) {
+            $table->increments('playerprice_id');
+            $table->unsignedInteger('playerprice_playerteam_id');
+            $table->unsignedInteger('playerprice_matchround_id');
+            $table->double('playerprice_price')->default(0);
+            $table->double('playerprice_recent_performance')->nullable();
         });
     }
 }

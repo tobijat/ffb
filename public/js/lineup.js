@@ -22,6 +22,7 @@
 
     let options = null;
     let matchround = null;
+    let showRecentPerformance = false;
     let teams = [];
     let matches = [];
     let lineuplist = [];
@@ -173,58 +174,80 @@
         });
     }
 
-    function buildStars(starRating) {
-        if (starRating < 1) {
-            return (
-                '<img src="' +
-                symbolUrl('sternzero.gif') +
-                '" width="80" alt="" title="Leistung: 0%">'
-            );
+    function normalizePerformance(rawValue) {
+        let value = Number(rawValue);
+        if (!Number.isFinite(value)) {
+            value = 0;
         }
-        if (starRating >= 90) {
-            return (
-                '<img src="' +
-                symbolUrl('allstar.gif') +
-                '" width="80" alt="" title="Leistung: ' +
-                starRating +
-                '%">'
-            );
-        }
-        let html = '';
-        let grade = starRating / 2;
-        for (let count = 0; count < 5; count++) {
-            let src = 'sterntot.gif';
-            if (grade >= 5) {
-                src = 'sternganz.gif';
-            } else if (grade > 0) {
-                src = 'sternhalb.gif';
-            }
-            html +=
-                '<img src="' +
-                symbolUrl(src) +
-                '" width="16" alt="" title="Leistung: ' +
-                starRating +
-                '%">';
-            grade -= 10;
-        }
-        return html;
+        return Math.max(-1, Math.min(1, value));
     }
 
-    function trendIcon(trend) {
-        const t = parseInt(trend, 10) || 0;
-        if (t > 0 && t <= 50) {
-            return '<img src="' + symbolUrl('trend_u.png') + '" width="10" alt="" title="Tendenz: +' + t + '%">';
+    function performanceColor(value) {
+        const intensity = Math.abs(value);
+        if (value < 0) {
+            // Vivid crimson — stronger magnitude = deeper / more saturated
+            const sat = 88 + Math.round(intensity * 12);
+            const light = 54 - Math.round(intensity * 16);
+
+            return 'hsl(2 ' + sat + '% ' + light + '%)';
         }
-        if (t > 50 && t <= 100) {
-            return '<img src="' + symbolUrl('trend_uu.png') + '" width="10" alt="" title="Tendenz: +' + t + '%">';
+
+        // Bright lime-green — pops on mint list rows; stronger = more neon
+        const sat = 90 + Math.round(intensity * 10);
+        const light = 48 - Math.round(intensity * 8);
+
+        return 'hsl(128 ' + sat + '% ' + light + '%)';
+    }
+
+    function formatPerformanceLabel(value) {
+        const n = Math.round(value * 100);
+        if (n === 0) {
+            return '0';
         }
-        if (t < 0 && t >= -50) {
-            return '<img src="' + symbolUrl('trend_d.png') + '" width="10" alt="" title="Tendenz: ' + t + '%">';
+        return (n > 0 ? '+' : '') + String(n);
+    }
+
+    function buildPerformanceBar(rawValue) {
+        const value = normalizePerformance(rawValue);
+        const label = formatPerformanceLabel(value);
+        const widthPct = Math.abs(value) * 50;
+        const fillClass = value < 0 ? 'is-neg' : 'is-pos';
+        const fillStyle =
+            widthPct > 0
+                ? 'width:' + widthPct + '%;background-color:' + performanceColor(value)
+                : 'width:0';
+
+        return (
+            '<span class="perf-meter" title="' +
+            label +
+            '" aria-label="' +
+            label +
+            '">' +
+            '<span class="perf-meter-track">' +
+            '<span class="perf-meter-mid"></span>' +
+            (widthPct > 0
+                ? '<span class="perf-meter-fill ' + fillClass + '" style="' + fillStyle + '"></span>'
+                : '') +
+            '</span></span>'
+        );
+    }
+
+    function buildPerformanceTrend(rawValue) {
+        const value = normalizePerformance(rawValue);
+        if (Math.round(value * 100) === 0) {
+            return '';
         }
-        if (t < -50 && t >= -100) {
-            return '<img src="' + symbolUrl('trend_dd.png') + '" width="10" alt="" title="Tendenz: ' + t + '%">';
-        }
-        return '&nbsp;';
+
+        const dirClass = value < 0 ? 'is-down' : 'is-up';
+        const color = performanceColor(value);
+
+        return (
+            '<span class="perf-trend ' +
+            dirClass +
+            '" style="--perf-trend-color:' +
+            color +
+            '"></span>'
+        );
     }
 
     function hasPenaltyScore(match) {
@@ -625,8 +648,11 @@
     }
 
     function renderPlayerList(players) {
-        let html =
-            '<div class="playerlist-head"><span title="Tendenz">T.</span><span>Name</span><span>Preis</span><span>St.</span><span>Info</span><span>Leistung</span></div>';
+        playerlistEl.classList.toggle('playerlist--with-perf', showRecentPerformance);
+
+        let html = showRecentPerformance
+            ? '<div class="playerlist-head"><span></span><span>Name</span><span>Preis</span><span>St.</span><span>Info</span><span>Leistung</span></div>'
+            : '<div class="playerlist-head"><span>Name</span><span>Preis</span><span>St.</span><span>Info</span></div>';
         const sections = [
             { key: 'g', title: 'Torhüter' },
             { key: 'd', title: 'Verteidiger' },
@@ -641,11 +667,14 @@
                 })
                 .forEach(function (p) {
                     const statusOk = Number(p.player_status) === 1;
+                    html += '<div class="playerline">';
+                    if (showRecentPerformance) {
+                        html +=
+                            '<span class="trend">' +
+                            buildPerformanceTrend(p.recent_performance) +
+                            '</span>';
+                    }
                     html +=
-                        '<div class="playerline">' +
-                        '<span class="trend">' +
-                        trendIcon(p.player_trend) +
-                        '</span>' +
                         '<span class="name"><a href="#" data-add="' +
                         p.playerteam_id +
                         '">' +
@@ -663,10 +692,14 @@
                         p.playerteam_id +
                         '"><img src="' +
                         symbolUrl('info.png') +
-                        '" width="16" height="16" alt="Info"></a></span>' +
-                        '<span class="grade">' +
-                        buildStars(Number(p.player_grade) || 0) +
-                        '</span></div>';
+                        '" width="16" height="16" alt="Info"></a></span>';
+                    if (showRecentPerformance) {
+                        html +=
+                            '<span class="grade">' +
+                            buildPerformanceBar(p.recent_performance) +
+                            '</span>';
+                    }
+                    html += '</div>';
                 });
         });
         playerlistEl.innerHTML = html;
@@ -788,11 +821,18 @@
                 return;
             }
             matchround = mrJson.data.matchround;
+            showRecentPerformance = !!mrJson.data.show_recent_performance;
             if (mrJson.data.lineup_options) {
                 options = mrJson.data.lineup_options;
             } else {
                 const optJson = await fetchJson('lineup/options');
                 options = optJson.data;
+            }
+            if (
+                options &&
+                String(options.game_pricemode || '') !== 'dynamic'
+            ) {
+                showRecentPerformance = false;
             }
             if (!matchround) {
                 roundMetaEl.textContent = '';

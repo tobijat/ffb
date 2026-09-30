@@ -139,10 +139,15 @@
 .playerlist-head,
 .playerline {
     display: grid;
-    grid-template-columns: 1.2rem 1fr 2.4rem 1.4rem 1.4rem 4.5rem;
+    grid-template-columns: 1fr 2.4rem 1.4rem 1.4rem;
     gap: 2px 4px;
     align-items: center;
     padding: 2px 2px;
+}
+
+.playerlist--with-perf .playerlist-head,
+.playerlist--with-perf .playerline {
+    grid-template-columns: 1.2rem 1fr 2.4rem 1.4rem 1.4rem 4.5rem;
 }
 
 .playerlist-head {
@@ -185,13 +190,74 @@
     text-align: center;
 }
 
-.playerline .grade {
-    white-space: nowrap;
-    line-height: 0;
+.perf-trend {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    vertical-align: middle;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.45));
 }
 
-.playerline .grade img {
+.perf-trend.is-up {
+    border-bottom: 8px solid var(--perf-trend-color, hsl(128 95% 44%));
+}
+
+.perf-trend.is-down {
+    border-top: 8px solid var(--perf-trend-color, hsl(2 95% 46%));
+}
+
+.playerline .grade {
+    white-space: nowrap;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+}
+
+.perf-meter {
+    display: inline-flex;
+    align-items: center;
+    width: 80px;
     vertical-align: middle;
+}
+
+.perf-meter-track {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 8px;
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.18);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+.perf-meter-mid {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    margin-left: -0.5px;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1;
+}
+
+.perf-meter-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    max-width: 50%;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.perf-meter-fill.is-pos {
+    left: 50%;
+}
+
+.perf-meter-fill.is-neg {
+    right: 50%;
 }
 
 .pitch-slot {
