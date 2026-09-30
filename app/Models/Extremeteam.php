@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -59,6 +60,22 @@ class Extremeteam extends Model
         if ($rows !== []) {
             DB::table('ffb_extremeteam_slot')->insert($rows);
         }
+    }
+
+    /**
+     * @param  list<int>  $playerteamIds
+     * @return Builder<Extremeteam>
+     */
+    public static function queryContainingAnyPlayerteam(array $playerteamIds): Builder
+    {
+        $playerteamIds = array_values(array_filter(array_map('intval', $playerteamIds), static fn (int $id) => $id > 0));
+        if ($playerteamIds === []) {
+            return self::query()->whereRaw('0 = 1');
+        }
+
+        return self::query()->whereHas('slots', function (Builder $q) use ($playerteamIds) {
+            $q->whereIn('extremeteam_slot_playerteam_id', $playerteamIds);
+        });
     }
 
     public function slots(): HasMany

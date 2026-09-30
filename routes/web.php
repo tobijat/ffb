@@ -132,6 +132,7 @@ Route::middleware('ffb.admin')->group(function () {
     Route::delete('/admin/squad/{playerteam}', [AdminSquadController::class, 'destroy'])->name('admin.squad.destroy');
 
     Route::get('/admin/db-cleanup', [AdminDbCleanupController::class, 'show'])->name('admin.dbCleanup');
+    Route::post('/admin/db-cleanup/run', [AdminDbCleanupController::class, 'run'])->name('admin.dbCleanup.run');
 
     Route::get('/admin/matchdata', [AdminMatchdataController::class, 'show'])->name('admin.matchdata');
     Route::get('/admin/matchdata/rounds', [AdminMatchdataController::class, 'rounds'])->name('admin.matchdata.rounds');
