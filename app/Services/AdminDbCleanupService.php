@@ -49,8 +49,8 @@ class AdminDbCleanupService
             ],
             [
                 'key' => 'players-without-playerstats',
-                'title' => 'Spieler ohne Spielstatistiken',
-                'hint' => 'Spieler ohne Einträge in ffb_playerstats und ohne Verwendung in ffb_userteam (über playerteam_id-Slots; inkl. Spieler ohne Team).',
+                'title' => 'Spieler ohne Lineup und Statistik',
+                'hint' => 'Spieler mit mindestens einem ffb_playerteam-Eintrag, aber ohne ffb_playerstats und ohne Verwendung in einem Userteam-Lineup.',
             ],
             [
                 'key' => 'orphan-playerteams',
@@ -61,6 +61,11 @@ class AdminDbCleanupService
                 'key' => 'orphan-lineup-slots',
                 'title' => 'Verwaiste Userteam- und Top/Flop-Slots',
                 'hint' => 'Slots in ffb_userteam_slot und ffb_extremeteam_slot, die auf eine nicht existierende playerteam_id zeigen.',
+            ],
+            [
+                'key' => 'orphan-playerteam-refs',
+                'title' => 'Verwaiste playerteam_id-Referenzen',
+                'hint' => 'Zeilen in ffb_playerstats, ffb_playerprice, ffb_goal, ffb_psgoal und ffb_playerfid, deren playerteam_id auf keinen existierenden Kader-Eintrag zeigt.',
             ],
         ];
     }
@@ -83,6 +88,7 @@ class AdminDbCleanupService
             'players-without-playerstats' => $this->taskPlayersWithoutPlayerstats(),
             'orphan-playerteams' => $this->taskOrphanPlayerteams(),
             'orphan-lineup-slots' => $this->taskOrphanLineupSlots(),
+            'orphan-playerteam-refs' => $this->taskOrphanPlayerteamRefs(),
             default => throw new InvalidArgumentException('Unbekannte Cleanup-Aufgabe.'),
         };
     }
@@ -155,7 +161,7 @@ class AdminDbCleanupService
         $count = count($players);
         $clean = $count === 0;
         $summary = $clean
-            ? 'Jeder Spieler hat mindestens eine Spielstatistik oder ist in einem Userteam eingesetzt.'
+            ? 'Jeder Kader-Spieler hat mindestens eine Spielstatistik oder ist in einem Userteam eingesetzt.'
             : $count.' Spieler';
 
         return [
@@ -168,7 +174,7 @@ class AdminDbCleanupService
                 'players' => $players,
                 'count' => $count,
                 'summary' => $summary,
-                'emptyMessage' => 'Jeder Spieler hat mindestens eine Spielstatistik oder ist in einem Userteam eingesetzt.',
+                'emptyMessage' => 'Jeder Kader-Spieler hat mindestens eine Spielstatistik oder ist in einem Userteam eingesetzt.',
             ])->render(),
         ];
     }
@@ -222,6 +228,42 @@ class AdminDbCleanupService
             'html' => view('admin.partials.db-cleanup-orphan-lineup-slots', [
                 'userteamSlots' => $userteamSlots,
                 'extremeSlots' => $extremeSlots,
+                'summary' => $summary,
+            ])->render(),
+        ];
+    }
+
+    /**
+     * @return array{ok: true, task: string, clean: bool, count: int, summary: string, html: string}
+     */
+    private function taskOrphanPlayerteamRefs(): array
+    {
+        $groups = $this->orphanPlayerteamDataReferences();
+        $count = array_sum(array_map(
+            static fn (array $group): int => count($group['rows']),
+            $groups
+        ));
+        $clean = $count === 0;
+        $tableParts = [];
+        foreach ($groups as $group) {
+            $rowCount = count($group['rows']);
+            if ($rowCount > 0) {
+                $tableParts[] = $rowCount.'× '.$group['table'];
+            }
+        }
+        $summary = $clean
+            ? 'Keine verwaisten playerteam_id-Referenzen in Statistik-/Preis-/Tor-Tabellen gefunden.'
+            : $count.' '.($count === 1 ? 'Referenz' : 'Referenzen').' ('.implode(', ', $tableParts).')';
+
+        return [
+            'ok' => true,
+            'task' => 'orphan-playerteam-refs',
+            'clean' => $clean,
+            'count' => $count,
+            'summary' => $summary,
+            'html' => view('admin.partials.db-cleanup-orphan-playerteam-refs', [
+                'groups' => $groups,
+                'count' => $count,
                 'summary' => $summary,
             ])->render(),
         ];
@@ -346,6 +388,8 @@ class AdminDbCleanupService
     }
 
     /**
+     * Squad players with no playerstats and no userteam lineup usage.
+     *
      * @return list<array<string, mixed>>
      */
     public function playersWithoutPlayerstats(): array
@@ -353,6 +397,7 @@ class AdminDbCleanupService
         $usedPlayerteamIds = Userteam::playerteamIdsUsedInLineups();
 
         $query = Player::query()
+            ->whereHas('playerteams')
             ->whereDoesntHave('playerteams.stats');
 
         if ($usedPlayerteamIds !== []) {
@@ -468,6 +513,115 @@ class AdminDbCleanupService
                 'playerteam_id' => (int) $row->extremeteam_slot_playerteam_id,
             ])
             ->all();
+    }
+
+    /**
+     * Soft-FK tables/columns that store playerteam_id (excluding lineup slots).
+     *
+     * @return list<array{table: string, column: string, id_column: string, label: string, context_columns: list<string>}>
+     */
+    public function playerteamDataReferenceSources(): array
+    {
+        return [
+            [
+                'table' => 'ffb_playerstats',
+                'column' => 'playerstats_playerteam_id',
+                'id_column' => 'playerstats_id',
+                'label' => 'Playerstats',
+                'context_columns' => ['playerstats_matchround_id', 'playerstats_match_id', 'playerstats_score'],
+            ],
+            [
+                'table' => 'ffb_playerprice',
+                'column' => 'playerprice_playerteam_id',
+                'id_column' => 'playerprice_id',
+                'label' => 'Playerprice',
+                'context_columns' => ['playerprice_matchround_id', 'playerprice_price'],
+            ],
+            [
+                'table' => 'ffb_goal',
+                'column' => 'goal_playerteam_id',
+                'id_column' => 'goal_id',
+                'label' => 'Tore',
+                'context_columns' => ['goal_match_id', 'goal_minute'],
+            ],
+            [
+                'table' => 'ffb_psgoal',
+                'column' => 'psgoal_playerteam_id',
+                'id_column' => 'psgoal_id',
+                'label' => 'Elfmeter',
+                'context_columns' => ['psgoal_match_id'],
+            ],
+            [
+                'table' => 'ffb_playerfid',
+                'column' => 'playerfid_playerteam_id',
+                'id_column' => 'playerfid_id',
+                'label' => 'Playerfid',
+                'context_columns' => ['playerfid_name_wf'],
+            ],
+        ];
+    }
+
+    /**
+     * @return list<array{
+     *     key: string,
+     *     table: string,
+     *     label: string,
+     *     id_column: string,
+     *     column: string,
+     *     context_columns: list<string>,
+     *     rows: list<array<string, mixed>>
+     * }>
+     */
+    public function orphanPlayerteamDataReferences(): array
+    {
+        $groups = [];
+
+        foreach ($this->playerteamDataReferenceSources() as $source) {
+            if (! Schema::hasTable($source['table']) || ! Schema::hasColumn($source['table'], $source['column'])) {
+                continue;
+            }
+
+            $contextColumns = array_values(array_filter(
+                $source['context_columns'],
+                static fn (string $column): bool => Schema::hasColumn($source['table'], $column)
+            ));
+
+            $select = array_merge(
+                ['t.'.$source['id_column'], 't.'.$source['column']],
+                array_map(static fn (string $column): string => 't.'.$column, $contextColumns)
+            );
+
+            $rows = DB::table($source['table'].' as t')
+                ->leftJoin('ffb_playerteam as pt', 'pt.playerteam_id', '=', 't.'.$source['column'])
+                ->where('t.'.$source['column'], '>', 0)
+                ->whereNull('pt.playerteam_id')
+                ->orderBy('t.'.$source['id_column'])
+                ->get($select)
+                ->map(function ($row) use ($source, $contextColumns): array {
+                    $mapped = [
+                        'row_id' => (int) $row->{$source['id_column']},
+                        'playerteam_id' => (int) $row->{$source['column']},
+                    ];
+                    foreach ($contextColumns as $column) {
+                        $mapped[$column] = $row->{$column};
+                    }
+
+                    return $mapped;
+                })
+                ->all();
+
+            $groups[] = [
+                'key' => $source['table'],
+                'table' => $source['table'],
+                'label' => $source['label'],
+                'id_column' => $source['id_column'],
+                'column' => $source['column'],
+                'context_columns' => $contextColumns,
+                'rows' => $rows,
+            ];
+        }
+
+        return $groups;
     }
 
     /**

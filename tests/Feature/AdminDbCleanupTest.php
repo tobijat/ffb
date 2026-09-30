@@ -27,6 +27,11 @@ class AdminDbCleanupTest extends TestCase
         Schema::dropIfExists('ffb_extremeteam');
         Schema::dropIfExists('ffb_userteam_slot');
         Schema::dropIfExists('ffb_userteam');
+        Schema::dropIfExists('ffb_playerfid');
+        Schema::dropIfExists('ffb_psgoal');
+        Schema::dropIfExists('ffb_goal');
+        Schema::dropIfExists('ffb_playerprice');
+        Schema::dropIfExists('ffb_playerstats');
         Schema::dropIfExists('ffb_playerteam');
         Schema::dropIfExists('ffb_player');
         Schema::dropIfExists('ffb_team');
@@ -261,12 +266,77 @@ class AdminDbCleanupTest extends TestCase
         $this->assertSame('TOP', $extremeSlots[0]['type']);
     }
 
+    #[Test]
+    public function orphan_playerteam_data_refs_list_missing_playerteam_ids(): void
+    {
+        $this->createSchema();
+
+        Schema::getConnection()->table('ffb_playerstats')->insert([
+            [
+                'playerstats_playerteam_id' => 100,
+                'playerstats_matchround_id' => 1,
+                'playerstats_match_id' => 5,
+                'playerstats_score' => 3,
+            ],
+            [
+                'playerstats_playerteam_id' => 999,
+                'playerstats_matchround_id' => 2,
+                'playerstats_match_id' => 6,
+                'playerstats_score' => 0,
+            ],
+        ]);
+        Schema::getConnection()->table('ffb_playerprice')->insert([
+            'playerprice_playerteam_id' => 999,
+            'playerprice_matchround_id' => 2,
+            'playerprice_price' => 4.5,
+        ]);
+        Schema::getConnection()->table('ffb_goal')->insert([
+            'goal_playerteam_id' => 999,
+            'goal_match_id' => 6,
+            'goal_minute' => 12,
+        ]);
+
+        Schema::getConnection()->table('ffb_playerteam')->insert([
+            'playerteam_id' => 100,
+            'playerteam_player_id' => 1,
+            'playerteam_team_id' => 1,
+            'playerteam_league_id' => 1,
+            'playerteam_player_picture' => '',
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 'm',
+            'playerteam_player_note' => '',
+            'playerteam_date_transfer' => null,
+        ]);
+
+        $groups = (new AdminDbCleanupService(Mockery::mock(AdminCenterService::class)))
+            ->orphanPlayerteamDataReferences();
+
+        $byTable = [];
+        foreach ($groups as $group) {
+            $byTable[$group['table']] = $group['rows'];
+        }
+
+        $this->assertCount(1, $byTable['ffb_playerstats']);
+        $this->assertSame(999, $byTable['ffb_playerstats'][0]['playerteam_id']);
+        $this->assertCount(1, $byTable['ffb_playerprice']);
+        $this->assertSame(999, $byTable['ffb_playerprice'][0]['playerteam_id']);
+        $this->assertCount(1, $byTable['ffb_goal']);
+        $this->assertSame(999, $byTable['ffb_goal'][0]['playerteam_id']);
+        $this->assertSame([], $byTable['ffb_psgoal']);
+        $this->assertSame([], $byTable['ffb_playerfid']);
+    }
+
     private function createSchema(): void
     {
         Schema::dropIfExists('ffb_extremeteam_slot');
         Schema::dropIfExists('ffb_extremeteam');
         Schema::dropIfExists('ffb_userteam_slot');
         Schema::dropIfExists('ffb_userteam');
+        Schema::dropIfExists('ffb_playerfid');
+        Schema::dropIfExists('ffb_psgoal');
+        Schema::dropIfExists('ffb_goal');
+        Schema::dropIfExists('ffb_playerprice');
+        Schema::dropIfExists('ffb_playerstats');
         Schema::dropIfExists('ffb_playerteam');
         Schema::dropIfExists('ffb_player');
         Schema::dropIfExists('ffb_team');
@@ -319,6 +389,40 @@ class AdminDbCleanupTest extends TestCase
             $table->string('playerteam_player_position', 1)->default('d');
             $table->string('playerteam_player_note')->default('');
             $table->string('playerteam_date_transfer')->nullable();
+        });
+
+        Schema::create('ffb_playerstats', function (Blueprint $table) {
+            $table->increments('playerstats_id');
+            $table->unsignedInteger('playerstats_playerteam_id');
+            $table->unsignedInteger('playerstats_matchround_id')->default(0);
+            $table->unsignedInteger('playerstats_match_id')->nullable();
+            $table->integer('playerstats_score')->default(0);
+        });
+
+        Schema::create('ffb_playerprice', function (Blueprint $table) {
+            $table->increments('playerprice_id');
+            $table->unsignedInteger('playerprice_playerteam_id');
+            $table->unsignedInteger('playerprice_matchround_id')->default(0);
+            $table->double('playerprice_price')->default(0);
+        });
+
+        Schema::create('ffb_goal', function (Blueprint $table) {
+            $table->increments('goal_id');
+            $table->unsignedInteger('goal_playerteam_id');
+            $table->unsignedInteger('goal_match_id')->default(0);
+            $table->integer('goal_minute')->default(0);
+        });
+
+        Schema::create('ffb_psgoal', function (Blueprint $table) {
+            $table->increments('psgoal_id');
+            $table->unsignedInteger('psgoal_playerteam_id');
+            $table->unsignedInteger('psgoal_match_id')->default(0);
+        });
+
+        Schema::create('ffb_playerfid', function (Blueprint $table) {
+            $table->increments('playerfid_id');
+            $table->unsignedInteger('playerfid_playerteam_id');
+            $table->string('playerfid_name_wf')->default('');
         });
 
         Schema::create('ffb_userteam', function (Blueprint $table) {

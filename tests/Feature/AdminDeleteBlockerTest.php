@@ -3,11 +3,15 @@
 namespace Tests\Feature;
 
 use App\Models\Extremeteam;
+use App\Models\Goal;
 use App\Models\League;
 use App\Models\Matchround;
 use App\Models\Player;
+use App\Models\Playerfid;
+use App\Models\Playerprice;
 use App\Models\Playerstats;
 use App\Models\Playerteam;
+use App\Models\Psgoal;
 use App\Models\Team;
 use App\Models\Userteam;
 use App\Services\AdminCenterService;
@@ -34,6 +38,10 @@ class AdminDeleteBlockerTest extends TestCase
         Schema::dropIfExists('ffb_extremeteam');
         Schema::dropIfExists('ffb_userteam_slot');
         Schema::dropIfExists('ffb_userteam');
+        Schema::dropIfExists('ffb_playerfid');
+        Schema::dropIfExists('ffb_playerprice');
+        Schema::dropIfExists('ffb_psgoal');
+        Schema::dropIfExists('ffb_goal');
         Schema::dropIfExists('ffb_playerstats');
         Schema::dropIfExists('ffb_playerteam');
         Schema::dropIfExists('ffb_player');
@@ -116,6 +124,69 @@ class AdminDeleteBlockerTest extends TestCase
             $result['errors'],
         );
         unset($teamId);
+    }
+
+    #[Test]
+    public function squad_delete_is_blocked_when_goals_exist_with_ids(): void
+    {
+        [$teamId, $ptId] = $this->seedSquadPlayer();
+        $goalId = (int) Goal::query()->insertGetId([
+            'goal_playerteam_id' => $ptId,
+            'goal_match_id' => 1,
+            'goal_minute' => 12,
+        ], 'goal_id');
+
+        $result = $this->squadService()->delete($ptId);
+
+        $this->assertFalse($result['ok']);
+        $this->assertSame(
+            ['Löschen nicht möglich: Es gibt zugehörige Tore (Goal-IDs: '.$goalId.').'],
+            $result['errors'],
+        );
+        unset($teamId);
+    }
+
+    #[Test]
+    public function squad_delete_is_blocked_when_psgoals_exist_with_ids(): void
+    {
+        [$teamId, $ptId] = $this->seedSquadPlayer();
+        $psgoalId = (int) Psgoal::query()->insertGetId([
+            'psgoal_playerteam_id' => $ptId,
+            'psgoal_match_id' => 1,
+        ], 'psgoal_id');
+
+        $result = $this->squadService()->delete($ptId);
+
+        $this->assertFalse($result['ok']);
+        $this->assertSame(
+            ['Löschen nicht möglich: Es gibt zugehörige Elfmeter (Psgoal-IDs: '.$psgoalId.').'],
+            $result['errors'],
+        );
+        unset($teamId);
+    }
+
+    #[Test]
+    public function squad_delete_removes_playerprice_and_playerfid_rows(): void
+    {
+        [$teamId, $ptId] = $this->seedSquadPlayer();
+        $priceId = (int) Playerprice::query()->insertGetId([
+            'playerprice_playerteam_id' => $ptId,
+            'playerprice_matchround_id' => 1,
+            'playerprice_price' => 5.5,
+        ], 'playerprice_id');
+        $fidId = (int) Playerfid::query()->insertGetId([
+            'playerfid_playerteam_id' => $ptId,
+            'playerfid_team_id' => $teamId,
+            'playerfid_name_wf' => 'Muster',
+            'playerfid_fid_wf' => '',
+        ], 'playerfid_id');
+
+        $result = $this->squadService()->delete($ptId);
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        $this->assertDatabaseMissing('ffb_playerteam', ['playerteam_id' => $ptId]);
+        $this->assertDatabaseMissing('ffb_playerprice', ['playerprice_id' => $priceId]);
+        $this->assertDatabaseMissing('ffb_playerfid', ['playerfid_id' => $fidId]);
     }
 
     #[Test]
@@ -325,6 +396,34 @@ class AdminDeleteBlockerTest extends TestCase
             $table->unsignedInteger('playerstats_matchround_id');
             $table->integer('playerstats_score')->default(0);
             $table->string('playerstats_cards')->default('n');
+        });
+
+        Schema::create('ffb_goal', function (Blueprint $table) {
+            $table->increments('goal_id');
+            $table->unsignedInteger('goal_playerteam_id');
+            $table->unsignedInteger('goal_match_id')->default(0);
+            $table->integer('goal_minute')->default(0);
+        });
+
+        Schema::create('ffb_psgoal', function (Blueprint $table) {
+            $table->increments('psgoal_id');
+            $table->unsignedInteger('psgoal_playerteam_id');
+            $table->unsignedInteger('psgoal_match_id')->default(0);
+        });
+
+        Schema::create('ffb_playerprice', function (Blueprint $table) {
+            $table->increments('playerprice_id');
+            $table->unsignedInteger('playerprice_playerteam_id');
+            $table->unsignedInteger('playerprice_matchround_id')->default(0);
+            $table->double('playerprice_price')->default(0);
+        });
+
+        Schema::create('ffb_playerfid', function (Blueprint $table) {
+            $table->increments('playerfid_id');
+            $table->unsignedInteger('playerfid_playerteam_id');
+            $table->unsignedInteger('playerfid_team_id')->default(0);
+            $table->string('playerfid_name_wf')->default('');
+            $table->string('playerfid_fid_wf')->default('');
         });
 
         Schema::create('ffb_userteam', function (Blueprint $table) {
