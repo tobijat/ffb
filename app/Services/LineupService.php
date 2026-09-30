@@ -21,7 +21,6 @@ use Illuminate\Support\Facades\DB;
 class LineupService
 {
     public function __construct(
-        private readonly PlayerGradeService $grades,
         private readonly LineupOptionsResolver $lineupOptions,
     ) {}
 
@@ -140,6 +139,7 @@ class LineupService
                 'ok' => true,
                 'data' => [
                     'game_over' => $gameOver,
+                    'show_recent_performance' => false,
                     'matchround' => null,
                 ],
             ];
@@ -216,6 +216,10 @@ class LineupService
             'ok' => true,
             'data' => [
                 'game_over' => $gameOver,
+                'show_recent_performance' => $this->shouldShowRecentPerformance(
+                    $leagueOptions,
+                    (int) $round->matchround_id,
+                ),
                 'matchround' => [
                     'matchround_id' => (int) $round->matchround_id,
                     'matchround_title' => (string) $round->matchround_title,
@@ -265,6 +269,7 @@ class LineupService
 
         $ptIds = $playerteams->keys()->map(fn ($id) => (int) $id)->all();
         $prices = $this->resolvePlayerPrices($ptIds, $matchroundId, $playerteams);
+        $recentByPt = $this->resolveRecentPerformances($ptIds, $matchroundId);
 
         $playerteams = $playerteams->sort(function (Playerteam $a, Playerteam $b) use ($prices) {
             $pos = strcmp((string) $a->playerteam_player_position, (string) $b->playerteam_player_position);
@@ -295,8 +300,6 @@ class LineupService
                 continue;
             }
 
-            $grade = $this->grades->gradeForPlayerteam($ptId);
-
             $players[] = [
                 'player_id' => (int) $pt->player->player_id,
                 'player_fname' => (string) $pt->player->player_fname,
@@ -311,8 +314,7 @@ class LineupService
                 'playerteam_player_position' => (string) $pt->playerteam_player_position,
                 'playerteam_player_picture' => (string) ($pt->playerteam_player_picture ?: ''),
                 'playerteam_player_price' => (float) $prices->get($ptId),
-                'player_grade' => $grade['player_grade'],
-                'player_trend' => $grade['player_trend'],
+                'recent_performance' => (float) ($recentByPt->get($ptId) ?? 0.0),
             ];
         }
 
@@ -776,6 +778,64 @@ class LineupService
         }
 
         return $resolved;
+    }
+
+    /**
+     * Recent performance (−1…+1) from ffb_playerprice; missing/null → 0.
+     *
+     * @param  list<int>  $playerteamIds
+     * @return Collection<int, float>
+     */
+    private function resolveRecentPerformances(array $playerteamIds, int $matchroundId): Collection
+    {
+        if ($playerteamIds === [] || $matchroundId <= 0) {
+            return collect();
+        }
+
+        $rows = Playerprice::query()
+            ->where('playerprice_matchround_id', $matchroundId)
+            ->whereIn('playerprice_playerteam_id', $playerteamIds)
+            ->get(['playerprice_playerteam_id', 'playerprice_recent_performance']);
+
+        $resolved = collect();
+        foreach ($playerteamIds as $ptId) {
+            $resolved->put($ptId, 0.0);
+        }
+
+        foreach ($rows as $row) {
+            $ptId = (int) $row->playerprice_playerteam_id;
+            $raw = $row->playerprice_recent_performance;
+            if ($raw === null) {
+                continue;
+            }
+
+            $value = max(-1.0, min(1.0, (float) $raw));
+            $resolved->put($ptId, $value);
+        }
+
+        return $resolved;
+    }
+
+    private function shouldShowRecentPerformance(?LeagueOptions $options, int $matchroundId): bool
+    {
+        $mode = (string) ($options?->options_league_pricemode ?: 'constant');
+        if ($mode !== 'dynamic') {
+            return false;
+        }
+
+        return $this->matchroundHasRecentPerformance($matchroundId);
+    }
+
+    private function matchroundHasRecentPerformance(int $matchroundId): bool
+    {
+        if ($matchroundId <= 0) {
+            return false;
+        }
+
+        return Playerprice::query()
+            ->where('playerprice_matchround_id', $matchroundId)
+            ->whereNotNull('playerprice_recent_performance')
+            ->exists();
     }
 
     /**

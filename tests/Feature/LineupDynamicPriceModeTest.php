@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\League;
 use App\Models\LeagueOptions;
+use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\Player;
 use App\Models\Playerprice;
@@ -33,6 +34,7 @@ class LineupDynamicPriceModeTest extends TestCase
         Schema::dropIfExists('ffb_playerprice');
         Schema::dropIfExists('ffb_teamprice');
         Schema::dropIfExists('ffb_playerstats');
+        Schema::dropIfExists('ffb_match');
         Schema::dropIfExists('ffb_playerteam');
         Schema::dropIfExists('ffb_player');
         Schema::dropIfExists('ffb_matchround_options');
@@ -73,6 +75,49 @@ class LineupDynamicPriceModeTest extends TestCase
 
         $this->assertTrue($result['ok'], $result['error'] ?? '');
         $this->assertSame(9.5, $result['data']['players'][0]['playerteam_player_price']);
+        $this->assertSame(0.0, $result['data']['players'][0]['recent_performance']);
+        $this->assertArrayNotHasKey('player_grade', $result['data']['players'][0]);
+        $this->assertArrayNotHasKey('player_trend', $result['data']['players'][0]);
+    }
+
+    #[Test]
+    public function team_players_expose_clamped_recent_performance(): void
+    {
+        [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();
+
+        Playerprice::query()->insert([
+            'playerprice_playerteam_id' => $ptId,
+            'playerprice_matchround_id' => $roundId,
+            'playerprice_price' => 9.5,
+            'playerprice_player_power' => 1,
+            'playerprice_av_power' => 1,
+            'playerprice_recent_performance' => 0.8,
+        ]);
+
+        $result = $this->app->make(LineupService::class)->teamPlayers(544, $teamId, $roundId);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $this->assertSame(0.8, $result['data']['players'][0]['recent_performance']);
+    }
+
+    #[Test]
+    public function team_players_treat_null_recent_performance_as_zero(): void
+    {
+        [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();
+
+        Playerprice::query()->insert([
+            'playerprice_playerteam_id' => $ptId,
+            'playerprice_matchround_id' => $roundId,
+            'playerprice_price' => 9.5,
+            'playerprice_player_power' => 1,
+            'playerprice_av_power' => 1,
+            'playerprice_recent_performance' => null,
+        ]);
+
+        $result = $this->app->make(LineupService::class)->teamPlayers(544, $teamId, $roundId);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $this->assertSame(0.0, $result['data']['players'][0]['recent_performance']);
     }
 
     #[Test]
@@ -90,9 +135,52 @@ class LineupDynamicPriceModeTest extends TestCase
 
         $this->assertTrue($result['ok'], $result['error'] ?? '');
         $this->assertSame(6.0, $result['data']['players'][0]['playerteam_player_price']);
+        $this->assertSame(0.0, $result['data']['players'][0]['recent_performance']);
         $this->assertDatabaseMissing('ffb_playerprice', [
             'playerprice_playerteam_id' => $ptId,
         ]);
+    }
+
+    #[Test]
+    public function matchround_hides_recent_performance_without_stored_values(): void
+    {
+        [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();
+        $this->seedMatchForRound($roundId, $teamId);
+
+        Playerprice::query()->insert([
+            'playerprice_playerteam_id' => $ptId,
+            'playerprice_matchround_id' => $roundId,
+            'playerprice_price' => 9.5,
+            'playerprice_player_power' => 1,
+            'playerprice_av_power' => 1,
+            'playerprice_recent_performance' => null,
+        ]);
+
+        $result = $this->app->make(LineupService::class)->matchroundAndTeams(544);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $this->assertFalse($result['data']['show_recent_performance']);
+    }
+
+    #[Test]
+    public function matchround_shows_recent_performance_when_any_value_exists(): void
+    {
+        [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();
+        $this->seedMatchForRound($roundId, $teamId);
+
+        Playerprice::query()->insert([
+            'playerprice_playerteam_id' => $ptId,
+            'playerprice_matchround_id' => $roundId,
+            'playerprice_price' => 9.5,
+            'playerprice_player_power' => 1,
+            'playerprice_av_power' => 1,
+            'playerprice_recent_performance' => 0.0,
+        ]);
+
+        $result = $this->app->make(LineupService::class)->matchroundAndTeams(544);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $this->assertTrue($result['data']['show_recent_performance']);
     }
 
     private function seedLeague(string $priceMode): int
@@ -166,6 +254,21 @@ class LineupDynamicPriceModeTest extends TestCase
         return [$leagueId, $roundId, $teamId, $ptId];
     }
 
+    private function seedMatchForRound(int $roundId, int $teamId): void
+    {
+        MatchGame::query()->insert([
+            'match_round' => $roundId,
+            'match_hometeam_id' => $teamId,
+            'match_guestteam_id' => $teamId,
+            'match_date' => '2026-10-01 18:00:00',
+            'match_homescore' => -1,
+            'match_guestscore' => -1,
+            'match_homescore_penalty' => -1,
+            'match_guestscore_penalty' => -1,
+            'match_status' => '',
+        ]);
+    }
+
     private function createSchema(): void
     {
         Schema::create('web_user_details', function (Blueprint $table) {
@@ -199,6 +302,19 @@ class LineupDynamicPriceModeTest extends TestCase
         Schema::create('ffb_matchround_options', function (Blueprint $table) {
             $table->increments('matchround_options_id');
             $table->integer('matchround_options_matchround_id');
+        });
+
+        Schema::create('ffb_match', function (Blueprint $table) {
+            $table->increments('match_id');
+            $table->integer('match_round');
+            $table->integer('match_hometeam_id');
+            $table->integer('match_guestteam_id');
+            $table->string('match_date')->nullable();
+            $table->integer('match_homescore')->default(-1);
+            $table->integer('match_guestscore')->default(-1);
+            $table->integer('match_homescore_penalty')->default(-1);
+            $table->integer('match_guestscore_penalty')->default(-1);
+            $table->string('match_status')->default('');
         });
 
         Schema::create('ffb_team', function (Blueprint $table) {
@@ -245,6 +361,7 @@ class LineupDynamicPriceModeTest extends TestCase
             $table->double('playerprice_price')->default(0);
             $table->double('playerprice_player_power')->default(0);
             $table->double('playerprice_av_power')->default(0);
+            $table->double('playerprice_recent_performance')->nullable();
         });
 
         Schema::create('ffb_teamprice', function (Blueprint $table) {
