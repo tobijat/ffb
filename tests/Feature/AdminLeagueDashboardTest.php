@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Extremeteam;
 use App\Models\Goal;
 use App\Models\League;
 use App\Models\LeagueOptions;
@@ -56,6 +57,7 @@ class AdminLeagueDashboardTest extends TestCase
         Schema::dropIfExists('ffb_match');
         Schema::dropIfExists('ffb_matchround_options');
         Schema::dropIfExists('ffb_matchround');
+        Schema::dropIfExists('ffb_extremeteam');
         Schema::dropIfExists('ffb_psgoal');
         Schema::dropIfExists('ffb_goal');
         Schema::dropIfExists('ffb_playerprice');
@@ -436,7 +438,20 @@ class AdminLeagueDashboardTest extends TestCase
                             ],
                         ],
                     ],
-                    ['key' => 'extremeteam', 'title' => 'Top&Flop', 'ok' => false],
+                    [
+                        'key' => 'extremeteam',
+                        'title' => 'Top&Flop',
+                        'ok' => true,
+                        'checklist' => [
+                            [
+                                'key' => 'extremeteam-past-rounds',
+                                'label' => 'Vergangene Spielrunden haben Top- und Flop-Team',
+                                'ok' => true,
+                                'match_list' => [],
+                                'match_list_summary' => 'Spielrunden ohne Top/Flop',
+                            ],
+                        ],
+                    ],
                     ['key' => 'score', 'title' => 'Score', 'ok' => false],
                 ],
             ]);
@@ -468,6 +483,7 @@ class AdminLeagueDashboardTest extends TestCase
             ->assertSee('Mannschaften mit zu wenigen aktiven Spielern', false)
             ->assertSee('Mannschaften ohne Teampreis', false)
             ->assertSee('Spiele mit unzureichenden Playerstats', false)
+            ->assertSee('Vergangene Spielrunden haben Top- und Flop-Team', false)
             ->assertSee('Runde A', false)
             ->assertSee('Aufstellungslimits (Runde)', false)
             ->assertSee('Aktuell', false)
@@ -1827,6 +1843,107 @@ class AdminLeagueDashboardTest extends TestCase
         $this->assertStringContainsString('Heim 1 / Gast 0 (erwartet 4 / 3)', $section['checklist'][4]['match_list'][0]['detail']);
     }
 
+    #[Test]
+    public function extremeteam_section_is_ok_when_past_rounds_have_top_and_flop(): void
+    {
+        $this->createSchema();
+
+        $league = League::query()->create([
+            'league_title' => 'WM 2026',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_symbol' => '',
+        ]);
+        $pastRound = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'Runde 1',
+            'matchround_startdate' => '2026-06-01 00:00:00',
+            'matchround_enddate' => '2026-06-30 23:59:59',
+            'matchround_status' => 1,
+        ]);
+        Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'Runde 2',
+            'matchround_startdate' => '2026-10-01 00:00:00',
+            'matchround_enddate' => '2026-10-31 23:59:59',
+            'matchround_status' => 1,
+        ]);
+
+        foreach (['top', 'flop'] as $type) {
+            Extremeteam::query()->create([
+                'extremeteam_matchround_id' => (int) $pastRound->matchround_id,
+                'extremeteam_top_or_flop' => $type,
+                'extremeteam_price' => 100,
+                'extremeteam_score' => 42,
+            ]);
+        }
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('shellPayload')->once()->with(7)->andReturn([
+            'user' => ['user_id' => 7, 'user_nickname' => 'admin', 'photo_url' => '', 'is_ffb_admin' => true],
+            'navigation' => [],
+            'selected_league_id' => (int) $league->league_id,
+            'selected_league' => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => 'WM 2026',
+                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+            ],
+        ]);
+
+        $payload = (new AdminLeagueDashboardService($adminCenter))->pagePayload(7);
+        $section = $payload['sections'][7];
+
+        $this->assertSame('extremeteam', $section['key']);
+        $this->assertTrue($section['ok']);
+        $this->assertTrue($section['checklist'][0]['ok']);
+    }
+
+    #[Test]
+    public function extremeteam_section_lists_past_rounds_missing_top_or_flop(): void
+    {
+        $this->createSchema();
+
+        $league = League::query()->create([
+            'league_title' => 'WM 2026',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_symbol' => '',
+        ]);
+        $pastRound = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'Runde 1',
+            'matchround_startdate' => '2026-06-01 00:00:00',
+            'matchround_enddate' => '2026-06-30 23:59:59',
+            'matchround_status' => 1,
+        ]);
+        Extremeteam::query()->create([
+            'extremeteam_matchround_id' => (int) $pastRound->matchround_id,
+            'extremeteam_top_or_flop' => 'top',
+            'extremeteam_price' => 100,
+            'extremeteam_score' => 42,
+        ]);
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('shellPayload')->once()->with(7)->andReturn([
+            'user' => ['user_id' => 7, 'user_nickname' => 'admin', 'photo_url' => '', 'is_ffb_admin' => true],
+            'navigation' => [],
+            'selected_league_id' => (int) $league->league_id,
+            'selected_league' => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => 'WM 2026',
+                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+            ],
+        ]);
+
+        $payload = (new AdminLeagueDashboardService($adminCenter))->pagePayload(7);
+        $section = $payload['sections'][7];
+
+        $this->assertFalse($section['ok']);
+        $this->assertFalse($section['checklist'][0]['ok']);
+        $this->assertSame('Runde 1', $section['checklist'][0]['match_list'][0]['label']);
+        $this->assertStringContainsString('Flop fehlt', $section['checklist'][0]['match_list'][0]['detail']);
+    }
+
     private function seedMatchPlayerstats(int $matchId, int $leagueId, int $teamId, int $count, string $prefix): void
     {
         for ($i = 0; $i < $count; $i++) {
@@ -1913,6 +2030,7 @@ class AdminLeagueDashboardTest extends TestCase
         Schema::dropIfExists('ffb_match');
         Schema::dropIfExists('ffb_matchround_options');
         Schema::dropIfExists('ffb_matchround');
+        Schema::dropIfExists('ffb_extremeteam');
         Schema::dropIfExists('ffb_psgoal');
         Schema::dropIfExists('ffb_goal');
         Schema::dropIfExists('ffb_playerprice');
@@ -2081,6 +2199,14 @@ class AdminLeagueDashboardTest extends TestCase
             $table->integer('psgoal_minute')->default(120);
             $table->tinyInteger('psgoal_hit')->default(0);
             $table->tinyInteger('psgoal_fail')->default(0);
+        });
+
+        Schema::create('ffb_extremeteam', function (Blueprint $table) {
+            $table->increments('extremeteam_id');
+            $table->string('extremeteam_top_or_flop', 8);
+            $table->decimal('extremeteam_price', 9, 2)->default(0);
+            $table->unsignedInteger('extremeteam_matchround_id');
+            $table->integer('extremeteam_score')->default(-1);
         });
     }
 }

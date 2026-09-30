@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Extremeteam;
 use App\Models\Goal;
 use App\Models\League;
 use App\Models\LeagueOptions;
@@ -60,7 +61,7 @@ class AdminLeagueDashboardService
             $this->squadSection($leagueId),
             $this->playerpriceSection($leagueId),
             $this->matchdataSection($leagueId),
-            ['key' => 'extremeteam', 'title' => 'Top&Flop', 'ok' => false],
+            $this->extremeteamSection($leagueId),
             ['key' => 'score', 'title' => 'Score', 'ok' => false],
         ];
     }
@@ -1204,6 +1205,84 @@ class AdminLeagueDashboardService
                 && $tableGoalsOk
                 && $tablePsGoalsOk,
             'checklist' => $checklist,
+        ];
+    }
+
+    private function extremeteamSection(int $leagueId): array
+    {
+        if ($leagueId <= 0) {
+            return [
+                'key' => 'extremeteam',
+                'title' => 'Top&Flop',
+                'ok' => false,
+                'checklist' => [],
+            ];
+        }
+
+        $now = Carbon::now();
+        $pastRounds = Matchround::query()
+            ->where('matchround_league_id', $leagueId)
+            ->orderBy('matchround_startdate')
+            ->orderBy('matchround_id')
+            ->get(['matchround_id', 'matchround_title', 'matchround_startdate', 'matchround_enddate'])
+            ->filter(fn (Matchround $round): bool => $this->matchroundPeriod($round, $now) === 'past')
+            ->values();
+
+        $pastRoundIds = $pastRounds
+            ->map(fn (Matchround $round): int => (int) $round->matchround_id)
+            ->all();
+
+        $existingByRound = [];
+        if ($pastRoundIds !== []) {
+            $rows = Extremeteam::query()
+                ->whereIn('extremeteam_matchround_id', $pastRoundIds)
+                ->get(['extremeteam_matchround_id', 'extremeteam_top_or_flop']);
+
+            foreach ($rows as $row) {
+                $roundId = (int) $row->extremeteam_matchround_id;
+                $type = (string) $row->extremeteam_top_or_flop;
+                $existingByRound[$roundId][$type] = true;
+            }
+        }
+
+        $missing = [];
+        foreach ($pastRounds as $round) {
+            $roundId = (int) $round->matchround_id;
+            $hasTop = isset($existingByRound[$roundId]['top']);
+            $hasFlop = isset($existingByRound[$roundId]['flop']);
+            if ($hasTop && $hasFlop) {
+                continue;
+            }
+
+            $parts = [];
+            if (! $hasTop) {
+                $parts[] = 'Top fehlt';
+            }
+            if (! $hasFlop) {
+                $parts[] = 'Flop fehlt';
+            }
+
+            $missing[] = [
+                'label' => (string) $round->matchround_title,
+                'detail' => implode(' · ', $parts),
+            ];
+        }
+
+        $ok = $missing === [];
+
+        return [
+            'key' => 'extremeteam',
+            'title' => 'Top&Flop',
+            'ok' => $ok,
+            'checklist' => [
+                [
+                    'key' => 'extremeteam-past-rounds',
+                    'label' => 'Vergangene Spielrunden haben Top- und Flop-Team',
+                    'ok' => $ok,
+                    'match_list' => $missing,
+                    'match_list_summary' => 'Spielrunden ohne Top/Flop',
+                ],
+            ],
         ];
     }
 
