@@ -594,6 +594,27 @@
     min-width: 12rem;
 }
 
+.admin-db-cleanup-body {
+    display: grid;
+    gap: 10px;
+}
+
+.admin-db-cleanup-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    align-items: center;
+}
+
+.admin-db-cleanup-status.is-error {
+    color: #a40000;
+}
+
+.admin-db-cleanup-subtitle {
+    margin: 12px 0 6px;
+    font-size: 11pt;
+}
+
 .admin-db-cleanup-group {
     display: block;
     margin-top: 10px;

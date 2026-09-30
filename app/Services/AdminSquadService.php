@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Extremeteam;
 use App\Models\League;
 use App\Models\Player;
 use App\Models\Playerstats;
@@ -1975,12 +1976,26 @@ class AdminSquadService
 
     private function deletionBlocker(Playerteam $item): ?string
     {
-        if ($this->isUsedInUserteams((int) $item->playerteam_id)) {
-            return 'Löschen nicht möglich: Spieler ist in Userteams eingesetzt.';
+        $playerteamId = (int) $item->playerteam_id;
+
+        $userteamIds = $this->userteamIdsContainingPlayerteam($playerteamId);
+        if ($userteamIds !== []) {
+            return 'Löschen nicht möglich: Spieler ist in Userteams eingesetzt (Userteam-IDs: '.$this->formatIdList($userteamIds).').';
         }
 
-        if (Playerstats::query()->where('playerstats_playerteam_id', $item->playerteam_id)->exists()) {
-            return 'Löschen nicht möglich: Es gibt zugehörige Spielstatistiken.';
+        $extremeRefs = $this->extremeTeamReferences([$playerteamId]);
+        if ($extremeRefs !== []) {
+            return 'Löschen nicht möglich: Spieler ist in Top/Flop-Teams eingesetzt ('.$this->formatLabelList($extremeRefs).').';
+        }
+
+        $playerstatsIds = Playerstats::query()
+            ->where('playerstats_playerteam_id', $playerteamId)
+            ->orderBy('playerstats_id')
+            ->pluck('playerstats_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+        if ($playerstatsIds !== []) {
+            return 'Löschen nicht möglich: Es gibt zugehörige Spielstatistiken (Playerstats-IDs: '.$this->formatIdList($playerstatsIds).').';
         }
 
         return null;
@@ -2391,9 +2406,83 @@ class AdminSquadService
         return $base.DIRECTORY_SEPARATOR.'players'.DIRECTORY_SEPARATOR.$teamId;
     }
 
-    private function isUsedInUserteams(int $playerteamId): bool
+    /**
+     * @return list<int>
+     */
+    private function userteamIdsContainingPlayerteam(int $playerteamId): array
     {
-        return Userteam::queryContainingAnyPlayerteam([$playerteamId])->exists();
+        if ($playerteamId <= 0) {
+            return [];
+        }
+
+        return Userteam::queryContainingAnyPlayerteam([$playerteamId])
+            ->orderBy('userteam_id')
+            ->pluck('userteam_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+    }
+
+    /**
+     * @param  list<int>  $playerteamIds
+     * @return list<string>
+     */
+    private function extremeTeamReferences(array $playerteamIds): array
+    {
+        if ($playerteamIds === []) {
+            return [];
+        }
+
+        return Extremeteam::queryContainingAnyPlayerteam($playerteamIds)
+            ->with('matchround:matchround_id,matchround_title')
+            ->orderBy('extremeteam_id')
+            ->get()
+            ->map(function (Extremeteam $team): string {
+                $type = strtoupper((string) $team->extremeteam_top_or_flop);
+                $roundTitle = trim((string) ($team->matchround?->matchround_title ?? ''));
+                $label = 'Extremeteam-ID '.(int) $team->extremeteam_id.' '.$type;
+                if ($roundTitle !== '') {
+                    $label .= ' ('.$roundTitle.')';
+                }
+
+                return $label;
+            })
+            ->all();
+    }
+
+    /**
+     * @param  list<int>  $ids
+     */
+    private function formatIdList(array $ids, int $limit = 12): string
+    {
+        $ids = array_values(array_unique(array_map('intval', $ids)));
+        sort($ids);
+
+        if ($ids === []) {
+            return '';
+        }
+
+        if (count($ids) <= $limit) {
+            return implode(', ', $ids);
+        }
+
+        return implode(', ', array_slice($ids, 0, $limit)).', …';
+    }
+
+    /**
+     * @param  list<string>  $labels
+     */
+    private function formatLabelList(array $labels, int $limit = 8): string
+    {
+        $labels = array_values(array_filter(array_map('strval', $labels), static fn (string $label): bool => $label !== ''));
+        if ($labels === []) {
+            return '';
+        }
+
+        if (count($labels) <= $limit) {
+            return implode('; ', $labels);
+        }
+
+        return implode('; ', array_slice($labels, 0, $limit)).'; …';
     }
 
     /**

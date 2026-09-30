@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Extremeteam;
 use App\Models\Player;
 use App\Models\Playerteam;
 use App\Models\Userteam;
@@ -331,12 +332,25 @@ class AdminPlayerService
 
     private function deletionBlocker(int $playerId): ?string
     {
-        if (Playerteam::query()->where('playerteam_player_id', $playerId)->exists()) {
-            return 'Löschen nicht möglich: Spieler ist noch einem oder mehreren Teams zugeordnet.';
-        }
+        $playerteamIds = Playerteam::query()
+            ->where('playerteam_player_id', $playerId)
+            ->orderBy('playerteam_id')
+            ->pluck('playerteam_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
 
-        if ($this->isUsedInUserteams($playerId)) {
-            return 'Löschen nicht möglich: Spieler ist in Userteams eingesetzt.';
+        if ($playerteamIds !== []) {
+            $userteamIds = $this->userteamIdsContainingPlayerteams($playerteamIds);
+            if ($userteamIds !== []) {
+                return 'Löschen nicht möglich: Spieler ist in Userteams eingesetzt (Userteam-IDs: '.$this->formatIdList($userteamIds).'; PT-IDs: '.$this->formatIdList($playerteamIds).').';
+            }
+
+            $extremeRefs = $this->extremeTeamReferences($playerteamIds);
+            if ($extremeRefs !== []) {
+                return 'Löschen nicht möglich: Spieler ist in Top/Flop-Teams eingesetzt ('.$this->formatLabelList($extremeRefs).'; PT-IDs: '.$this->formatIdList($playerteamIds).').';
+            }
+
+            return 'Löschen nicht möglich: Spieler ist noch einem oder mehreren Teams zugeordnet (PT-IDs: '.$this->formatIdList($playerteamIds).').';
         }
 
         return null;
@@ -519,19 +533,84 @@ class AdminPlayerService
         return $errors;
     }
 
-    private function isUsedInUserteams(int $playerId): bool
+    /**
+     * @param  list<int>  $playerteamIds
+     * @return list<int>
+     */
+    private function userteamIdsContainingPlayerteams(array $playerteamIds): array
     {
-        $playerteamIds = Playerteam::query()
-            ->where('playerteam_player_id', $playerId)
-            ->pluck('playerteam_id')
-            ->map(fn ($id) => (int) $id)
-            ->all();
-
         if ($playerteamIds === []) {
-            return false;
+            return [];
         }
 
-        return Userteam::queryContainingAnyPlayerteam($playerteamIds)->exists();
+        return Userteam::queryContainingAnyPlayerteam($playerteamIds)
+            ->orderBy('userteam_id')
+            ->pluck('userteam_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+    }
+
+    /**
+     * @param  list<int>  $playerteamIds
+     * @return list<string>
+     */
+    private function extremeTeamReferences(array $playerteamIds): array
+    {
+        if ($playerteamIds === []) {
+            return [];
+        }
+
+        return Extremeteam::queryContainingAnyPlayerteam($playerteamIds)
+            ->with('matchround:matchround_id,matchround_title')
+            ->orderBy('extremeteam_id')
+            ->get()
+            ->map(function (Extremeteam $team): string {
+                $type = strtoupper((string) $team->extremeteam_top_or_flop);
+                $roundTitle = trim((string) ($team->matchround?->matchround_title ?? ''));
+                $label = 'Extremeteam-ID '.(int) $team->extremeteam_id.' '.$type;
+                if ($roundTitle !== '') {
+                    $label .= ' ('.$roundTitle.')';
+                }
+
+                return $label;
+            })
+            ->all();
+    }
+
+    /**
+     * @param  list<int>  $ids
+     */
+    private function formatIdList(array $ids, int $limit = 12): string
+    {
+        $ids = array_values(array_unique(array_map('intval', $ids)));
+        sort($ids);
+
+        if ($ids === []) {
+            return '';
+        }
+
+        if (count($ids) <= $limit) {
+            return implode(', ', $ids);
+        }
+
+        return implode(', ', array_slice($ids, 0, $limit)).', …';
+    }
+
+    /**
+     * @param  list<string>  $labels
+     */
+    private function formatLabelList(array $labels, int $limit = 8): string
+    {
+        $labels = array_values(array_filter(array_map('strval', $labels), static fn (string $label): bool => $label !== ''));
+        if ($labels === []) {
+            return '';
+        }
+
+        if (count($labels) <= $limit) {
+            return implode('; ', $labels);
+        }
+
+        return implode('; ', array_slice($labels, 0, $limit)).'; …';
     }
 
     /**
