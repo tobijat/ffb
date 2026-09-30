@@ -22,6 +22,7 @@ class Playerteam extends Model
         'playerteam_player_picture',
         'playerteam_status',
         'playerteam_player_position',
+        'playerteam_player_note',
         'playerteam_date_transfer',
     ];
 
