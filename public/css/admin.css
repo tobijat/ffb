@@ -614,6 +614,22 @@
     align-items: center;
 }
 
+.admin-submit.admin-submit-danger {
+    border-color: #b00000;
+    background: #e8a0a0;
+    color: #5a0000;
+}
+
+.admin-submit.admin-submit-danger:hover {
+    background: #b00000;
+    color: #fff;
+}
+
+.admin-submit.admin-submit-danger:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
 .admin-db-cleanup-status.is-error {
     color: #a40000;
 }

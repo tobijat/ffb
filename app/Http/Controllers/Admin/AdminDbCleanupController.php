@@ -33,9 +33,10 @@ class AdminDbCleanupController extends Controller
     public function run(Request $request): JsonResponse
     {
         $task = trim((string) $request->input('task', ''));
+        $action = trim((string) $request->input('action', 'run'));
 
         try {
-            $result = $this->cleanup->runTask($task);
+            $result = $this->cleanup->runTask($task, $action);
         } catch (InvalidArgumentException $e) {
             return response()->json([
                 'ok' => false,

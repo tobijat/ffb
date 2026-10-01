@@ -124,7 +124,7 @@ class AdminDbCleanupTest extends TestCase
         });
 
         $this->mock(AdminDbCleanupService::class, function ($mock) {
-            $mock->shouldReceive('runTask')->once()->with('duplicate-playerteams')->andReturn([
+            $mock->shouldReceive('runTask')->once()->with('duplicate-playerteams', 'run')->andReturn([
                 'ok' => true,
                 'task' => 'duplicate-playerteams',
                 'clean' => false,
@@ -145,6 +145,33 @@ class AdminDbCleanupTest extends TestCase
             ->assertJsonFragment(['html' => '<p class="muted">1 Doppelgruppe · 2 Einträge insgesamt</p><div>Arnautovic</div>']);
     }
 
+    public function test_db_cleanup_run_delete_passes_action_to_service(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminDbCleanupService::class, function ($mock) {
+            $mock->shouldReceive('runTask')->once()->with('players-without-playerteam', 'delete')->andReturn([
+                'ok' => true,
+                'task' => 'players-without-playerteam',
+                'clean' => true,
+                'count' => 0,
+                'summary' => '1 Spieler gelöscht',
+                'html' => '<p class="muted">Alle Spieler sind mindestens einem Team zugeordnet.</p>',
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->postJson('/admin/db-cleanup/run', [
+                'task' => 'players-without-playerteam',
+                'action' => 'delete',
+            ])
+            ->assertOk()
+            ->assertJsonPath('ok', true)
+            ->assertJsonPath('summary', '1 Spieler gelöscht');
+    }
+
     public function test_db_cleanup_run_rejects_unknown_task(): void
     {
         $this->mock(FfbAdminAccess::class, function ($mock) {
@@ -155,6 +182,184 @@ class AdminDbCleanupTest extends TestCase
             ->postJson('/admin/db-cleanup/run', ['task' => 'unknown-task'])
             ->assertStatus(422)
             ->assertJsonPath('ok', false);
+    }
+
+    #[Test]
+    public function players_without_playerteam_list_includes_delete_button(): void
+    {
+        $this->createSchema();
+
+        Player::query()->insertGetId([
+            'player_foreign_id' => '',
+            'player_fname' => 'Orphan',
+            'player_lname' => 'Player',
+            'player_nationality' => 'AUT',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ], 'player_id');
+
+        $result = (new AdminDbCleanupService(Mockery::mock(AdminCenterService::class)))
+            ->runTask('players-without-playerteam');
+
+        $this->assertFalse($result['clean']);
+        $this->assertStringContainsString('data-delete-task="players-without-playerteam"', $result['html']);
+        $this->assertStringContainsString('>Delete</button>', $result['html']);
+    }
+
+    #[Test]
+    public function delete_players_without_playerteam_removes_players_and_images(): void
+    {
+        $this->createSchema();
+
+        $imagesRoot = sys_get_temp_dir().DIRECTORY_SEPARATOR.'ffb-db-cleanup-'.uniqid('', true);
+        $playersDir = $imagesRoot.DIRECTORY_SEPARATOR.'players';
+        $teamDir = $playersDir.DIRECTORY_SEPARATOR.'7';
+        mkdir($teamDir, 0775, true);
+        config(['ffb.legacy_images_path' => $imagesRoot]);
+
+        $orphanId = (int) Player::query()->insertGetId([
+            'player_foreign_id' => '',
+            'player_fname' => 'Orphan',
+            'player_lname' => 'One',
+            'player_nationality' => 'AUT',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ], 'player_id');
+        $keptId = (int) Player::query()->insertGetId([
+            'player_foreign_id' => '',
+            'player_fname' => 'Kept',
+            'player_lname' => 'Two',
+            'player_nationality' => 'GER',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ], 'player_id');
+
+        $teamId = (int) Team::query()->insertGetId([
+            'team_foreign_id' => '',
+            'team_name' => 'Austria',
+            'team_nationality' => 'aut',
+            'team_num_players' => 0,
+            'team_status' => 1,
+        ], 'team_id');
+        Playerteam::query()->insertGetId([
+            'playerteam_player_id' => $keptId,
+            'playerteam_team_id' => $teamId,
+            'playerteam_league_id' => 1,
+            'playerteam_player_picture' => '',
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 'm',
+            'playerteam_player_note' => '',
+            'playerteam_date_transfer' => null,
+        ], 'playerteam_id');
+
+        $flatImage = $playersDir.DIRECTORY_SEPARATOR.$orphanId.'.jpg';
+        $teamImage = $teamDir.DIRECTORY_SEPARATOR.'7-'.$orphanId.'.jpg';
+        $keptImage = $playersDir.DIRECTORY_SEPARATOR.$keptId.'.jpg';
+        file_put_contents($flatImage, 'flat');
+        file_put_contents($teamImage, 'team');
+        file_put_contents($keptImage, 'kept');
+
+        try {
+            $result = (new AdminDbCleanupService(Mockery::mock(AdminCenterService::class)))
+                ->runTask('players-without-playerteam', 'delete');
+
+            $this->assertTrue($result['ok']);
+            $this->assertTrue($result['clean']);
+            $this->assertStringContainsString('1 Spieler gelöscht', $result['summary']);
+            $this->assertStringContainsString('2 Bilder entfernt', $result['summary']);
+            $this->assertDatabaseMissing('ffb_player', ['player_id' => $orphanId]);
+            $this->assertDatabaseHas('ffb_player', ['player_id' => $keptId]);
+            $this->assertFileDoesNotExist($flatImage);
+            $this->assertFileDoesNotExist($teamImage);
+            $this->assertFileExists($keptImage);
+        } finally {
+            foreach ([$flatImage, $teamImage, $keptImage] as $path) {
+                if (is_file($path)) {
+                    @unlink($path);
+                }
+            }
+            @rmdir($teamDir);
+            @rmdir($playersDir);
+            @rmdir($imagesRoot);
+        }
+    }
+
+    #[Test]
+    public function delete_action_is_rejected_for_unsupported_tasks(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        (new AdminDbCleanupService(Mockery::mock(AdminCenterService::class)))
+            ->runTask('players-without-playerstats', 'delete');
+    }
+
+    #[Test]
+    public function players_without_playerstats_include_team_names(): void
+    {
+        $this->createSchema();
+
+        $austriaId = (int) Team::query()->insertGetId([
+            'team_foreign_id' => '',
+            'team_name' => 'Austria',
+            'team_nationality' => 'aut',
+            'team_num_players' => 0,
+            'team_status' => 1,
+        ], 'team_id');
+        $germanyId = (int) Team::query()->insertGetId([
+            'team_foreign_id' => '',
+            'team_name' => 'Germany',
+            'team_nationality' => 'ger',
+            'team_num_players' => 0,
+            'team_status' => 1,
+        ], 'team_id');
+
+        $playerId = (int) Player::query()->insertGetId([
+            'player_foreign_id' => 'tm-1',
+            'player_fname' => 'Max',
+            'player_lname' => 'Muster',
+            'player_nationality' => 'AUT',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ], 'player_id');
+
+        Playerteam::query()->insert([
+            [
+                'playerteam_player_id' => $playerId,
+                'playerteam_team_id' => $germanyId,
+                'playerteam_league_id' => 1,
+                'playerteam_player_picture' => '',
+                'playerteam_status' => 1,
+                'playerteam_player_position' => 'm',
+                'playerteam_player_note' => '',
+                'playerteam_date_transfer' => null,
+            ],
+            [
+                'playerteam_player_id' => $playerId,
+                'playerteam_team_id' => $austriaId,
+                'playerteam_league_id' => 2,
+                'playerteam_player_picture' => '',
+                'playerteam_status' => 0,
+                'playerteam_player_position' => 'm',
+                'playerteam_player_note' => '',
+                'playerteam_date_transfer' => null,
+            ],
+        ]);
+
+        $service = new AdminDbCleanupService(Mockery::mock(AdminCenterService::class));
+        $players = $service->playersWithoutPlayerstats();
+        $result = $service->runTask('players-without-playerstats');
+
+        $this->assertCount(1, $players);
+        $this->assertSame($playerId, $players[0]['player_id']);
+        $this->assertSame(
+            [
+                ['team_id' => $austriaId, 'team_name' => 'Austria'],
+                ['team_id' => $germanyId, 'team_name' => 'Germany'],
+            ],
+            $players[0]['teams']
+        );
+        $this->assertStringContainsString('Austria, Germany', $result['html']);
+        $this->assertStringContainsString('<th scope="col">Teams</th>', $result['html']);
     }
 
     #[Test]
