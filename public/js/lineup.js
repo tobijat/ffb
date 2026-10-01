@@ -660,7 +660,7 @@
         creditsEl.classList.toggle('is-over', rounded < 0);
         const needed = Number(options.lineup_max_players) - lineuplist.length;
         let html =
-            '<div class="lineup-credits-row"><img src="' +
+            '<div class="pitch-stats-row"><img src="' +
             symbolUrl('symbol_credits.png') +
             '" alt=""><span>' +
             rounded +

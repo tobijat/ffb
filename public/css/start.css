@@ -567,21 +567,53 @@ main {
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 6px;
+    gap: 3px;
 }
 
-.match-list li {
+.match-list > li {
+    display: block;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #9cc09c;
+    border-radius: var(--radius, 4px);
+    background: #ccffcc;
+    overflow: hidden;
+    font-size: 9pt;
+}
+
+.match-list > li:hover {
+    background: #e0ffe0;
+}
+
+.match-list .match-list-row {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
-    gap: 6px 8px;
+    gap: 4px 6px;
     align-items: center;
-    font-size: 9pt;
     padding: 2px 4px;
-    border-radius: var(--radius, 4px);
+    background: #ccffcc;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.match-list li:hover {
-    background: #ccffcc;
+.match-list .match-list-row--clickable {
+    appearance: none;
+    border: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    text-align: inherit;
+    cursor: pointer;
+}
+
+.match-list .match-list-row--clickable:hover,
+.match-list > li:hover > .match-list-row {
+    background: #e0ffe0;
+}
+
+.match-list .match-list-row--clickable:focus-visible {
+    outline: 2px solid #336633;
+    outline-offset: -2px;
 }
 
 .match-list .home {
@@ -590,6 +622,7 @@ main {
     justify-content: flex-end;
     gap: 4px;
     text-align: right;
+    min-width: 0;
 }
 
 .match-list .away {
@@ -598,6 +631,14 @@ main {
     justify-content: flex-start;
     gap: 4px;
     text-align: left;
+    min-width: 0;
+}
+
+.match-list .match-team-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
 }
 
 .match-list .score {

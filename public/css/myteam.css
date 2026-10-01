@@ -23,75 +23,107 @@
     box-sizing: border-box;
 }
 
-.myteam-info {
-    text-align: center;
+/* Shared pitch header: round left, name/actions center, stats right */
+.pitch-info {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 4px 10px;
+    align-items: start;
     margin-bottom: 4px;
+    min-height: 0;
 }
 
-.myteam-info #round-meta,
-.myteam-round {
-    margin: 0 0 6px;
+.pitch-info-round {
+    min-width: 0;
+    text-align: left;
+    justify-self: start;
+}
+
+.pitch-info-center {
+    min-width: 0;
+    text-align: center;
+    justify-self: center;
+    align-self: center;
+}
+
+.pitch-round {
+    margin: 0;
     font-size: 13pt;
     font-weight: bold;
     color: var(--ink);
-    line-height: 1.25;
+    line-height: 1.2;
+    text-align: left;
 }
 
-.myteam-user {
+.pitch-round .pitch-round-dates,
+.pitch-round .lineup-deadline {
+    display: block;
+    margin-top: 2px;
+    font-size: 9pt;
+    font-weight: normal;
+}
+
+.pitch-round em {
+    font-size: 9pt;
+    font-weight: normal;
+}
+
+.pitch-user {
     margin: 0;
     font-size: 13pt;
     font-weight: bold;
     min-width: 0;
-    align-self: center;
+    line-height: 1.2;
 }
 
-.myteam-stats {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: 12px 20px;
-    margin: 0 0 4px;
-    max-width: 28rem;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.myteam-stat {
+.pitch-stats-group {
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: stretch;
     gap: 6px;
+    justify-self: end;
+    align-self: start;
 }
 
-.myteam-stat[hidden],
-.myteam-stat-credits[hidden] {
+.pitch-stats {
+    min-width: 4.5rem;
+    background: #99cc99;
+    border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
+    padding: 2px 6px 4px;
+    text-align: center;
+    font-size: 8pt;
+    line-height: 1.2;
+}
+
+.pitch-stats[hidden] {
     display: none !important;
 }
 
-.myteam-stat-score {
-    justify-self: start;
+.pitch-stats.is-over,
+.pitch-stats.lineup-credits.is-over {
+    background: #ff0000;
+    color: #fff;
 }
 
-.myteam-stat-credits {
-    justify-self: end;
+.pitch-stats-row,
+.pitch-stats .lineup-credits-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 15pt;
+    font-weight: bold;
+    line-height: 1.1;
 }
 
-.myteam-stat img {
+.pitch-stats-row img,
+.pitch-stats .lineup-credits-row img {
     width: 28px;
     height: 28px;
     object-fit: contain;
     flex-shrink: 0;
-}
-
-.myteam-stat .label {
-    display: block;
-    font-size: 8pt;
-    color: var(--muted);
-    line-height: 1.1;
-}
-
-.myteam-stat strong {
-    font-size: 14pt;
-    line-height: 1.1;
 }
 
 .soccer-field {
@@ -294,6 +326,34 @@
 @media (max-width: 960px) {
     .myteam-layout {
         grid-template-columns: 1fr;
+    }
+
+    .pitch-info {
+        grid-template-columns: 1fr;
+    }
+
+    .pitch-info-round,
+    .pitch-round {
+        text-align: center;
+        justify-self: center;
+    }
+
+    .pitch-info-center {
+        order: 3;
+    }
+
+    .pitch-stats-group {
+        width: auto;
+        max-width: 100%;
+        margin: 0 auto;
+        justify-self: center;
+        justify-content: center;
+        order: 2;
+    }
+
+    .pitch-stats {
+        width: auto;
+        min-width: 4.5rem;
     }
 
     .soccer-field {
