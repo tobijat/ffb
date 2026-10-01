@@ -2616,6 +2616,8 @@ class AdminLeagueDashboardTest extends TestCase
             $table->integer('options_lineup_max_m')->default(5);
             $table->integer('options_lineup_min_s')->default(1);
             $table->integer('options_lineup_max_s')->default(3);
+            $table->integer('options_lineup_min_bench')->default(0);
+            $table->integer('options_lineup_max_bench')->default(0);
             $table->integer('options_score_minutes_threshold_lower')->default(30);
             $table->integer('options_score_minutes_threshold_upper')->default(60);
             $table->integer('options_score_minutes_low')->default(1);
@@ -2665,6 +2667,8 @@ class AdminLeagueDashboardTest extends TestCase
             $table->integer('matchround_options_lineup_max_d')->default(5);
             $table->integer('matchround_options_lineup_max_m')->default(5);
             $table->integer('matchround_options_lineup_max_s')->default(3);
+            $table->integer('matchround_options_lineup_min_bench')->default(0);
+            $table->integer('matchround_options_lineup_max_bench')->default(0);
         });
 
         Schema::create('ffb_match', function (Blueprint $table) {

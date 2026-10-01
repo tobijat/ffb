@@ -28,6 +28,8 @@ class LineupOptionsResolver
             'lineup_max_d',
             'lineup_max_m',
             'lineup_max_s',
+            'lineup_min_bench',
+            'lineup_max_bench',
         ];
     }
 
@@ -44,6 +46,8 @@ class LineupOptionsResolver
      *     lineup_max_d: int,
      *     lineup_max_m: int,
      *     lineup_max_s: int,
+     *     lineup_min_bench: int,
+     *     lineup_max_bench: int,
      *     source: 'matchround'|'league'|'fallback'
      * }
      */
@@ -78,6 +82,8 @@ class LineupOptionsResolver
      *     lineup_max_d: int,
      *     lineup_max_m: int,
      *     lineup_max_s: int,
+     *     lineup_min_bench: int,
+     *     lineup_max_bench: int,
      *     source: 'league'|'fallback'
      * }
      */
@@ -109,7 +115,9 @@ class LineupOptionsResolver
      *     lineup_max_g: int,
      *     lineup_max_d: int,
      *     lineup_max_m: int,
-     *     lineup_max_s: int
+     *     lineup_max_s: int,
+     *     lineup_min_bench: int,
+     *     lineup_max_bench: int
      * }
      */
     private function fromLeagueOptions(LeagueOptions $options): array
@@ -126,38 +134,8 @@ class LineupOptionsResolver
             'lineup_max_d' => (int) $options->options_lineup_max_d,
             'lineup_max_m' => (int) $options->options_lineup_max_m,
             'lineup_max_s' => (int) $options->options_lineup_max_s,
-        ];
-    }
-
-    /**
-     * @return array{
-     *     lineup_max_players: int,
-     *     lineup_max_credits: float,
-     *     lineup_max_players_team: int,
-     *     lineup_min_g: int,
-     *     lineup_min_d: int,
-     *     lineup_min_m: int,
-     *     lineup_min_s: int,
-     *     lineup_max_g: int,
-     *     lineup_max_d: int,
-     *     lineup_max_m: int,
-     *     lineup_max_s: int
-     * }
-     */
-    private function fromMatchroundOptions(MatchroundOptions $options): array
-    {
-        return [
-            'lineup_max_players' => (int) $options->matchround_options_lineup_max_players,
-            'lineup_max_credits' => (float) $options->matchround_options_lineup_max_credits,
-            'lineup_max_players_team' => (int) $options->matchround_options_lineup_max_players_team,
-            'lineup_min_g' => (int) $options->matchround_options_lineup_min_g,
-            'lineup_min_d' => (int) $options->matchround_options_lineup_min_d,
-            'lineup_min_m' => (int) $options->matchround_options_lineup_min_m,
-            'lineup_min_s' => (int) $options->matchround_options_lineup_min_s,
-            'lineup_max_g' => (int) $options->matchround_options_lineup_max_g,
-            'lineup_max_d' => (int) $options->matchround_options_lineup_max_d,
-            'lineup_max_m' => (int) $options->matchround_options_lineup_max_m,
-            'lineup_max_s' => (int) $options->matchround_options_lineup_max_s,
+            'lineup_min_bench' => (int) ($options->options_lineup_min_bench ?? 0),
+            'lineup_max_bench' => (int) ($options->options_lineup_max_bench ?? 0),
         ];
     }
 
@@ -174,6 +152,44 @@ class LineupOptionsResolver
      *     lineup_max_d: int,
      *     lineup_max_m: int,
      *     lineup_max_s: int,
+     *     lineup_min_bench: int,
+     *     lineup_max_bench: int
+     * }
+     */
+    private function fromMatchroundOptions(MatchroundOptions $options): array
+    {
+        return [
+            'lineup_max_players' => (int) $options->matchround_options_lineup_max_players,
+            'lineup_max_credits' => (float) $options->matchround_options_lineup_max_credits,
+            'lineup_max_players_team' => (int) $options->matchround_options_lineup_max_players_team,
+            'lineup_min_g' => (int) $options->matchround_options_lineup_min_g,
+            'lineup_min_d' => (int) $options->matchround_options_lineup_min_d,
+            'lineup_min_m' => (int) $options->matchround_options_lineup_min_m,
+            'lineup_min_s' => (int) $options->matchround_options_lineup_min_s,
+            'lineup_max_g' => (int) $options->matchround_options_lineup_max_g,
+            'lineup_max_d' => (int) $options->matchround_options_lineup_max_d,
+            'lineup_max_m' => (int) $options->matchround_options_lineup_max_m,
+            'lineup_max_s' => (int) $options->matchround_options_lineup_max_s,
+            'lineup_min_bench' => (int) ($options->matchround_options_lineup_min_bench ?? 0),
+            'lineup_max_bench' => (int) ($options->matchround_options_lineup_max_bench ?? 0),
+        ];
+    }
+
+    /**
+     * @return array{
+     *     lineup_max_players: int,
+     *     lineup_max_credits: float,
+     *     lineup_max_players_team: int,
+     *     lineup_min_g: int,
+     *     lineup_min_d: int,
+     *     lineup_min_m: int,
+     *     lineup_min_s: int,
+     *     lineup_max_g: int,
+     *     lineup_max_d: int,
+     *     lineup_max_m: int,
+     *     lineup_max_s: int,
+     *     lineup_min_bench: int,
+     *     lineup_max_bench: int,
      *     source: 'fallback'
      * }
      */
@@ -191,6 +207,8 @@ class LineupOptionsResolver
             'lineup_max_d' => 5,
             'lineup_max_m' => 5,
             'lineup_max_s' => 3,
+            'lineup_min_bench' => 0,
+            'lineup_max_bench' => 0,
             'source' => 'fallback',
         ];
     }

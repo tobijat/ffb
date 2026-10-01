@@ -423,6 +423,8 @@ class AdminMatchroundService
             'matchround_options_lineup_max_d',
             'matchround_options_lineup_max_m',
             'matchround_options_lineup_max_s',
+            'matchround_options_lineup_min_bench',
+            'matchround_options_lineup_max_bench',
         ];
     }
 
@@ -443,6 +445,8 @@ class AdminMatchroundService
             'matchround_options_lineup_max_d' => '',
             'matchround_options_lineup_max_m' => '',
             'matchround_options_lineup_max_s' => '',
+            'matchround_options_lineup_min_bench' => '',
+            'matchround_options_lineup_max_bench' => '',
         ];
     }
 

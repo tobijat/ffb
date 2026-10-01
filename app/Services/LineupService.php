@@ -101,6 +101,8 @@ class LineupService
                 'lineup_max_d' => $resolved['lineup_max_d'],
                 'lineup_max_m' => $resolved['lineup_max_m'],
                 'lineup_max_s' => $resolved['lineup_max_s'],
+                'lineup_min_bench' => $resolved['lineup_min_bench'],
+                'lineup_max_bench' => $resolved['lineup_max_bench'],
                 'game_pricemode' => 'dynamic',
                 'source' => $resolved['source'],
             ],
@@ -684,6 +686,8 @@ class LineupService
             'lineup_max_d' => $resolved['lineup_max_d'],
             'lineup_max_m' => $resolved['lineup_max_m'],
             'lineup_max_s' => $resolved['lineup_max_s'],
+            'lineup_min_bench' => $resolved['lineup_min_bench'],
+            'lineup_max_bench' => $resolved['lineup_max_bench'],
             'game_pricemode' => 'dynamic',
             'source' => $resolved['source'],
         ];

@@ -584,6 +584,8 @@ class ExtremeTeamTest extends TestCase
             $table->integer('options_lineup_max_m')->default(5);
             $table->integer('options_lineup_min_s')->default(1);
             $table->integer('options_lineup_max_s')->default(3);
+            $table->integer('options_lineup_min_bench')->default(0);
+            $table->integer('options_lineup_max_bench')->default(0);
         });
 
         Schema::create('ffb_matchround_options', function (Blueprint $table) {
@@ -600,6 +602,8 @@ class ExtremeTeamTest extends TestCase
             $table->integer('matchround_options_lineup_max_m')->default(5);
             $table->integer('matchround_options_lineup_min_s')->default(1);
             $table->integer('matchround_options_lineup_max_s')->default(3);
+            $table->integer('matchround_options_lineup_min_bench')->default(0);
+            $table->integer('matchround_options_lineup_max_bench')->default(0);
         });
 
         Schema::create('ffb_matchround', function (Blueprint $table) {

@@ -50,6 +50,8 @@ class LeagueOptions extends Model
         'options_lineup_max_d',
         'options_lineup_max_m',
         'options_lineup_max_s',
+        'options_lineup_min_bench',
+        'options_lineup_max_bench',
         'options_league_rankmode',
         'options_league_pricemode',
         'options_league_pointsmode',

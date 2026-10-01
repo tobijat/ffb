@@ -122,6 +122,9 @@
                         <li><b>{{ $o['options_lineup_min_d'] }}-{{ $o['options_lineup_max_d'] }}</b> Verteidiger</li>
                         <li><b>{{ $o['options_lineup_min_m'] }}-{{ $o['options_lineup_max_m'] }}</b> Mittelfeldspieler</li>
                         <li><b>{{ $o['options_lineup_min_s'] }}-{{ $o['options_lineup_max_s'] }}</b> Angreifer</li>
+                        @if ((int) ($o['options_lineup_max_bench'] ?? 0) > 0)
+                            <li><b>{{ $o['options_lineup_min_bench'] }}-{{ $o['options_lineup_max_bench'] }}</b> Ersatzspieler</li>
+                        @endif
                         <li><b>{{ $o['options_lineup_max_credits'] }}</b> Credits um Spieler zu kaufen</li>
                         <li><b>max. {{ $o['options_lineup_max_players_team'] }}</b> Spieler des selben Teams</li>
                     </ul>

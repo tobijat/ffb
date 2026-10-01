@@ -2335,6 +2335,7 @@ class AdminLeagueDashboardService
                     ['label' => 'Abwehr (min/max)', 'value' => (int) ($options->matchround_options_lineup_min_d ?? 0).' / '.(int) ($options->matchround_options_lineup_max_d ?? 0)],
                     ['label' => 'Mittelfeld (min/max)', 'value' => (int) ($options->matchround_options_lineup_min_m ?? 0).' / '.(int) ($options->matchround_options_lineup_max_m ?? 0)],
                     ['label' => 'Angriff (min/max)', 'value' => (int) ($options->matchround_options_lineup_min_s ?? 0).' / '.(int) ($options->matchround_options_lineup_max_s ?? 0)],
+                    ['label' => 'Bank (min/max)', 'value' => (int) ($options->matchround_options_lineup_min_bench ?? 0).' / '.(int) ($options->matchround_options_lineup_max_bench ?? 0)],
                 ],
             ],
         ];
@@ -2366,6 +2367,7 @@ class AdminLeagueDashboardService
                     ['label' => 'Abwehr (min/max)', 'value' => (int) ($options->options_lineup_min_d ?? 0).' / '.(int) ($options->options_lineup_max_d ?? 0)],
                     ['label' => 'Mittelfeld (min/max)', 'value' => (int) ($options->options_lineup_min_m ?? 0).' / '.(int) ($options->options_lineup_max_m ?? 0)],
                     ['label' => 'Angriff (min/max)', 'value' => (int) ($options->options_lineup_min_s ?? 0).' / '.(int) ($options->options_lineup_max_s ?? 0)],
+                    ['label' => 'Bank (min/max)', 'value' => (int) ($options->options_lineup_min_bench ?? 0).' / '.(int) ($options->options_lineup_max_bench ?? 0)],
                 ],
             ],
             [

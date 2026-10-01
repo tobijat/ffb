@@ -86,6 +86,8 @@ class LineupOptionsResolverTest extends TestCase
         $this->assertSame('league', $resolved['source']);
         $this->assertSame(3, $resolved['lineup_max_players_team']);
         $this->assertSame(100.0, $resolved['lineup_max_credits']);
+        $this->assertSame(0, $resolved['lineup_min_bench']);
+        $this->assertSame(0, $resolved['lineup_max_bench']);
     }
 
     #[Test]
@@ -97,5 +99,7 @@ class LineupOptionsResolverTest extends TestCase
         $this->assertSame(6, $resolved['lineup_max_players_team']);
         $this->assertSame(80.0, $resolved['lineup_max_credits']);
         $this->assertSame(2, $resolved['lineup_min_d']);
+        $this->assertSame(0, $resolved['lineup_min_bench']);
+        $this->assertSame(0, $resolved['lineup_max_bench']);
     }
 }
