@@ -5,19 +5,27 @@
     align-items: start;
 }
 
-/* Compact header above pitch — title/actions left, credits right (legacy-like). */
+/* Header above pitch: title left, save/messages center, credits right. */
 .lineup-info {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     gap: 4px 10px;
     align-items: start;
     margin-bottom: 4px;
     min-height: 0;
 }
 
-.lineup-info-main {
+.lineup-info-round {
+    min-width: 0;
+    text-align: left;
+    justify-self: start;
+}
+
+.lineup-info-center {
     min-width: 0;
     text-align: center;
+    justify-self: center;
+    align-self: center;
 }
 
 .lineup-round {
@@ -26,6 +34,14 @@
     font-weight: bold;
     color: var(--ink);
     line-height: 1.2;
+    text-align: left;
+}
+
+.lineup-round .lineup-deadline {
+    display: block;
+    margin-top: 2px;
+    font-size: 9pt;
+    font-weight: normal;
 }
 
 .lineup-round em {
@@ -35,7 +51,7 @@
 
 .lineup-actions {
     text-align: center;
-    margin: 4px 0 0;
+    margin: 0;
     min-height: 1.6rem;
 }
 
@@ -66,7 +82,7 @@
 
 .lineup-messages {
     margin: 2px auto 0;
-    max-width: 92%;
+    max-width: 18rem;
     font-size: 9pt;
     text-align: center;
     padding: 1px 4px;
@@ -96,6 +112,7 @@
     text-align: center;
     font-size: 8pt;
     line-height: 1.2;
+    justify-self: end;
     align-self: start;
 }
 
@@ -293,9 +310,21 @@
         grid-template-columns: 1fr;
     }
 
+    .lineup-info-round,
+    .lineup-round {
+        text-align: center;
+        justify-self: center;
+    }
+
+    .lineup-info-center {
+        order: 3;
+    }
+
     .lineup-credits {
         width: auto;
         max-width: 12rem;
         margin: 0 auto;
+        justify-self: center;
+        order: 2;
     }
 }
