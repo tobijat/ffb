@@ -9,6 +9,7 @@
     const selectedTeamEl = document.getElementById('selected-team');
     const teamScoreEl = document.getElementById('team-score');
     const teamPriceEl = document.getElementById('team-price');
+    const teamSideStatsEl = document.getElementById('team-side-stats');
     const matchlistEl = document.getElementById('matchlist');
     const pitchMessageEl = document.getElementById('pitch-message');
     const sideTabsEl = document.getElementById('side-tabs');
@@ -161,6 +162,9 @@
         teamScoreEl.textContent = '–';
         teamPriceEl.textContent = '–';
         selectedTeamEl.textContent = '';
+        if (teamSideStatsEl) {
+            teamSideStatsEl.hidden = true;
+        }
     }
 
     function setSelectsEnabled(enabled) {
@@ -175,15 +179,14 @@
             return;
         }
         let html = escapeHtml(round.matchround_title);
-        if (round.matchround_startdate === round.matchround_enddate) {
-            html += '<br><em>' + escapeHtml(round.matchround_startdate) + '</em>';
-        } else {
-            html +=
-                '<br><em>' +
-                escapeHtml(round.matchround_startdate) +
-                ' bis ' +
-                escapeHtml(round.matchround_enddate) +
-                '</em>';
+        if (round.matchround_startdate) {
+            const dates =
+                round.matchround_startdate === round.matchround_enddate
+                    ? escapeHtml(round.matchround_startdate)
+                    : escapeHtml(round.matchround_startdate) +
+                      ' - ' +
+                      escapeHtml(round.matchround_enddate);
+            html += '<span class="pitch-round-dates">' + dates + '</span>';
         }
         metaEl.innerHTML = html;
     }
@@ -355,7 +358,10 @@
         const ut = data.userteam || {};
         teamScoreEl.textContent = String(ut.userteam_score != null ? ut.userteam_score : '–');
         const price = ut.userteam_price != null ? Math.round(Number(ut.userteam_price) * 10) / 10 : null;
-        teamPriceEl.textContent = price != null ? String(price) : '–';
+        teamPriceEl.textContent = price != null ? price.toFixed(1) : '–';
+        if (teamSideStatsEl) {
+            teamSideStatsEl.hidden = false;
+        }
 
         const grouped = { g: [], d: [], m: [], s: [] };
         (data.players || []).forEach(function (player) {
@@ -387,6 +393,9 @@
         selectedTeamEl.textContent = teamType === 'flop' ? 'FLOP Team der Runde' : 'TOP Team der Runde';
         teamScoreEl.textContent = '–';
         teamPriceEl.textContent = '–';
+        if (teamSideStatsEl) {
+            teamSideStatsEl.hidden = true;
+        }
 
         const key = cacheKey(round.matchround_id, teamType);
         try {

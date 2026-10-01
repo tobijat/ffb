@@ -4,11 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Aufstellung — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css?v=22">
+    <link rel="stylesheet" href="css/start.css?v=23">
     <link rel="stylesheet" href="css/dashboard.css?v=12">
     <link rel="stylesheet" href="css/modal.css?v=9">
-    <link rel="stylesheet" href="css/myteam.css?v=15">
-    <link rel="stylesheet" href="css/lineup.css?v=19">
+    <link rel="stylesheet" href="css/myteam.css?v=17">
+    <link rel="stylesheet" href="css/lineup.css?v=22">
 </head>
 <body class="dash-body">
     @php
@@ -29,15 +29,15 @@
 
     <main class="dash-main lineup-layout">
         <section class="panel myteam-pitch" aria-label="Aufstellung">
-            <div class="lineup-info">
-                <div class="lineup-info-round">
-                    <p class="lineup-round" id="round-meta">Lade Spielrunde…</p>
+            <div class="pitch-info">
+                <div class="pitch-info-round">
+                    <p class="pitch-round" id="round-meta">Lade Spielrunde…</p>
                 </div>
-                <div class="lineup-info-center">
+                <div class="pitch-info-center">
                     <div class="lineup-actions" id="lineup-actions"></div>
                     <div class="lineup-messages" id="lineup-messages"></div>
                 </div>
-                <div class="lineup-credits" id="lineup-credits" hidden></div>
+                <div class="pitch-stats lineup-credits" id="lineup-credits" hidden></div>
             </div>
 
             <div
@@ -82,7 +82,7 @@
     </script>
     <script src="js/modal.js?v=8" defer></script>
     <script src="js/player-modal.js?v=8" defer></script>
-    <script src="js/match-list.js?v=2" defer></script>
-    <script src="js/lineup.js?v=23" defer></script>
+    <script src="js/match-list.js?v=4" defer></script>
+    <script src="js/lineup.js?v=24" defer></script>
 </body>
 </html>

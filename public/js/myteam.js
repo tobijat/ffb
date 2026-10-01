@@ -12,6 +12,7 @@
     const teamScoreEl = document.getElementById('team-score');
     const teamPriceEl = document.getElementById('team-price');
     const teamCreditsEl = document.getElementById('team-credits');
+    const teamSideStatsEl = document.getElementById('team-side-stats');
     const matchlistEl = document.getElementById('matchlist');
     const profileLinkEl = document.getElementById('user-profile-link');
     const pitchMessageEl = document.getElementById('pitch-message');
@@ -172,6 +173,9 @@
         if (teamCreditsEl) {
             teamCreditsEl.hidden = true;
         }
+        if (teamSideStatsEl) {
+            teamSideStatsEl.hidden = true;
+        }
         selectedUserEl.textContent = '';
     }
 
@@ -181,18 +185,20 @@
             metaEl.textContent = 'Keine Spielrunden';
             return;
         }
-        let text = round.matchround_title || '';
+        let html = escapeHtml(round.matchround_title || '');
         if (Number(round.matchround_running) === 1) {
-            text += ' (Deadline offen)';
+            html += ' <em>(Deadline offen)</em>';
         }
         if (round.matchround_startdate) {
-            if (round.matchround_startdate === round.matchround_enddate) {
-                text += ' · ' + round.matchround_startdate;
-            } else {
-                text += ' · ' + round.matchround_startdate + ' bis ' + round.matchround_enddate;
-            }
+            const dates =
+                round.matchround_startdate === round.matchround_enddate
+                    ? escapeHtml(round.matchround_startdate)
+                    : escapeHtml(round.matchround_startdate) +
+                      ' - ' +
+                      escapeHtml(round.matchround_enddate);
+            html += '<span class="pitch-round-dates">' + dates + '</span>';
         }
-        metaEl.textContent = text;
+        metaEl.innerHTML = html;
     }
 
     function renderRoundSelect() {
@@ -472,6 +478,9 @@
 
         teamScoreEl.textContent = String(data.userteam.userteam_score ?? 0);
         const teamPrice = Number(data.userteam.userteam_price || 0);
+        if (teamSideStatsEl) {
+            teamSideStatsEl.hidden = false;
+        }
         if (teamCreditsEl) {
             if (teamPrice > 0) {
                 teamCreditsEl.hidden = false;

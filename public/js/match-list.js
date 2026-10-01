@@ -93,21 +93,25 @@ window.FfbMatchList = (function () {
 
     function matchRowHtml(match) {
         return (
-            '<span class="home">' +
-            escapeHtml(match.match_hometeam_name) +
-            ' ' +
-            flagHtml(match.match_hometeam_nationality) +
-            '</span>' +
-            '<span class="score"><a class="nolink under" href="#" data-modal="match" data-id="' +
+            '<button type="button" class="match-list-row match-list-row--clickable" data-modal="match" data-id="' +
             escapeHtml(match.match_id) +
             '" title="Klicken für Matchinfos">' +
+            '<span class="home">' +
+            '<span class="match-team-name">' +
+            escapeHtml(match.match_hometeam_name) +
+            '</span> ' +
+            flagHtml(match.match_hometeam_nationality) +
+            '</span>' +
+            '<span class="score">' +
             formatScore(match) +
-            '</a></span>' +
+            '</span>' +
             '<span class="away">' +
             flagHtml(match.match_guestteam_nationality) +
-            ' ' +
+            ' <span class="match-team-name">' +
             escapeHtml(match.match_guestteam_name) +
-            '</span>'
+            '</span>' +
+            '</span>' +
+            '</button>'
         );
     }
 
@@ -131,6 +135,7 @@ window.FfbMatchList = (function () {
         ul.className = 'match-list';
         list.forEach(function (match) {
             const li = document.createElement('li');
+            li.className = 'match-list-item';
             li.innerHTML = matchRowHtml(match);
             ul.appendChild(li);
         });

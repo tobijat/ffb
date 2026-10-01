@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mannschaft — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css?v=22">
+    <link rel="stylesheet" href="css/start.css?v=23">
     <link rel="stylesheet" href="css/dashboard.css?v=12">
     <link rel="stylesheet" href="css/modal.css?v=9">
-    <link rel="stylesheet" href="css/myteam.css?v=15">
+    <link rel="stylesheet" href="css/myteam.css?v=17">
 </head>
 <body class="dash-body">
     @php
@@ -28,32 +28,34 @@
 
     <main class="dash-main myteam-layout">
         <section class="panel myteam-pitch" aria-label="Mannschaft">
-            <div class="myteam-info">
-                <p class="myteam-round" id="round-meta">Lade Spielrunden…</p>
-                <div class="myteam-stats">
-                    <div class="myteam-stat myteam-stat-score">
-                        <img
-                            src="{{ $legacyBase }}images/ffb/symbols/symbol_score.png"
-                            alt=""
-                            width="28"
-                            height="28"
-                        >
-                        <div>
-                            <span class="label">Punkte</span>
-                            <strong id="team-score">–</strong>
+            <div class="pitch-info">
+                <div class="pitch-info-round">
+                    <p class="pitch-round" id="round-meta">Lade Spielrunden…</p>
+                </div>
+                <div class="pitch-info-center">
+                    <p class="pitch-user" id="selected-user"></p>
+                </div>
+                <div class="pitch-stats-group" id="team-side-stats" hidden>
+                    <div class="pitch-stats" id="team-score-tile">
+                        <div class="pitch-stats-row">
+                            <img
+                                src="{{ $legacyBase }}images/ffb/symbols/symbol_score.png"
+                                alt=""
+                                width="28"
+                                height="28"
+                            >
+                            <span id="team-score">–</span>
                         </div>
                     </div>
-                    <p class="myteam-user" id="selected-user"></p>
-                    <div class="myteam-stat myteam-stat-credits" id="team-credits" hidden>
-                        <img
-                            src="{{ $legacyBase }}images/ffb/symbols/symbol_credits.png"
-                            alt=""
-                            width="28"
-                            height="28"
-                        >
-                        <div>
-                            <span class="label">Credits</span>
-                            <strong id="team-price">–</strong>
+                    <div class="pitch-stats" id="team-credits" hidden>
+                        <div class="pitch-stats-row">
+                            <img
+                                src="{{ $legacyBase }}images/ffb/symbols/symbol_credits.png"
+                                alt=""
+                                width="28"
+                                height="28"
+                            >
+                            <span id="team-price">–</span>
                         </div>
                     </div>
                 </div>
@@ -118,7 +120,7 @@
     </script>
     <script src="js/modal.js?v=8" defer></script>
     <script src="js/player-modal.js?v=8" defer></script>
-    <script src="js/match-list.js?v=2" defer></script>
-    <script src="js/myteam.js?v=10" defer></script>
+    <script src="js/match-list.js?v=4" defer></script>
+    <script src="js/myteam.js?v=11" defer></script>
 </body>
 </html>
