@@ -126,10 +126,27 @@
                                                 <summary>{{ $infoListSummary }} ({{ count($infoList) }})</summary>
                                                 <ul class="admin-dashboard-match-list">
                                                     @foreach ($infoList as $entry)
+                                                        @php
+                                                            $entryLineup = is_array($entry['lineup'] ?? null)
+                                                                ? $entry['lineup']
+                                                                : [];
+                                                        @endphp
                                                         <li>
                                                             <span>{{ $entry['label'] }}</span>
                                                             @if (($entry['detail'] ?? '') !== '')
                                                                 <span class="muted">— {{ $entry['detail'] }}</span>
+                                                            @endif
+                                                            @if ($entryLineup !== [])
+                                                                <ul class="admin-dashboard-lineup-list">
+                                                                    @foreach ($entryLineup as $player)
+                                                                        <li>
+                                                                            <span>{{ $player['label'] }}</span>
+                                                                            @if (($player['detail'] ?? '') !== '')
+                                                                                <span class="muted">— {{ $player['detail'] }}</span>
+                                                                            @endif
+                                                                        </li>
+                                                                    @endforeach
+                                                                </ul>
                                                             @endif
                                                         </li>
                                                     @endforeach

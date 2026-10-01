@@ -26,9 +26,12 @@ class AdminLeagueDashboardService
 {
     private const DEFAULT_SYMBOL = 'symbol_game_na.png';
 
+    private const AVERAGE_LINEUP_BUDGET_RATIO = 0.9;
+
     public function __construct(
         private readonly AdminCenterService $adminCenter,
         private readonly ExtremeTeamService $extremeTeams,
+        private readonly LineupOptionsResolver $lineupOptions,
     ) {}
 
     /**
@@ -738,11 +741,13 @@ class AdminLeagueDashboardService
         $teamPricesOk = $missingTeamPrices === [];
         $performanceOk = $missingPerformance === [];
         $playerPricesOk = $missingPlayerPrices === [];
+        $averageLineup = $this->averageLineupBudgetEntries($leagueId, $isDynamic, $roundIds);
+        $averageLineupOk = (bool) ($averageLineup['ok'] ?? false);
 
         return [
             'key' => 'playerprice',
             'title' => 'Preis/Performance',
-            'ok' => $teamPricesOk && $performanceOk && $playerPricesOk,
+            'ok' => $teamPricesOk && $performanceOk && $playerPricesOk && $averageLineupOk,
             'checklist' => [
                 [
                     'key' => 'team-prices',
@@ -765,8 +770,448 @@ class AdminLeagueDashboardService
                     'match_list' => $missingPlayerPrices,
                     'match_list_summary' => 'Aktive Spieler ohne Spielerpreis',
                 ],
+                [
+                    'key' => 'average-lineup-budget',
+                    'label' => 'Durchschnitts-Aufstellung ≤ 90% des Budgets',
+                    'ok' => $averageLineupOk,
+                    'info_list' => $averageLineup['entries'],
+                    'info_list_summary' => 'Anteil am Budget je Spielrunde',
+                ],
             ],
         ];
+    }
+
+    /**
+     * @param  list<int>  $roundIds
+     * @return array{
+     *     ok: bool,
+     *     entries: list<array{
+     *         label: string,
+     *         detail: string,
+     *         lineup?: list<array{label: string, detail: string}>
+     *     }>
+     * }
+     */
+    private function averageLineupBudgetEntries(int $leagueId, bool $isDynamic, array $roundIds): array
+    {
+        if ($leagueId <= 0 || $roundIds === []) {
+            return ['ok' => true, 'entries' => []];
+        }
+
+        $checkRoundIds = $isDynamic
+            ? $this->matchroundIdsWithPlayerprices($roundIds)
+            : $roundIds;
+
+        if ($checkRoundIds === []) {
+            return ['ok' => true, 'entries' => []];
+        }
+
+        $rounds = Matchround::query()
+            ->whereIn('matchround_id', $checkRoundIds)
+            ->orderBy('matchround_startdate')
+            ->orderBy('matchround_id')
+            ->get(['matchround_id', 'matchround_title', 'matchround_startdate']);
+
+        $allOk = true;
+        $entries = [];
+
+        foreach ($rounds as $round) {
+            $roundId = (int) $round->matchround_id;
+            $roundTitle = trim((string) $round->matchround_title);
+            $label = $roundTitle !== '' ? $roundTitle : 'Spielrunde #'.$roundId;
+
+            $result = $this->averageLineupForMatchround($leagueId, $roundId);
+            if ($result === null) {
+                $allOk = false;
+                $entries[] = [
+                    'label' => $label,
+                    'detail' => 'keine gültige Durchschnitts-Aufstellung möglich',
+                ];
+
+                continue;
+            }
+
+            $budget = (float) $result['budget'];
+            $cost = (float) $result['cost'];
+            $ratio = $budget > 0.0 ? ($cost / $budget) : 0.0;
+            $percent = round($ratio * 100, 1);
+            $withinBudget = $ratio <= self::AVERAGE_LINEUP_BUDGET_RATIO;
+            if (! $withinBudget) {
+                $allOk = false;
+            }
+
+            $entry = [
+                'label' => $label,
+                'detail' => $this->formatCredits($percent).'% des Budgets ('
+                    .$this->formatCredits($cost).' / '.$this->formatCredits($budget).')',
+            ];
+
+            if (! $withinBudget) {
+                $entry['lineup'] = array_map(
+                    static fn (array $player): array => [
+                        'label' => (string) $player['name'],
+                        'detail' => (string) $player['team'].' · '.$player['price_label'],
+                    ],
+                    $result['players'],
+                );
+            }
+
+            $entries[] = $entry;
+        }
+
+        return [
+            'ok' => $allOk,
+            'entries' => $entries,
+        ];
+    }
+
+    /**
+     * @param  list<int>  $roundIds
+     * @return list<int>
+     */
+    private function matchroundIdsWithPlayerprices(array $roundIds): array
+    {
+        if ($roundIds === []) {
+            return [];
+        }
+
+        return Playerprice::query()
+            ->whereIn('playerprice_matchround_id', $roundIds)
+            ->distinct()
+            ->pluck('playerprice_matchround_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array{
+     *     budget: float,
+     *     cost: float,
+     *     players: list<array{name: string, team: string, price: float, price_label: string}>
+     * }|null
+     */
+    private function averageLineupForMatchround(int $leagueId, int $matchroundId): ?array
+    {
+        $options = $this->lineupOptions->forMatchround($matchroundId);
+        $budget = (float) $options['lineup_max_credits'];
+        $formations = $this->lineupFormationsFromOptions($options);
+        if ($formations === [] || $budget <= 0.0) {
+            return null;
+        }
+
+        $participatingTeamIds = MatchGame::query()
+            ->where('match_round', $matchroundId)
+            ->get(['match_hometeam_id', 'match_guestteam_id'])
+            ->flatMap(static fn (MatchGame $match): array => [
+                (int) $match->match_hometeam_id,
+                (int) $match->match_guestteam_id,
+            ])
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($participatingTeamIds === []) {
+            return null;
+        }
+
+        $playerteams = Playerteam::query()
+            ->with([
+                'player:player_id,player_fname,player_lname',
+                'team:team_id,team_name',
+            ])
+            ->where('playerteam_league_id', $leagueId)
+            ->where('playerteam_status', 1)
+            ->whereIn('playerteam_team_id', $participatingTeamIds)
+            ->orderBy('playerteam_id')
+            ->get([
+                'playerteam_id',
+                'playerteam_player_id',
+                'playerteam_team_id',
+                'playerteam_player_position',
+                'playerteam_status',
+            ])
+            ->keyBy(static fn (Playerteam $pt): int => (int) $pt->playerteam_id);
+
+        if ($playerteams->isEmpty()) {
+            return null;
+        }
+
+        $playerteamIds = $playerteams->keys()->map(static fn ($id): int => (int) $id)->all();
+        $prices = $this->resolvePricesForPlayerteams(
+            $matchroundId,
+            $playerteamIds,
+            $playerteams,
+        );
+
+        /** @var array<string, list<array{playerteam_id: int, team_id: int, name: string, team: string, price: float}>> $byPosition */
+        $byPosition = ['g' => [], 'd' => [], 'm' => [], 's' => []];
+        foreach ($playerteams as $playerteam) {
+            $playerteamId = (int) $playerteam->playerteam_id;
+            if (! $prices->has($playerteamId)) {
+                continue;
+            }
+
+            $pos = strtolower((string) $playerteam->playerteam_player_position);
+            if (! isset($byPosition[$pos])) {
+                continue;
+            }
+
+            $byPosition[$pos][] = [
+                'playerteam_id' => $playerteamId,
+                'team_id' => (int) $playerteam->playerteam_team_id,
+                'name' => $this->playerLabel($playerteam, (int) $playerteam->playerteam_player_id),
+                'team' => $this->teamLabel($playerteam->team, (int) $playerteam->playerteam_team_id),
+                'price' => (float) $prices->get($playerteamId),
+            ];
+        }
+
+        foreach ($byPosition as $pos => $rows) {
+            usort($rows, static function (array $a, array $b): int {
+                $byPrice = $a['price'] <=> $b['price'];
+                if ($byPrice !== 0) {
+                    return $byPrice;
+                }
+
+                return $a['playerteam_id'] <=> $b['playerteam_id'];
+            });
+            $byPosition[$pos] = $rows;
+        }
+
+        $maxPerTeam = max(1, (int) $options['lineup_max_players_team']);
+        $candidates = [];
+        foreach ($formations as $formation) {
+            if (! $this->formationHasEnoughCandidates($formation, $byPosition)) {
+                continue;
+            }
+
+            $picks = $this->pickMedianLineupPlayers($formation, $byPosition, $maxPerTeam);
+            if ($picks === null) {
+                continue;
+            }
+
+            $cost = 0.0;
+            foreach ($picks as $pick) {
+                $cost += (float) $pick['price'];
+            }
+
+            $candidates[] = [
+                'cost' => round($cost, 1),
+                'players' => $picks,
+            ];
+        }
+
+        if ($candidates === []) {
+            return null;
+        }
+
+        usort($candidates, static fn (array $a, array $b): int => $a['cost'] <=> $b['cost']);
+        $chosen = $candidates[(int) floor((count($candidates) - 1) / 2)];
+
+        $players = array_map(
+            fn (array $player): array => [
+                'name' => (string) $player['name'],
+                'team' => (string) $player['team'],
+                'price' => (float) $player['price'],
+                'price_label' => $this->formatCredits((float) $player['price']),
+            ],
+            $chosen['players'],
+        );
+
+        return [
+            'budget' => $budget,
+            'cost' => (float) $chosen['cost'],
+            'players' => $players,
+        ];
+    }
+
+    /**
+     * @param  array{
+     *     lineup_max_players: int,
+     *     lineup_min_g: int,
+     *     lineup_min_d: int,
+     *     lineup_min_m: int,
+     *     lineup_min_s: int,
+     *     lineup_max_g: int,
+     *     lineup_max_d: int,
+     *     lineup_max_m: int,
+     *     lineup_max_s: int
+     * }  $options
+     * @return list<array{g: int, d: int, m: int, s: int}>
+     */
+    private function lineupFormationsFromOptions(array $options): array
+    {
+        $maxPlayers = (int) $options['lineup_max_players'];
+        $formations = [];
+
+        for ($g = (int) $options['lineup_min_g']; $g <= (int) $options['lineup_max_g']; $g++) {
+            for ($d = (int) $options['lineup_min_d']; $d <= (int) $options['lineup_max_d']; $d++) {
+                for ($m = (int) $options['lineup_min_m']; $m <= (int) $options['lineup_max_m']; $m++) {
+                    for ($s = (int) $options['lineup_min_s']; $s <= (int) $options['lineup_max_s']; $s++) {
+                        if ($g + $d + $m + $s === $maxPlayers) {
+                            $formations[] = ['g' => $g, 'd' => $d, 'm' => $m, 's' => $s];
+                        }
+                    }
+                }
+            }
+        }
+
+        return $formations;
+    }
+
+    /**
+     * @param  array{g: int, d: int, m: int, s: int}  $formation
+     * @param  array<string, list<array<string, mixed>>>  $byPosition
+     */
+    private function formationHasEnoughCandidates(array $formation, array $byPosition): bool
+    {
+        foreach ($formation as $pos => $need) {
+            if (count($byPosition[$pos] ?? []) < $need) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param  array{g: int, d: int, m: int, s: int}  $formation
+     * @param  array<string, list<array{playerteam_id: int, team_id: int, name: string, team: string, price: float}>>  $byPosition
+     * @return list<array{playerteam_id: int, team_id: int, name: string, team: string, price: float}>|null
+     */
+    private function pickMedianLineupPlayers(array $formation, array $byPosition, int $maxPerTeam): ?array
+    {
+        $picks = [];
+        $used = [];
+        $teamCounts = [];
+
+        foreach (['g', 'd', 'm', 's'] as $pos) {
+            $need = (int) $formation[$pos];
+            $pool = $byPosition[$pos] ?? [];
+            if ($need <= 0) {
+                continue;
+            }
+
+            $order = $this->medianOutwardIndexes(count($pool));
+            $taken = 0;
+            foreach ($order as $index) {
+                $player = $pool[$index];
+                $playerteamId = (int) $player['playerteam_id'];
+                if (isset($used[$playerteamId])) {
+                    continue;
+                }
+
+                $teamId = (int) $player['team_id'];
+                if (($teamCounts[$teamId] ?? 0) >= $maxPerTeam) {
+                    continue;
+                }
+
+                $picks[] = $player;
+                $used[$playerteamId] = true;
+                $teamCounts[$teamId] = ($teamCounts[$teamId] ?? 0) + 1;
+                $taken++;
+                if ($taken >= $need) {
+                    break;
+                }
+            }
+
+            if ($taken < $need) {
+                return null;
+            }
+        }
+
+        return $picks;
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function medianOutwardIndexes(int $count): array
+    {
+        if ($count <= 0) {
+            return [];
+        }
+
+        $start = (int) floor(($count - 1) / 2);
+        $indexes = [];
+        for ($offset = 0; count($indexes) < $count; $offset++) {
+            $right = $start + $offset;
+            if ($right >= 0 && $right < $count) {
+                $indexes[] = $right;
+            }
+            if ($offset === 0) {
+                continue;
+            }
+            $left = $start - $offset;
+            if ($left >= 0 && $left < $count) {
+                $indexes[] = $left;
+            }
+        }
+
+        return $indexes;
+    }
+
+    /**
+     * Resolve credits: ffb_playerprice, else ffb_teamprice for the player's team.
+     *
+     * @param  list<int>  $playerteamIds
+     * @param  Collection<int, Playerteam>  $playerteams
+     * @return Collection<int, float>
+     */
+    private function resolvePricesForPlayerteams(int $matchroundId, array $playerteamIds, Collection $playerteams): Collection
+    {
+        if ($playerteamIds === [] || $matchroundId <= 0) {
+            return collect();
+        }
+
+        $fromPlayer = Playerprice::query()
+            ->where('playerprice_matchround_id', $matchroundId)
+            ->whereIn('playerprice_playerteam_id', $playerteamIds)
+            ->get()
+            ->mapWithKeys(static fn (Playerprice $row): array => [
+                (int) $row->playerprice_playerteam_id => (float) $row->playerprice_price,
+            ]);
+
+        $teamIds = $playerteams
+            ->map(static fn (Playerteam $pt): int => (int) $pt->playerteam_team_id)
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        $fromTeam = $teamIds === []
+            ? collect()
+            : Teamprice::query()
+                ->where('teamprice_matchround_id', $matchroundId)
+                ->whereIn('teamprice_team_id', $teamIds)
+                ->get()
+                ->mapWithKeys(static fn (Teamprice $row): array => [
+                    (int) $row->teamprice_team_id => (float) $row->teamprice_price,
+                ]);
+
+        $resolved = collect();
+        foreach ($playerteamIds as $ptId) {
+            if ($fromPlayer->has($ptId)) {
+                $resolved->put($ptId, (float) $fromPlayer->get($ptId));
+
+                continue;
+            }
+
+            $teamId = (int) ($playerteams->get($ptId)?->playerteam_team_id ?? 0);
+            if ($teamId > 0 && $fromTeam->has($teamId)) {
+                $resolved->put($ptId, (float) $fromTeam->get($teamId));
+            }
+        }
+
+        return $resolved;
+    }
+
+    private function formatCredits(float $value): string
+    {
+        $formatted = number_format($value, 1, '.', '');
+
+        return rtrim(rtrim($formatted, '0'), '.') ?: '0';
     }
 
     /**
