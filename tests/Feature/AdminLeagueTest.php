@@ -172,6 +172,8 @@ class AdminLeagueTest extends TestCase
             'options_lineup_min_d' => 3,
             'options_lineup_min_m' => 3,
             'options_lineup_min_s' => 1,
+            'options_lineup_min_bench' => 0,
+            'options_lineup_max_bench' => 0,
         ];
     }
 }

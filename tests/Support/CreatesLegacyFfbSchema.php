@@ -33,6 +33,8 @@ trait CreatesLegacyFfbSchema
             $table->integer('options_lineup_max_m')->default(5);
             $table->integer('options_lineup_min_s')->default(1);
             $table->integer('options_lineup_max_s')->default(3);
+            $table->integer('options_lineup_min_bench')->default(0);
+            $table->integer('options_lineup_max_bench')->default(0);
             $table->string('options_league_pricemode')->default('constant');
             $table->string('options_league_pointsmode')->default('new');
         });
@@ -60,6 +62,8 @@ trait CreatesLegacyFfbSchema
             $table->integer('matchround_options_lineup_max_d')->default(5);
             $table->integer('matchround_options_lineup_max_m')->default(5);
             $table->integer('matchround_options_lineup_max_s')->default(3);
+            $table->integer('matchround_options_lineup_min_bench')->default(0);
+            $table->integer('matchround_options_lineup_max_bench')->default(0);
             $table->unique('matchround_options_matchround_id');
         });
 
