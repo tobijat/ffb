@@ -8,10 +8,6 @@
     const messagesEl = document.getElementById('lineup-messages');
     const creditsEl = document.getElementById('lineup-credits');
     const matchlistEl = document.getElementById('matchlist');
-    const teamSelect = document.getElementById('team_selection');
-    const selectedTeamEl = document.getElementById('selected-team');
-    const playerlistEl = document.getElementById('playerlist');
-    const pickerPanel = document.getElementById('picker-panel');
     const pitchMessageEl = document.getElementById('pitch-message');
     const lines = {
         g: document.getElementById('line-g'),
@@ -27,7 +23,9 @@
     let matches = [];
     let lineuplist = [];
     let credits = 0;
-    let matchesVisible = false;
+    let expandedTeamId = 0;
+    let expandedMatchId = 0;
+    let lineupDirty = false;
     const playerCache = {};
 
     function symbolUrl(name) {
@@ -282,31 +280,280 @@
         return buildCardWarning(selectionWarningText(player) || null);
     }
 
-    function hideMatches() {
-        matchesVisible = false;
-        matchlistEl.innerHTML =
-            '<div style="text-align:center;"><a href="#" id="show-matches-link">Spiele einblenden</a></div>';
+    function formatTeamPrice(value) {
+        if (value == null || value === '') {
+            return '—';
+        }
+        const num = Number(value);
+        if (!Number.isFinite(num)) {
+            return '—';
+        }
+        return num.toFixed(1);
     }
 
-    function showMatches() {
-        matchesVisible = true;
+    function setLineupDirty(dirty) {
+        lineupDirty = !!dirty;
+    }
+
+    function formatLineupCenter(match) {
+        if (window.FfbMatchList) {
+            if (window.FfbMatchList.hasPenaltyScore(match) || window.FfbMatchList.hasResultScore(match)) {
+                return window.FfbMatchList.formatScore(match);
+            }
+        }
+        return (
+            '<span class="lineup-match-prices">' +
+            '<span class="lineup-match-price home">' +
+            escapeHtml(formatTeamPrice(match.match_hometeam_price)) +
+            '</span>' +
+            '<img class="lineup-credits-icon" src="' +
+            symbolUrl('symbol_credits.png') +
+            '" width="16" height="16" alt="Credits">' +
+            '<span class="lineup-match-price away">' +
+            escapeHtml(formatTeamPrice(match.match_guestteam_price)) +
+            '</span>' +
+            '</span>'
+        );
+    }
+
+    function teamTileHtml(side, match) {
+        const isHome = side === 'home';
+        const teamId = isHome ? match.match_hometeam_id : match.match_guestteam_id;
+        const name = isHome ? match.match_hometeam_name : match.match_guestteam_name;
+        const nat = isHome ? match.match_hometeam_nationality : match.match_guestteam_nationality;
+        const isActive =
+            Number(expandedTeamId) === Number(teamId) && Number(expandedMatchId) === Number(match.match_id);
+        const flag = flagHtml(nat);
+        const nameHtml = '<span class="lineup-tile-name">' + escapeHtml(name) + '</span>';
+        const inner = isHome ? nameHtml + flag : flag + nameHtml;
+
+        return (
+            '<button type="button" class="lineup-team-tile ' +
+            side +
+            (isActive ? ' is-active' : '') +
+            '" data-select-team="' +
+            escapeHtml(teamId) +
+            '" data-match-id="' +
+            escapeHtml(match.match_id) +
+            '" title="Spieler anzeigen">' +
+            inner +
+            '</button>'
+        );
+    }
+
+    function matchesForDisplay() {
+        if (!expandedMatchId || expandedTeamId <= 0) {
+            return matches.slice();
+        }
+        const pinned = [];
+        const rest = [];
+        matches.forEach(function (match) {
+            if (Number(match.match_id) === Number(expandedMatchId)) {
+                pinned.push(match);
+            } else {
+                rest.push(match);
+            }
+        });
+        return pinned.concat(rest);
+    }
+
+    function renderLineupMatches() {
         if (!matches.length) {
             matchlistEl.innerHTML =
-                '<div style="text-align:center;margin-bottom:4px;"><a href="#" id="hide-matches-link">Spiele ausblenden</a></div>' +
+                '<p class="lineup-pick-hint">Klick auf ein Team um Spieler auszuwählen</p>' +
                 '<p class="muted">Keine Spiele.</p>';
             return;
         }
-        const wrap = document.createElement('div');
-        wrap.innerHTML =
-            '<div style="text-align:center;margin-bottom:4px;"><a href="#" id="hide-matches-link">Spiele ausblenden</a></div>';
-        const listHost = document.createElement('div');
-        wrap.appendChild(listHost);
+
+        const hint = document.createElement('p');
+        hint.className = 'lineup-pick-hint';
+        hint.textContent = 'Klick auf ein Team um Spieler auszuwählen';
+
+        const ul = document.createElement('ul');
+        ul.className = 'match-list lineup-match-list';
+        matchesForDisplay().forEach(function (match) {
+            const li = document.createElement('li');
+            li.className = 'lineup-match';
+            li.setAttribute('data-match-id', String(match.match_id));
+            const isExpanded =
+                Number(expandedMatchId) === Number(match.match_id) && expandedTeamId > 0;
+            li.innerHTML =
+                '<div class="match-list-row">' +
+                teamTileHtml('home', match) +
+                '<span class="score"><a class="nolink under" href="#" data-modal="match" data-id="' +
+                escapeHtml(match.match_id) +
+                '" title="Klicken für Matchinfos">' +
+                formatLineupCenter(match) +
+                '</a></span>' +
+                teamTileHtml('away', match) +
+                '</div>' +
+                '<div class="lineup-match-players playerlist' +
+                (showRecentPerformance ? ' playerlist--with-perf' : '') +
+                '"' +
+                (isExpanded ? '' : ' hidden') +
+                ' data-players-for="' +
+                escapeHtml(match.match_id) +
+                '"></div>';
+            ul.appendChild(li);
+        });
         matchlistEl.innerHTML = '';
-        matchlistEl.appendChild(wrap);
-        if (window.FfbMatchList) {
-            window.FfbMatchList.render(listHost, matches, {
-                emptyHtml: '<p class="muted">Keine Spiele.</p>',
+        matchlistEl.appendChild(hint);
+        matchlistEl.appendChild(ul);
+
+        if (expandedTeamId > 0 && expandedMatchId > 0) {
+            const panel = matchlistEl.querySelector(
+                '.lineup-match-players[data-players-for="' + expandedMatchId + '"]'
+            );
+            if (panel) {
+                fillPlayersPanel(panel, expandedTeamId);
+            }
+        }
+    }
+
+    function selectedTeamNationality(teamId, matchId) {
+        const match = matches.find(function (m) {
+            return Number(m.match_id) === Number(matchId);
+        });
+        if (!match) {
+            return '';
+        }
+        if (Number(match.match_hometeam_id) === Number(teamId)) {
+            return match.match_hometeam_nationality || '';
+        }
+        if (Number(match.match_guestteam_id) === Number(teamId)) {
+            return match.match_guestteam_nationality || '';
+        }
+        return '';
+    }
+
+    function playerListHtml(players, teamNationality) {
+        const flag = flagHtml(teamNationality);
+        let html = showRecentPerformance
+            ? '<div class="playerlist-head"><span class="playerlist-team-flag">' +
+              flag +
+              '</span><span></span><span>Name</span><span>Preis</span><span></span><span>Leistung</span></div>'
+            : '<div class="playerlist-head"><span class="playerlist-team-flag">' +
+              flag +
+              '</span><span>Name</span><span>Preis</span><span></span></div>';
+        const sections = [
+            { key: 'g', title: 'Torhüter' },
+            { key: 'd', title: 'Verteidiger' },
+            { key: 'm', title: 'Mittelfeldspieler' },
+            { key: 's', title: 'Stürmer' },
+        ];
+        sections.forEach(function (sec) {
+            html += '<div class="playerlist-pos">' + sec.title + '</div>';
+            players
+                .filter(function (p) {
+                    return p.playerteam_player_position === sec.key;
+                })
+                .forEach(function (p) {
+                    html +=
+                        '<div class="playerline">' +
+                        '<span class="info"><a href="#" data-modal="player" data-id="' +
+                        p.playerteam_id +
+                        '"><img src="' +
+                        symbolUrl('info.png') +
+                        '" width="16" height="16" alt="Info"></a></span>';
+                    if (showRecentPerformance) {
+                        html +=
+                            '<span class="trend">' +
+                            buildPerformanceTrend(p.recent_performance) +
+                            '</span>';
+                    }
+                    html +=
+                        '<span class="name"><a href="#" data-add="' +
+                        p.playerteam_id +
+                        '">' +
+                        escapeHtml(p.player_fname + ' ' + p.player_lname) +
+                        '</a></span>' +
+                        '<span class="price">' +
+                        escapeHtml(formatTeamPrice(p.playerteam_player_price)) +
+                        '</span>' +
+                        '<span class="status">' +
+                        buildSelectionWarning(p) +
+                        '</span>';
+                    if (showRecentPerformance) {
+                        html +=
+                            '<span class="grade">' +
+                            buildPerformanceBar(p.recent_performance) +
+                            '</span>';
+                    }
+                    html += '</div>';
+                });
+        });
+        return html;
+    }
+
+    function fillPlayersPanel(panel, teamId) {
+        const nat = selectedTeamNationality(teamId, expandedMatchId);
+        const cached = playerCache[teamId];
+        if (cached) {
+            panel.innerHTML = playerListHtml(cached, nat);
+            panel._playersById = {};
+            cached.forEach(function (p) {
+                panel._playersById[String(p.playerteam_id)] = p;
             });
+            panel.hidden = false;
+            return Promise.resolve();
+        }
+
+        panel.hidden = false;
+        panel.innerHTML = '<p class="muted">Lade Spielerliste…</p>';
+        panel._playersById = {};
+
+        return fetchJson(
+            'lineup/teams/' +
+                encodeURIComponent(teamId) +
+                '/players?matchround_id=' +
+                encodeURIComponent(matchround.matchround_id)
+        )
+            .then(function (j) {
+                return j.data;
+            })
+            .then(function (data) {
+                const players = data.players || [];
+                playerCache[teamId] = players;
+                if (Number(expandedTeamId) !== Number(teamId)) {
+                    return;
+                }
+                panel.innerHTML = playerListHtml(players, nat);
+                panel._playersById = {};
+                players.forEach(function (p) {
+                    panel._playersById[String(p.playerteam_id)] = p;
+                });
+            })
+            .catch(function (err) {
+                if (Number(expandedTeamId) !== Number(teamId)) {
+                    return;
+                }
+                panel.innerHTML =
+                    '<p class="muted">' +
+                    escapeHtml((err && err.message) || 'Spieler konnten nicht geladen werden.') +
+                    '</p>';
+            });
+    }
+
+    async function selectTeam(teamId, matchId) {
+        teamId = Number(teamId) || 0;
+        matchId = Number(matchId) || 0;
+        if (teamId <= 0 || matchId <= 0 || !matchround) {
+            return;
+        }
+
+        if (Number(expandedTeamId) === teamId && Number(expandedMatchId) === matchId) {
+            expandedTeamId = 0;
+            expandedMatchId = 0;
+            renderLineupMatches();
+            return;
+        }
+
+        expandedTeamId = teamId;
+        expandedMatchId = matchId;
+        renderLineupMatches();
+        const listTop = matchlistEl;
+        if (listTop && typeof listTop.scrollIntoView === 'function') {
+            listTop.scrollIntoView({ block: 'start', behavior: 'smooth' });
         }
     }
 
@@ -439,7 +686,7 @@
         const complete =
             options && lineuplist.length === Number(options.lineup_max_players);
         const withinBudget = Math.round(credits * 10) / 10 >= 0;
-        if (complete && withinBudget) {
+        if (complete && withinBudget && lineupDirty) {
             actionsEl.innerHTML =
                 '<button type="button" class="ffb-button" id="save-lineup-btn">Aufstellung speichern</button>';
         } else {
@@ -575,6 +822,7 @@
         credits -= lineuplist[lineuplist.length - 1].player_price;
         updateLineupDisplay();
         updateCreditsDisplay();
+        setLineupDirty(true);
         dispActionButtons();
     }
 
@@ -589,6 +837,7 @@
         }
         updateLineupDisplay();
         updateCreditsDisplay();
+        setLineupDirty(true);
         dispActionButtons();
     }
 
@@ -607,121 +856,12 @@
                     playerteam_ids: ids,
                 }),
             });
+            setLineupDirty(false);
             addOkMessage(json.message || 'Deine Aufstellung wurde gespeichert!');
         } catch (err) {
             addErrorMessage(escapeHtml((err && err.message) || 'Speichern fehlgeschlagen'));
         }
         dispActionButtons();
-    }
-
-    function renderTeamSelect() {
-        teamSelect.innerHTML = '<option disabled selected>Mannschaft..</option>';
-        teams.forEach(function (team, index) {
-            const opt = document.createElement('option');
-            opt.value = String(index);
-            opt.className = 'ffb-select-' + (index % 2);
-            opt.textContent =
-                team.team_price != null && team.team_price !== ''
-                    ? team.team_name + ' (Preis: ' + team.team_price + ')'
-                    : team.team_name;
-            teamSelect.appendChild(opt);
-        });
-        teamSelect.disabled = teams.length === 0;
-    }
-
-    function renderPlayerList(players) {
-        playerlistEl.classList.toggle('playerlist--with-perf', showRecentPerformance);
-
-        let html = showRecentPerformance
-            ? '<div class="playerlist-head"><span></span><span>Name</span><span>Preis</span><span></span><span>Info</span><span>Leistung</span></div>'
-            : '<div class="playerlist-head"><span>Name</span><span>Preis</span><span></span><span>Info</span></div>';
-        const sections = [
-            { key: 'g', title: 'Torhüter' },
-            { key: 'd', title: 'Verteidiger' },
-            { key: 'm', title: 'Mittelfeldspieler' },
-            { key: 's', title: 'Stürmer' },
-        ];
-        sections.forEach(function (sec) {
-            html += '<div class="playerlist-pos">' + sec.title + '</div>';
-            players
-                .filter(function (p) {
-                    return p.playerteam_player_position === sec.key;
-                })
-                .forEach(function (p) {
-                    html += '<div class="playerline">';
-                    if (showRecentPerformance) {
-                        html +=
-                            '<span class="trend">' +
-                            buildPerformanceTrend(p.recent_performance) +
-                            '</span>';
-                    }
-                    html +=
-                        '<span class="name"><a href="#" data-add="' +
-                        p.playerteam_id +
-                        '">' +
-                        escapeHtml(p.player_fname + ' ' + p.player_lname) +
-                        '</a></span>' +
-                        '<span class="price">' +
-                        escapeHtml(p.playerteam_player_price) +
-                        '</span>' +
-                        '<span class="status">' +
-                        buildSelectionWarning(p) +
-                        '</span>' +
-                        '<span class="info"><a href="#" data-modal="player" data-id="' +
-                        p.playerteam_id +
-                        '"><img src="' +
-                        symbolUrl('info.png') +
-                        '" width="16" height="16" alt="Info"></a></span>';
-                    if (showRecentPerformance) {
-                        html +=
-                            '<span class="grade">' +
-                            buildPerformanceBar(p.recent_performance) +
-                            '</span>';
-                    }
-                    html += '</div>';
-                });
-        });
-        playerlistEl.innerHTML = html;
-        playerlistEl._playersById = {};
-        players.forEach(function (p) {
-            playerlistEl._playersById[String(p.playerteam_id)] = p;
-        });
-    }
-
-    async function changeTeamSelection() {
-        const index = Number(teamSelect.value);
-        const team = teams[index];
-        if (!team || !matchround) {
-            return;
-        }
-        selectedTeamEl.innerHTML =
-            flagHtml(team.team_nationality) +
-            ' <b>' +
-            escapeHtml(team.team_name) +
-            '</b> ' +
-            shirtImgTag(team.team_id, team.team_nationality, 'height="20" alt=""');
-        playerlistEl.innerHTML = '<p class="muted">Lade Spielerliste…</p>';
-
-        const teamId = team.team_id;
-        try {
-            let players = playerCache[teamId];
-            if (!players) {
-                const data = await fetchJson(
-                    'lineup/teams/' +
-                        encodeURIComponent(teamId) +
-                        '/players?matchround_id=' +
-                        encodeURIComponent(matchround.matchround_id)
-                ).then(function (j) {
-                    return j.data;
-                });
-                players = data.players || [];
-                playerCache[teamId] = players;
-            }
-            renderPlayerList(players);
-        } catch (err) {
-            playerlistEl.innerHTML =
-                '<p class="muted">' + escapeHtml((err && err.message) || 'Spieler konnten nicht geladen werden.') + '</p>';
-        }
     }
 
     async function loadExistingLineup() {
@@ -736,6 +876,7 @@
             if (!data.userteam || !(data.players || []).length) {
                 updateLineupDisplay();
                 updateCreditsDisplay();
+                setLineupDirty(false);
                 dispActionButtons();
                 return;
             }
@@ -760,10 +901,12 @@
             });
             updateLineupDisplay();
             updateCreditsDisplay();
+            setLineupDirty(false);
             dispActionButtons();
         } catch (err) {
             updateLineupDisplay();
             updateCreditsDisplay();
+            setLineupDirty(false);
             dispActionButtons();
             addErrorMessage(escapeHtml((err && err.message) || 'Aufstellung konnte nicht geladen werden.'));
         }
@@ -773,7 +916,8 @@
         clearPitch();
         setPitchMessage(message);
         creditsEl.hidden = true;
-        pickerPanel.hidden = true;
+        expandedTeamId = 0;
+        expandedMatchId = 0;
         matchlistEl.innerHTML = '';
         actionsEl.innerHTML = '';
     }
@@ -783,7 +927,8 @@
         lines.m.innerHTML =
             '<img src="' + symbolUrl('gameover.png') + '" width="320" alt="Game Over" style="max-width:100%;">';
         creditsEl.hidden = true;
-        pickerPanel.hidden = true;
+        expandedTeamId = 0;
+        expandedMatchId = 0;
         matchlistEl.innerHTML = '';
         actionsEl.innerHTML = '';
         roundMetaEl.textContent = '';
@@ -840,8 +985,7 @@
                 return;
             }
 
-            hideMatches();
-            renderTeamSelect();
+            renderLineupMatches();
             await loadExistingLineup();
         } catch (err) {
             addErrorMessage(escapeHtml((err && err.message) || 'Aufstellung konnte nicht geladen werden.'));
@@ -850,27 +994,21 @@
     }
 
     matchlistEl.addEventListener('click', function (event) {
-        const show = event.target.closest('#show-matches-link');
-        const hide = event.target.closest('#hide-matches-link');
-        if (show) {
+        const tile = event.target.closest('[data-select-team]');
+        if (tile) {
             event.preventDefault();
-            showMatches();
-        } else if (hide) {
-            event.preventDefault();
-            hideMatches();
+            selectTeam(tile.getAttribute('data-select-team'), tile.getAttribute('data-match-id'));
+            return;
         }
-    });
 
-    teamSelect.addEventListener('change', changeTeamSelection);
-
-    playerlistEl.addEventListener('click', function (event) {
         const add = event.target.closest('[data-add]');
         if (!add) {
             return;
         }
         event.preventDefault();
         const id = add.getAttribute('data-add');
-        const player = playerlistEl._playersById && playerlistEl._playersById[id];
+        const panel = add.closest('.lineup-match-players');
+        const player = panel && panel._playersById && panel._playersById[id];
         if (player) {
             addPlayer(player);
         }
@@ -889,6 +1027,17 @@
         if (event.target.id === 'save-lineup-btn') {
             saveLineup();
         }
+    });
+
+    window.addEventListener('beforeunload', function (event) {
+        if (!lineupDirty) {
+            return;
+        }
+        const message =
+            'Du hast ungespeicherte Änderungen an deiner Aufstellung. Seite wirklich verlassen?';
+        event.preventDefault();
+        event.returnValue = message;
+        return message;
     });
 
     init();
