@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Player;
 use App\Models\Playerteam;
 use App\Models\Userteam;
+use App\Support\PlayerPicture;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
@@ -80,8 +81,17 @@ class AdminDbCleanupService
      *     html: string
      * }
      */
-    public function runTask(string $task): array
+    public function runTask(string $task, string $action = 'run'): array
     {
+        $action = $action === 'delete' ? 'delete' : 'run';
+
+        if ($action === 'delete') {
+            return match ($task) {
+                'players-without-playerteam' => $this->taskDeletePlayersWithoutPlayerteam(),
+                default => throw new InvalidArgumentException('Löschen für diese Aufgabe nicht verfügbar.'),
+            };
+        }
+
         return match ($task) {
             'duplicate-playerteams' => $this->taskDuplicatePlayerteams(),
             'players-without-playerteam' => $this->taskPlayersWithoutPlayerteam(),
@@ -148,8 +158,95 @@ class AdminDbCleanupService
                 'count' => $count,
                 'summary' => $summary,
                 'emptyMessage' => 'Alle Spieler sind mindestens einem Team zugeordnet.',
+                'allowDelete' => ! $clean,
+                'deleteTask' => 'players-without-playerteam',
             ])->render(),
         ];
+    }
+
+    /**
+     * @return array{ok: true, task: string, clean: bool, count: int, summary: string, html: string}
+     */
+    private function taskDeletePlayersWithoutPlayerteam(): array
+    {
+        $players = $this->playersWithoutPlayerteam();
+        $playerIds = array_map(
+            static fn (array $player): int => (int) $player['player_id'],
+            $players
+        );
+
+        $deletedPlayers = 0;
+        $deletedImages = 0;
+
+        if ($playerIds !== []) {
+            // Re-check no kader rows appeared between list and delete.
+            $safeIds = Player::query()
+                ->whereIn('player_id', $playerIds)
+                ->whereDoesntHave('playerteams')
+                ->pluck('player_id')
+                ->map(static fn ($id): int => (int) $id)
+                ->all();
+
+            foreach ($safeIds as $playerId) {
+                $deletedImages += $this->deletePlayerImageFiles($playerId);
+            }
+
+            if ($safeIds !== []) {
+                $deletedPlayers = Player::query()
+                    ->whereIn('player_id', $safeIds)
+                    ->whereDoesntHave('playerteams')
+                    ->delete();
+            }
+        }
+
+        $result = $this->taskPlayersWithoutPlayerteam();
+        $parts = [];
+        if ($deletedPlayers === 1) {
+            $parts[] = '1 Spieler gelöscht';
+        } elseif ($deletedPlayers > 1) {
+            $parts[] = $deletedPlayers.' Spieler gelöscht';
+        } else {
+            $parts[] = 'Keine Spieler gelöscht';
+        }
+        if ($deletedImages === 1) {
+            $parts[] = '1 Bild entfernt';
+        } elseif ($deletedImages > 1) {
+            $parts[] = $deletedImages.' Bilder entfernt';
+        }
+
+        $result['summary'] = implode(' · ', $parts)
+            .($result['clean'] ? '' : ' · '.$result['summary']);
+
+        return $result;
+    }
+
+    /**
+     * Remove local player images for a player (legacy flat + any team-scoped copies).
+     */
+    private function deletePlayerImageFiles(int $playerId): int
+    {
+        if ($playerId <= 0) {
+            return 0;
+        }
+
+        $deleted = 0;
+        $playersDir = PlayerPicture::playersDir();
+        $flat = $playersDir.DIRECTORY_SEPARATOR.$playerId.'.jpg';
+        if (is_file($flat) && @unlink($flat)) {
+            $deleted++;
+        }
+
+        if (! is_dir($playersDir)) {
+            return $deleted;
+        }
+
+        foreach (glob($playersDir.DIRECTORY_SEPARATOR.'*'.DIRECTORY_SEPARATOR.'*-'.$playerId.'.jpg') ?: [] as $path) {
+            if (is_file($path) && @unlink($path)) {
+                $deleted++;
+            }
+        }
+
+        return $deleted;
     }
 
     /**
@@ -175,6 +272,7 @@ class AdminDbCleanupService
                 'count' => $count,
                 'summary' => $summary,
                 'emptyMessage' => 'Jeder Kader-Spieler hat mindestens eine Spielstatistik oder ist in einem Userteam eingesetzt.',
+                'showTeams' => true,
             ])->render(),
         ];
     }
@@ -407,11 +505,32 @@ class AdminDbCleanupService
         }
 
         return $query
+            ->with(['playerteams.team:team_id,team_name'])
             ->orderBy('player_lname')
             ->orderBy('player_fname')
             ->orderBy('player_id')
             ->get()
-            ->map(fn (Player $player): array => $this->mapPlayerSummary($player))
+            ->map(function (Player $player): array {
+                $summary = $this->mapPlayerSummary($player);
+                $teams = [];
+                $seen = [];
+                foreach ($player->playerteams as $playerteam) {
+                    $teamId = (int) $playerteam->playerteam_team_id;
+                    if ($teamId <= 0 || isset($seen[$teamId])) {
+                        continue;
+                    }
+                    $seen[$teamId] = true;
+                    $name = trim((string) ($playerteam->team?->team_name ?? ''));
+                    $teams[] = [
+                        'team_id' => $teamId,
+                        'team_name' => $name !== '' ? $name : 'Team #'.$teamId,
+                    ];
+                }
+                usort($teams, static fn (array $a, array $b): int => strcasecmp($a['team_name'], $b['team_name']));
+                $summary['teams'] = $teams;
+
+                return $summary;
+            })
             ->all();
     }
 

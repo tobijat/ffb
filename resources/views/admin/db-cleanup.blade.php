@@ -94,15 +94,19 @@
         }
     }
 
-    async function runTask(section, task) {
+    async function runTask(section, task, action) {
         const button = section.querySelector('[data-run-task]');
         const resultBox = section.querySelector('[data-run-result]');
         if (!button || !resultBox || !runUrl) return;
 
+        const deleteButtons = section.querySelectorAll('[data-delete-task]');
         button.disabled = true;
-        setStatus(section, 'Läuft …', false);
-        resultBox.hidden = true;
-        resultBox.innerHTML = '';
+        deleteButtons.forEach(function (btn) { btn.disabled = true; });
+        setStatus(section, action === 'delete' ? 'Löschen …' : 'Läuft …', false);
+        if (action !== 'delete') {
+            resultBox.hidden = true;
+            resultBox.innerHTML = '';
+        }
 
         try {
             const response = await fetch(runUrl, {
@@ -113,7 +117,7 @@
                     'X-CSRF-TOKEN': csrf,
                     'X-Requested-With': 'XMLHttpRequest',
                 },
-                body: JSON.stringify({ task: task }),
+                body: JSON.stringify({ task: task, action: action || 'run' }),
             });
             const payload = await response.json().catch(function () { return null; });
             if (!response.ok || !payload || !payload.ok) {
@@ -137,16 +141,35 @@
             setIcon(section, 'fail');
         } finally {
             button.disabled = false;
+            section.querySelectorAll('[data-delete-task]').forEach(function (btn) {
+                btn.disabled = false;
+            });
         }
     }
 
     root.addEventListener('click', function (event) {
+        const deleteButton = event.target.closest('[data-delete-task]');
+        if (deleteButton && root.contains(deleteButton)) {
+            const section = deleteButton.closest('[data-task]');
+            if (!section) return;
+            event.preventDefault();
+            const count = parseInt(deleteButton.getAttribute('data-delete-count') || '0', 10) || 0;
+            const label = count === 1
+                ? '1 Spieler und zugehörige Bilder wirklich löschen?'
+                : count + ' Spieler und zugehörige Bilder wirklich löschen?';
+            if (!window.confirm(label)) {
+                return;
+            }
+            runTask(section, deleteButton.getAttribute('data-delete-task') || '', 'delete');
+            return;
+        }
+
         const button = event.target.closest('[data-run-task]');
         if (!button || !root.contains(button)) return;
         const section = button.closest('[data-task]');
         if (!section) return;
         event.preventDefault();
-        runTask(section, button.getAttribute('data-run-task') || '');
+        runTask(section, button.getAttribute('data-run-task') || '', 'run');
     });
 })();
 </script>
