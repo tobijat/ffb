@@ -1,8 +1,26 @@
 .myteam-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 0.8fr);
+    grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 0.9fr);
     gap: 10px;
     align-items: start;
+}
+
+.myteam-layout > .myteam-pitch,
+.lineup-layout > .myteam-pitch {
+    min-width: 0;
+}
+
+.myteam-layout > .myteam-side,
+.lineup-layout > .myteam-side {
+    min-width: 0;
+    max-width: 22rem;
+    justify-self: stretch;
+}
+
+.myteam-side .ffb-select {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .myteam-info {
@@ -78,13 +96,15 @@
 
 .soccer-field {
     width: min(100%, 647px);
-    aspect-ratio: 647 / 600;
-    max-height: 600px;
+    aspect-ratio: 647 / 729;
+    max-height: none;
     margin: 0 auto;
     position: relative;
     background-repeat: no-repeat;
     background-position: center;
-    background-size: contain;
+    background-size: 100% 100%;
+    border-radius: 16px;
+    overflow: hidden;
 }
 
 .field-line {

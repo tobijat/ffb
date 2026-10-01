@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="css/start.css?v=22">
     <link rel="stylesheet" href="css/dashboard.css?v=11">
     <link rel="stylesheet" href="css/modal.css?v=9">
-    <link rel="stylesheet" href="css/myteam.css?v=11">
-    <link rel="stylesheet" href="css/lineup.css?v=18">
+    <link rel="stylesheet" href="css/myteam.css?v=15">
+    <link rel="stylesheet" href="css/lineup.css?v=19">
 </head>
 <body class="dash-body">
     @php
@@ -48,7 +48,7 @@
             <div
                 id="soccer-field"
                 class="soccer-field"
-                style="background-image:url({{ $legacyBase }}images/ffb/backgrounds/soccer_field_round.png)"
+                style="background-image:url({{ $legacyBase }}images/ffb/backgrounds/soccer_field_cut.svg)"
             >
                 <div class="field-line field-g"><div id="line-g" class="line-players"></div></div>
                 <div class="field-line field-d"><div id="line-d" class="line-players"></div></div>
