@@ -535,19 +535,7 @@ class UserscoreService
         $out = [];
         foreach ($matches as $match) {
             $rid = (int) $match->match_round;
-            $out[$rid][] = [
-                'match_id' => (int) $match->match_id,
-                'match_date' => date('j.n.Y', strtotime((string) $match->match_date)),
-                'match_hometeam_name' => (string) ($match->homeTeam?->team_name ?? ''),
-                'match_guestteam_name' => (string) ($match->guestTeam?->team_name ?? ''),
-                'match_hometeam_nationality' => (string) ($match->homeTeam?->team_nationality ?? ''),
-                'match_guestteam_nationality' => (string) ($match->guestTeam?->team_nationality ?? ''),
-                'match_homescore' => $match->match_homescore,
-                'match_guestscore' => $match->match_guestscore,
-                'match_homescore_penalty' => $match->match_homescore_penalty,
-                'match_guestscore_penalty' => $match->match_guestscore_penalty,
-                'match_status' => (int) $match->match_status,
-            ];
+            $out[$rid][] = $match->toSideListPayload();
         }
 
         return $out;

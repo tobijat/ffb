@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Rangliste — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css?v=20">
+    <link rel="stylesheet" href="css/start.css?v=22">
     <link rel="stylesheet" href="css/dashboard.css?v=11">
-    <link rel="stylesheet" href="css/userscore.css?v=9">
+    <link rel="stylesheet" href="css/userscore.css?v=10">
     <link rel="stylesheet" href="css/modal.css?v=9">
 </head>
 <body class="dash-body">
@@ -54,7 +54,6 @@
             </div>
 
             <div class="panel" id="matchlist-panel">
-                <h2>Spiele</h2>
                 <div id="matchlist">
                     <p class="muted">Gesamtrangliste — keine Einzelspiele.</p>
                 </div>
@@ -82,6 +81,7 @@
     </script>
     <script src="js/modal.js?v=8" defer></script>
     <script src="js/player-modal.js?v=8" defer></script>
-    <script src="js/userscore.js?v=9" defer></script>
+    <script src="js/match-list.js?v=2" defer></script>
+    <script src="js/userscore.js?v=10" defer></script>
 </body>
 </html>

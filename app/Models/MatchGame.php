@@ -118,15 +118,85 @@ class MatchGame extends Model
         }
 
         $label = date('d.m.Y', $dateTs);
-        if (! self::hasKnownKickoffTime($value)) {
+        $time = self::formatDisplayTime($value);
+        if ($time === null) {
             return $label;
+        }
+
+        return $label.' '.$time;
+    }
+
+    /**
+     * Player-facing kickoff time (H:i), or null when unknown / sentinel.
+     */
+    public static function formatDisplayTime(?string $dateOrDateTime): ?string
+    {
+        if ($dateOrDateTime === null) {
+            return null;
+        }
+
+        $value = trim($dateOrDateTime);
+        if ($value === '' || ! self::hasKnownKickoffTime($value)) {
+            return null;
         }
 
         if (preg_match('/[ T](\d{2}:\d{2})/', $value, $m) !== 1) {
-            return $label;
+            return null;
         }
 
-        return $label.' '.$m[1];
+        return $m[1];
+    }
+
+    /**
+     * Payload for side-panel match lists (Aufstellung, Mannschaft, Top/Flop, Rangliste).
+     *
+     * @return array{
+     *     match_id: int,
+     *     match_date: string,
+     *     match_time: string,
+     *     match_hometeam_id: int,
+     *     match_guestteam_id: int,
+     *     match_hometeam_name: string,
+     *     match_guestteam_name: string,
+     *     match_hometeam_nationality: string,
+     *     match_guestteam_nationality: string,
+     *     match_homescore: mixed,
+     *     match_guestscore: mixed,
+     *     match_homescore_penalty: mixed,
+     *     match_guestscore_penalty: mixed,
+     *     match_minutes: int,
+     *     match_status: mixed
+     * }
+     */
+    public function toSideListPayload(): array
+    {
+        $rawDate = $this->match_date !== null ? (string) $this->match_date : null;
+        $calendar = $rawDate !== null ? self::calendarDate($rawDate) : '';
+        $dateLabel = '';
+        if ($calendar !== '') {
+            $dateTs = strtotime($calendar);
+            if ($dateTs !== false) {
+                $dateLabel = date('d.m.Y', $dateTs);
+            }
+        }
+
+        return [
+            'match_id' => (int) $this->match_id,
+            'match_date' => $dateLabel,
+            'match_time' => self::formatDisplayTime($rawDate) ?? '',
+            'match_hometeam_id' => (int) $this->match_hometeam_id,
+            'match_guestteam_id' => (int) $this->match_guestteam_id,
+            'match_hometeam_name' => (string) ($this->homeTeam?->team_name ?? ''),
+            'match_guestteam_name' => (string) ($this->guestTeam?->team_name ?? ''),
+            'match_hometeam_nationality' => (string) ($this->homeTeam?->team_nationality ?? ''),
+            'match_guestteam_nationality' => (string) ($this->guestTeam?->team_nationality ?? ''),
+            'match_homescore' => $this->match_homescore,
+            'match_guestscore' => $this->match_guestscore,
+            'match_homescore_penalty' => $this->match_homescore_penalty,
+            'match_guestscore_penalty' => $this->match_guestscore_penalty,
+            'match_minutes' => (int) ($this->match_minutes ?? 0),
+            'match_status' => $this->match_status,
+        ];
     }
 
     public function homeTeam(): BelongsTo
