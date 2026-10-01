@@ -42,7 +42,7 @@ class HelpService
                 'options' => $options,
                 'lc_points' => $this->parseLcPoints((string) ($options['options_league_lcpoints'] ?? '')),
                 'navigation' => $user
-                    ? app(DashboardService::class)->navigation()
+                    ? app(DashboardService::class)->navigation((int) $user['user_id'])
                     : self::guestNavigation(),
             ],
         ];

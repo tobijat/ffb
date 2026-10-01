@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Profil — SoccerSportsfan</title>
     <link rel="stylesheet" href="css/start.css?v=20">
-    <link rel="stylesheet" href="css/dashboard.css?v=11">
+    <link rel="stylesheet" href="css/dashboard.css?v=12">
     <link rel="stylesheet" href="css/account.css?v=6">
 </head>
 <body class="dash-body">
@@ -25,12 +25,7 @@
         <div class="dash-top-main">
             @include('partials.brand')
             <nav class="dash-nav" aria-label="Hauptnavigation">
-                @foreach ($nav as $item)
-                    <a class="nav-big" href="{{ $item['link'] }}" title="{{ $item['name'] }}">
-                        <img src="{{ $legacyBase }}images/ffb/navigation/{{ $item['symbol'] }}" alt="" width="40" height="40" loading="lazy">
-                        <span>{{ $item['name'] }}</span>
-                    </a>
-                @endforeach
+                @include('partials.dash-nav')
             </nav>
         </div>
 

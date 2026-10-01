@@ -42,7 +42,7 @@ class UserscoreService
                     'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
                 ],
                 'selected_league_id' => $leagueId,
-                'navigation' => app(DashboardService::class)->navigation(),
+                'navigation' => app(DashboardService::class)->navigation($userId),
             ],
         ];
     }

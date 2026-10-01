@@ -6,7 +6,7 @@
     <title>SoccerSportsfan — Fantasy Football</title>
     <meta name="description" content="Fantasy Football Manager bei SoccerSportsfan. Kostenlos mitspielen.">
     <link rel="stylesheet" href="css/start.css?v=20">
-    <link rel="stylesheet" href="css/dashboard.css?v=11">
+    <link rel="stylesheet" href="css/dashboard.css?v=12">
 </head>
 <body class="start-page dash-body">
     <header class="dash-top">

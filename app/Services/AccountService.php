@@ -46,7 +46,7 @@ class AccountService
                 'form' => $form,
                 'countries' => config('countries', []),
                 'birth_years' => $this->birthYears(),
-                'navigation' => app(DashboardService::class)->navigation(),
+                'navigation' => app(DashboardService::class)->navigation($userId),
             ],
         ];
     }
@@ -164,7 +164,7 @@ class AccountService
                 ],
                 'form' => $formOverride ?? $this->profileFormFromUser($user),
                 'teams' => $this->teams(),
-                'navigation' => app(DashboardService::class)->navigation(),
+                'navigation' => app(DashboardService::class)->navigation($userId),
             ],
         ];
     }

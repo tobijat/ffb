@@ -56,7 +56,7 @@ class LineupService
                 ],
                 'selected_league_id' => $leagueId,
                 'game_over' => $league ? (int) ($league->league_archive ?? 0) !== 0 : false,
-                'navigation' => app(DashboardService::class)->navigation(),
+                'navigation' => app(DashboardService::class)->navigation($userId),
             ],
         ];
     }
