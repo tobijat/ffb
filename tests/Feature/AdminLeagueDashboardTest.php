@@ -24,6 +24,7 @@ use App\Services\AdminLeagueDashboardService;
 use App\Services\ExtremeTeamService;
 use App\Services\FfbAdminAccess;
 use App\Services\FfbAuth;
+use App\Services\LineupOptionsResolver;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Mockery;
@@ -397,6 +398,13 @@ class AdminLeagueDashboardTest extends TestCase
                                 'match_list' => [],
                                 'match_list_summary' => 'Aktive Spieler ohne Spielerpreis',
                             ],
+                            [
+                                'key' => 'average-lineup-budget',
+                                'label' => 'Durchschnitts-Aufstellung ≤ 90% des Budgets',
+                                'ok' => true,
+                                'info_list' => [],
+                                'info_list_summary' => 'Anteil am Budget je Spielrunde',
+                            ],
                         ],
                     ],
                     [
@@ -608,7 +616,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $leagueSection = $payload['sections'][0];
 
         $this->assertSame('league', $leagueSection['key']);
@@ -652,7 +660,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $leagueSection = $payload['sections'][0];
 
         $this->assertFalse($leagueSection['ok']);
@@ -746,7 +754,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][1];
 
         $this->assertSame('matchrounds', $section['key']);
@@ -796,7 +804,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][1];
 
         $this->assertFalse($section['ok']);
@@ -851,7 +859,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][2];
 
         $this->assertSame('matches', $section['key']);
@@ -903,7 +911,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][2];
 
         $this->assertTrue($section['checklist'][1]['ok']);
@@ -953,7 +961,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][2];
 
         $this->assertFalse($section['ok']);
@@ -1013,7 +1021,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][2];
 
         $this->assertTrue($section['ok']);
@@ -1071,7 +1079,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][2];
 
         $this->assertTrue($section['checklist'][2]['ok']);
@@ -1122,7 +1130,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][2];
 
         $this->assertFalse($section['checklist'][2]['ok']);
@@ -1192,7 +1200,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][3];
 
         $this->assertSame('teams', $section['key']);
@@ -1258,7 +1266,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][3];
 
         $this->assertSame('2 Teams', $section['title']);
@@ -1315,7 +1323,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][4];
 
         $this->assertSame('squad', $section['key']);
@@ -1379,7 +1387,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][4];
 
         $this->assertSame('Kader: 2 aktive Spieler in 2', $section['title']);
@@ -1408,9 +1416,14 @@ class AdminLeagueDashboardTest extends TestCase
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
             'options_league_pricemode' => 'constant',
+            'options_lineup_max_players' => 11,
+            'options_lineup_max_credits' => 100,
+            'options_lineup_max_players_team' => 3,
         ]);
         $home = Team::query()->create(['team_name' => 'Alpha', 'team_status' => 1]);
         $guest = Team::query()->create(['team_name' => 'Beta', 'team_status' => 1]);
+        $extraA = Team::query()->create(['team_name' => 'Gamma', 'team_status' => 1]);
+        $extraB = Team::query()->create(['team_name' => 'Delta', 'team_status' => 1]);
         $round = Matchround::query()->create([
             'matchround_league_id' => (int) $league->league_id,
             'matchround_title' => 'Runde 1',
@@ -1424,16 +1437,21 @@ class AdminLeagueDashboardTest extends TestCase
             'match_guestteam_id' => (int) $guest->team_id,
             'match_date' => now()->addDays(2)->toDateTimeString(),
         ]);
-        Teamprice::query()->create([
-            'teamprice_team_id' => (int) $home->team_id,
-            'teamprice_matchround_id' => (int) $round->matchround_id,
-            'teamprice_price' => 10,
+        MatchGame::query()->create([
+            'match_round' => (int) $round->matchround_id,
+            'match_hometeam_id' => (int) $extraA->team_id,
+            'match_guestteam_id' => (int) $extraB->team_id,
+            'match_date' => now()->addDays(2)->toDateTimeString(),
         ]);
-        Teamprice::query()->create([
-            'teamprice_team_id' => (int) $guest->team_id,
-            'teamprice_matchround_id' => (int) $round->matchround_id,
-            'teamprice_price' => 12,
-        ]);
+
+        foreach ([$home, $guest, $extraA, $extraB] as $index => $team) {
+            $this->seedSquadForTeam((int) $league->league_id, (int) $team->team_id, 'T'.$index);
+            Teamprice::query()->create([
+                'teamprice_team_id' => (int) $team->team_id,
+                'teamprice_matchround_id' => (int) $round->matchround_id,
+                'teamprice_price' => 5,
+            ]);
+        }
 
         $adminCenter = Mockery::mock(AdminCenterService::class);
         $adminCenter->shouldReceive('shellPayload')->once()->with(7)->andReturn([
@@ -1447,7 +1465,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][5];
 
         $this->assertSame('playerprice', $section['key']);
@@ -1455,6 +1473,11 @@ class AdminLeagueDashboardTest extends TestCase
         $this->assertTrue($section['checklist'][0]['ok']);
         $this->assertTrue($section['checklist'][1]['ok']);
         $this->assertTrue($section['checklist'][2]['ok']);
+        $this->assertTrue($section['checklist'][3]['ok']);
+        $this->assertSame('average-lineup-budget', $section['checklist'][3]['key']);
+        $this->assertNotEmpty($section['checklist'][3]['info_list']);
+        $this->assertStringContainsString('% des Budgets', $section['checklist'][3]['info_list'][0]['detail']);
+        $this->assertArrayNotHasKey('lineup', $section['checklist'][3]['info_list'][0]);
     }
 
     #[Test]
@@ -1539,7 +1562,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][5];
 
         $this->assertFalse($section['ok']);
@@ -1637,12 +1660,191 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][5];
 
         $this->assertFalse($section['checklist'][2]['ok']);
         $this->assertStringContainsString('Kommende', $section['checklist'][2]['match_list'][0]['detail']);
         $this->assertStringNotContainsString('Aktuell', $section['checklist'][2]['match_list'][0]['detail']);
+    }
+
+    #[Test]
+    public function playerprice_section_marks_average_lineup_over_budget_and_lists_players(): void
+    {
+        $this->createSchema();
+
+        $league = League::query()->create([
+            'league_title' => 'WM 2026',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_symbol' => '',
+        ]);
+        LeagueOptions::query()->create([
+            'options_league_id' => (int) $league->league_id,
+            'options_league_pricemode' => 'constant',
+            'options_lineup_max_players' => 11,
+            'options_lineup_max_credits' => 100,
+            'options_lineup_max_players_team' => 3,
+        ]);
+
+        $teams = [];
+        for ($i = 0; $i < 4; $i++) {
+            $teams[] = Team::query()->create(['team_name' => 'Club'.$i, 'team_status' => 1]);
+        }
+
+        $round = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'Teure Runde',
+            'matchround_startdate' => now()->addDay()->toDateTimeString(),
+            'matchround_enddate' => now()->addDays(3)->toDateTimeString(),
+            'matchround_status' => 1,
+        ]);
+        MatchGame::query()->create([
+            'match_round' => (int) $round->matchround_id,
+            'match_hometeam_id' => (int) $teams[0]->team_id,
+            'match_guestteam_id' => (int) $teams[1]->team_id,
+            'match_date' => now()->addDays(2)->toDateTimeString(),
+        ]);
+        MatchGame::query()->create([
+            'match_round' => (int) $round->matchround_id,
+            'match_hometeam_id' => (int) $teams[2]->team_id,
+            'match_guestteam_id' => (int) $teams[3]->team_id,
+            'match_date' => now()->addDays(2)->toDateTimeString(),
+        ]);
+
+        foreach ($teams as $index => $team) {
+            $this->seedSquadForTeam((int) $league->league_id, (int) $team->team_id, 'C'.$index);
+            Teamprice::query()->create([
+                'teamprice_team_id' => (int) $team->team_id,
+                'teamprice_matchround_id' => (int) $round->matchround_id,
+                'teamprice_price' => 10,
+            ]);
+        }
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('shellPayload')->once()->with(7)->andReturn([
+            'user' => ['user_id' => 7, 'user_nickname' => 'admin', 'photo_url' => '', 'is_ffb_admin' => true],
+            'navigation' => [],
+            'selected_league_id' => (int) $league->league_id,
+            'selected_league' => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => 'WM 2026',
+                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+            ],
+        ]);
+
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $item = $payload['sections'][5]['checklist'][3];
+
+        $this->assertSame('average-lineup-budget', $item['key']);
+        $this->assertFalse($item['ok']);
+        $this->assertSame('Teure Runde', $item['info_list'][0]['label']);
+        $this->assertStringContainsString('% des Budgets', $item['info_list'][0]['detail']);
+        $this->assertArrayHasKey('lineup', $item['info_list'][0]);
+        $this->assertCount(11, $item['info_list'][0]['lineup']);
+        $this->assertNotSame('', $item['info_list'][0]['lineup'][0]['label']);
+        $this->assertStringContainsString(' · ', $item['info_list'][0]['lineup'][0]['detail']);
+    }
+
+    #[Test]
+    public function playerprice_section_checks_average_lineup_only_for_rounds_with_playerprices_in_dynamic_mode(): void
+    {
+        $this->createSchema();
+
+        $league = League::query()->create([
+            'league_title' => 'WM 2026',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_symbol' => '',
+        ]);
+        LeagueOptions::query()->create([
+            'options_league_id' => (int) $league->league_id,
+            'options_league_pricemode' => 'dynamic',
+            'options_lineup_max_players' => 11,
+            'options_lineup_max_credits' => 100,
+            'options_lineup_max_players_team' => 3,
+        ]);
+
+        $teams = [];
+        for ($i = 0; $i < 4; $i++) {
+            $teams[] = Team::query()->create(['team_name' => 'Dyn'.$i, 'team_status' => 1]);
+        }
+
+        $pricedRound = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'Mit Preisen',
+            'matchround_startdate' => now()->addDay()->toDateTimeString(),
+            'matchround_enddate' => now()->addDays(3)->toDateTimeString(),
+            'matchround_status' => 1,
+        ]);
+        $unpricedRound = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'Ohne Preise',
+            'matchround_startdate' => now()->addDays(4)->toDateTimeString(),
+            'matchround_enddate' => now()->addDays(6)->toDateTimeString(),
+            'matchround_status' => 1,
+        ]);
+
+        foreach ([$pricedRound, $unpricedRound] as $round) {
+            MatchGame::query()->create([
+                'match_round' => (int) $round->matchround_id,
+                'match_hometeam_id' => (int) $teams[0]->team_id,
+                'match_guestteam_id' => (int) $teams[1]->team_id,
+                'match_date' => now()->addDays(2)->toDateTimeString(),
+            ]);
+            MatchGame::query()->create([
+                'match_round' => (int) $round->matchround_id,
+                'match_hometeam_id' => (int) $teams[2]->team_id,
+                'match_guestteam_id' => (int) $teams[3]->team_id,
+                'match_date' => now()->addDays(2)->toDateTimeString(),
+            ]);
+        }
+
+        foreach ($teams as $index => $team) {
+            $this->seedSquadForTeam((int) $league->league_id, (int) $team->team_id, 'D'.$index);
+            Teamprice::query()->create([
+                'teamprice_team_id' => (int) $team->team_id,
+                'teamprice_matchround_id' => (int) $pricedRound->matchround_id,
+                'teamprice_price' => 5,
+            ]);
+            Teamprice::query()->create([
+                'teamprice_team_id' => (int) $team->team_id,
+                'teamprice_matchround_id' => (int) $unpricedRound->matchround_id,
+                'teamprice_price' => 5,
+            ]);
+        }
+
+        $pricedPlayers = Playerteam::query()
+            ->where('playerteam_league_id', (int) $league->league_id)
+            ->whereIn('playerteam_team_id', array_map(static fn (Team $team): int => (int) $team->team_id, $teams))
+            ->get(['playerteam_id']);
+        foreach ($pricedPlayers as $playerteam) {
+            Playerprice::query()->create([
+                'playerprice_playerteam_id' => (int) $playerteam->playerteam_id,
+                'playerprice_matchround_id' => (int) $pricedRound->matchround_id,
+                'playerprice_price' => 5,
+            ]);
+        }
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('shellPayload')->once()->with(7)->andReturn([
+            'user' => ['user_id' => 7, 'user_nickname' => 'admin', 'photo_url' => '', 'is_ffb_admin' => true],
+            'navigation' => [],
+            'selected_league_id' => (int) $league->league_id,
+            'selected_league' => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => 'WM 2026',
+                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+            ],
+        ]);
+
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $item = $payload['sections'][5]['checklist'][3];
+
+        $this->assertTrue($item['ok']);
+        $this->assertCount(1, $item['info_list']);
+        $this->assertSame('Mit Preisen', $item['info_list'][0]['label']);
+        $this->assertStringContainsString('% des Budgets', $item['info_list'][0]['detail']);
     }
 
     #[Test]
@@ -1699,7 +1901,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][6];
 
         $this->assertSame('matchdata', $section['key']);
@@ -1762,7 +1964,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][6];
 
         $this->assertFalse($section['ok']);
@@ -1875,7 +2077,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][6];
 
         $this->assertTrue($section['ok']);
@@ -1961,7 +2163,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][6];
 
         $this->assertFalse($section['ok']);
@@ -2041,7 +2243,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][7];
 
         $this->assertSame('extremeteam', $section['key']);
@@ -2087,7 +2289,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][7];
 
         $this->assertFalse($section['ok']);
@@ -2200,7 +2402,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][8];
 
         $this->assertSame('score', $section['key']);
@@ -2274,7 +2476,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
         $section = $payload['sections'][8];
 
         $this->assertFalse($section['ok']);
