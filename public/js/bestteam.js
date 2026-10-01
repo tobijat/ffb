@@ -12,7 +12,6 @@
     const matchlistEl = document.getElementById('matchlist');
     const pitchMessageEl = document.getElementById('pitch-message');
     const sideTabsEl = document.getElementById('side-tabs');
-    const sideTitleEl = document.getElementById('side-panel-title');
     const lines = {
         g: document.getElementById('line-g'),
         d: document.getElementById('line-d'),
@@ -205,84 +204,14 @@
         roundSelect.disabled = matchrounds.length === 0;
     }
 
-    function hasPenaltyScore(match) {
-        const homePen = parseInt(match.match_homescore_penalty, 10);
-        const guestPen = parseInt(match.match_guestscore_penalty, 10);
-        return !Number.isNaN(homePen) && !Number.isNaN(guestPen) && homePen > -1 && guestPen > -1;
-    }
-
-    function formatMatchScore(match) {
-        if (hasPenaltyScore(match)) {
-            let html =
-                '<span class="score-final">' +
-                escapeHtml(match.match_homescore_penalty) +
-                ':' +
-                escapeHtml(match.match_guestscore_penalty) +
-                ' <span class="score-hint" title="nach Elfmeterschießen">n.E.</span></span>';
-
-            if (
-                match.match_homescore != null &&
-                match.match_guestscore != null &&
-                String(match.match_homescore) !== '' &&
-                String(match.match_guestscore) !== '' &&
-                Number(match.match_homescore) >= 0 &&
-                Number(match.match_guestscore) >= 0
-            ) {
-                html +=
-                    '<span class="score-reg">(' +
-                    escapeHtml(match.match_homescore) +
-                    ':' +
-                    escapeHtml(match.match_guestscore) +
-                    ' <span class="score-hint" title="nach Verlängerung">n.V.</span>)</span>';
-            }
-            return html;
-        }
-        if (
-            match.match_homescore != null &&
-            match.match_guestscore != null &&
-            String(match.match_homescore) !== '' &&
-            String(match.match_guestscore) !== '' &&
-            Number(match.match_homescore) >= 0 &&
-            Number(match.match_guestscore) >= 0
-        ) {
-            return escapeHtml(match.match_homescore) + ':' + escapeHtml(match.match_guestscore);
-        }
-        return '-:-';
-    }
-
     function renderMatches() {
         const round = currentRound();
         const matches = (round && round.matches) || [];
-        if (!matches.length) {
-            matchlistEl.innerHTML = '<p class="muted">Keine Spiele in dieser Runde.</p>';
+        if (window.FfbMatchList) {
+            window.FfbMatchList.render(matchlistEl, matches);
             return;
         }
-        const ul = document.createElement('ul');
-        ul.className = 'match-list';
-        matches.forEach(function (match) {
-            const li = document.createElement('li');
-            const homeFlag = flagHtml(match.match_hometeam_nationality);
-            const guestFlag = flagHtml(match.match_guestteam_nationality);
-            li.innerHTML =
-                '<span class="home">' +
-                escapeHtml(match.match_hometeam_name) +
-                ' ' +
-                homeFlag +
-                '</span>' +
-                '<span class="score"><a class="nolink under" href="#" data-modal="match" data-id="' +
-                match.match_id +
-                '" title="Klicken für Matchinfos">' +
-                formatMatchScore(match) +
-                '</a></span>' +
-                '<span class="away">' +
-                guestFlag +
-                ' ' +
-                escapeHtml(match.match_guestteam_name) +
-                '</span>';
-            ul.appendChild(li);
-        });
-        matchlistEl.innerHTML = '';
-        matchlistEl.appendChild(ul);
+        matchlistEl.innerHTML = '<p class="muted">Keine Spiele in dieser Runde.</p>';
     }
 
     function statsRow(icon, label, valueHtml) {
@@ -343,24 +272,15 @@
         const round = currentRound();
         updateSideTabs();
         if (!round) {
-            if (sideTitleEl) {
-                sideTitleEl.textContent = 'Spiele';
-            }
             matchlistEl.innerHTML = '<p class="muted">Keine Spiele.</p>';
             return;
         }
 
         if (sideTab === 'matches') {
-            if (sideTitleEl) {
-                sideTitleEl.textContent = 'Spiele';
-            }
             renderMatches();
             return;
         }
 
-        if (sideTitleEl) {
-            sideTitleEl.textContent = 'Statistiken';
-        }
         matchlistEl.innerHTML = '<p class="muted">Lade Statistiken…</p>';
 
         const roundId = round.matchround_id;
