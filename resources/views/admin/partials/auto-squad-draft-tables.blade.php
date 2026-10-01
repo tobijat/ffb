@@ -1,4 +1,4 @@
-ï»¿@php
+@php
     $isUefaAuto = ($autoSourceLabel ?? '') === 'UEFA';
     $isFifaAuto = ($autoSourceLabel ?? '') === 'FIFA';
     $externalIdLabel = $isUefaAuto ? 'UEFA-ID' : ($isFifaAuto ? 'FIFA-ID' : 'TM-ID');
@@ -59,7 +59,7 @@
                                             <tr class="{{ $rowClass }}" data-row='@json($rowPayload)'>
                                                 <td class="admin-auto-squad-num">
                                                     @if ($notInJson)
-                                                        <span class="muted">â€”</span>
+                                                        <span class="muted">—</span>
                                                         <span class="admin-auto-squad-badge" title="Aktiv im Kader, aber nicht in {{ $autoSourceLabel }}">nicht in {{ $autoSourceLabel }}</span>
                                                     @else
                                                         {{ $player['json_number'] ?? '' }}
@@ -98,7 +98,7 @@
                                                 </td>
                                                 <td>
                                                     @if ($canEditIdentity)
-                                                        <select class="admin-auto-squad-nationality" aria-label="NationalitÃ¤t {{ $index + 1 }}">
+                                                        <select class="admin-auto-squad-nationality" aria-label="Nationalität {{ $index + 1 }}">
                                                             <option value=""></option>
                                                             @foreach ($countries as $code => $name)
                                                                 <option value="{{ $code }}" @selected(($player['player_nationality'] ?? '') === $code)>{{ $code }}</option>
@@ -110,9 +110,9 @@
                                                 </td>
                                                 <td>
                                                     @if ($isUefaAuto)
-                                                        <span class="admin-auto-squad-readonly">{{ ($player['player_uefa_id'] ?? '') !== '' ? $player['player_uefa_id'] : 'â€”' }}</span>
+                                                        <span class="admin-auto-squad-readonly">{{ ($player['player_uefa_id'] ?? '') !== '' ? $player['player_uefa_id'] : '—' }}</span>
                                                     @elseif ($isFifaAuto)
-                                                        <span class="admin-auto-squad-readonly">{{ ($player['player_fifa_id'] ?? '') !== '' ? $player['player_fifa_id'] : 'â€”' }}</span>
+                                                        <span class="admin-auto-squad-readonly">{{ ($player['player_fifa_id'] ?? '') !== '' ? $player['player_fifa_id'] : '—' }}</span>
                                                     @elseif ($canEditIdentity)
                                                         <input
                                                             type="text"
@@ -123,7 +123,7 @@
                                                             aria-label="TM-ID {{ $index + 1 }}"
                                                         >
                                                     @else
-                                                        <span class="admin-auto-squad-readonly">{{ $player['player_foreign_id'] ?: 'â€”' }}</span>
+                                                        <span class="admin-auto-squad-readonly">{{ $player['player_foreign_id'] ?: '—' }}</span>
                                                     @endif
                                                 </td>
                                                 <td>
@@ -158,16 +158,16 @@
 
                         @if (count($autoAlmost) > 0)
                             <div class="admin-auto-squad-almost">
-                                <h3>MÃ¶gliche Namens-Ãœbereinstimmungen</h3>
+                                <h3>Mögliche Namens-Übereinstimmungen</h3>
                                 <p class="hint">
-                                    Haken bei <strong>Ãœbernehmen</strong>: bestehenden DB-Spieler verwenden.
+                                    Haken bei <strong>Übernehmen</strong>: bestehenden DB-Spieler verwenden.
                                     Ohne Haken: neuen Spieler aus {{ $autoSourceLabel }}-Daten anlegen.
                                 </p>
                                 <div class="admin-auto-squad-table-wrap">
                                     <table class="admin-auto-squad-almost-table" id="admin-auto-squad-almost-table">
                                         <thead>
                                             <tr>
-                                                <th>Ãœbernehmen</th>
+                                                <th>Übernehmen</th>
                                                 <th>{{ $autoSourceLabel }}</th>
                                                 <th>Datenbank</th>
                                                 <th>Pos. *</th>
@@ -217,7 +217,7 @@
                                                                 value="1"
                                                                 @checked(! empty($row['use_existing']))
                                                             >
-                                                            <span>Ãœbernehmen</span>
+                                                            <span>Übernehmen</span>
                                                         </label>
                                                         @if (! empty($row['match_reason']))
                                                             <span class="muted admin-auto-squad-almost-reason">{{ $row['match_reason'] }}</span>
@@ -227,13 +227,13 @@
                                                         <div class="admin-auto-squad-almost-side">
                                                             <strong>{{ $jsonName }}</strong>
                                                             <span>{{ $row['json_nationality'] ?? '' }}</span>
-                                                            <span>{{ $jsonPos !== '' ? $jsonPos : 'â€”' }}</span>
+                                                            <span>{{ $jsonPos !== '' ? $jsonPos : '—' }}</span>
                                                             @if ($isUefaAuto && ($row['player_uefa_id'] ?? '') !== '')
                                                                 <span class="muted">UEFA {{ $row['player_uefa_id'] }}</span>
                                                             @elseif ($isFifaAuto && ($row['player_fifa_id'] ?? '') !== '')
                                                                 <span class="muted">FIFA {{ $row['player_fifa_id'] }}</span>
                                                             @else
-                                                                <span class="muted">â€”</span>
+                                                                <span class="muted">—</span>
                                                             @endif
                                                         </div>
                                                     </td>
@@ -241,7 +241,7 @@
                                                         <div class="admin-auto-squad-almost-side">
                                                             <strong>{{ $dbName }}</strong>
                                                             <span>{{ $row['db_nationality'] ?? '' }}</span>
-                                                            <span>{{ $dbPos !== '' ? $dbPos : 'â€”' }}</span>
+                                                            <span>{{ $dbPos !== '' ? $dbPos : '—' }}</span>
                                                             <span class="muted">
                                                                 @if (count($dbSquads) > 0)
                                                                     {{ implode(', ', $dbSquads) }}
@@ -252,14 +252,14 @@
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <select class="admin-auto-squad-almost-position" required aria-label="Position Ã„hnlichkeit {{ $index + 1 }}">
+                                                        <select class="admin-auto-squad-almost-position" required aria-label="Position Ähnlichkeit {{ $index + 1 }}">
                                                             @foreach ($positions as $code => $label)
                                                                 <option value="{{ $code }}" @selected(($row['playerteam_player_position'] ?? '') === $code)>{{ strtoupper($code) }}</option>
                                                             @endforeach
                                                         </select>
                                                     </td>
                                                     <td>
-                                                        <select class="admin-auto-squad-almost-status" aria-label="Kader-Status Ã„hnlichkeit {{ $index + 1 }}">
+                                                        <select class="admin-auto-squad-almost-status" aria-label="Kader-Status Ähnlichkeit {{ $index + 1 }}">
                                                             <option value="1" @selected((int) ($row['playerteam_status'] ?? 1) === 1)>aktiv</option>
                                                             <option value="0" @selected((int) ($row['playerteam_status'] ?? 1) === 0)>inaktiv</option>
                                                         </select>
@@ -287,6 +287,6 @@
                         @endphp
                         <div class="admin-actions">
                             <button type="submit" class="admin-submit" id="admin-auto-squad-submit" @disabled($submitCount <= 0)>
-                                Alle Ã¼bernehmen ({{ $submitCount }})
+                                Alle übernehmen ({{ $submitCount }})
                             </button>
                         </div>

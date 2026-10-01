@@ -36,7 +36,8 @@
     align-items: flex-start;
 }
 
-.dash-nav a {
+.dash-nav a,
+.dash-nav .nav-big {
     color: var(--ink);
     text-decoration: none;
     display: inline-flex;
@@ -60,17 +61,25 @@
     text-decoration: none;
 }
 
-.dash-nav a img {
+.dash-nav a img,
+.dash-nav .nav-big img {
     width: 40px;
     height: 40px;
 }
 
-.dash-nav a span {
+.dash-nav a span,
+.dash-nav .nav-big span {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 100%;
+}
+
+.dash-nav .nav-big.is-disabled {
+    opacity: 0.45;
+    cursor: default;
+    pointer-events: none;
 }
 
 .dash-main {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\WebUser;
 use App\Services\DashboardService;
+use App\Services\FfbAdminAccess;
 use App\Services\FfbAuth;
 use App\Services\HelpService;
 use Illuminate\Http\Request;
@@ -13,8 +14,7 @@ class ReferencePageController extends Controller
 {
     public function __construct(
         private readonly FfbAuth $auth,
-    ) {
-    }
+    ) {}
 
     public function show(Request $request): View
     {
@@ -29,7 +29,7 @@ class ReferencePageController extends Controller
                     'user_id' => (int) $webUser->user_id,
                     'user_nickname' => (string) $webUser->user_nickname,
                     'photo_url' => '/images/ffb/profiles/photo/'.$photo,
-                    'is_ffb_admin' => app(\App\Services\FfbAdminAccess::class)->isAdmin((int) $webUser->user_id),
+                    'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $webUser->user_id),
                 ];
             }
         }
@@ -38,7 +38,7 @@ class ReferencePageController extends Controller
             'data' => [
                 'user' => $user,
                 'navigation' => $user
-                    ? app(DashboardService::class)->navigation()
+                    ? app(DashboardService::class)->navigation((int) $user['user_id'])
                     : HelpService::guestNavigation(),
             ],
             'legacyBase' => '/',

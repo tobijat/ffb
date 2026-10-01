@@ -16,17 +16,39 @@ class DashboardService
     public const NEWS_PER_PAGE = 3;
 
     /**
-     * @return list<array{symbol: string, name: string, link: string, style: string}>
+     * @return list<array{symbol: string, name: string, link: string, style: string, disabled?: bool, disabled_title?: string}>
      */
-    public function navigation(): array
+    public function navigation(?int $userId = null): array
     {
+        $lineupDisabled = $userId !== null && $this->selectedLeagueIsArchived($userId);
+
         return [
-            ['symbol' => 'nav_team.png', 'name' => 'Aufstellung', 'link' => '/lineup', 'style' => 'big'],
+            [
+                'symbol' => 'nav_team.png',
+                'name' => 'Aufstellung',
+                'link' => '/lineup',
+                'style' => 'big',
+                'disabled' => $lineupDisabled,
+                'disabled_title' => 'Archiviertes Spiel — keine Aufstellung möglich',
+            ],
             ['symbol' => 'nav_player.png', 'name' => 'Mannschaft', 'link' => '/myteam', 'style' => 'big'],
             ['symbol' => 'nav_topflop.png', 'name' => 'Top&Flop', 'link' => '/bestteam', 'style' => 'big'],
             ['symbol' => 'nav_results.png', 'name' => 'Rangliste', 'link' => '/userscore', 'style' => 'big'],
             ['symbol' => 'nav_help.png', 'name' => 'Regeln', 'link' => '/help', 'style' => 'big'],
         ];
+    }
+
+    private function selectedLeagueIsArchived(int $userId): bool
+    {
+        $leagueId = (int) (UserDetails::query()
+            ->where('user_id', $userId)
+            ->value('user_details_ffb_selected_league') ?? 0);
+
+        if ($leagueId <= 0) {
+            return false;
+        }
+
+        return (int) (League::query()->where('league_id', $leagueId)->value('league_archive') ?? 0) !== 0;
     }
 
     /**
@@ -41,7 +63,7 @@ class DashboardService
                 'leagues' => [],
                 'news' => ['items' => [], 'page' => 1, 'pages' => 0],
                 'polls' => ['text' => null, 'select' => null],
-                'navigation' => $this->navigation(),
+                'navigation' => $this->navigation($userId),
             ];
         }
 
@@ -59,7 +81,7 @@ class DashboardService
                 'text' => $this->textPoll($userId, $selectedLeagueId),
                 'select' => $this->selectPoll($userId, $selectedLeagueId),
             ],
-            'navigation' => $this->navigation(),
+            'navigation' => $this->navigation($userId),
         ];
     }
 
