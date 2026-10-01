@@ -487,7 +487,10 @@
                 '<button type="button" class="ffb-button-disabled" disabled>Bitte warten…</button>';
             return;
         }
-        if (options && lineuplist.length === Number(options.lineup_max_players)) {
+        const complete =
+            options && lineuplist.length === Number(options.lineup_max_players);
+        const withinBudget = Math.round(credits * 10) / 10 >= 0;
+        if (complete && withinBudget) {
             actionsEl.innerHTML =
                 '<button type="button" class="ffb-button" id="save-lineup-btn">Aufstellung speichern</button>';
         } else {
@@ -874,7 +877,7 @@
             teams = matchround.teams || [];
             roundMetaEl.innerHTML =
                 escapeHtml(matchround.matchround_title) +
-                '<br><span style="font-size:9pt;"><u>Deadline:</u> <em>' +
+                '<span class="lineup-deadline"><u>Deadline:</u> <em>' +
                 escapeHtml(matchround.matchround_deadline) +
                 '</em></span>';
 

@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/dashboard.css?v=11">
     <link rel="stylesheet" href="css/modal.css?v=9">
     <link rel="stylesheet" href="css/myteam.css?v=9">
-    <link rel="stylesheet" href="css/lineup.css?v=9">
+    <link rel="stylesheet" href="css/lineup.css?v=10">
 </head>
 <body class="dash-body">
     @php
@@ -35,8 +35,10 @@
     <main class="dash-main lineup-layout">
         <section class="panel myteam-pitch" aria-label="Aufstellung">
             <div class="lineup-info">
-                <div class="lineup-info-main">
+                <div class="lineup-info-round">
                     <p class="lineup-round" id="round-meta">Lade Spielrunde…</p>
+                </div>
+                <div class="lineup-info-center">
                     <div class="lineup-actions" id="lineup-actions"></div>
                     <div class="lineup-messages" id="lineup-messages"></div>
                 </div>
@@ -96,6 +98,6 @@
     </script>
     <script src="js/modal.js?v=8" defer></script>
     <script src="js/player-modal.js?v=8" defer></script>
-    <script src="js/lineup.js?v=11" defer></script>
+    <script src="js/lineup.js?v=13" defer></script>
 </body>
 </html>
