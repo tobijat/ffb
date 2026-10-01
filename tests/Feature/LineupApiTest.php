@@ -259,7 +259,9 @@ class LineupApiTest extends TestCase
             ->get('/lineup')
             ->assertOk()
             ->assertSee('js/lineup.js', false)
-            ->assertSee('team_selection', false)
-            ->assertSee('soccer-field', false);
+            ->assertSee('matchlist', false)
+            ->assertSee('soccer-field', false)
+            ->assertDontSee('team_selection', false)
+            ->assertDontSee('Spiele einblenden', false);
     }
 }

@@ -106,6 +106,11 @@ class LineupTeamPriceTest extends TestCase
 
         $this->assertSame(7.5, $teams[$pricedTeam]['team_price']);
         $this->assertNull($teams[$unpricedTeam]['team_price']);
+
+        $matches = $result['data']['matchround']['matches'];
+        $this->assertCount(1, $matches);
+        $this->assertSame(7.5, $matches[0]['match_hometeam_price']);
+        $this->assertNull($matches[0]['match_guestteam_price']);
     }
 
     private function createSchema(): void

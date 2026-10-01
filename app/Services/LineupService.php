@@ -159,44 +159,69 @@ class LineupService
             ->get();
 
         $teamIds = [];
-        foreach ($teamSourceMatches as $match) {
+        foreach ($allMatches as $match) {
             $teamIds[] = (int) $match->match_hometeam_id;
             $teamIds[] = (int) $match->match_guestteam_id;
         }
         $teamIds = array_values(array_unique(array_filter($teamIds)));
 
-        $teams = [];
+        $pricesByTeamId = [];
         if ($teamIds !== []) {
             $pricesByTeamId = Teamprice::query()
                 ->where('teamprice_matchround_id', (int) $round->matchround_id)
                 ->whereIn('teamprice_team_id', $teamIds)
                 ->pluck('teamprice_price', 'teamprice_team_id')
                 ->all();
-
-            $teams = Team::query()
-                ->whereIn('team_id', $teamIds)
-                ->orderBy('team_name')
-                ->get()
-                ->map(function (Team $t) use ($pricesByTeamId): array {
-                    $teamId = (int) $t->team_id;
-                    $row = [
-                        'team_id' => $teamId,
-                        'team_name' => (string) $t->team_name,
-                        'team_nationality' => (string) $t->team_nationality,
-                        'team_status' => (int) ($t->team_status ?? 0),
-                        'team_price' => null,
-                    ];
-
-                    if (array_key_exists($teamId, $pricesByTeamId)) {
-                        $row['team_price'] = round((float) $pricesByTeamId[$teamId], 1);
-                    }
-
-                    return $row;
-                })
-                ->all();
         }
 
-        $matches = $allMatches->map(fn (MatchGame $match) => $match->toSideListPayload())->all();
+        $teams = [];
+        if ($teamIds !== []) {
+            // Team picker / tiles: only teams from unfinished matches (empty status).
+            $pickerTeamIds = [];
+            foreach ($teamSourceMatches as $match) {
+                $pickerTeamIds[] = (int) $match->match_hometeam_id;
+                $pickerTeamIds[] = (int) $match->match_guestteam_id;
+            }
+            $pickerTeamIds = array_values(array_unique(array_filter($pickerTeamIds)));
+
+            $teams = $pickerTeamIds === []
+                ? []
+                : Team::query()
+                    ->whereIn('team_id', $pickerTeamIds)
+                    ->orderBy('team_name')
+                    ->get()
+                    ->map(function (Team $t) use ($pricesByTeamId): array {
+                        $teamId = (int) $t->team_id;
+                        $row = [
+                            'team_id' => $teamId,
+                            'team_name' => (string) $t->team_name,
+                            'team_nationality' => (string) $t->team_nationality,
+                            'team_status' => (int) ($t->team_status ?? 0),
+                            'team_price' => null,
+                        ];
+
+                        if (array_key_exists($teamId, $pricesByTeamId)) {
+                            $row['team_price'] = round((float) $pricesByTeamId[$teamId], 1);
+                        }
+
+                        return $row;
+                    })
+                    ->all();
+        }
+
+        $matches = $allMatches->map(function (MatchGame $match) use ($pricesByTeamId): array {
+            $payload = $match->toSideListPayload();
+            $homeId = (int) $match->match_hometeam_id;
+            $guestId = (int) $match->match_guestteam_id;
+            $payload['match_hometeam_price'] = array_key_exists($homeId, $pricesByTeamId)
+                ? round((float) $pricesByTeamId[$homeId], 1)
+                : null;
+            $payload['match_guestteam_price'] = array_key_exists($guestId, $pricesByTeamId)
+                ? round((float) $pricesByTeamId[$guestId], 1)
+                : null;
+
+            return $payload;
+        })->all();
 
         return [
             'ok' => true,

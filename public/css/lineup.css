@@ -148,6 +148,138 @@
     margin: 0 4px;
 }
 
+/* Match list with clickable team tiles + expandable player lists */
+.lineup-pick-hint {
+    margin: 0 0 4px;
+    padding: 0 4px;
+    font-size: 9pt;
+    color: var(--muted, #555);
+    text-align: center;
+}
+
+.lineup-match-list {
+    gap: 3px;
+}
+
+.lineup-match-list > li.lineup-match {
+    display: block;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #9cc09c;
+    border-radius: var(--radius, 4px);
+    background: #ccffcc;
+    overflow: hidden;
+}
+
+.lineup-match-list > li.lineup-match + li.lineup-match {
+    margin-top: 0;
+}
+
+.lineup-match-list > li.lineup-match:hover {
+    background: #e0ffe0;
+}
+
+.lineup-match-list .match-list-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 4px 6px;
+    align-items: center;
+    padding: 2px 4px;
+    background: #ccffcc;
+}
+
+.lineup-match-list .match-list-row:hover {
+    background: #e0ffe0;
+}
+
+.lineup-team-tile {
+    appearance: none;
+    border: 1px solid transparent;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 9pt;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 4px;
+    border-radius: var(--radius-sm, 3px);
+    min-width: 0;
+    width: 100%;
+}
+
+.lineup-team-tile.home {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+.lineup-team-tile.away {
+    justify-content: flex-start;
+    text-align: left;
+}
+
+.lineup-team-tile:hover,
+.lineup-team-tile.is-active {
+    background: #e0ffe0;
+    border-color: #7aaa7a;
+}
+
+.lineup-team-tile .lineup-tile-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.lineup-team-tile img {
+    width: 16px;
+    height: 11px;
+    flex-shrink: 0;
+}
+
+.lineup-match-list .score {
+    min-width: 4.5rem;
+}
+
+.lineup-match-prices {
+    display: inline-grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 2px;
+    min-width: 4.5rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+}
+
+.lineup-match-price.home {
+    text-align: right;
+    justify-self: end;
+}
+
+.lineup-match-price.away {
+    text-align: left;
+    justify-self: start;
+}
+
+.lineup-credits-icon {
+    width: 16px !important;
+    height: 16px !important;
+    vertical-align: middle;
+    justify-self: center;
+    margin: 0 3px;
+}
+
+.lineup-match-players {
+    margin: 0 2px 3px;
+    padding: 2px 2px 4px;
+    border-top: 1px solid #7aaa7a;
+}
+
+.lineup-match-players[hidden] {
+    display: none;
+}
+
 .playerlist {
     font-size: 8pt;
     margin-top: 4px;
@@ -156,7 +288,7 @@
 .playerlist-head,
 .playerline {
     display: grid;
-    grid-template-columns: 1fr 2.4rem 1.4rem 1.4rem;
+    grid-template-columns: 1.4rem 1fr 2.4rem 1.4rem;
     gap: 2px 4px;
     align-items: center;
     padding: 2px 2px;
@@ -164,7 +296,7 @@
 
 .playerlist--with-perf .playerlist-head,
 .playerlist--with-perf .playerline {
-    grid-template-columns: 1.2rem 1fr 2.4rem 1.4rem 1.4rem 4.5rem;
+    grid-template-columns: 1.4rem 1.2rem 1fr 2.4rem 1.4rem 5.5rem;
 }
 
 .playerlist-head {
@@ -172,6 +304,18 @@
     text-align: center;
     border-bottom: 1px solid #7aaa7a;
     margin-bottom: 2px;
+}
+
+.playerlist-team-flag {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+}
+
+.playerlist-team-flag img {
+    width: 16px;
+    height: 11px;
 }
 
 .playerlist-pos {
@@ -210,6 +354,13 @@
     text-align: center;
 }
 
+.playerline .info img {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    vertical-align: middle;
+}
+
 .playerline .card-warn,
 .pitch-player .card-warn {
     color: #c00;
@@ -242,12 +393,15 @@
     line-height: 1;
     display: flex;
     align-items: center;
+    justify-content: center;
+    padding: 0 2px;
 }
 
 .perf-meter {
     display: inline-flex;
     align-items: center;
-    width: 80px;
+    width: 96px;
+    margin: 2px 0;
     vertical-align: middle;
 }
 
@@ -255,7 +409,7 @@
     position: relative;
     display: block;
     width: 100%;
-    height: 8px;
+    height: 11px;
     border-radius: 2px;
     background: rgba(0, 0, 0, 0.18);
     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);

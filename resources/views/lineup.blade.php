@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/dashboard.css?v=11">
     <link rel="stylesheet" href="css/modal.css?v=9">
     <link rel="stylesheet" href="css/myteam.css?v=11">
-    <link rel="stylesheet" href="css/lineup.css?v=10">
+    <link rel="stylesheet" href="css/lineup.css?v=18">
 </head>
 <body class="dash-body">
     @php
@@ -64,17 +64,6 @@
                     <p class="muted">Lade Spiele…</p>
                 </div>
             </div>
-
-            <div class="panel" id="picker-panel">
-                <label class="round-label" for="team_selection">Mannschaft</label>
-                <select id="team_selection" class="ffb-select" disabled>
-                    <option>Lade Teams…</option>
-                </select>
-                <p class="lineup-selected-team" id="selected-team"></p>
-                <div id="playerlist" class="playerlist">
-                    <p class="muted">Mannschaft wählen…</p>
-                </div>
-            </div>
         </aside>
     </main>
 
@@ -99,6 +88,6 @@
     <script src="js/modal.js?v=8" defer></script>
     <script src="js/player-modal.js?v=8" defer></script>
     <script src="js/match-list.js?v=2" defer></script>
-    <script src="js/lineup.js?v=14" defer></script>
+    <script src="js/lineup.js?v=23" defer></script>
 </body>
 </html>
