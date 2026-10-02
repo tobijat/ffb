@@ -312,10 +312,23 @@
 .ffb-match-header .result {
     text-align: center;
     white-space: nowrap;
+    line-height: 1.15;
 }
 
-.ffb-match-score-reg {
-    font-size: 12pt;
+.ffb-match-header .result .score-final {
+    display: block;
+}
+
+.ffb-match-header .result .score-reg {
+    display: block;
+    font-size: 11pt;
+    font-weight: normal;
+    color: #4a6a4a;
+}
+
+.ffb-match-header .result .score-hint {
+    font-size: 10pt;
+    font-weight: normal;
 }
 
 .ffb-match-meta {
@@ -423,34 +436,49 @@
     vertical-align: middle;
 }
 
-.ffb-match-prev li {
-    display: grid;
-    grid-template-columns: 29% 14% 23% 11% 23%;
-    gap: 0;
-    align-items: baseline;
-    margin-bottom: 0.15rem;
+.ffb-match-prev.match-list {
+    gap: 3px;
 }
 
-.ffb-match-prev .round {
-    text-align: left;
+.ffb-match-prev-meta {
+    padding: 3px 6px 0;
+    font-size: 8pt;
+    color: #355535;
+    text-align: center;
+    line-height: 1.25;
 }
 
-.ffb-match-prev .date {
-    text-align: right;
+.ffb-match-prev .match-list-row {
+    grid-template-columns: minmax(0, 1fr) 4.25rem minmax(0, 1fr);
+    gap: 4px;
+    padding: 1px 6px 3px;
 }
 
 .ffb-match-prev .home {
+    justify-content: flex-end;
     text-align: right;
-    padding-right: 0.25rem;
 }
 
-.ffb-match-prev .result {
-    text-align: center;
-}
-
-.ffb-match-prev .guest {
+.ffb-match-prev .away {
+    justify-content: flex-start;
     text-align: left;
-    padding-left: 0.25rem;
+}
+
+.ffb-match-prev .score {
+    min-width: 0;
+    width: 100%;
+    justify-self: stretch;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.ffb-match-prev .match-team-name {
+    max-width: 100%;
+}
+
+.ffb-match-prev .home .ffb-flag,
+.ffb-match-prev .away .ffb-flag {
+    flex-shrink: 0;
 }
 
 .ffb-match a.under {
@@ -474,10 +502,33 @@
     font-size: 8pt;
 }
 
-.ffb-player-rounds .result-cell {
-    min-width: 9rem;
+.ffb-player-rounds tbody td.round-cell {
     text-align: left;
+}
+
+.ffb-player-rounds .result-cell {
+    min-width: 12rem;
     white-space: nowrap;
+}
+
+.ffb-player-rounds .result-line {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 0.35rem;
+    align-items: center;
+}
+
+.ffb-player-rounds .result-home {
+    text-align: right;
+}
+
+.ffb-player-rounds .result-score {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.ffb-player-rounds .result-guest {
+    text-align: left;
 }
 
 .ffb-player-more {
@@ -598,20 +649,5 @@
 
     .ffb-match-header {
         font-size: 11pt;
-    }
-
-    .ffb-match-prev li {
-        grid-template-columns: 1fr;
-        gap: 0.1rem;
-        padding: 0.35rem 0;
-        border-bottom: 1px solid #c5dfc5;
-    }
-
-    .ffb-match-prev .home,
-    .ffb-match-prev .date,
-    .ffb-match-prev .round,
-    .ffb-match-prev .guest {
-        text-align: left;
-        padding: 0;
     }
 }

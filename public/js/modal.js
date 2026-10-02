@@ -481,30 +481,59 @@
     }
 
     function formatMatchResult(match) {
-        const homePen = match.match_hometeam_score_penalty;
-        const guestPen = match.match_guestteam_score_penalty;
-        if (homePen != null && homePen > -1 && guestPen != null && guestPen > -1) {
-            return (
-                '<span title="nach Elfmeterschießen">' +
+        const listMatch = {
+            match_homescore: match.match_hometeam_score,
+            match_guestscore: match.match_guestteam_score,
+            match_homescore_penalty: match.match_hometeam_score_penalty,
+            match_guestscore_penalty: match.match_guestteam_score_penalty,
+            match_minutes: match.match_minutes,
+        };
+
+        if (window.FfbMatchList && typeof window.FfbMatchList.formatScore === 'function') {
+            return window.FfbMatchList.formatScore(listMatch);
+        }
+
+        const homePen = listMatch.match_homescore_penalty;
+        const guestPen = listMatch.match_guestscore_penalty;
+        const hasPenalty =
+            homePen != null && homePen > -1 && guestPen != null && guestPen > -1;
+        const hasResult =
+            listMatch.match_homescore != null &&
+            listMatch.match_guestscore != null &&
+            Number(listMatch.match_homescore) >= 0 &&
+            Number(listMatch.match_guestscore) >= 0;
+
+        if (hasPenalty) {
+            let html =
+                '<span class="score-final">' +
                 escapeHtml(homePen) +
                 ':' +
                 escapeHtml(guestPen) +
-                ' n.E.</span><br>' +
-                '<span class="ffb-match-score-reg" title="nach regulärer Spielzeit">(' +
-                escapeHtml(match.match_hometeam_score) +
-                ':' +
-                escapeHtml(match.match_guestteam_score) +
-                ')</span>'
-            );
+                ' <span class="score-hint" title="nach Elfmeterschießen">n.E.</span></span>';
+            if (hasResult) {
+                html +=
+                    '<span class="score-reg">(' +
+                    escapeHtml(listMatch.match_homescore) +
+                    ':' +
+                    escapeHtml(listMatch.match_guestscore) +
+                    ' <span class="score-hint" title="nach Verlängerung">n.V.</span>)</span>';
+            }
+            return html;
         }
-        if (match.match_hometeam_score == null || Number(match.match_hometeam_score) < 0) {
+
+        if (!hasResult) {
             return '-:-';
         }
-        return (
-            escapeHtml(match.match_hometeam_score) +
+
+        let html =
+            escapeHtml(listMatch.match_homescore) +
             ':' +
-            escapeHtml(match.match_guestteam_score)
-        );
+            escapeHtml(listMatch.match_guestscore);
+        if (Number(listMatch.match_minutes) === 120) {
+            html +=
+                ' <span class="score-hint" title="nach Verlängerung">n.V.</span>';
+        }
+        return html;
     }
 
     function renderGoalOrder(goals, homeTeamId, guestTeamId) {
@@ -617,36 +646,77 @@
         );
     }
 
+    function formatPrevMatchMeta(m) {
+        const parts = [];
+        const roundLabel = String(m.match_matchround_name || '').trim();
+        const dateLabel = String(m.match_date || '').trim();
+        if (roundLabel !== '') {
+            parts.push(roundLabel);
+        }
+        if (dateLabel !== '') {
+            parts.push(dateLabel);
+        }
+        return parts.join(' - ');
+    }
+
     function renderPrevMatches(prev) {
         if (!prev || !prev.length) {
             return '';
         }
         let html =
-            '<div class="ffb-match-section"><h3>Bisherige Partien</h3><ul class="ffb-match-prev">';
+            '<div class="ffb-match-section"><h3>Alle Begegnungen</h3><ul class="match-list ffb-match-prev">';
         for (let i = 0; i < prev.length; i++) {
             const m = prev[i];
+            const listMatch = {
+                match_id: m.match_id,
+                match_hometeam_name: m.match_hometeam_name,
+                match_guestteam_name: m.match_guestteam_name,
+                match_hometeam_nationality: m.match_hometeam_nationality,
+                match_guestteam_nationality: m.match_guestteam_nationality,
+                match_homescore: m.match_hometeam_score,
+                match_guestscore: m.match_guestteam_score,
+                match_homescore_penalty: m.match_hometeam_score_penalty,
+                match_guestscore_penalty: m.match_guestteam_score_penalty,
+                match_minutes: m.match_minutes,
+            };
+            const rowHtml =
+                window.FfbMatchList && typeof window.FfbMatchList.matchRowHtml === 'function'
+                    ? window.FfbMatchList.matchRowHtml(listMatch)
+                    : fallbackPrevMatchRow(m);
             html +=
-                '<li>' +
-                '<span class="round">' +
-                escapeHtml(m.match_matchround_name) +
-                '</span>' +
-                '<span class="date">' +
-                escapeHtml(m.match_date || '') +
-                '</span>' +
-                '<span class="home">' +
-                escapeHtml(m.match_hometeam_name) +
-                '</span>' +
-                '<span class="result"><a class="under" href="#" data-modal="match" data-id="' +
-                escapeHtml(m.match_id) +
-                '" title="Klicken für Matchinfos">' +
-                formatPrevResult(m) +
-                '</a></span>' +
-                '<span class="guest">' +
-                escapeHtml(m.match_guestteam_name) +
-                '</span></li>';
+                '<li class="match-list-item">' +
+                '<div class="ffb-match-prev-meta">' +
+                escapeHtml(formatPrevMatchMeta(m)) +
+                '</div>' +
+                rowHtml +
+                '</li>';
         }
         html += '</ul></div>';
         return html;
+    }
+
+    function fallbackPrevMatchRow(m) {
+        return (
+            '<button type="button" class="match-list-row match-list-row--clickable" data-modal="match" data-id="' +
+            escapeHtml(m.match_id) +
+            '" title="Klicken für Matchinfos">' +
+            '<span class="home">' +
+            '<span class="match-team-name">' +
+            escapeHtml(m.match_hometeam_name) +
+            '</span> ' +
+            flagHtml(m.match_hometeam_nationality) +
+            '</span>' +
+            '<span class="score">' +
+            formatPrevResult(m) +
+            '</span>' +
+            '<span class="away">' +
+            flagHtml(m.match_guestteam_nationality) +
+            ' <span class="match-team-name">' +
+            escapeHtml(m.match_guestteam_name) +
+            '</span>' +
+            '</span>' +
+            '</button>'
+        );
     }
 
     function renderMatchBody(data) {

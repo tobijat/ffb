@@ -163,6 +163,9 @@ class MatchPopupService
     }
 
     /**
+     * Finished meetings between the two teams (either home/away), newest first,
+     * excluding the match currently shown in the modal.
+     *
      * @return list<array<string, mixed>>
      */
     private function previousMatches(int $matchId, int $homeTeamId, int $guestTeamId): array
@@ -171,6 +174,7 @@ class MatchPopupService
             ->with(['homeTeam', 'guestTeam', 'matchround.league'])
             ->where('match_id', '!=', $matchId)
             ->where('match_homescore', '>=', 0)
+            ->where('match_guestscore', '>=', 0)
             ->where(function ($q) use ($homeTeamId, $guestTeamId) {
                 $q->where(function ($inner) use ($homeTeamId, $guestTeamId) {
                     $inner->where('match_hometeam_id', $homeTeamId)
@@ -181,12 +185,16 @@ class MatchPopupService
                 });
             })
             ->orderByDesc('match_date')
+            ->orderByDesc('match_id')
             ->get();
 
         return $matches->map(function (MatchGame $item) {
+            $leagueTitle = (string) ($item->matchround?->league?->league_title ?? '');
+            $roundTitle = (string) ($item->matchround?->matchround_title ?? '');
+
             return [
                 'match_id' => (int) $item->match_id,
-                'match_date' => MatchGame::formatDisplayDate(
+                'match_date' => MatchGame::formatDisplayDateOnly(
                     $item->match_date !== null ? (string) $item->match_date : null
                 ),
                 'match_hometeam_id' => (int) $item->match_hometeam_id,
@@ -199,10 +207,27 @@ class MatchPopupService
                 'match_guestteam_score' => $this->nullableScore($item->match_guestscore),
                 'match_hometeam_score_penalty' => $this->nullableScore($item->match_homescore_penalty),
                 'match_guestteam_score_penalty' => $this->nullableScore($item->match_guestscore_penalty),
+                'match_minutes' => (int) ($item->match_minutes ?? 0),
                 'match_matchround_id' => (int) $item->match_round,
-                'match_matchround_name' => (string) ($item->matchround?->matchround_title ?? ''),
-                'match_league_title' => (string) ($item->matchround?->league?->league_title ?? ''),
+                'match_matchround_name' => $this->formatRoundDisplayTitle($leagueTitle, $roundTitle),
+                'match_league_title' => $leagueTitle,
             ];
         })->all();
+    }
+
+    private function formatRoundDisplayTitle(string $leagueTitle, string $roundTitle): string
+    {
+        $league = trim($leagueTitle);
+        $round = trim($roundTitle);
+
+        if ($league === '') {
+            return $round;
+        }
+
+        if ($round === '') {
+            return $league;
+        }
+
+        return $league.' - '.$round;
     }
 }

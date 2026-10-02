@@ -6,7 +6,7 @@
     <title>Mannschaft — SoccerSportsfan</title>
     <link rel="stylesheet" href="css/start.css?v=23">
     <link rel="stylesheet" href="css/dashboard.css?v=12">
-    <link rel="stylesheet" href="css/modal.css?v=9">
+    <link rel="stylesheet" href="css/modal.css?v=15">
     <link rel="stylesheet" href="css/myteam.css?v=17">
 </head>
 <body class="dash-body">
@@ -118,9 +118,9 @@
             selectedLeagueId: @json($data['selected_league_id'] ?? 0),
         };
     </script>
-    <script src="js/modal.js?v=8" defer></script>
-    <script src="js/player-modal.js?v=8" defer></script>
+    <script src="js/modal.js?v=12" defer></script>
+    <script src="js/player-modal.js?v=11" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
-    <script src="js/myteam.js?v=11" defer></script>
+    <script src="js/myteam.js?v=13" defer></script>
 </body>
 </html>

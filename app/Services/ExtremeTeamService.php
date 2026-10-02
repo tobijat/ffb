@@ -980,8 +980,9 @@ class ExtremeTeamService
 
         $resolved = collect();
         foreach ($playerteamIds as $ptId) {
-            if ($fromPlayer->has($ptId)) {
-                $resolved->put($ptId, (float) $fromPlayer->get($ptId));
+            $playerPrice = $fromPlayer->has($ptId) ? (float) $fromPlayer->get($ptId) : null;
+            if ($playerPrice !== null && $playerPrice > 0) {
+                $resolved->put($ptId, $playerPrice);
 
                 continue;
             }
