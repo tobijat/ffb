@@ -68,6 +68,7 @@ class AdminMatchroundService
             'items' => $selectedLeagueId > 0 ? $this->listItems($selectedLeagueId) : [],
             'form' => $form,
             'league_lineup_defaults' => $this->lineupOptionsFormForLeague((int) $form['matchround_league_id']),
+            'league_has_benchmode' => $this->leagueHasBenchmode((int) $form['matchround_league_id']),
             'mode' => $mode === 'update' ? 'update' : 'create',
         ];
     }
@@ -131,6 +132,7 @@ class AdminMatchroundService
     public function create(array $input): array
     {
         $form = $this->normalizeInput($input);
+        $form = $this->withDisplayLineupOptions($form, (int) $form['matchround_league_id']);
         $errors = $this->validate($form, true);
         if ($errors !== []) {
             return ['ok' => false, 'errors' => $errors, 'form' => $form, 'league_id' => (int) $form['matchround_league_id']];
@@ -186,6 +188,7 @@ class AdminMatchroundService
             'matchround_id' => $matchroundId,
             'matchround_league_id' => (int) $item->matchround_league_id,
         ]);
+        $form = $this->withDisplayLineupOptions($form, (int) $form['matchround_league_id']);
         $errors = $this->validate($form, false);
         if ($errors !== []) {
             return ['ok' => false, 'errors' => $errors, 'form' => $form, 'league_id' => (int) $form['matchround_league_id']];
@@ -487,6 +490,15 @@ class AdminMatchroundService
         }
 
         return $form;
+    }
+
+    private function leagueHasBenchmode(int $leagueId): bool
+    {
+        if ($leagueId <= 0) {
+            return false;
+        }
+
+        return $this->lineupOptions->forLeague($leagueId)['league_benchmode'] !== null;
     }
 
     /**

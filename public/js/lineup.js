@@ -649,6 +649,10 @@
             }
             lines[pos].innerHTML = html;
         });
+
+        if (window.FfbPitchBench) {
+            window.FfbPitchBench.sync(options, legacyBase);
+        }
     }
 
     function updateCreditsDisplay() {
@@ -932,6 +936,9 @@
         matchlistEl.innerHTML = '';
         actionsEl.innerHTML = '';
         roundMetaEl.textContent = '';
+        if (window.FfbPitchBench) {
+            window.FfbPitchBench.sync(null, legacyBase);
+        }
     }
 
     async function init() {
@@ -959,6 +966,9 @@
                 String(options.game_pricemode || '') !== 'dynamic'
             ) {
                 showRecentPerformance = false;
+            }
+            if (window.FfbPitchBench) {
+                window.FfbPitchBench.sync(options, legacyBase);
             }
             if (!matchround) {
                 roundMetaEl.textContent = '';

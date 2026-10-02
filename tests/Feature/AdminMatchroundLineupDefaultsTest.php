@@ -131,6 +131,70 @@ class AdminMatchroundLineupDefaultsTest extends TestCase
         $this->assertSame(0, $payload['form']['lineup_options_enabled']);
         $this->assertSame(77.0, $payload['form']['matchround_options_lineup_max_credits']);
         $this->assertSame(4, $payload['form']['matchround_options_lineup_max_players_team']);
+        $this->assertFalse($payload['league_has_benchmode']);
+    }
+
+    #[Test]
+    public function page_payload_exposes_benchmode_when_league_has_bench(): void
+    {
+        DB::table('ffb_league_options')->where('options_league_id', 1)->update([
+            'options_league_benchmode' => 'cover',
+            'options_lineup_min_bench' => 1,
+            'options_lineup_max_bench' => 3,
+        ]);
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('shellPayload')->once()->with(544)->andReturn([
+            'user' => ['user_id' => 544],
+            'navigation' => [],
+            'selected_league' => null,
+        ]);
+
+        $service = new AdminMatchroundService($adminCenter, app(LineupOptionsResolver::class));
+        $payload = $service->pagePayload(544, 1);
+
+        $this->assertTrue($payload['league_has_benchmode']);
+        $this->assertSame(1, $payload['form']['matchround_options_lineup_min_bench']);
+        $this->assertSame(3, $payload['form']['matchround_options_lineup_max_bench']);
+    }
+
+    #[Test]
+    public function create_with_overrides_fills_hidden_bench_from_league_defaults(): void
+    {
+        $result = $this->service()->create([
+            'matchround_league_id' => 1,
+            'matchround_title' => 'Runde Bench',
+            'matchround_status' => 1,
+            'matchround_startdate' => '2026-10-01T18:00',
+            'matchround_enddate' => '2026-10-07T22:00',
+            'lineup_options_enabled' => 1,
+            'matchround_options_lineup_max_players' => 11,
+            'matchround_options_lineup_max_credits' => 70,
+            'matchround_options_lineup_max_players_team' => 3,
+            'matchround_options_lineup_min_g' => 1,
+            'matchround_options_lineup_min_d' => 2,
+            'matchround_options_lineup_min_m' => 3,
+            'matchround_options_lineup_min_s' => 1,
+            'matchround_options_lineup_max_g' => 1,
+            'matchround_options_lineup_max_d' => 5,
+            'matchround_options_lineup_max_m' => 5,
+            'matchround_options_lineup_max_s' => 3,
+            // bench fields omitted — league has no benchmode
+        ]);
+
+        $this->assertTrue($result['ok']);
+
+        $matchroundId = (int) Matchround::query()
+            ->where('matchround_title', 'Runde Bench')
+            ->value('matchround_id');
+        $this->assertGreaterThan(0, $matchroundId);
+
+        $this->assertDatabaseHas('ffb_matchround_options', [
+            'matchround_options_matchround_id' => $matchroundId,
+            'matchround_options_lineup_max_credits' => 70,
+            'matchround_options_lineup_min_bench' => 0,
+            'matchround_options_lineup_max_bench' => 0,
+        ]);
     }
 
     private function service(): AdminMatchroundService

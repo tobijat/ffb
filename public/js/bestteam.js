@@ -176,6 +176,9 @@
         if (teamSideStatsEl) {
             teamSideStatsEl.hidden = true;
         }
+        if (window.FfbPitchBench) {
+            window.FfbPitchBench.sync(null, legacyBase);
+        }
     }
 
     function setSelectsEnabled(enabled) {
@@ -388,6 +391,10 @@
                 })
                 .join('');
         });
+
+        if (window.FfbPitchBench) {
+            window.FfbPitchBench.sync(data.lineup_options || null, legacyBase);
+        }
     }
 
     async function loadTeam() {
@@ -424,6 +431,9 @@
             }
             if (data.available === false) {
                 clearPitch();
+                if (window.FfbPitchBench) {
+                    window.FfbPitchBench.sync(data.lineup_options || null, legacyBase);
+                }
                 setPitchMessage(
                     teamType === 'flop'
                         ? 'Flop-Team der Runde noch nicht verfügbar'

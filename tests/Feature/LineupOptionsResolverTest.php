@@ -88,6 +88,7 @@ class LineupOptionsResolverTest extends TestCase
         $this->assertSame(100.0, $resolved['lineup_max_credits']);
         $this->assertSame(0, $resolved['lineup_min_bench']);
         $this->assertSame(0, $resolved['lineup_max_bench']);
+        $this->assertNull($resolved['league_benchmode']);
     }
 
     #[Test]
@@ -101,5 +102,31 @@ class LineupOptionsResolverTest extends TestCase
         $this->assertSame(2, $resolved['lineup_min_d']);
         $this->assertSame(0, $resolved['lineup_min_bench']);
         $this->assertSame(0, $resolved['lineup_max_bench']);
+        $this->assertNull($resolved['league_benchmode']);
+    }
+
+    #[Test]
+    public function resolves_league_benchmode_even_with_matchround_override(): void
+    {
+        DB::table('ffb_league_options')->where('options_league_id', 1)->update([
+            'options_league_benchmode' => 'cover',
+            'options_lineup_min_bench' => 1,
+            'options_lineup_max_bench' => 3,
+        ]);
+
+        $league = app(LineupOptionsResolver::class)->forLeague(1);
+        $this->assertSame('cover', $league['league_benchmode']);
+        $this->assertSame(1, $league['lineup_min_bench']);
+        $this->assertSame(3, $league['lineup_max_bench']);
+        $this->assertSame(1, $league['league_lineup_min_bench']);
+        $this->assertSame(3, $league['league_lineup_max_bench']);
+
+        $override = app(LineupOptionsResolver::class)->forMatchround(11);
+        $this->assertSame('matchround', $override['source']);
+        $this->assertSame('cover', $override['league_benchmode']);
+        $this->assertSame(0, $override['lineup_min_bench']);
+        $this->assertSame(0, $override['lineup_max_bench']);
+        $this->assertSame(1, $override['league_lineup_min_bench']);
+        $this->assertSame(3, $override['league_lineup_max_bench']);
     }
 }

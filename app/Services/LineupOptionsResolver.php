@@ -48,6 +48,9 @@ class LineupOptionsResolver
      *     lineup_max_s: int,
      *     lineup_min_bench: int,
      *     lineup_max_bench: int,
+     *     league_benchmode: ?string,
+     *     league_lineup_min_bench: int,
+     *     league_lineup_max_bench: int,
      *     source: 'matchround'|'league'|'fallback'
      * }
      */
@@ -58,15 +61,20 @@ class LineupOptionsResolver
             return $this->fallback();
         }
 
+        $leagueId = (int) $matchround->matchround_league_id;
+
         $override = MatchroundOptions::query()
             ->where('matchround_options_matchround_id', $matchroundId)
             ->first();
 
         if ($override) {
-            return $this->fromMatchroundOptions($override) + ['source' => 'matchround'];
+            return $this->withLeagueBenchSettings(
+                $this->fromMatchroundOptions($override) + ['source' => 'matchround'],
+                $leagueId,
+            );
         }
 
-        return $this->forLeague((int) $matchround->matchround_league_id);
+        return $this->forLeague($leagueId);
     }
 
     /**
@@ -84,6 +92,9 @@ class LineupOptionsResolver
      *     lineup_max_s: int,
      *     lineup_min_bench: int,
      *     lineup_max_bench: int,
+     *     league_benchmode: ?string,
+     *     league_lineup_min_bench: int,
+     *     league_lineup_max_bench: int,
      *     source: 'league'|'fallback'
      * }
      */
@@ -117,11 +128,17 @@ class LineupOptionsResolver
      *     lineup_max_m: int,
      *     lineup_max_s: int,
      *     lineup_min_bench: int,
-     *     lineup_max_bench: int
+     *     lineup_max_bench: int,
+     *     league_benchmode: ?string,
+     *     league_lineup_min_bench: int,
+     *     league_lineup_max_bench: int
      * }
      */
     private function fromLeagueOptions(LeagueOptions $options): array
     {
+        $minBench = (int) ($options->options_lineup_min_bench ?? 0);
+        $maxBench = (int) ($options->options_lineup_max_bench ?? 0);
+
         return [
             'lineup_max_players' => (int) $options->options_lineup_max_players,
             'lineup_max_credits' => (float) $options->options_lineup_max_credits,
@@ -134,8 +151,11 @@ class LineupOptionsResolver
             'lineup_max_d' => (int) $options->options_lineup_max_d,
             'lineup_max_m' => (int) $options->options_lineup_max_m,
             'lineup_max_s' => (int) $options->options_lineup_max_s,
-            'lineup_min_bench' => (int) ($options->options_lineup_min_bench ?? 0),
-            'lineup_max_bench' => (int) ($options->options_lineup_max_bench ?? 0),
+            'lineup_min_bench' => $minBench,
+            'lineup_max_bench' => $maxBench,
+            'league_benchmode' => $this->normalizeBenchmode($options->options_league_benchmode ?? null),
+            'league_lineup_min_bench' => $minBench,
+            'league_lineup_max_bench' => $maxBench,
         ];
     }
 
@@ -176,6 +196,34 @@ class LineupOptionsResolver
     }
 
     /**
+     * @param  array<string, mixed>  $resolved
+     * @return array<string, mixed>
+     */
+    private function withLeagueBenchSettings(array $resolved, int $leagueId): array
+    {
+        $league = $leagueId > 0
+            ? LeagueOptions::query()->where('options_league_id', $leagueId)->first()
+            : null;
+
+        $resolved['league_benchmode'] = $this->normalizeBenchmode($league?->options_league_benchmode);
+        $resolved['league_lineup_min_bench'] = (int) ($league?->options_lineup_min_bench ?? 0);
+        $resolved['league_lineup_max_bench'] = (int) ($league?->options_lineup_max_bench ?? 0);
+
+        return $resolved;
+    }
+
+    private function normalizeBenchmode(mixed $mode): ?string
+    {
+        if ($mode === null || $mode === '') {
+            return null;
+        }
+
+        $mode = (string) $mode;
+
+        return in_array($mode, ['cover', 'bestof'], true) ? $mode : null;
+    }
+
+    /**
      * @return array{
      *     lineup_max_players: int,
      *     lineup_max_credits: float,
@@ -190,6 +238,9 @@ class LineupOptionsResolver
      *     lineup_max_s: int,
      *     lineup_min_bench: int,
      *     lineup_max_bench: int,
+     *     league_benchmode: null,
+     *     league_lineup_min_bench: int,
+     *     league_lineup_max_bench: int,
      *     source: 'fallback'
      * }
      */
@@ -209,6 +260,9 @@ class LineupOptionsResolver
             'lineup_max_s' => 3,
             'lineup_min_bench' => 0,
             'lineup_max_bench' => 0,
+            'league_benchmode' => null,
+            'league_lineup_min_bench' => 0,
+            'league_lineup_max_bench' => 0,
             'source' => 'fallback',
         ];
     }
