@@ -273,6 +273,18 @@
     opacity: 0.7;
 }
 
+.game-tile.is-test {
+    filter: grayscale(1);
+    border-color: #9a9a9a;
+    color: #666;
+    background: #e8e8e8;
+}
+
+.game-tile.is-test:hover,
+.game-tile.is-test.is-selected {
+    filter: grayscale(0.7);
+}
+
 .game-tile img {
     width: 56px;
     height: 56px;

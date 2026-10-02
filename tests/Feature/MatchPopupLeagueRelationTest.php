@@ -129,6 +129,45 @@ class MatchPopupLeagueRelationTest extends TestCase
     }
 
     #[Test]
+    public function previous_matches_omit_test_league_encounters(): void
+    {
+        DB::table('ffb_league')->insert([
+            'league_id' => 10,
+            'league_title' => 'Sandbox',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_test' => 1,
+            'league_symbol' => '',
+        ]);
+        DB::table('ffb_matchround')->insert([
+            'matchround_id' => 4,
+            'matchround_league_id' => 10,
+            'matchround_title' => 'Test R1',
+            'matchround_startdate' => now()->subDays(3)->toDateTimeString(),
+            'matchround_enddate' => now()->subDays(2)->toDateTimeString(),
+            'matchround_status' => 1,
+        ]);
+        DB::table('ffb_match')->insert([
+            'match_id' => 53,
+            'match_round' => 4,
+            'match_hometeam_id' => 1,
+            'match_guestteam_id' => 2,
+            'match_homescore' => 3,
+            'match_guestscore' => 0,
+            'match_homescore_penalty' => -1,
+            'match_guestscore_penalty' => -1,
+            'match_date' => '2026-09-01 18:00:00.000',
+            'match_status' => 'finished',
+        ]);
+
+        $result = app(MatchPopupService::class)->forMatch(50);
+
+        $this->assertTrue($result['ok']);
+        $this->assertCount(1, $result['data']['prev_matches']);
+        $this->assertSame(51, (int) $result['data']['prev_matches'][0]['match_id']);
+    }
+
+    #[Test]
     public function match_popup_hides_sentinel_kickoff_time(): void
     {
         DB::table('ffb_match')->where('match_id', 50)->update([

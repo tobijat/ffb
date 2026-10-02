@@ -57,6 +57,7 @@ class StartPageService
     private function leagues(): array
     {
         return League::query()
+            ->forPlayerApp()
             ->where('league_visible', 1)
             ->where('league_archive', 0)
             ->orderBy('league_title')

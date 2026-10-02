@@ -6,10 +6,17 @@ use App\Services\AdminCenterService;
 use App\Services\DashboardService;
 use App\Services\FfbAdminAccess;
 use App\Services\FfbAuth;
+use App\Services\LegacyPhpSession;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use PHPUnit\Framework\Attributes\Test;
+use Tests\Support\CreatesLegacyFfbSchema;
 use Tests\TestCase;
 
 class AdminCenterTest extends TestCase
 {
+    use CreatesLegacyFfbSchema;
+
     public function test_admin_center_redirects_guests(): void
     {
         $this->get('/admin')
@@ -71,9 +78,11 @@ class AdminCenterTest extends TestCase
                         'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
                         'league_archive' => 0,
                         'league_visible' => 1,
+                        'league_test' => 1,
                         'flags' => [
                             ['label' => 'aktuell', 'tone' => 'ok'],
                             ['label' => 'sichtbar', 'tone' => 'ok'],
+                            ['label' => 'test', 'tone' => 'warn'],
                         ],
                     ],
                     [
@@ -83,6 +92,7 @@ class AdminCenterTest extends TestCase
                         'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
                         'league_archive' => 1,
                         'league_visible' => 0,
+                        'league_test' => 0,
                         'flags' => [
                             ['label' => 'archiviert', 'tone' => 'warn'],
                             ['label' => 'unsichtbar', 'tone' => 'off'],
@@ -104,6 +114,7 @@ class AdminCenterTest extends TestCase
             ->assertSee('aktuell', false)
             ->assertSee('archiviert', false)
             ->assertSee('unsichtbar', false)
+            ->assertSee('>test</li>', false)
             ->assertSee('href="/admin/matchrounds"', false)
             ->assertSee('href="/admin/news"', false)
             ->assertSee('class="brand" href="/admin"', false)
@@ -114,6 +125,66 @@ class AdminCenterTest extends TestCase
             ->assertSee('href="/"', false)
             ->assertSee('Dashboard', false)
             ->assertSee('/admin/league-dashboard', false);
+    }
+
+    #[Test]
+    public function admin_center_payload_adds_test_flag_for_test_leagues(): void
+    {
+        $this->createLegacyFfbSchema(true);
+
+        Schema::create('web_user', function ($table) {
+            $table->integer('user_id')->primary();
+            $table->string('user_nickname')->default('');
+        });
+
+        DB::table('ffb_league')->insert([
+            [
+                'league_id' => 1,
+                'league_title' => 'Live Liga',
+                'league_visible' => 1,
+                'league_archive' => 0,
+                'league_test' => 0,
+                'league_symbol' => '',
+            ],
+            [
+                'league_id' => 2,
+                'league_title' => 'Sandbox',
+                'league_visible' => 1,
+                'league_archive' => 0,
+                'league_test' => 1,
+                'league_symbol' => '',
+            ],
+        ]);
+        DB::table('web_user')->insert([
+            'user_id' => 544,
+            'user_nickname' => 'admin',
+        ]);
+
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+        $this->mock(LegacyPhpSession::class, function ($mock) {
+            $mock->shouldReceive('get')->andReturn(0);
+        });
+
+        $leagues = collect(app(AdminCenterService::class)->pagePayload(544)['leagues'])
+            ->keyBy('league_id');
+
+        $this->assertSame(
+            [
+                ['label' => 'aktuell', 'tone' => 'ok'],
+                ['label' => 'sichtbar', 'tone' => 'ok'],
+            ],
+            $leagues[1]['flags'],
+        );
+        $this->assertSame(
+            [
+                ['label' => 'aktuell', 'tone' => 'ok'],
+                ['label' => 'sichtbar', 'tone' => 'ok'],
+                ['label' => 'test', 'tone' => 'warn'],
+            ],
+            $leagues[2]['flags'],
+        );
     }
 
     public function test_admin_center_selects_league(): void

@@ -210,6 +210,17 @@ class PlayerPopupPastMatchesTest extends TestCase
     }
 
     #[Test]
+    public function player_popup_omits_past_matches_from_test_leagues(): void
+    {
+        DB::table('ffb_league')->where('league_id', 2)->update(['league_test' => 1]);
+
+        $result = (new PlayerPopupService)->forPlayerteam(544, 100);
+
+        $this->assertTrue($result['ok']);
+        $this->assertSame([], $result['data']['pastmatches']);
+    }
+
+    #[Test]
     public function player_round_popup_resolves_stats_via_sibling_league_playerteam(): void
     {
         $result = (new PlayerPopupService)->forRound(544, 100, 2);

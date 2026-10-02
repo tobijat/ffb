@@ -93,6 +93,15 @@
                         <option value="1" @selected((int) $form['league_archive'] === 1)>ja (archiviert)</option>
                     </select>
                 </div>
+
+                <div class="admin-field">
+                    <label for="league_test">Testliga</label>
+                    <select id="league_test" name="league_test">
+                        <option value="0" @selected((int) ($form['league_test'] ?? 0) === 0)>nein</option>
+                        <option value="1" @selected((int) ($form['league_test'] ?? 0) === 1)>ja (nur Admin / Tests)</option>
+                    </select>
+                    <p class="hint">Testligen erscheinen nicht in der Spieler-App.</p>
+                </div>
             </fieldset>
 
             <fieldset class="admin-fieldset">
@@ -299,6 +308,9 @@
                         <ul class="admin-game-flags" aria-label="Status">
                             <li class="admin-game-flag admin-game-flag-{{ $item['league_visible'] ? 'ok' : 'off' }}">{{ $item['league_visible'] ? 'sichtbar' : 'unsichtbar' }}</li>
                             <li class="admin-game-flag admin-game-flag-{{ $item['league_archive'] ? 'warn' : 'ok' }}">{{ $item['league_archive'] ? 'archiviert' : 'aktuell' }}</li>
+                            @if (! empty($item['league_test']))
+                                <li class="admin-game-flag admin-game-flag-warn">Testliga</li>
+                            @endif
                         </ul>
                     </div>
                 </div>
