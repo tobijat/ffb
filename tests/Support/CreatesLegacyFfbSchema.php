@@ -38,6 +38,7 @@ trait CreatesLegacyFfbSchema
             $table->integer('options_lineup_max_bench')->default(0);
             $table->string('options_league_pricemode')->default('constant');
             $table->string('options_league_pointsmode')->default('new');
+            $table->string('options_league_benchmode')->nullable();
         });
 
         Schema::create('ffb_matchround', function (Blueprint $table) {

@@ -81,6 +81,7 @@ class AdminLeagueTest extends TestCase
             ->assertSee('Testliga', false)
             ->assertSee('name="league_title"', false)
             ->assertSee('name="league_test"', false)
+            ->assertSee('name="options_league_benchmode"', false)
             ->assertSee('name="league_uefa_competition_identifier"', false)
             ->assertSee('name="league_symbol_file"', false)
             ->assertDontSee('name="options_league_pointsmode"', false)
@@ -138,6 +139,7 @@ class AdminLeagueTest extends TestCase
             'options_league_rankmode' => 'lc',
             'options_league_pricemode' => 'dynamic',
             'options_league_pointsmode' => 'new',
+            'options_league_benchmode' => '',
             'options_league_lcpoints' => '12,10,8,7,6,5,4,3,2,1',
             'options_league_remind_hours_before' => 0,
             'options_score_minutes_threshold_upper' => 60,

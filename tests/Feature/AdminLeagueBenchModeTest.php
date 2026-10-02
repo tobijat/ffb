@@ -12,7 +12,7 @@ use Mockery;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-class AdminLeaguePointsModeTest extends TestCase
+class AdminLeagueBenchModeTest extends TestCase
 {
     protected function setUp(): void
     {
@@ -28,33 +28,81 @@ class AdminLeaguePointsModeTest extends TestCase
     }
 
     #[Test]
-    public function create_always_stores_new_pointsmode_even_if_old_posted(): void
+    public function create_stores_null_benchmode_by_default_and_zeros_bench_limits(): void
     {
-        $service = $this->service();
-
-        $result = $service->create([
-            'league_title' => 'Neue Liga',
+        $result = $this->service()->create([
+            'league_title' => 'Bench Off',
             'league_visible' => 1,
             'league_archive' => 0,
             'options_league_rankmode' => 'lc',
             'options_league_pricemode' => 'dynamic',
-            'options_league_pointsmode' => 'old',
             'options_league_lcpoints' => '12,10,8,7,6,5,4,3,2,1',
+            'options_lineup_min_bench' => 3,
+            'options_lineup_max_bench' => 5,
         ] + $this->numericOptionDefaults());
 
         $this->assertTrue($result['ok']);
-        $league = League::query()->first();
-        $this->assertNotNull($league);
-        $this->assertSame('new', (string) LeagueOptions::query()
-            ->where('options_league_id', $league->league_id)
-            ->value('options_league_pointsmode'));
+
+        $options = LeagueOptions::query()->first();
+        $this->assertNotNull($options);
+        $this->assertNull($options->options_league_benchmode);
+        $this->assertSame(0, (int) $options->options_lineup_min_bench);
+        $this->assertSame(0, (int) $options->options_lineup_max_bench);
     }
 
     #[Test]
-    public function update_preserves_existing_pointsmode_and_ignores_posted_value(): void
+    public function create_and_update_persist_cover_and_bestof_benchmode(): void
+    {
+        $create = $this->service()->create([
+            'league_title' => 'Bench Cover',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'options_league_rankmode' => 'lc',
+            'options_league_pricemode' => 'dynamic',
+            'options_league_benchmode' => 'cover',
+            'options_league_lcpoints' => '12,10,8,7,6,5,4,3,2,1',
+            'options_lineup_min_bench' => 1,
+            'options_lineup_max_bench' => 3,
+        ] + $this->numericOptionDefaults());
+
+        $this->assertTrue($create['ok']);
+        $league = League::query()->first();
+        $this->assertNotNull($league);
+
+        $options = LeagueOptions::query()->where('options_league_id', $league->league_id)->first();
+        $this->assertNotNull($options);
+        $this->assertSame('cover', (string) $options->options_league_benchmode);
+        $this->assertSame(1, (int) $options->options_lineup_min_bench);
+        $this->assertSame(3, (int) $options->options_lineup_max_bench);
+
+        $form = $this->service()->formForEdit((int) $league->league_id);
+        $this->assertNotNull($form);
+        $this->assertSame('cover', $form['options_league_benchmode']);
+
+        $update = $this->service()->update((int) $league->league_id, [
+            'league_title' => 'Bench Best Of',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'options_league_rankmode' => 'lc',
+            'options_league_pricemode' => 'dynamic',
+            'options_league_benchmode' => 'bestof',
+            'options_league_lcpoints' => '12,10,8,7,6,5,4,3,2,1',
+            'options_lineup_min_bench' => 2,
+            'options_lineup_max_bench' => 4,
+        ] + $this->numericOptionDefaults());
+
+        $this->assertTrue($update['ok']);
+        $options->refresh();
+        $this->assertSame('bestof', (string) $options->options_league_benchmode);
+        $this->assertSame(2, (int) $options->options_lineup_min_bench);
+        $this->assertSame(4, (int) $options->options_lineup_max_bench);
+    }
+
+    #[Test]
+    public function update_to_aus_clears_benchmode_and_bench_limits(): void
     {
         $league = League::query()->create([
-            'league_title' => 'Alte Liga',
+            'league_title' => 'With Bench',
             'league_visible' => 1,
             'league_archive' => 0,
             'league_symbol' => 'symbol_game_na.png',
@@ -64,17 +112,20 @@ class AdminLeaguePointsModeTest extends TestCase
             'options_league_id' => (int) $league->league_id,
             'options_league_rankmode' => 'lc',
             'options_league_pricemode' => 'dynamic',
-            'options_league_pointsmode' => 'old',
-            'options_league_lcpoints' => '10,8,6,4,2,1',
+            'options_league_pointsmode' => 'new',
+            'options_league_benchmode' => 'cover',
+            'options_league_lcpoints' => '12,10,8,7,6,5,4,3,2,1',
+            'options_lineup_min_bench' => 2,
+            'options_lineup_max_bench' => 3,
         ] + $this->numericOptionDefaults());
 
         $result = $this->service()->update((int) $league->league_id, [
-            'league_title' => 'Alte Liga Updated',
+            'league_title' => 'With Bench',
             'league_visible' => 1,
             'league_archive' => 0,
-            'options_league_rankmode' => 'points',
-            'options_league_pricemode' => 'static',
-            'options_league_pointsmode' => 'new',
+            'options_league_rankmode' => 'lc',
+            'options_league_pricemode' => 'dynamic',
+            'options_league_benchmode' => '',
             'options_league_lcpoints' => '12,10,8,7,6,5,4,3,2,1',
         ] + $this->numericOptionDefaults());
 
@@ -82,45 +133,26 @@ class AdminLeaguePointsModeTest extends TestCase
 
         $options = LeagueOptions::query()->where('options_league_id', $league->league_id)->first();
         $this->assertNotNull($options);
-        $this->assertSame('old', (string) $options->options_league_pointsmode);
-        $this->assertSame('points', (string) $options->options_league_rankmode);
-        $this->assertSame('static', (string) $options->options_league_pricemode);
-        $this->assertSame('12,10,8,7,6,5,4,3,2,1', (string) $options->options_league_lcpoints);
+        $this->assertNull($options->options_league_benchmode);
+        $this->assertSame(0, (int) $options->options_lineup_min_bench);
+        $this->assertSame(0, (int) $options->options_lineup_max_bench);
     }
 
     #[Test]
-    public function create_rejects_invalid_lc_points_list(): void
+    public function invalid_benchmode_is_rejected(): void
     {
         $result = $this->service()->create([
-            'league_title' => 'Neue Liga',
+            'league_title' => 'Bad Bench',
             'league_visible' => 1,
             'league_archive' => 0,
             'options_league_rankmode' => 'lc',
             'options_league_pricemode' => 'dynamic',
-            'options_league_lcpoints' => '12,ten,8',
+            'options_league_benchmode' => 'nope',
+            'options_league_lcpoints' => '12,10,8,7,6,5,4,3,2,1',
         ] + $this->numericOptionDefaults());
 
         $this->assertFalse($result['ok']);
-        $this->assertNotEmpty($result['errors'] ?? []);
-    }
-
-    #[Test]
-    public function create_normalizes_spaced_lc_points_list(): void
-    {
-        $result = $this->service()->create([
-            'league_title' => 'Neue Liga',
-            'league_visible' => 1,
-            'league_archive' => 0,
-            'options_league_rankmode' => 'lc',
-            'options_league_pricemode' => 'dynamic',
-            'options_league_lcpoints' => '12, 10, 8, 7',
-        ] + $this->numericOptionDefaults());
-
-        $this->assertTrue($result['ok']);
-        $this->assertSame(
-            '12,10,8,7',
-            (string) LeagueOptions::query()->value('options_league_lcpoints')
-        );
+        $this->assertContains('Ungültiger Ersatzbank-Modus.', $result['errors'] ?? []);
     }
 
     private function service(): AdminLeagueService
