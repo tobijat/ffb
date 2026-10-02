@@ -118,7 +118,7 @@
 
     function formatRoundResult(row) {
         if (!row.match_id || Number(row.match_id) <= 0) {
-            return '<em>nicht eingesetzt</em>';
+            return '';
         }
         const homePen = row.matchround_hometeam_score_penalty;
         const guestPen = row.matchround_guestteam_score_penalty;
@@ -137,13 +137,19 @@
             score = hs + ':' + gs;
         }
         return (
+            '<span class="result-line">' +
+            '<span class="result-home">' +
             escapeHtml(row.matchround_hometeam_name || '') +
-            ' <a class="under" href="#" data-modal="match" data-id="' +
+            '</span>' +
+            '<a class="result-score under" href="#" data-modal="match" data-id="' +
             escapeHtml(row.match_id) +
             '">' +
             score +
-            '</a> ' +
-            escapeHtml(row.matchround_guestteam_name || '')
+            '</a>' +
+            '<span class="result-guest">' +
+            escapeHtml(row.matchround_guestteam_name || '') +
+            '</span>' +
+            '</span>'
         );
     }
 
@@ -193,7 +199,7 @@
             const title = 'Datum: ' + (r.match_date || '–');
             const roundCls = Number(r.matchround_running) === 1 ? ' style="color:#c00;"' : '';
             html +=
-                '<tr><td' +
+                '<tr><td class="round-cell"' +
                 roundCls +
                 ' title="' +
                 escapeHtml(title) +
@@ -279,7 +285,7 @@
         let tables = renderRoundsTable(data.matchrounds, player.playerteam_id, showAll, true);
         if (data.pastmatches && data.pastmatches.length) {
             tables +=
-                '<div class="ffb-match-section"><h3>Vergangene Spiele</h3>' +
+                '<div class="ffb-match-section"><h3>Weitere Spiele</h3>' +
                 renderRoundsTable(data.pastmatches, player.playerteam_id, true, false) +
                 '</div>';
         }

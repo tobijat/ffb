@@ -92,13 +92,24 @@ class PlayerPopupPastMatchesTest extends TestCase
             ],
         ]);
         DB::table('ffb_match')->insert([
-            'match_id' => 20,
-            'match_round' => 2,
-            'match_hometeam_id' => 10,
-            'match_guestteam_id' => 11,
-            'match_homescore' => 2,
-            'match_guestscore' => 1,
-            'match_date' => now()->subMonths(6)->toDateTimeString(),
+            [
+                'match_id' => 19,
+                'match_round' => 1,
+                'match_hometeam_id' => 10,
+                'match_guestteam_id' => 11,
+                'match_homescore' => 1,
+                'match_guestscore' => 0,
+                'match_date' => now()->subHours(12)->toDateTimeString(),
+            ],
+            [
+                'match_id' => 20,
+                'match_round' => 2,
+                'match_hometeam_id' => 10,
+                'match_guestteam_id' => 11,
+                'match_homescore' => 2,
+                'match_guestscore' => 1,
+                'match_date' => now()->subMonths(6)->toDateTimeString(),
+            ],
         ]);
         DB::table('ffb_playerstats')->insert([
             'playerstats_id' => 1,
@@ -123,10 +134,79 @@ class PlayerPopupPastMatchesTest extends TestCase
         $result = (new PlayerPopupService)->forPlayerteam(544, 100);
 
         $this->assertTrue($result['ok']);
+        $this->assertNotEmpty($result['data']['matchrounds']);
+        $this->assertSame('Current League - Current R1', $result['data']['matchrounds'][0]['matchround_title']);
+        $this->assertSame(19, (int) $result['data']['matchrounds'][0]['match_id']);
+        $this->assertSame('-', $result['data']['matchrounds'][0]['matchround_minutes_played']);
+        $this->assertSame('Feffernitz', $result['data']['matchrounds'][0]['matchround_hometeam_name']);
         $this->assertNotEmpty($result['data']['pastmatches']);
         $this->assertSame(2, (int) $result['data']['pastmatches'][0]['matchround_id']);
-        $this->assertSame('Past R1', $result['data']['pastmatches'][0]['matchround_title']);
+        $this->assertSame('Past League - Past R1', $result['data']['pastmatches'][0]['matchround_title']);
         $this->assertSame('Opponent', $result['data']['pastmatches'][0]['matchround_opponent_name']);
+    }
+
+    #[Test]
+    public function player_popup_shows_finished_club_match_even_when_player_did_not_play(): void
+    {
+        DB::table('ffb_team')->insert([
+            'team_id' => 12,
+            'team_name' => 'Other Club',
+            'team_status' => 1,
+            'team_num_players' => 0,
+            'team_foreign_id' => '',
+            'team_nationality' => 'ger',
+        ]);
+        DB::table('ffb_playerteam')->insert([
+            'playerteam_id' => 300,
+            'playerteam_player_id' => 1,
+            'playerteam_team_id' => 12,
+            'playerteam_league_id' => 2,
+            'playerteam_player_picture' => '',
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 'm',
+            'playerteam_date_transfer' => now()->subDays(2)->toDateTimeString(),
+        ]);
+
+        $result = (new PlayerPopupService)->forPlayerteam(544, 100);
+
+        $this->assertTrue($result['ok']);
+        $this->assertCount(1, $result['data']['matchrounds']);
+        $this->assertSame(19, (int) $result['data']['matchrounds'][0]['match_id']);
+        $this->assertSame('-', $result['data']['matchrounds'][0]['matchround_minutes_played']);
+        $this->assertSame('-', $result['data']['matchrounds'][0]['matchround_score']);
+        $this->assertSame(1, (int) $result['data']['matchrounds'][0]['matchround_hometeam_score']);
+        $this->assertSame(0, (int) $result['data']['matchrounds'][0]['matchround_guestteam_score']);
+    }
+
+    #[Test]
+    public function player_popup_omits_unfinished_matches_from_round_list(): void
+    {
+        DB::table('ffb_matchround')->insert([
+            'matchround_id' => 3,
+            'matchround_league_id' => 1,
+            'matchround_title' => 'Upcoming',
+            'matchround_startdate' => now()->addDay()->toDateTimeString(),
+            'matchround_status' => 1,
+        ]);
+        DB::table('ffb_match')->insert([
+            'match_id' => 21,
+            'match_round' => 3,
+            'match_hometeam_id' => 10,
+            'match_guestteam_id' => 11,
+            'match_homescore' => -1,
+            'match_guestscore' => -1,
+            'match_date' => now()->addDay()->toDateTimeString(),
+        ]);
+
+        $result = (new PlayerPopupService)->forPlayerteam(544, 100);
+
+        $this->assertTrue($result['ok']);
+        $roundIds = array_map(
+            fn (array $row): int => (int) $row['matchround_id'],
+            $result['data']['matchrounds'],
+        );
+        $this->assertSame([1], $roundIds);
+        $this->assertSame(19, (int) $result['data']['matchrounds'][0]['match_id']);
     }
 
     #[Test]

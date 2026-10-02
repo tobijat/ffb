@@ -143,6 +143,33 @@ class LineupDynamicPriceModeTest extends TestCase
     }
 
     #[Test]
+    public function team_players_fall_back_to_teamprice_when_playerprice_is_zero(): void
+    {
+        [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();
+
+        Teamprice::query()->insert([
+            'teamprice_team_id' => $teamId,
+            'teamprice_matchround_id' => $roundId,
+            'teamprice_price' => 6.5,
+        ]);
+
+        Playerprice::query()->insert([
+            'playerprice_playerteam_id' => $ptId,
+            'playerprice_matchround_id' => $roundId,
+            'playerprice_price' => 0,
+            'playerprice_player_power' => 1,
+            'playerprice_av_power' => 1,
+            'playerprice_recent_performance' => 0.4,
+        ]);
+
+        $result = $this->app->make(LineupService::class)->teamPlayers(544, $teamId, $roundId);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $this->assertSame(6.5, $result['data']['players'][0]['playerteam_player_price']);
+        $this->assertSame(0.4, $result['data']['players'][0]['recent_performance']);
+    }
+
+    #[Test]
     public function matchround_hides_recent_performance_without_stored_values(): void
     {
         [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();

@@ -124,17 +124,28 @@
         );
     }
 
-    function statusIcon(player) {
-        if (Number(player.player_status) === 1) {
-            return {
-                src: legacyBase + 'images/ffb/symbols/status_pos.png',
-                title: 'status: Einsatzbereit',
-            };
+    function formatPlayerPrice(value) {
+        const num = Number(value);
+        if (!Number.isFinite(num)) {
+            return '—';
         }
-        return {
-            src: legacyBase + 'images/ffb/symbols/status_hurt.png',
-            title: 'status: ' + (player.player_status_description || 'verletzt'),
-        };
+        return num.toFixed(1);
+    }
+
+    function roundCredits(value) {
+        return Math.round(Number(value) * 10) / 10;
+    }
+
+    function playerPricesMatchTeamTotal(players, teamPrice) {
+        const total = roundCredits(teamPrice);
+        if (!Number.isFinite(total) || total <= 0) {
+            return false;
+        }
+        const sum = (players || []).reduce(function (acc, player) {
+            const price = Number(player.playerteam_player_price);
+            return acc + (Number.isFinite(price) ? price : 0);
+        }, 0);
+        return roundCredits(sum) === total;
     }
 
     function currentRound() {
@@ -310,12 +321,12 @@
         }
     }
 
-    function playerCard(player) {
-        const status = statusIcon(player);
+    function playerCard(player, showPrice) {
         const fname = escapeHtml(player.player_fname || '');
         const lname = escapeHtml(player.player_lname || '');
         const nat = player.playerteam_team_nationality || 'AUT';
         const teamId = player.playerteam_team_id;
+        const price = formatPlayerPrice(player.playerteam_player_price);
         return (
             '<div class="pitch-player">' +
             '<a href="#" data-modal="player" data-id="' +
@@ -336,17 +347,10 @@
             Number(player.playerstats_score || 0) +
             ' Punkte</a>' +
             '<div class="meta">' +
+            (showPrice
+                ? '<span title="Preis: ' + price + ' Credits">' + price + '</span>'
+                : '') +
             flagHtml(nat, player.playerteam_team || '') +
-            '<img src="' +
-            status.src +
-            '" alt="" title="' +
-            escapeHtml(status.title) +
-            '" width="16" height="16">' +
-            '<a href="#" data-modal="player" data-id="' +
-            player.playerteam_id +
-            '"><img src="' +
-            legacyBase +
-            'images/ffb/symbols/info.png" alt="Info" width="16" height="16"></a>' +
             '</div></div>'
         );
     }
@@ -363,8 +367,10 @@
             teamSideStatsEl.hidden = false;
         }
 
+        const players = data.players || [];
+        const showPrices = playerPricesMatchTeamTotal(players, ut.userteam_price);
         const grouped = { g: [], d: [], m: [], s: [] };
-        (data.players || []).forEach(function (player) {
+        players.forEach(function (player) {
             const pos = player.playerteam_player_position;
             if (grouped[pos]) {
                 grouped[pos].push(player);
@@ -376,7 +382,11 @@
                 lines[pos].innerHTML = '';
                 return;
             }
-            lines[pos].innerHTML = grouped[pos].map(playerCard).join('');
+            lines[pos].innerHTML = grouped[pos]
+                .map(function (player) {
+                    return playerCard(player, showPrices);
+                })
+                .join('');
         });
     }
 

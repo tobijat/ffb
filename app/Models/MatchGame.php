@@ -102,6 +102,24 @@ class MatchGame extends Model
      */
     public static function formatDisplayDate(?string $dateOrDateTime): ?string
     {
+        $label = self::formatDisplayDateOnly($dateOrDateTime);
+        if ($label === null) {
+            return null;
+        }
+
+        $time = self::formatDisplayTime($dateOrDateTime);
+        if ($time === null) {
+            return $label;
+        }
+
+        return $label.' '.$time;
+    }
+
+    /**
+     * Player-facing calendar date only (d.m.Y), never including kickoff time.
+     */
+    public static function formatDisplayDateOnly(?string $dateOrDateTime): ?string
+    {
         if ($dateOrDateTime === null) {
             return null;
         }
@@ -117,13 +135,7 @@ class MatchGame extends Model
             return null;
         }
 
-        $label = date('d.m.Y', $dateTs);
-        $time = self::formatDisplayTime($value);
-        if ($time === null) {
-            return $label;
-        }
-
-        return $label.' '.$time;
+        return date('d.m.Y', $dateTs);
     }
 
     /**

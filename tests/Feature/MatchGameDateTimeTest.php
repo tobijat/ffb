@@ -50,6 +50,19 @@ class MatchGameDateTimeTest extends TestCase
     }
 
     #[Test]
+    public function format_display_date_only_never_includes_time(): void
+    {
+        $this->assertSame(
+            '24.09.2026',
+            MatchGame::formatDisplayDateOnly('2026-09-24 18:00:00.000'),
+        );
+        $this->assertSame(
+            '24.09.2026',
+            MatchGame::formatDisplayDateOnly('2026-09-24 '.MatchGame::DEFAULT_TIME),
+        );
+    }
+
+    #[Test]
     public function format_display_date_includes_known_kickoff_time(): void
     {
         $this->assertSame(

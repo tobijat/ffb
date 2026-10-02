@@ -66,6 +66,19 @@ class MatchPopupLeagueRelationTest extends TestCase
             'match_date' => '2026-09-24 18:00:00.000',
             'match_status' => 'finished',
         ]);
+
+        DB::table('ffb_match')->insert([
+            'match_id' => 51,
+            'match_round' => 3,
+            'match_hometeam_id' => 2,
+            'match_guestteam_id' => 1,
+            'match_homescore' => 0,
+            'match_guestscore' => 1,
+            'match_homescore_penalty' => -1,
+            'match_guestscore_penalty' => -1,
+            'match_date' => '2026-08-10 20:30:00.000',
+            'match_status' => 'finished',
+        ]);
     }
 
     #[Test]
@@ -78,6 +91,41 @@ class MatchPopupLeagueRelationTest extends TestCase
         $this->assertSame('Home FC', $result['data']['match']['match_hometeam_name']);
         $this->assertSame('Away FC', $result['data']['match']['match_guestteam_name']);
         $this->assertSame('24.09.2026 18:00', $result['data']['match']['match_date']);
+    }
+
+    #[Test]
+    public function previous_matches_use_league_round_title_and_date_only(): void
+    {
+        $result = app(MatchPopupService::class)->forMatch(50);
+
+        $this->assertTrue($result['ok']);
+        $this->assertCount(1, $result['data']['prev_matches']);
+        $this->assertSame(51, (int) $result['data']['prev_matches'][0]['match_id']);
+        $this->assertSame('Bundesliga Test - Runde 1', $result['data']['prev_matches'][0]['match_matchround_name']);
+        $this->assertSame('10.08.2026', $result['data']['prev_matches'][0]['match_date']);
+    }
+
+    #[Test]
+    public function unfinished_meetings_are_excluded_from_all_encounters(): void
+    {
+        DB::table('ffb_match')->insert([
+            'match_id' => 52,
+            'match_round' => 3,
+            'match_hometeam_id' => 1,
+            'match_guestteam_id' => 2,
+            'match_homescore' => -1,
+            'match_guestscore' => -1,
+            'match_homescore_penalty' => -1,
+            'match_guestscore_penalty' => -1,
+            'match_date' => '2026-10-01 18:00:00.000',
+            'match_status' => 'scheduled',
+        ]);
+
+        $result = app(MatchPopupService::class)->forMatch(50);
+
+        $this->assertTrue($result['ok']);
+        $this->assertCount(1, $result['data']['prev_matches']);
+        $this->assertSame(51, (int) $result['data']['prev_matches'][0]['match_id']);
     }
 
     #[Test]

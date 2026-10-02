@@ -63,6 +63,8 @@ class PlayerPopupService
             ->whereHas('matchround', fn (Builder $q) => $q->where('matchround_league_id', $leagueId))
             ->count();
 
+        $leagueTitle = (string) (League::query()->where('league_id', $leagueId)->value('league_title') ?? '');
+
         $rounds = Matchround::query()
             ->where('matchround_league_id', $leagueId)
             ->where('matchround_status', 1)
@@ -86,7 +88,7 @@ class PlayerPopupService
             $roundId = (int) $round->matchround_id;
             $row = [
                 'matchround_id' => $roundId,
-                'matchround_title' => (string) $round->matchround_title,
+                'matchround_title' => $this->formatRoundDisplayTitle($leagueTitle, (string) $round->matchround_title),
                 'matchround_num_lineups' => $lineupsByRound[$roundId] ?? 0,
                 'matchround_running' => strtotime((string) $round->matchround_startdate) > time() ? 1 : 0,
             ];
@@ -121,19 +123,19 @@ class PlayerPopupService
                 $row['matchround_goals'] = '-';
                 $row['matchround_assists'] = '-';
                 $row['matchround_cards'] = 'n';
-
-                $ptNear = $this->teamForPlayerAndRound($round, $ptIds);
-                if ($ptNear) {
-                    $row = array_merge(
-                        $row,
-                        $this->matchFieldsForTeamRound((int) $ptNear->playerteam_team_id, $roundId)
-                    );
-                } else {
-                    $row = array_merge($row, $this->emptyMatchFields());
-                }
+                $row = array_merge(
+                    $row,
+                    $this->finishedMatchFieldsForPlayerRound(
+                        $round,
+                        $ptIds,
+                        (int) $playerteam->playerteam_team_id,
+                    ),
+                );
             }
 
-            $matchrounds[] = $row;
+            if ($this->rowHasFinishedMatch($row)) {
+                $matchrounds[] = $row;
+            }
         }
 
         $played = max(0, $matchCountPlayed);
@@ -421,6 +423,74 @@ class PlayerPopupService
     }
 
     /**
+     * Finished match for this round involving one of the player's clubs.
+     *
+     * @param  list<int>  $ptIds
+     * @return array<string, mixed>
+     */
+    private function finishedMatchFieldsForPlayerRound(Matchround $round, array $ptIds, int $fallbackTeamId): array
+    {
+        $roundId = (int) $round->matchround_id;
+        $leagueId = (int) $round->matchround_league_id;
+        $teamIds = [];
+
+        $ptNear = $this->teamForPlayerAndRound($round, $ptIds);
+        if ($ptNear !== null) {
+            $teamIds[] = (int) $ptNear->playerteam_team_id;
+        }
+
+        foreach (
+            Playerteam::query()
+                ->whereIn('playerteam_id', $ptIds)
+                ->where('playerteam_league_id', $leagueId)
+                ->pluck('playerteam_team_id') as $teamId
+        ) {
+            $teamIds[] = (int) $teamId;
+        }
+
+        foreach (
+            Playerteam::query()
+                ->whereIn('playerteam_id', $ptIds)
+                ->pluck('playerteam_team_id') as $teamId
+        ) {
+            $teamIds[] = (int) $teamId;
+        }
+
+        $teamIds[] = $fallbackTeamId;
+        $teamIds = array_values(array_unique(array_filter(
+            $teamIds,
+            static fn (int $id): bool => $id > 0,
+        )));
+
+        foreach ($teamIds as $teamId) {
+            $fields = $this->matchFieldsForTeamRound($teamId, $roundId);
+            if ($this->rowHasFinishedMatch($fields)) {
+                return $fields;
+            }
+        }
+
+        return $this->emptyMatchFields();
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     */
+    private function rowHasFinishedMatch(array $row): bool
+    {
+        if ((int) ($row['match_id'] ?? 0) <= 0) {
+            return false;
+        }
+
+        $home = $row['matchround_hometeam_score'] ?? null;
+        $guest = $row['matchround_guestteam_score'] ?? null;
+
+        return $home !== null
+            && $guest !== null
+            && (int) $home >= 0
+            && (int) $guest >= 0;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function matchFieldsForTeamRound(int $teamId, int $matchroundId): array
@@ -575,12 +645,13 @@ class PlayerPopupService
             ->join('ffb_matchround', 'ffb_matchround.matchround_id', '=', 'ffb_playerstats.playerstats_matchround_id')
             ->whereIn('playerstats_playerteam_id', $sameTeamPtIds)
             ->where('ffb_match.match_date', '<', $now)
-            ->where('ffb_match.match_homescore', '>', -1)
+            ->where('ffb_match.match_homescore', '>=', 0)
+            ->where('ffb_match.match_guestscore', '>=', 0)
             ->where('ffb_matchround.matchround_league_id', '!=', $leagueId)
             ->orderByDesc('ffb_match.match_date')
             ->orderByDesc('ffb_match.match_id')
             ->select('ffb_playerstats.*')
-            ->with(['matchround', 'match.homeTeam', 'match.guestTeam'])
+            ->with(['matchround.league', 'match.homeTeam', 'match.guestTeam'])
             ->limit($limit * 3)
             ->get();
 
@@ -610,7 +681,10 @@ class PlayerPopupService
 
             $out[] = [
                 'matchround_id' => $roundId,
-                'matchround_title' => (string) $round->matchround_title,
+                'matchround_title' => $this->formatRoundDisplayTitle(
+                    (string) ($round->league?->league_title ?? ''),
+                    (string) $round->matchround_title,
+                ),
                 'matchround_running' => 0,
                 'matchround_num_lineups' => $this->countLineupsForRound($sameTeamPtIds, $roundId),
                 'matchround_minutes_played' => (int) $item->playerstats_minutes,
@@ -638,6 +712,22 @@ class PlayerPopupService
         }
 
         return $out;
+    }
+
+    private function formatRoundDisplayTitle(string $leagueTitle, string $roundTitle): string
+    {
+        $league = trim($leagueTitle);
+        $round = trim($roundTitle);
+
+        if ($league === '') {
+            return $round;
+        }
+
+        if ($round === '') {
+            return $league;
+        }
+
+        return $league.' - '.$round;
     }
 
     /**
