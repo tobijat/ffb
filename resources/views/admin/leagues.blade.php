@@ -100,7 +100,7 @@
                         <option value="0" @selected((int) ($form['league_test'] ?? 0) === 0)>nein</option>
                         <option value="1" @selected((int) ($form['league_test'] ?? 0) === 1)>ja (nur Admin / Tests)</option>
                     </select>
-                    <p class="hint">Testligen erscheinen nicht in der Spieler-App.</p>
+                    <p class="hint">Testligen und unsichtbare Ligen werden nur für Admins angezeigt. Daten und Ergebnisse aus Testligen scheinen zudem nirgends auf.</p>
                 </div>
             </fieldset>
 
@@ -121,7 +121,7 @@
                 <div class="admin-field">
                     <label for="options_league_rankmode">Modus für Rangliste</label>
                     <select id="options_league_rankmode" name="options_league_rankmode">
-                        <option value="lc" @selected($form['options_league_rankmode'] === 'lc')>LC</option>
+                        <option value="lc" @selected($form['options_league_rankmode'] === 'lc')>LigaCup</option>
                         <option value="points" @selected($form['options_league_rankmode'] === 'points')>Punkte</option>
                     </select>
                 </div>
@@ -148,6 +148,14 @@
                     <label for="options_league_remind_hours_before">Aufstellungserinnerung (h)</label>
                     <input id="options_league_remind_hours_before" type="number" name="options_league_remind_hours_before" value="{{ $form['options_league_remind_hours_before'] }}">
                 </div>
+                <div class="admin-field">
+                    <label for="options_league_benchmode">Ersatzbank</label>
+                    <select id="options_league_benchmode" name="options_league_benchmode">
+                        <option value="" @selected(($form['options_league_benchmode'] ?? '') === '')>Aus</option>
+                        <option value="cover" @selected(($form['options_league_benchmode'] ?? '') === 'cover')>ersetzt Ausfälle</option>
+                        <option value="bestof" @selected(($form['options_league_benchmode'] ?? '') === 'bestof')>ersetzt schlechteste Spieler</option>
+                    </select>
+                </div>
             </fieldset>
 
             <fieldset class="admin-fieldset">
@@ -164,13 +172,15 @@
                         </div>
                     @endforeach
                 </div>
+                @php
+                    $benchEnabled = in_array((string) ($form['options_league_benchmode'] ?? ''), ['cover', 'bestof'], true);
+                @endphp
                 <div class="admin-lineup-pos-grid">
                     @foreach ([
                         ['options_lineup_min_g', 'Min. Spieler als Goalie', 'options_lineup_max_g', 'Max. Spieler als Goalie'],
                         ['options_lineup_min_d', 'Min. Spieler in Abwehr', 'options_lineup_max_d', 'Max. Spieler in Abwehr'],
                         ['options_lineup_min_m', 'Min. Spieler in Mittelfeld', 'options_lineup_max_m', 'Max. Spieler in Mittelfeld'],
                         ['options_lineup_min_s', 'Min. Spieler in Angriff', 'options_lineup_max_s', 'Max. Spieler in Angriff'],
-                        ['options_lineup_min_bench', 'Min. Ersatzspieler', 'options_lineup_max_bench', 'Max. Ersatzspieler'],
                     ] as [$minName, $minLabel, $maxName, $maxLabel])
                         <div class="admin-option-field">
                             <label for="{{ $minName }}">{{ $minLabel }}</label>
@@ -181,6 +191,26 @@
                             <input id="{{ $maxName }}" type="number" name="{{ $maxName }}" value="{{ $form[$maxName] }}">
                         </div>
                     @endforeach
+                    <div class="admin-option-field">
+                        <label for="options_lineup_min_bench">Min. Ersatzspieler</label>
+                        <input
+                            id="options_lineup_min_bench"
+                            type="number"
+                            name="options_lineup_min_bench"
+                            value="{{ $form['options_lineup_min_bench'] }}"
+                            @disabled(! $benchEnabled)
+                        >
+                    </div>
+                    <div class="admin-option-field">
+                        <label for="options_lineup_max_bench">Max. Ersatzspieler</label>
+                        <input
+                            id="options_lineup_max_bench"
+                            type="number"
+                            name="options_lineup_max_bench"
+                            value="{{ $form['options_lineup_max_bench'] }}"
+                            @disabled(! $benchEnabled)
+                        >
+                    </div>
                 </div>
             </fieldset>
 
@@ -332,3 +362,29 @@
         @endforelse
     </section>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    const modeSelect = document.getElementById('options_league_benchmode');
+    const minBench = document.getElementById('options_lineup_min_bench');
+    const maxBench = document.getElementById('options_lineup_max_bench');
+    if (!modeSelect || !minBench || !maxBench) {
+        return;
+    }
+
+    function syncBenchFields() {
+        const enabled = modeSelect.value === 'cover' || modeSelect.value === 'bestof';
+        minBench.disabled = !enabled;
+        maxBench.disabled = !enabled;
+        if (!enabled) {
+            minBench.value = '0';
+            maxBench.value = '0';
+        }
+    }
+
+    modeSelect.addEventListener('change', syncBenchFields);
+    syncBenchFields();
+})();
+</script>
+@endpush

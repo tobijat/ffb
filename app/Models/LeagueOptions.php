@@ -55,6 +55,7 @@ class LeagueOptions extends Model
         'options_league_rankmode',
         'options_league_pricemode',
         'options_league_pointsmode',
+        'options_league_benchmode',
         'options_league_lcpoints',
         'options_league_remind_hours_before',
     ];

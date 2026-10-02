@@ -100,6 +100,7 @@ class AdminLeagueUefaCompetitionIdentifierTest extends TestCase
             $table->string('options_league_rankmode')->default('lc');
             $table->string('options_league_pricemode')->default('dynamic');
             $table->string('options_league_pointsmode')->default('new');
+            $table->string('options_league_benchmode')->nullable();
             $table->string('options_league_lcpoints')->default('12,10,8,7,6,5,4,3,2,1');
 
             foreach (array_merge(

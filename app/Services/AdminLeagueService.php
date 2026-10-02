@@ -304,6 +304,12 @@ class AdminLeagueService
             (string) ($form['options_league_lcpoints'] ?? '')
         );
 
+        $benchMode = (string) ($form['options_league_benchmode'] ?? '');
+        if ($benchMode === '') {
+            $form['options_lineup_min_bench'] = 0;
+            $form['options_lineup_max_bench'] = 0;
+        }
+
         return $form;
     }
 
@@ -327,6 +333,11 @@ class AdminLeagueService
         $price = (string) ($form['options_league_pricemode'] ?? '');
         if (! in_array($price, ['dynamic', 'static'], true)) {
             $errors[] = 'Ungültiger Preis-Modus.';
+        }
+
+        $benchMode = (string) ($form['options_league_benchmode'] ?? '');
+        if (! in_array($benchMode, ['', 'cover', 'bestof'], true)) {
+            $errors[] = 'Ungültiger Ersatzbank-Modus.';
         }
 
         if (! $this->isValidLcPointsList((string) ($form['options_league_lcpoints'] ?? ''))) {
@@ -365,6 +376,7 @@ class AdminLeagueService
             'options_league_rankmode' => 'lc',
             'options_league_pricemode' => 'dynamic',
             'options_league_pointsmode' => 'new',
+            'options_league_benchmode' => '',
             'options_league_lcpoints' => '12,10,8,7,6,5,4,3,2,1',
             'options_league_remind_hours_before' => 0,
             'options_score_minutes_threshold_upper' => 60,
@@ -422,7 +434,13 @@ class AdminLeagueService
     {
         $form = [];
         foreach ($this->optionKeys() as $key) {
-            $form[$key] = $options->{$key};
+            $value = $options->{$key};
+            if ($key === 'options_league_benchmode') {
+                $form[$key] = $value === null ? '' : (string) $value;
+
+                continue;
+            }
+            $form[$key] = $value;
         }
 
         return $form;
@@ -430,7 +448,7 @@ class AdminLeagueService
 
     /**
      * @param  array<string, mixed>  $form
-     * @return array<string, int|string>
+     * @return array<string, int|string|null>
      */
     private function optionsFromForm(array $form, string $pointsMode): array
     {
@@ -438,6 +456,12 @@ class AdminLeagueService
         foreach ($this->optionKeys() as $key) {
             if ($key === 'options_league_pointsmode') {
                 $out[$key] = $pointsMode === 'old' ? 'old' : 'new';
+
+                continue;
+            }
+            if ($key === 'options_league_benchmode') {
+                $mode = trim((string) ($form[$key] ?? ''));
+                $out[$key] = in_array($mode, ['cover', 'bestof'], true) ? $mode : null;
 
                 continue;
             }
