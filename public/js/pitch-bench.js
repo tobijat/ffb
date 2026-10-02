@@ -3,8 +3,8 @@
     let fieldObserver = null;
 
     function benchLimits(options) {
-        const min = Math.max(0, Number(options.lineup_min_bench) || 0);
-        const max = Math.max(0, Number(options.lineup_max_bench) || 0);
+        const min = Math.max(0, Number(options && options.lineup_min_bench) || 0);
+        const max = Math.max(0, Number(options && options.lineup_max_bench) || 0);
 
         return { min: min, max: max };
     }
@@ -31,6 +31,79 @@
         );
     }
 
+    function escapeHtml(value) {
+        return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function shirtUrl(legacyBase, teamId, nationality) {
+        const tid = Number(teamId) || 0;
+        const nat = String(nationality || 'AUT').toUpperCase();
+        if (tid <= 0) {
+            return legacyBase + 'images/ffb/shirts/shirt_BLANK.png';
+        }
+
+        return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '.png';
+    }
+
+    function flagHtml(legacyBase, code, title) {
+        if (window.FfbFlags && typeof window.FfbFlags.html === 'function') {
+            return window.FfbFlags.html(code, title ? { title: title } : undefined);
+        }
+        const flag = (code && code !== '0' ? String(code) : 'na').toLowerCase();
+        const src = legacyBase + 'images/ffb/flags/' + flag + '.gif';
+        const titleAttr = title ? ' title="' + escapeHtml(title) + '"' : '';
+        return (
+            '<img class="ffb-flag ffb-flag-img" src="' +
+            src +
+            '" alt="" width="16" height="11" loading="lazy"' +
+            titleAttr +
+            '>'
+        );
+    }
+
+    function playerCard(player, legacyBase) {
+        const nat = player.playerteam_team_nationality || 'AUT';
+        const teamId = player.playerteam_team_id;
+
+        return (
+            '<div class="pitch-player pitch-bench-slot">' +
+            '<a href="#" data-remove-bench="' +
+            player.playerteam_id +
+            '" title="Klicken um Ersatzspieler zu entfernen">' +
+            '<img class="shirt" src="' +
+            shirtUrl(legacyBase, teamId, nat) +
+            '" width="55" height="50" alt="" ' +
+            'onerror="this.onerror=null;this.src=\'' +
+            legacyBase +
+            'images/ffb/shirts/shirt_BLANK.png\';">' +
+            '</a>' +
+            '<a class="name" href="#" data-remove-bench="' +
+            player.playerteam_id +
+            '" title="Klicken um Ersatzspieler zu entfernen">' +
+            escapeHtml(player.player_fname || '') +
+            '<br>' +
+            escapeHtml(player.player_lname || '') +
+            '</a>' +
+            '<div class="meta">' +
+            '<span title="Preis: ' +
+            player.player_price +
+            ' Credits">' +
+            player.player_price +
+            '</span>' +
+            flagHtml(legacyBase, nat, player.playerteam_team || '') +
+            '<a href="#" data-modal="player" data-id="' +
+            player.playerteam_id +
+            '"><img src="' +
+            legacyBase +
+            'images/ffb/symbols/info.png" width="16" height="16" alt="Info"></a>' +
+            '</div></div>'
+        );
+    }
+
     function matchBenchToField() {
         const field = document.getElementById('soccer-field');
         const bench = document.getElementById('soccer-bench');
@@ -50,7 +123,6 @@
         bench.style.width = benchWidth + 'px';
         bench.style.flexBasis = benchWidth + 'px';
 
-        // Match the goalkeeper row offset exactly (top % on field-g is height-based).
         if (line && fieldG) {
             const fieldRect = field.getBoundingClientRect();
             const gRect = fieldG.getBoundingClientRect();
@@ -85,7 +157,12 @@
         }
     }
 
-    function sync(options, legacyBase) {
+    /**
+     * @param {object|null} options
+     * @param {string} legacyBase
+     * @param {Array<object>} [players]
+     */
+    function sync(options, legacyBase, players) {
         const stage = document.getElementById('pitch-stage');
         const bench = document.getElementById('soccer-bench');
         const line = document.getElementById('line-bench');
@@ -106,13 +183,18 @@
         }
 
         const limits = benchLimits(options);
-        const redCount = Math.min(limits.min, limits.max);
-        const blankCount = Math.max(0, limits.max - redCount);
-        let html = '';
-        for (let i = 0; i < redCount; i++) {
+        const selected = Array.isArray(players) ? players.slice(0, limits.max) : [];
+        const needMin = Math.max(0, Math.min(limits.min, limits.max) - selected.length);
+        const needBlank = Math.max(0, limits.max - selected.length - needMin);
+        let html = selected
+            .map(function (player) {
+                return playerCard(player, legacyBase || '/');
+            })
+            .join('');
+        for (let i = 0; i < needMin; i++) {
             html += blankSlot(legacyBase || '/', true);
         }
-        for (let i = 0; i < blankCount; i++) {
+        for (let i = 0; i < needBlank; i++) {
             html += blankSlot(legacyBase || '/', false);
         }
 

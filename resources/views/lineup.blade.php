@@ -100,7 +100,7 @@
     <script src="js/modal.js?v=12" defer></script>
     <script src="js/player-modal.js?v=11" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
-    <script src="js/pitch-bench.js?v=10" defer></script>
-    <script src="js/lineup.js?v=25" defer></script>
+    <script src="js/pitch-bench.js?v=12" defer></script>
+    <script src="js/lineup.js?v=26" defer></script>
 </body>
 </html>

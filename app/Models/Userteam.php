@@ -58,6 +58,21 @@ class Userteam extends Model
     }
 
     /**
+     * Substitute playerteam IDs in bench order (skips empty / zero).
+     *
+     * @return list<int>
+     */
+    public function substitutePlayerteamIdsInSlotOrder(): array
+    {
+        return $this->substituteSlots()
+            ->where('substitute_slot_playerteam_id', '>', 0)
+            ->orderBy('substitute_slot_slot')
+            ->pluck('substitute_slot_playerteam_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+
+    /**
      * Replace lineup slots with exactly these playerteam IDs (pitch order).
      *
      * @param  list<int>  $playerteamIds
@@ -82,6 +97,34 @@ class Userteam extends Model
     }
 
     /**
+     * Replace substitute slots with these playerteam IDs (bench order).
+     * Leaves substitute_slot_replaces_playerteam_id null until post-match scoring.
+     *
+     * @param  list<int>  $playerteamIds
+     */
+    public function syncSubstituteSlots(array $playerteamIds): void
+    {
+        $userteamId = (int) $this->userteam_id;
+        DB::table('ffb_userteam_substitute_slot')
+            ->where('substitute_slot_userteam_id', $userteamId)
+            ->delete();
+
+        $rows = [];
+        foreach (array_values($playerteamIds) as $index => $playerteamId) {
+            $rows[] = [
+                'substitute_slot_userteam_id' => $userteamId,
+                'substitute_slot_slot' => $index + 1,
+                'substitute_slot_playerteam_id' => (int) $playerteamId,
+                'substitute_slot_replaces_playerteam_id' => null,
+            ];
+        }
+
+        if ($rows !== []) {
+            DB::table('ffb_userteam_substitute_slot')->insert($rows);
+        }
+    }
+
+    /**
      * @param  list<int>  $playerteamIds
      * @return Builder<Userteam>
      */
@@ -92,8 +135,12 @@ class Userteam extends Model
             return self::query()->whereRaw('0 = 1');
         }
 
-        return self::query()->whereHas('slots', function (Builder $q) use ($playerteamIds) {
-            $q->whereIn('userteam_slot_playerteam_id', $playerteamIds);
+        return self::query()->where(function (Builder $outer) use ($playerteamIds) {
+            $outer->whereHas('slots', function (Builder $q) use ($playerteamIds) {
+                $q->whereIn('userteam_slot_playerteam_id', $playerteamIds);
+            })->orWhereHas('substituteSlots', function (Builder $q) use ($playerteamIds) {
+                $q->whereIn('substitute_slot_playerteam_id', $playerteamIds);
+            });
         });
     }
 
@@ -102,17 +149,33 @@ class Userteam extends Model
      */
     public static function playerteamIdsUsedInLineups(): array
     {
-        return DB::table('ffb_userteam_slot')
+        $starterIds = DB::table('ffb_userteam_slot')
             ->where('userteam_slot_playerteam_id', '>', 0)
             ->distinct()
             ->pluck('userteam_slot_playerteam_id')
             ->map(fn ($id) => (int) $id)
             ->all();
+
+        $subIds = Schema::hasTable('ffb_userteam_substitute_slot')
+            ? DB::table('ffb_userteam_substitute_slot')
+                ->where('substitute_slot_playerteam_id', '>', 0)
+                ->distinct()
+                ->pluck('substitute_slot_playerteam_id')
+                ->map(fn ($id) => (int) $id)
+                ->all()
+            : [];
+
+        return array_values(array_unique([...$starterIds, ...$subIds]));
     }
 
     public function slots(): HasMany
     {
         return $this->hasMany(UserteamSlot::class, 'userteam_slot_userteam_id', 'userteam_id');
+    }
+
+    public function substituteSlots(): HasMany
+    {
+        return $this->hasMany(UserteamSubstituteSlot::class, 'substitute_slot_userteam_id', 'userteam_id');
     }
 
     public function user(): BelongsTo

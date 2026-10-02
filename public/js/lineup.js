@@ -22,6 +22,7 @@
     let teams = [];
     let matches = [];
     let lineuplist = [];
+    let benchlist = [];
     let credits = 0;
     let expandedTeamId = 0;
     let expandedMatchId = 0;
@@ -651,8 +652,56 @@
         });
 
         if (window.FfbPitchBench) {
-            window.FfbPitchBench.sync(options, legacyBase);
+            window.FfbPitchBench.sync(options, legacyBase, benchlist);
         }
+    }
+
+    function benchEnabled() {
+        return !!(
+            options &&
+            options.league_benchmode &&
+            Number(options.lineup_max_bench) > 0
+        );
+    }
+
+    function minBenchRequired() {
+        if (!benchEnabled()) {
+            return 0;
+        }
+
+        return Math.max(0, Number(options.lineup_min_bench) || 0);
+    }
+
+    function maxBenchAllowed() {
+        if (!benchEnabled()) {
+            return 0;
+        }
+
+        return Math.max(0, Number(options.lineup_max_bench) || 0);
+    }
+
+    function mapPlayerRecord(player) {
+        return {
+            player_id: player.player_id,
+            player_fname: player.player_fname,
+            player_lname: player.player_lname,
+            player_nationality: player.player_nationality,
+            player_status: player.player_status,
+            player_status_description: player.player_status_description,
+            playerteam_player_position:
+                player.playerteam_player_position || player.player_position,
+            player_price: Number(
+                player.playerteam_player_price != null
+                    ? player.playerteam_player_price
+                    : player.player_price
+            ),
+            playerteam_team_id: player.playerteam_team_id,
+            playerteam_team: player.playerteam_team,
+            playerteam_team_nationality: player.playerteam_team_nationality,
+            playerteam_id: player.playerteam_id,
+            playerteam_player_note: player.playerteam_player_note || '',
+            card_warning: player.card_warning || null,
+        };
     }
 
     function updateCreditsDisplay() {
@@ -662,15 +711,18 @@
         creditsEl.hidden = false;
         const rounded = Math.round(credits * 10) / 10;
         creditsEl.classList.toggle('is-over', rounded < 0);
-        const needed = Number(options.lineup_max_players) - lineuplist.length;
+        const neededStarters = Number(options.lineup_max_players) - lineuplist.length;
+        const neededBench = Math.max(0, minBenchRequired() - benchlist.length);
         let html =
             '<div class="pitch-stats-row"><img src="' +
             symbolUrl('symbol_credits.png') +
             '" alt=""><span>' +
             rounded +
             '</span></div>';
-        if (needed > 0) {
-            html += '<div>noch <b>' + needed + '</b> Spieler</div>';
+        if (neededStarters > 0) {
+            html += '<div>noch <b>' + neededStarters + '</b> Spieler</div>';
+        } else if (neededBench > 0) {
+            html += '<div>noch <b>' + neededBench + '</b> Ersatz</div>';
         }
         html +=
             '<div title="Du kannst maximal ' +
@@ -687,10 +739,13 @@
                 '<button type="button" class="ffb-button-disabled" disabled>Bitte warten…</button>';
             return;
         }
-        const complete =
+        const startersComplete =
             options && lineuplist.length === Number(options.lineup_max_players);
+        const benchComplete =
+            benchlist.length >= minBenchRequired() &&
+            benchlist.length <= maxBenchAllowed();
         const withinBudget = Math.round(credits * 10) / 10 >= 0;
-        if (complete && withinBudget && lineupDirty) {
+        if (startersComplete && benchComplete && withinBudget && lineupDirty) {
             actionsEl.innerHTML =
                 '<button type="button" class="ffb-button" id="save-lineup-btn">Aufstellung speichern</button>';
         } else {
@@ -701,11 +756,25 @@
 
     function checkLineup(player) {
         const maxPlayers = Number(options.lineup_max_players);
-        if (lineuplist.length + 1 > maxPlayers) {
-            addErrorMessage('Du hast bereits ' + maxPlayers + ' Spieler aufgestellt!');
-            return false;
+        const startersFull = lineuplist.length >= maxPlayers;
+        const addingToBench = startersFull;
+
+        if (addingToBench) {
+            if (!benchEnabled()) {
+                addErrorMessage('Du hast bereits ' + maxPlayers + ' Spieler aufgestellt!');
+                return false;
+            }
+            if (benchlist.length + 1 > maxBenchAllowed()) {
+                addErrorMessage(
+                    'Du hast bereits ' + maxBenchAllowed() + ' Ersatzspieler aufgestellt!'
+                );
+                return false;
+            }
         }
-        if (Math.round((credits - player.player_price) * 10) / 10 < 0) {
+
+        if (Math.round((credits - Number(
+            player.playerteam_player_price != null ? player.playerteam_player_price : player.player_price
+        )) * 10) / 10 < 0) {
             addErrorMessage('Du hast zuwenig Credits um diesen Spieler zu kaufen!');
             return false;
         }
@@ -715,19 +784,39 @@
         let numM = 0;
         let numS = 0;
         let numTeam = 0;
-        for (let i = 0; i < lineuplist.length; i++) {
-            if (String(lineuplist[i].playerteam_id) === String(player.playerteam_id)) {
+        const selected = lineuplist.concat(benchlist);
+        for (let i = 0; i < selected.length; i++) {
+            if (String(selected[i].playerteam_id) === String(player.playerteam_id)) {
                 addErrorMessage('Dieser Spieler befindet sich bereits in deiner Aufstellung!');
                 return false;
             }
+            if (String(selected[i].playerteam_team_id) === String(player.playerteam_team_id)) {
+                numTeam++;
+            }
+        }
+
+        if (numTeam + 1 > Number(options.lineup_max_players_team)) {
+            addErrorMessage(
+                'Du hast bereits ' +
+                    options.lineup_max_players_team +
+                    ' Spieler von ' +
+                    player.playerteam_team +
+                    ' aufgestellt!'
+            );
+            return false;
+        }
+
+        // Bench has no position restrictions.
+        if (addingToBench) {
+            return true;
+        }
+
+        for (let i = 0; i < lineuplist.length; i++) {
             const pos = lineuplist[i].playerteam_player_position;
             if (pos === 'g') numG++;
             if (pos === 'd') numD++;
             if (pos === 'm') numM++;
             if (pos === 's') numS++;
-            if (String(lineuplist[i].playerteam_team_id) === String(player.playerteam_team_id)) {
-                numTeam++;
-            }
         }
 
         const left = maxPlayers - lineuplist.length;
@@ -746,16 +835,6 @@
         }
         if (pos === 's' && numS + 1 > Number(options.lineup_max_s)) {
             addErrorMessage('Du hast bereits ' + options.lineup_max_s + ' Spieler im Sturm!');
-            return false;
-        }
-        if (numTeam + 1 > Number(options.lineup_max_players_team)) {
-            addErrorMessage(
-                'Du hast bereits ' +
-                    options.lineup_max_players_team +
-                    ' Spieler von ' +
-                    player.playerteam_team +
-                    ' aufgestellt!'
-            );
             return false;
         }
 
@@ -807,23 +886,13 @@
         if (!checkLineup(player)) {
             return;
         }
-        lineuplist.push({
-            player_id: player.player_id,
-            player_fname: player.player_fname,
-            player_lname: player.player_lname,
-            player_nationality: player.player_nationality,
-            player_status: player.player_status,
-            player_status_description: player.player_status_description,
-            playerteam_player_position: player.playerteam_player_position || player.player_position,
-            player_price: Number(player.playerteam_player_price != null ? player.playerteam_player_price : player.player_price),
-            playerteam_team_id: player.playerteam_team_id,
-            playerteam_team: player.playerteam_team,
-            playerteam_team_nationality: player.playerteam_team_nationality,
-            playerteam_id: player.playerteam_id,
-            playerteam_player_note: player.playerteam_player_note || '',
-            card_warning: player.card_warning || null,
-        });
-        credits -= lineuplist[lineuplist.length - 1].player_price;
+        const record = mapPlayerRecord(player);
+        if (lineuplist.length < Number(options.lineup_max_players)) {
+            lineuplist.push(record);
+        } else {
+            benchlist.push(record);
+        }
+        credits -= record.player_price;
         updateLineupDisplay();
         updateCreditsDisplay();
         setLineupDirty(true);
@@ -845,10 +914,28 @@
         dispActionButtons();
     }
 
+    function removeBenchPlayer(playerteamId) {
+        clearMessages();
+        for (let i = 0; i < benchlist.length; i++) {
+            if (String(benchlist[i].playerteam_id) === String(playerteamId)) {
+                credits += Number(benchlist[i].player_price);
+                benchlist.splice(i, 1);
+                break;
+            }
+        }
+        updateLineupDisplay();
+        updateCreditsDisplay();
+        setLineupDirty(true);
+        dispActionButtons();
+    }
+
     async function saveLineup() {
         clearMessages();
         dispActionButtons(true);
         const ids = lineuplist.map(function (p) {
+            return p.playerteam_id;
+        });
+        const substituteIds = benchlist.map(function (p) {
             return p.playerteam_id;
         });
         try {
@@ -858,6 +945,7 @@
                 body: JSON.stringify({
                     matchround_id: matchround.matchround_id,
                     playerteam_ids: ids,
+                    substitute_playerteam_ids: substituteIds,
                 }),
             });
             setLineupDirty(false);
@@ -871,6 +959,7 @@
     async function loadExistingLineup() {
         credits = Number(options.lineup_max_credits);
         lineuplist = [];
+        benchlist = [];
         try {
             const data = await fetchJson('lineup?matchround_id=' + encodeURIComponent(matchround.matchround_id)).then(
                 function (j) {
@@ -885,24 +974,8 @@
                 return;
             }
             credits -= Number(data.userteam.userteam_price || 0);
-            lineuplist = (data.players || []).map(function (p) {
-                return {
-                    player_id: p.player_id,
-                    player_fname: p.player_fname,
-                    player_lname: p.player_lname,
-                    player_nationality: p.player_nationality,
-                    player_status: p.player_status,
-                    player_status_description: p.player_status_description,
-                    playerteam_player_position: p.playerteam_player_position,
-                    player_price: Number(p.playerteam_player_price),
-                    playerteam_team_id: p.playerteam_team_id,
-                    playerteam_team: p.playerteam_team,
-                    playerteam_team_nationality: p.playerteam_team_nationality,
-                    playerteam_id: p.playerteam_id,
-                    playerteam_player_note: p.playerteam_player_note || '',
-                    card_warning: p.card_warning || null,
-                };
-            });
+            lineuplist = (data.players || []).map(mapPlayerRecord);
+            benchlist = (data.substitutes || []).map(mapPlayerRecord);
             updateLineupDisplay();
             updateCreditsDisplay();
             setLineupDirty(false);
@@ -937,7 +1010,7 @@
         actionsEl.innerHTML = '';
         roundMetaEl.textContent = '';
         if (window.FfbPitchBench) {
-            window.FfbPitchBench.sync(null, legacyBase);
+            window.FfbPitchBench.sync(null, legacyBase, []);
         }
     }
 
@@ -968,7 +1041,7 @@
                 showRecentPerformance = false;
             }
             if (window.FfbPitchBench) {
-                window.FfbPitchBench.sync(options, legacyBase);
+                window.FfbPitchBench.sync(options, legacyBase, benchlist);
             }
             if (!matchround) {
                 roundMetaEl.textContent = '';
@@ -1032,6 +1105,18 @@
         event.preventDefault();
         removePlayer(rem.getAttribute('data-remove'));
     });
+
+    const soccerBench = document.getElementById('soccer-bench');
+    if (soccerBench) {
+        soccerBench.addEventListener('click', function (event) {
+            const rem = event.target.closest('[data-remove-bench]');
+            if (!rem) {
+                return;
+            }
+            event.preventDefault();
+            removeBenchPlayer(rem.getAttribute('data-remove-bench'));
+        });
+    }
 
     actionsEl.addEventListener('click', function (event) {
         if (event.target.id === 'save-lineup-btn') {

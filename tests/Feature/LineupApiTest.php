@@ -132,7 +132,7 @@ class LineupApiTest extends TestCase
         $this->mock(LineupService::class, function ($mock) use ($payload, $ids) {
             $mock->shouldReceive('saveForRound')
                 ->once()
-                ->with(544, 280, $ids)
+                ->with(544, 280, $ids, [])
                 ->andReturn([
                     'ok' => true,
                     'created' => false,
