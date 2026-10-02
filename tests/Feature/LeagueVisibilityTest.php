@@ -245,6 +245,143 @@ class LeagueVisibilityTest extends TestCase
         $this->assertSame(['Hidden Current', 'Visible Current'], $adminTitles);
     }
 
+    #[Test]
+    public function league_picker_shows_test_leagues_only_for_admins(): void
+    {
+        DB::table('ffb_league')->insert([
+            'league_id' => 6,
+            'league_title' => 'Test Current',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_test' => 1,
+            'league_symbol' => '',
+        ]);
+        DB::table('ffb_matchround')->insert([
+            'matchround_id' => 6,
+            'matchround_league_id' => 6,
+            'matchround_title' => 'R1',
+            'matchround_startdate' => '2026-01-01 00:00:00',
+            'matchround_enddate' => '2026-01-02 00:00:00',
+            'matchround_status' => 1,
+        ]);
+
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->with(10)->andReturn(false);
+            $mock->shouldReceive('isAdmin')->with(11)->andReturn(true);
+        });
+
+        $startTitles = collect(app(StartPageService::class)->payload()['leagues'])
+            ->pluck('league_title')
+            ->all();
+        $playerTitles = collect(app(DashboardService::class)->payload(10, 1, false)['leagues'])
+            ->pluck('league_title')
+            ->all();
+        $adminLeagues = collect(app(DashboardService::class)->payload(11, 1, false)['leagues'])
+            ->keyBy('league_id');
+        $playerSelect = app(DashboardService::class)->selectLeague(10, 6);
+        $adminSelect = app(DashboardService::class)->selectLeague(11, 6);
+
+        $this->assertSame(['Visible Current'], $startTitles);
+        $this->assertSame(['Visible Current'], $playerTitles);
+        $this->assertTrue($adminLeagues->has(6));
+        $this->assertSame(1, $adminLeagues[6]['league_test']);
+        $this->assertFalse($adminLeagues[6]['is_faded']);
+        $this->assertFalse($playerSelect['ok']);
+        $this->assertSame(422, $playerSelect['status']);
+        $this->assertTrue($adminSelect['ok']);
+        $this->assertSame(6, $adminSelect['selected_league_id']);
+    }
+
+    #[Test]
+    public function invisible_test_leagues_are_faded_and_marked_as_test(): void
+    {
+        DB::table('ffb_league')->insert([
+            'league_id' => 6,
+            'league_title' => 'Hidden Test',
+            'league_visible' => 0,
+            'league_archive' => 0,
+            'league_test' => 1,
+            'league_symbol' => '',
+        ]);
+        DB::table('ffb_matchround')->insert([
+            'matchround_id' => 6,
+            'matchround_league_id' => 6,
+            'matchround_title' => 'R1',
+            'matchround_startdate' => '2026-01-01 00:00:00',
+            'matchround_enddate' => '2026-01-02 00:00:00',
+            'matchround_status' => 1,
+        ]);
+
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $league = collect(app(DashboardService::class)->payload(11, 1, false)['leagues'])
+            ->firstWhere('league_id', 6);
+
+        $this->assertNotNull($league);
+        $this->assertSame(1, $league['league_test']);
+        $this->assertSame(0, $league['league_visible']);
+        $this->assertTrue($league['is_faded']);
+    }
+
+    #[Test]
+    public function profile_participations_exclude_test_leagues_for_everyone(): void
+    {
+        DB::table('ffb_league')->insert([
+            'league_id' => 6,
+            'league_title' => 'Test Current',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_test' => 1,
+            'league_symbol' => '',
+        ]);
+        DB::table('ffb_userscore')->insert([
+            [
+                'userscore_id' => 1,
+                'userscore_user_id' => 20,
+                'userscore_league_id' => 1,
+                'userscore_total' => 10,
+                'userscore_lc_points' => 5,
+            ],
+            [
+                'userscore_id' => 2,
+                'userscore_user_id' => 20,
+                'userscore_league_id' => 6,
+                'userscore_total' => 8,
+                'userscore_lc_points' => 3,
+            ],
+        ]);
+        foreach ([1, 6] as $i => $leagueId) {
+            DB::table('ffb_league_options')->insert([
+                'options_id' => $i + 1,
+                'options_league_id' => $leagueId,
+                'options_lineup_max_players' => 11,
+                'options_lineup_max_credits' => 100,
+                'options_lineup_max_players_team' => 3,
+                'options_lineup_min_g' => 1,
+                'options_lineup_min_d' => 3,
+                'options_lineup_min_m' => 3,
+                'options_lineup_min_s' => 1,
+                'options_lineup_max_g' => 1,
+                'options_lineup_max_d' => 5,
+                'options_lineup_max_m' => 5,
+                'options_lineup_max_s' => 3,
+                'options_league_pricemode' => 'constant',
+                'options_league_pointsmode' => 'new',
+            ]);
+        }
+
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $admin = app(ProfilePopupService::class)->forUser(11, 20);
+        $titles = collect($admin['data']['participations'])->pluck('league_title')->all();
+
+        $this->assertSame(['Visible Current'], $titles);
+    }
+
     private function createVisibilityExtraTables(): void
     {
         Schema::dropIfExists('ffb_userscore');

@@ -227,6 +227,25 @@ class AdminCenterService
             ->map(function (League $league) {
                 $archive = (int) (bool) $league->league_archive;
                 $visible = (int) (bool) $league->league_visible;
+                $isTest = (int) (bool) $league->league_test;
+
+                $flags = [
+                    [
+                        'label' => $archive ? 'archiviert' : 'aktuell',
+                        'tone' => $archive ? 'warn' : 'ok',
+                    ],
+                    [
+                        'label' => $visible ? 'sichtbar' : 'unsichtbar',
+                        'tone' => $visible ? 'ok' : 'off',
+                    ],
+                ];
+
+                if ($isTest) {
+                    $flags[] = [
+                        'label' => 'test',
+                        'tone' => 'warn',
+                    ];
+                }
 
                 return [
                     'league_id' => (int) $league->league_id,
@@ -235,16 +254,8 @@ class AdminCenterService
                     'symbol_url' => '/images/ffb/symbols/'.($league->league_symbol ?: 'symbol_game_na.png'),
                     'league_archive' => $archive,
                     'league_visible' => $visible,
-                    'flags' => [
-                        [
-                            'label' => $archive ? 'archiviert' : 'aktuell',
-                            'tone' => $archive ? 'warn' : 'ok',
-                        ],
-                        [
-                            'label' => $visible ? 'sichtbar' : 'unsichtbar',
-                            'tone' => $visible ? 'ok' : 'off',
-                        ],
-                    ],
+                    'league_test' => $isTest,
+                    'flags' => $flags,
                 ];
             })
             ->values()

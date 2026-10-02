@@ -92,7 +92,11 @@ class DashboardService
     {
         $league = League::query()->find($leagueId);
         $isAdmin = app(FfbAdminAccess::class)->isAdmin($userId);
-        if (! $league || (! $isAdmin && ! (int) $league->league_visible)) {
+        if (
+            ! $league
+            || (! $isAdmin && (int) $league->league_test === 1)
+            || (! $isAdmin && ! (int) $league->league_visible)
+        ) {
             return ['ok' => false, 'status' => 422, 'error' => 'League not available'];
         }
 
@@ -212,7 +216,8 @@ class DashboardService
             ->orderBy('league_title');
 
         if (! $isAdmin) {
-            $query->where('league_visible', 1)
+            $query->forPlayerApp()
+                ->where('league_visible', 1)
                 ->whereHas('matchrounds');
         }
 
@@ -220,6 +225,7 @@ class DashboardService
             ->get()
             ->map(function (League $league) use ($isAdmin): array {
                 $visible = (int) (bool) $league->league_visible;
+                $isTest = (int) (bool) $league->league_test;
                 $hasMatchrounds = (int) $league->matchrounds_count > 0;
 
                 return [
@@ -228,6 +234,7 @@ class DashboardService
                     'league_symbol' => (string) ($league->league_symbol ?: 'symbol_game_na.png'),
                     'league_archive' => (int) (bool) $league->league_archive,
                     'league_visible' => $visible,
+                    'league_test' => $isTest,
                     'has_matchrounds' => $hasMatchrounds,
                     'is_faded' => $isAdmin && (! $visible || ! $hasMatchrounds),
                     'symbol_url' => '/images/ffb/symbols/'.($league->league_symbol ?: 'symbol_game_na.png'),

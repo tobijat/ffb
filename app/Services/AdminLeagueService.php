@@ -47,6 +47,7 @@ class AdminLeagueService
                 'league_title' => '',
                 'league_visible' => 1,
                 'league_archive' => 0,
+                'league_test' => 0,
                 'league_symbol' => self::DEFAULT_SYMBOL,
                 'league_uefa_competition_identifier' => '',
                 'league_fifa_competition_identifier' => '',
@@ -78,6 +79,7 @@ class AdminLeagueService
                 'league_title' => (string) $league->league_title,
                 'league_visible' => (int) (bool) $league->league_visible,
                 'league_archive' => (int) (bool) $league->league_archive,
+                'league_test' => (int) (bool) $league->league_test,
                 'league_symbol' => $symbol,
                 'league_uefa_competition_identifier' => (string) ($league->league_uefa_competition_identifier ?? ''),
                 'league_fifa_competition_identifier' => (string) ($league->league_fifa_competition_identifier ?? ''),
@@ -117,6 +119,7 @@ class AdminLeagueService
                 'league_title' => $form['league_title'],
                 'league_visible' => (int) $form['league_visible'],
                 'league_archive' => (int) $form['league_archive'],
+                'league_test' => (int) $form['league_test'],
                 'league_symbol' => $form['league_symbol'],
                 'league_uefa_competition_identifier' => $form['league_uefa_competition_identifier'],
                 'league_fifa_competition_identifier' => $form['league_fifa_competition_identifier'],
@@ -173,6 +176,7 @@ class AdminLeagueService
             $league->league_title = $form['league_title'];
             $league->league_visible = (int) $form['league_visible'];
             $league->league_archive = (int) $form['league_archive'];
+            $league->league_test = (int) $form['league_test'];
             $league->league_symbol = $form['league_symbol'];
             $league->league_uefa_competition_identifier = $form['league_uefa_competition_identifier'];
             $league->league_fifa_competition_identifier = $form['league_fifa_competition_identifier'];
@@ -250,6 +254,7 @@ class AdminLeagueService
                     'league_title' => (string) $league->league_title,
                     'league_visible' => (int) (bool) $league->league_visible,
                     'league_archive' => (int) (bool) $league->league_archive,
+                    'league_test' => (int) (bool) $league->league_test,
                     'symbol_url' => '/images/ffb/symbols/'.$symbol,
                 ];
             })
@@ -273,6 +278,7 @@ class AdminLeagueService
             'league_title' => trim((string) ($input['league_title'] ?? '')),
             'league_visible' => (int) ($input['league_visible'] ?? 0) === 1 ? 1 : 0,
             'league_archive' => (int) ($input['league_archive'] ?? 0) === 1 ? 1 : 0,
+            'league_test' => (int) ($input['league_test'] ?? 0) === 1 ? 1 : 0,
             'league_symbol' => $symbol,
             'league_uefa_competition_identifier' => trim((string) ($input['league_uefa_competition_identifier'] ?? '')),
             'league_fifa_competition_identifier' => trim((string) ($input['league_fifa_competition_identifier'] ?? '')),

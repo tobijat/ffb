@@ -56,6 +56,7 @@ class AdminLeagueTest extends TestCase
                         'league_title' => 'Testliga',
                         'league_visible' => 1,
                         'league_archive' => 0,
+                        'league_test' => 0,
                         'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
                     ],
                 ],
@@ -64,6 +65,7 @@ class AdminLeagueTest extends TestCase
                     'league_title' => '',
                     'league_visible' => 1,
                     'league_archive' => 0,
+                    'league_test' => 0,
                     'league_symbol' => 'symbol_game_na.png',
                     'league_uefa_competition_identifier' => '',
                     'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
@@ -78,6 +80,7 @@ class AdminLeagueTest extends TestCase
             ->assertSee('Ligen', false)
             ->assertSee('Testliga', false)
             ->assertSee('name="league_title"', false)
+            ->assertSee('name="league_test"', false)
             ->assertSee('name="league_uefa_competition_identifier"', false)
             ->assertSee('name="league_symbol_file"', false)
             ->assertDontSee('name="options_league_pointsmode"', false)

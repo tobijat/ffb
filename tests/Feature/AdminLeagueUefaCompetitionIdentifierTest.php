@@ -35,6 +35,7 @@ class AdminLeagueUefaCompetitionIdentifierTest extends TestCase
             'league_title' => 'Nations League',
             'league_visible' => 1,
             'league_archive' => 0,
+            'league_test' => 1,
             'league_uefa_competition_identifier' => '2014/2027/league_phase',
             'options_league_rankmode' => 'lc',
             'options_league_pricemode' => 'dynamic',
@@ -46,15 +47,18 @@ class AdminLeagueUefaCompetitionIdentifierTest extends TestCase
         $league = League::query()->first();
         $this->assertNotNull($league);
         $this->assertSame('2014/2027/league_phase', (string) $league->league_uefa_competition_identifier);
+        $this->assertSame(1, (int) $league->league_test);
 
         $form = $service->formForEdit((int) $league->league_id);
         $this->assertNotNull($form);
         $this->assertSame('2014/2027/league_phase', $form['league_uefa_competition_identifier']);
+        $this->assertSame(1, (int) $form['league_test']);
 
         $update = $service->update((int) $league->league_id, [
             'league_title' => 'Nations League',
             'league_visible' => 1,
             'league_archive' => 0,
+            'league_test' => 0,
             'league_uefa_competition_identifier' => '  17/2026/tournament  ',
             'options_league_rankmode' => 'lc',
             'options_league_pricemode' => 'dynamic',
@@ -64,6 +68,7 @@ class AdminLeagueUefaCompetitionIdentifierTest extends TestCase
         $this->assertTrue($update['ok']);
         $league->refresh();
         $this->assertSame('17/2026/tournament', (string) $league->league_uefa_competition_identifier);
+        $this->assertSame(0, (int) $league->league_test);
     }
 
     private function service(): AdminLeagueService
@@ -83,8 +88,10 @@ class AdminLeagueUefaCompetitionIdentifierTest extends TestCase
             $table->string('league_title')->default('');
             $table->tinyInteger('league_visible')->default(1);
             $table->tinyInteger('league_archive')->default(0);
+            $table->tinyInteger('league_test')->default(0);
             $table->string('league_symbol')->default('');
             $table->string('league_uefa_competition_identifier')->default('');
+            $table->string('league_fifa_competition_identifier')->default('');
         });
 
         Schema::create('ffb_league_options', function (Blueprint $table) {

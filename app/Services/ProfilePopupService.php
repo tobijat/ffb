@@ -109,6 +109,7 @@ class ProfilePopupService
             ->with('league')
             ->where('userscore_user_id', $profileUserId)
             ->whereHas('league', function ($q) use ($viewerIsAdmin) {
+                $q->forPlayerApp();
                 if (! $viewerIsAdmin) {
                     $q->where('league_visible', 1);
                 }

@@ -48,8 +48,9 @@
                 @forelse ($leagues as $league)
                     <button
                         type="button"
-                        class="game-tile{{ $selectedId === (int) $league['league_id'] ? ' is-selected' : '' }}{{ ! empty($league['is_faded']) ? ' is-faded' : '' }}"
+                        class="game-tile{{ $selectedId === (int) $league['league_id'] ? ' is-selected' : '' }}{{ ! empty($league['is_faded']) ? ' is-faded' : '' }}{{ ! empty($league['league_test']) ? ' is-test' : '' }}"
                         data-league-id="{{ $league['league_id'] }}"
+                        @if (! empty($league['league_test'])) title="Testliga" @endif
                     >
                         <img src="{{ $league['symbol_url'] }}" alt="" width="56" height="56" loading="lazy">
                         <span>{{ $league['league_title'] }}</span>

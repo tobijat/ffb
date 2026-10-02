@@ -182,6 +182,7 @@ class ExtremeTeamService
     public function backfillVisibleLeagues(): array
     {
         $leagueIds = League::query()
+            ->forPlayerApp()
             ->where('league_visible', 1)
             ->orderBy('league_id')
             ->pluck('league_id')

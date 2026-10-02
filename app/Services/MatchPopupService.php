@@ -175,6 +175,7 @@ class MatchPopupService
             ->where('match_id', '!=', $matchId)
             ->where('match_homescore', '>=', 0)
             ->where('match_guestscore', '>=', 0)
+            ->whereHas('matchround.league', fn ($q) => $q->forPlayerApp())
             ->where(function ($q) use ($homeTeamId, $guestTeamId) {
                 $q->where(function ($inner) use ($homeTeamId, $guestTeamId) {
                     $inner->where('match_hometeam_id', $homeTeamId)
