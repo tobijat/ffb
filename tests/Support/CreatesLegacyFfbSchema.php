@@ -174,6 +174,16 @@ trait CreatesLegacyFfbSchema
             $table->index('userteam_slot_playerteam_id');
         });
 
+        Schema::create('ffb_userteam_substitute_slot', function (Blueprint $table) {
+            $table->increments('substitute_slot_id');
+            $table->unsignedInteger('substitute_slot_userteam_id');
+            $table->unsignedTinyInteger('substitute_slot_slot');
+            $table->unsignedInteger('substitute_slot_playerteam_id');
+            $table->unsignedInteger('substitute_slot_replaces_playerteam_id')->nullable();
+            $table->unique(['substitute_slot_userteam_id', 'substitute_slot_slot']);
+            $table->index('substitute_slot_playerteam_id');
+        });
+
         Schema::create('web_user_details', function (Blueprint $table) {
             $table->integer('user_id')->primary();
             $table->integer('user_details_ffb_selected_league')->default(0);
@@ -183,6 +193,7 @@ trait CreatesLegacyFfbSchema
     protected function dropLegacyFfbSchema(): void
     {
         foreach ([
+            'ffb_userteam_substitute_slot',
             'ffb_userteam_slot',
             'ffb_userteam',
             'ffb_playerfid',

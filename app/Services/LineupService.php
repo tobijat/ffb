@@ -360,6 +360,7 @@ class LineupService
                 'matchround_id' => $matchroundId,
                 'userteam' => null,
                 'players' => [],
+                'substitutes' => [],
                 'lineup_options' => $lineupOptions,
             ];
         }
@@ -376,49 +377,52 @@ class LineupService
                 'matchround_id' => $matchroundId,
                 'userteam' => null,
                 'players' => [],
+                'substitutes' => [],
                 'lineup_options' => $lineupOptions,
             ];
         }
 
         $slotIds = $userteam->playerteamIdsInSlotOrder();
+        $substituteIds = $userteam->substitutePlayerteamIdsInSlotOrder();
+        $allIds = array_values(array_unique([...$slotIds, ...$substituteIds]));
         $playerteams = Playerteam::query()
             ->with(['player', 'team'])
-            ->whereIn('playerteam_id', $slotIds)
+            ->whereIn('playerteam_id', $allIds)
             ->get()
             ->keyBy('playerteam_id');
 
-        $prices = $this->resolvePlayerPrices($slotIds, $matchroundId, $playerteams);
-        $scores = $this->scoresForRound($slotIds, $matchroundId);
+        $prices = $this->resolvePlayerPrices($allIds, $matchroundId, $playerteams);
+        $scores = $this->scoresForRound($allIds, $matchroundId);
         $cardWarnings = $this->resolveCardWarnings($playerteams, $matchroundId, $leagueId);
 
         $players = [];
         foreach ($slotIds as $slot => $playerteamId) {
-            /** @var Playerteam|null $pt */
-            $pt = $playerteams->get($playerteamId);
-            if (! $pt || ! $pt->player || ! $pt->team) {
-                continue;
+            $row = $this->playerPayload(
+                $slot + 1,
+                $playerteamId,
+                $playerteams,
+                $prices,
+                $scores,
+                $cardWarnings,
+            );
+            if ($row !== null) {
+                $players[] = $row;
             }
+        }
 
-            $players[] = [
-                'slot' => $slot + 1,
-                'player_id' => (int) $pt->player->player_id,
-                'player_fname' => (string) $pt->player->player_fname,
-                'player_lname' => (string) $pt->player->player_lname,
-                'player_nationality' => (string) $pt->player->player_nationality,
-                'player_status' => (int) ($pt->player->player_status ?? 0),
-                'player_status_description' => (string) ($pt->player->player_status_description ?: ''),
-                'playerteam_id' => (int) $pt->playerteam_id,
-                'playerteam_team_id' => (int) $pt->playerteam_team_id,
-                'playerteam_team' => (string) $pt->team->team_name,
-                'playerteam_team_nationality' => (string) $pt->team->team_nationality,
-                'playerteam_player_position' => (string) $pt->playerteam_player_position,
-                'playerteam_player_picture' => (string) ($pt->playerteam_player_picture ?: ''),
-                'playerteam_status' => (int) ($pt->playerteam_status ? 1 : 0),
-                'playerteam_player_price' => (float) ($prices->get($playerteamId) ?? 0),
-                'playerteam_player_note' => (string) ($pt->playerteam_player_note ?? ''),
-                'playerstats_score' => (int) ($scores->get($playerteamId) ?? 0),
-                'card_warning' => $cardWarnings->get((int) $pt->playerteam_id),
-            ];
+        $substitutes = [];
+        foreach ($substituteIds as $slot => $playerteamId) {
+            $row = $this->playerPayload(
+                $slot + 1,
+                $playerteamId,
+                $playerteams,
+                $prices,
+                $scores,
+                $cardWarnings,
+            );
+            if ($row !== null) {
+                $substitutes[] = $row;
+            }
         }
 
         return [
@@ -434,6 +438,7 @@ class LineupService
                 'userteam_username' => (string) $user->user_nickname,
             ],
             'players' => $players,
+            'substitutes' => $substitutes,
             'lineup_options' => $lineupOptions,
         ];
     }
@@ -442,11 +447,17 @@ class LineupService
      * Save / update a lineup (mirrors ffb/teammanagement/saveLineup.xml, with server-side rules).
      *
      * @param  list<int|string>  $playerteamIds
+     * @param  list<int|string>  $substitutePlayerteamIds
      * @return array{ok: true, created: bool, message: string, data: array<string, mixed>}|array{ok: false, status: int, error: string}
      */
-    public function saveForRound(int $userId, int $matchroundId, array $playerteamIds): array
-    {
+    public function saveForRound(
+        int $userId,
+        int $matchroundId,
+        array $playerteamIds,
+        array $substitutePlayerteamIds = [],
+    ): array {
         $ids = $this->normalizePlayerteamIds($playerteamIds);
+        $substituteIds = $this->normalizePlayerteamIds($substitutePlayerteamIds);
 
         $matchround = Matchround::query()->find($matchroundId);
         if (! $matchround) {
@@ -460,11 +471,26 @@ class LineupService
 
         $lineupRules = $this->lineupOptions->forMatchround($matchroundId);
         $maxPlayers = (int) $lineupRules['lineup_max_players'];
+        $minBench = (int) $lineupRules['lineup_min_bench'];
+        $maxBench = (int) $lineupRules['lineup_max_bench'];
+        $benchEnabled = $lineupRules['league_benchmode'] !== null && $maxBench > 0;
+
+        if (! $benchEnabled) {
+            $substituteIds = [];
+            $minBench = 0;
+            $maxBench = 0;
+        }
+
         if (count($ids) !== $maxPlayers) {
             return $this->fail(422, "Invalid lineup: exactly {$maxPlayers} players are required");
         }
 
-        if (count(array_unique($ids)) !== $maxPlayers) {
+        if (count($substituteIds) < $minBench || count($substituteIds) > $maxBench) {
+            return $this->fail(422, "Invalid lineup: between {$minBench} and {$maxBench} substitutes are required");
+        }
+
+        $allIds = [...$ids, ...$substituteIds];
+        if (count(array_unique($allIds)) !== count($allIds)) {
             return $this->fail(422, 'Invalid lineup: duplicate players are not allowed');
         }
 
@@ -480,11 +506,11 @@ class LineupService
         $leagueId = (int) $matchround->matchround_league_id;
         $playerteams = Playerteam::query()
             ->with(['player', 'team'])
-            ->whereIn('playerteam_id', $ids)
+            ->whereIn('playerteam_id', $allIds)
             ->get()
             ->keyBy('playerteam_id');
 
-        if ($playerteams->count() !== $maxPlayers) {
+        if ($playerteams->count() !== count($allIds)) {
             return $this->fail(422, 'Invalid lineup: one or more players were not found');
         }
 
@@ -497,22 +523,22 @@ class LineupService
             }
         }
 
-        $prices = $this->resolvePlayerPrices($ids, $matchroundId, $playerteams);
-        foreach ($ids as $id) {
+        $prices = $this->resolvePlayerPrices($allIds, $matchroundId, $playerteams);
+        foreach ($allIds as $id) {
             if (! $prices->has($id)) {
                 return $this->fail(422, 'Invalid lineup: Spielerpreis fehlt (Playerprice/Teamprice) für diese Spielrunde.');
             }
         }
 
-        $validationError = $this->validateAgainstOptions($ids, $playerteams, $prices, $lineupRules);
+        $validationError = $this->validateAgainstOptions($ids, $substituteIds, $playerteams, $prices, $lineupRules);
         if ($validationError !== null) {
             return $this->fail(422, $validationError);
         }
 
-        $sumPrice = $this->sumPrices($ids, $prices);
+        $sumPrice = $this->sumPrices($allIds, $prices);
         $created = false;
 
-        DB::transaction(function () use ($userId, $matchroundId, $ids, $sumPrice, $matchround, &$created) {
+        DB::transaction(function () use ($userId, $matchroundId, $ids, $substituteIds, $sumPrice, $matchround, &$created) {
             $userteam = Userteam::query()
                 ->where('userteam_user_id', $userId)
                 ->where('userteam_matchround_id', $matchroundId)
@@ -531,6 +557,7 @@ class LineupService
             $userteam->userteam_price = $sumPrice;
             $userteam->save();
             $userteam->syncSlots($ids);
+            $userteam->syncSubstituteSlots($substituteIds);
 
             $leagueId = $this->resolveLeagueId($userId, (int) $matchround->matchround_league_id);
             Userscore::query()->firstOrCreate(
@@ -593,7 +620,8 @@ class LineupService
     }
 
     /**
-     * @param  list<int>  $ids
+     * @param  list<int>  $starterIds
+     * @param  list<int>  $substituteIds
      * @param  Collection<int, Playerteam>  $playerteams
      * @param  Collection<int, float|int|string>  $prices
      * @param  array{
@@ -607,24 +635,28 @@ class LineupService
      *     lineup_max_g: int,
      *     lineup_max_d: int,
      *     lineup_max_m: int,
-     *     lineup_max_s: int
+     *     lineup_max_s: int,
+     *     lineup_min_bench: int,
+     *     lineup_max_bench: int,
+     *     league_benchmode: ?string
      * }  $options
      */
     private function validateAgainstOptions(
-        array $ids,
+        array $starterIds,
+        array $substituteIds,
         Collection $playerteams,
         Collection $prices,
         array $options,
     ): ?string {
         $maxPlayers = (int) ($options['lineup_max_players'] ?: 11);
-        if (count($ids) !== $maxPlayers) {
+        if (count($starterIds) !== $maxPlayers) {
             return "Invalid lineup: exactly {$maxPlayers} players are required";
         }
 
         $counts = ['g' => 0, 'd' => 0, 'm' => 0, 's' => 0];
         $perTeam = [];
 
-        foreach ($ids as $id) {
+        foreach ($starterIds as $id) {
             $pt = $playerteams->get($id);
             if (! $pt) {
                 return 'Invalid lineup: one or more players were not found';
@@ -639,6 +671,20 @@ class LineupService
                 return 'Invalid lineup: unknown player position';
             }
             $counts[$position]++;
+
+            $teamId = (int) $pt->playerteam_team_id;
+            $perTeam[$teamId] = ($perTeam[$teamId] ?? 0) + 1;
+        }
+
+        foreach ($substituteIds as $id) {
+            $pt = $playerteams->get($id);
+            if (! $pt) {
+                return 'Invalid lineup: one or more substitutes were not found';
+            }
+
+            if (! $pt->playerteam_status) {
+                return 'Invalid lineup: inactive substitutes are not allowed';
+            }
 
             $teamId = (int) $pt->playerteam_team_id;
             $perTeam[$teamId] = ($perTeam[$teamId] ?? 0) + 1;
@@ -665,12 +711,55 @@ class LineupService
         }
 
         $maxCredits = (float) $options['lineup_max_credits'];
-        $sumPrice = $this->sumPrices($ids, $prices);
+        $sumPrice = $this->sumPrices([...$starterIds, ...$substituteIds], $prices);
         if ($sumPrice > $maxCredits) {
             return "Invalid lineup: total price {$sumPrice} exceeds credit limit {$maxCredits}";
         }
 
         return null;
+    }
+
+    /**
+     * @param  Collection<int, Playerteam>  $playerteams
+     * @param  Collection<int, float|int|string>  $prices
+     * @param  Collection<int, int>  $scores
+     * @param  Collection<int, mixed>  $cardWarnings
+     * @return array<string, mixed>|null
+     */
+    private function playerPayload(
+        int $slot,
+        int $playerteamId,
+        Collection $playerteams,
+        Collection $prices,
+        Collection $scores,
+        Collection $cardWarnings,
+    ): ?array {
+        /** @var Playerteam|null $pt */
+        $pt = $playerteams->get($playerteamId);
+        if (! $pt || ! $pt->player || ! $pt->team) {
+            return null;
+        }
+
+        return [
+            'slot' => $slot,
+            'player_id' => (int) $pt->player->player_id,
+            'player_fname' => (string) $pt->player->player_fname,
+            'player_lname' => (string) $pt->player->player_lname,
+            'player_nationality' => (string) $pt->player->player_nationality,
+            'player_status' => (int) ($pt->player->player_status ?? 0),
+            'player_status_description' => (string) ($pt->player->player_status_description ?: ''),
+            'playerteam_id' => (int) $pt->playerteam_id,
+            'playerteam_team_id' => (int) $pt->playerteam_team_id,
+            'playerteam_team' => (string) $pt->team->team_name,
+            'playerteam_team_nationality' => (string) $pt->team->team_nationality,
+            'playerteam_player_position' => (string) $pt->playerteam_player_position,
+            'playerteam_player_picture' => (string) ($pt->playerteam_player_picture ?: ''),
+            'playerteam_status' => (int) ($pt->playerteam_status ? 1 : 0),
+            'playerteam_player_price' => (float) ($prices->get($playerteamId) ?? 0),
+            'playerteam_player_note' => (string) ($pt->playerteam_player_note ?? ''),
+            'playerstats_score' => (int) ($scores->get($playerteamId) ?? 0),
+            'card_warning' => $cardWarnings->get((int) $pt->playerteam_id),
+        ];
     }
 
     /**

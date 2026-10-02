@@ -79,8 +79,16 @@ class LineupController extends Controller
             $rawIds = [];
         }
 
+        $rawSubstitutes = $request->input('substitute_playerteam_ids', []);
+        if (is_string($rawSubstitutes)) {
+            $rawSubstitutes = explode(',', $rawSubstitutes);
+        }
+        if (! is_array($rawSubstitutes)) {
+            $rawSubstitutes = [];
+        }
+
         $userId = (int) $request->attributes->get('ffb_user_id');
-        $result = $this->lineups->saveForRound($userId, $matchroundId, $rawIds);
+        $result = $this->lineups->saveForRound($userId, $matchroundId, $rawIds, $rawSubstitutes);
 
         if (! $result['ok']) {
             return response()->json([
