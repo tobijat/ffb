@@ -50,6 +50,7 @@ class ExtremeTeamService
                     'type' => $type,
                     'userteam' => null,
                     'players' => [],
+                    'lineup_options' => $this->lineupOptions->forMatchround($matchroundId),
                 ],
             ];
         }
@@ -67,6 +68,7 @@ class ExtremeTeamService
                     'userteam_price' => round((float) $team->extremeteam_price, 1),
                 ],
                 'players' => $players,
+                'lineup_options' => $this->lineupOptions->forMatchround($matchroundId),
             ],
         ];
     }

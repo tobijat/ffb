@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/start.css?v=23">
     <link rel="stylesheet" href="css/dashboard.css?v=12">
     <link rel="stylesheet" href="css/modal.css?v=15">
-    <link rel="stylesheet" href="css/myteam.css?v=17">
+    <link rel="stylesheet" href="css/myteam.css?v=27">
     <link rel="stylesheet" href="css/lineup.css?v=22">
 </head>
 <body class="dash-body">
@@ -40,15 +40,32 @@
                 <div class="pitch-stats lineup-credits" id="lineup-credits" hidden></div>
             </div>
 
-            <div
-                id="soccer-field"
-                class="soccer-field"
-                style="background-image:url({{ $legacyBase }}images/ffb/backgrounds/soccer_field_cut.svg)"
-            >
-                <div class="field-line field-g"><div id="line-g" class="line-players"></div></div>
-                <div class="field-line field-d"><div id="line-d" class="line-players"></div></div>
-                <div class="field-line field-m"><div id="line-m" class="line-players"><p class="muted">Lade…</p></div></div>
-                <div class="field-line field-s"><div id="line-s" class="line-players"></div></div>
+            <div class="pitch-stage" id="pitch-stage">
+                <div
+                    id="soccer-field"
+                    class="soccer-field"
+                    style="background-image:url({{ $legacyBase }}images/ffb/backgrounds/soccer_field_cut.svg)"
+                >
+                    <div class="field-line field-g"><div id="line-g" class="line-players"></div></div>
+                    <div class="field-line field-d"><div id="line-d" class="line-players"></div></div>
+                    <div class="field-line field-m"><div id="line-m" class="line-players"><p class="muted">Lade…</p></div></div>
+                    <div class="field-line field-s"><div id="line-s" class="line-players"></div></div>
+                </div>
+                <aside
+                    id="soccer-bench"
+                    class="soccer-bench"
+                    hidden
+                    aria-label="Ersatzbank"
+                >
+                    <img
+                        class="soccer-bench-bg"
+                        src="{{ $legacyBase }}images/ffb/backgrounds/soccer_field_bench.svg"
+                        alt=""
+                        aria-hidden="true"
+                        decoding="async"
+                    >
+                    <div id="line-bench" class="bench-players"></div>
+                </aside>
             </div>
             <p class="hint" id="pitch-message" hidden></p>
         </section>
@@ -83,6 +100,7 @@
     <script src="js/modal.js?v=12" defer></script>
     <script src="js/player-modal.js?v=11" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
-    <script src="js/lineup.js?v=24" defer></script>
+    <script src="js/pitch-bench.js?v=10" defer></script>
+    <script src="js/lineup.js?v=25" defer></script>
 </body>
 </html>

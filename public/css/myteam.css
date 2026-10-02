@@ -139,6 +139,75 @@
     overflow: hidden;
 }
 
+.pitch-stage {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+}
+
+.pitch-stage .soccer-field {
+    margin: 0;
+    flex: 0 1 auto;
+}
+
+.pitch-stage.has-bench {
+    align-items: flex-start;
+}
+
+.pitch-stage.has-bench .soccer-field {
+    width: min(100%, 560px);
+}
+
+.soccer-bench {
+    position: relative;
+    flex: 0 0 auto;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    align-self: flex-start;
+    aspect-ratio: 104 / 729;
+    border-radius: 12px;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.soccer-bench-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.bench-players {
+    position: absolute;
+    top: 3%; /* same as .field-g — % of height, not width */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 0 2px 6px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.soccer-bench .pitch-player {
+    width: 90px;
+    flex: 0 0 auto;
+    /* same footprint as a field player card (shirt + name + score/meta) */
+    min-height: 7.25rem;
+}
+
 .field-line {
     position: absolute;
     left: 0;
@@ -358,5 +427,9 @@
 
     .soccer-field {
         width: 100%;
+    }
+
+    .pitch-stage.has-bench .soccer-field {
+        width: calc(100% - 72px);
     }
 }

@@ -156,6 +156,7 @@ class AdminMatchroundTest extends TestCase
                     'matchround_startdate' => '',
                     'matchround_enddate' => '',
                 ],
+                'league_has_benchmode' => false,
                 'mode' => 'create',
             ]);
         });
@@ -172,7 +173,55 @@ class AdminMatchroundTest extends TestCase
             ->assertSee('Max. Spieler vom selben Team', false)
             ->assertSee('Min. Spieler als Goalie', false)
             ->assertSee('name="lineup_options_enabled"', false)
+            ->assertDontSee('name="matchround_options_lineup_min_bench"', false)
+            ->assertDontSee('name="matchround_options_lineup_max_bench"', false)
             ->assertSee('Liga: Testliga', false);
+    }
+
+    public function test_matchrounds_shows_bench_fields_when_league_has_benchmode(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminMatchroundService::class, function ($mock) {
+            $mock->shouldReceive('defaultLeagueId')->once()->with(544)->andReturn(26);
+            $mock->shouldReceive('pagePayload')->once()->with(544, 26, null, 'create')->andReturn([
+                'user' => [
+                    'user_id' => 544,
+                    'user_nickname' => 'adminuser',
+                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'is_ffb_admin' => true,
+                ],
+                'navigation' => [],
+                'leagues' => [
+                    ['league_id' => 26, 'league_title' => 'Testliga', 'league_archive' => 0],
+                ],
+                'selected_league_id' => 26,
+                'selected_league_title' => 'Testliga',
+                'items' => [],
+                'form' => [
+                    'matchround_id' => '',
+                    'matchround_league_id' => 26,
+                    'matchround_title' => '',
+                    'matchround_status' => 1,
+                    'matchround_startdate' => '',
+                    'matchround_enddate' => '',
+                    'lineup_options_enabled' => 0,
+                    'matchround_options_lineup_min_bench' => 1,
+                    'matchround_options_lineup_max_bench' => 3,
+                ],
+                'league_lineup_defaults' => [],
+                'league_has_benchmode' => true,
+                'mode' => 'create',
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->get('/admin/matchrounds')
+            ->assertOk()
+            ->assertSee('name="matchround_options_lineup_min_bench"', false)
+            ->assertSee('name="matchround_options_lineup_max_bench"', false);
     }
 
     public function test_matchrounds_store_redirects_with_game_and_prefill(): void

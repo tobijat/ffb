@@ -188,6 +188,9 @@
             teamSideStatsEl.hidden = true;
         }
         selectedUserEl.textContent = '';
+        if (window.FfbPitchBench) {
+            window.FfbPitchBench.sync(null, legacyBase);
+        }
     }
 
     function renderRoundMeta() {
@@ -477,6 +480,9 @@
 
         if (!data.userteam) {
             setPitchMessage('Keine Aufstellung für diesen Mitspieler in dieser Runde.');
+            if (window.FfbPitchBench) {
+                window.FfbPitchBench.sync(data.lineup_options || null, legacyBase);
+            }
             return;
         }
 
@@ -510,6 +516,10 @@
         Object.keys(buckets).forEach(function (pos) {
             lines[pos].innerHTML = buckets[pos] || '';
         });
+
+        if (window.FfbPitchBench) {
+            window.FfbPitchBench.sync(data.lineup_options || null, legacyBase);
+        }
     }
 
     async function loadUsers() {

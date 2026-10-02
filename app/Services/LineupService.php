@@ -103,6 +103,9 @@ class LineupService
                 'lineup_max_s' => $resolved['lineup_max_s'],
                 'lineup_min_bench' => $resolved['lineup_min_bench'],
                 'lineup_max_bench' => $resolved['lineup_max_bench'],
+                'league_benchmode' => $resolved['league_benchmode'],
+                'league_lineup_min_bench' => $resolved['league_lineup_min_bench'],
+                'league_lineup_max_bench' => $resolved['league_lineup_max_bench'],
                 'game_pricemode' => 'dynamic',
                 'source' => $resolved['source'],
             ],
@@ -347,6 +350,9 @@ class LineupService
      */
     public function getForRound(int $userId, int $matchroundId): array
     {
+        $leagueId = (int) (Matchround::query()->whereKey($matchroundId)->value('matchround_league_id') ?? 0);
+        $lineupOptions = $this->lineupOptionsPayload($matchroundId, $leagueId);
+
         $user = WebUser::query()->find($userId);
         if (! $user) {
             return [
@@ -354,6 +360,7 @@ class LineupService
                 'matchround_id' => $matchroundId,
                 'userteam' => null,
                 'players' => [],
+                'lineup_options' => $lineupOptions,
             ];
         }
 
@@ -369,6 +376,7 @@ class LineupService
                 'matchround_id' => $matchroundId,
                 'userteam' => null,
                 'players' => [],
+                'lineup_options' => $lineupOptions,
             ];
         }
 
@@ -381,7 +389,6 @@ class LineupService
 
         $prices = $this->resolvePlayerPrices($slotIds, $matchroundId, $playerteams);
         $scores = $this->scoresForRound($slotIds, $matchroundId);
-        $leagueId = (int) (Matchround::query()->whereKey($matchroundId)->value('matchround_league_id') ?? 0);
         $cardWarnings = $this->resolveCardWarnings($playerteams, $matchroundId, $leagueId);
 
         $players = [];
@@ -427,6 +434,7 @@ class LineupService
                 'userteam_username' => (string) $user->user_nickname,
             ],
             'players' => $players,
+            'lineup_options' => $lineupOptions,
         ];
     }
 
@@ -688,6 +696,9 @@ class LineupService
             'lineup_max_s' => $resolved['lineup_max_s'],
             'lineup_min_bench' => $resolved['lineup_min_bench'],
             'lineup_max_bench' => $resolved['lineup_max_bench'],
+            'league_benchmode' => $resolved['league_benchmode'],
+            'league_lineup_min_bench' => $resolved['league_lineup_min_bench'],
+            'league_lineup_max_bench' => $resolved['league_lineup_max_bench'],
             'game_pricemode' => 'dynamic',
             'source' => $resolved['source'],
         ];

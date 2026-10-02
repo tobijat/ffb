@@ -57,10 +57,12 @@ class LineupBenchOptionsTest extends TestCase
         $league = $resolver->forLeague(1);
         $this->assertSame(0, $league['lineup_min_bench']);
         $this->assertSame(0, $league['lineup_max_bench']);
+        $this->assertNull($league['league_benchmode']);
 
         $fallback = $resolver->forLeague(0);
         $this->assertSame(0, $fallback['lineup_min_bench']);
         $this->assertSame(0, $fallback['lineup_max_bench']);
+        $this->assertNull($fallback['league_benchmode']);
     }
 
     #[Test]

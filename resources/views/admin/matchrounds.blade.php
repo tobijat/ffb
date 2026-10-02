@@ -132,7 +132,6 @@
                             ['matchround_options_lineup_min_d', 'Min. Spieler in Abwehr', 'matchround_options_lineup_max_d', 'Max. Spieler in Abwehr'],
                             ['matchround_options_lineup_min_m', 'Min. Spieler in Mittelfeld', 'matchround_options_lineup_max_m', 'Max. Spieler in Mittelfeld'],
                             ['matchround_options_lineup_min_s', 'Min. Spieler in Angriff', 'matchround_options_lineup_max_s', 'Max. Spieler in Angriff'],
-                            ['matchround_options_lineup_min_bench', 'Min. Ersatzspieler', 'matchround_options_lineup_max_bench', 'Max. Ersatzspieler'],
                         ] as [$minName, $minLabel, $maxName, $maxLabel])
                             <div class="admin-option-field">
                                 <label for="{{ $minName }}">{{ $minLabel }}</label>
@@ -157,6 +156,30 @@
                                 >
                             </div>
                         @endforeach
+                        @if (! empty($data['league_has_benchmode']))
+                            <div class="admin-option-field">
+                                <label for="matchround_options_lineup_min_bench">Min. Ersatzspieler</label>
+                                <input
+                                    id="matchround_options_lineup_min_bench"
+                                    type="number"
+                                    name="matchround_options_lineup_min_bench"
+                                    value="{{ $form['matchround_options_lineup_min_bench'] ?? '' }}"
+                                    data-lineup-field
+                                    @disabled(! $lineupEnabled)
+                                >
+                            </div>
+                            <div class="admin-option-field">
+                                <label for="matchround_options_lineup_max_bench">Max. Ersatzspieler</label>
+                                <input
+                                    id="matchround_options_lineup_max_bench"
+                                    type="number"
+                                    name="matchround_options_lineup_max_bench"
+                                    value="{{ $form['matchround_options_lineup_max_bench'] ?? '' }}"
+                                    data-lineup-field
+                                    @disabled(! $lineupEnabled)
+                                >
+                            </div>
+                        @endif
                     </div>
                 </fieldset>
 
