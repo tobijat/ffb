@@ -70,58 +70,18 @@
 
     const selectedLeagueId = Number(config.selectedLeagueId || 0) || 0;
 
-    function normalizeShirtNat(code) {
-        return String(code || 'aut')
-            .toLowerCase()
-            .trim()
-            .replace(/[ .]/g, '_')
-            .replace(/[^a-z0-9_-]+/g, '');
-    }
-
-    function shirtUrl(teamId, nationality, gameId) {
-        const tid = Number(teamId) || 0;
-        const nat = normalizeShirtNat(nationality);
-        const gid = Number(gameId ?? selectedLeagueId) || 0;
-        if (tid <= 0 || !nat) {
-            return legacyBase + 'images/ffb/shirts/shirt_BLANK.png';
-        }
-        if (gid > 0) {
-            return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '-' + gid + '.png';
-        }
-        return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '.png';
-    }
-
-    function shirtFallbackUrl(teamId, nationality) {
-        const tid = Number(teamId) || 0;
-        const nat = normalizeShirtNat(nationality);
-        if (tid <= 0 || !nat) {
-            return legacyBase + 'images/ffb/shirts/shirt_BLANK.png';
-        }
-        return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '.png';
-    }
-
     function shirtImgTag(teamId, nationality, attrs) {
-        const gid = Number(selectedLeagueId) || 0;
-        const primary = shirtUrl(teamId, nationality, gid);
-        const fallback = shirtFallbackUrl(teamId, nationality);
-        const blank = legacyBase + 'images/ffb/shirts/shirt_BLANK.png';
-        const onerror =
-            primary !== fallback
-                ? "this.onerror=function(){this.onerror=null;this.src='" +
-                  blank +
-                  "';};this.src='" +
-                  fallback +
-                  "';"
-                : "this.onerror=null;this.src='" + blank + "';";
-        return (
-            '<img class="shirt" src="' +
-            primary +
-            '" ' +
-            (attrs || '') +
-            ' onerror="' +
-            onerror +
-            '">'
-        );
+        if (window.FfbShirts && typeof window.FfbShirts.imgTag === 'function') {
+            return window.FfbShirts.imgTag(
+                legacyBase,
+                teamId,
+                nationality,
+                attrs || '',
+                selectedLeagueId
+            );
+        }
+        const blank = legacyBase + 'images/ffb/shirts/shirt_MISSING.svg';
+        return '<img class="shirt" src="' + blank + '" ' + (attrs || '') + '>';
     }
 
     function formatPlayerPrice(value) {
@@ -175,9 +135,6 @@
         selectedTeamEl.textContent = '';
         if (teamSideStatsEl) {
             teamSideStatsEl.hidden = true;
-        }
-        if (window.FfbPitchBench) {
-            window.FfbPitchBench.sync(null, legacyBase);
         }
     }
 
@@ -391,10 +348,6 @@
                 })
                 .join('');
         });
-
-        if (window.FfbPitchBench) {
-            window.FfbPitchBench.sync(data.lineup_options || null, legacyBase);
-        }
     }
 
     async function loadTeam() {
@@ -431,9 +384,6 @@
             }
             if (data.available === false) {
                 clearPitch();
-                if (window.FfbPitchBench) {
-                    window.FfbPitchBench.sync(data.lineup_options || null, legacyBase);
-                }
                 setPitchMessage(
                     teamType === 'flop'
                         ? 'Flop-Team der Runde noch nicht verfügbar'

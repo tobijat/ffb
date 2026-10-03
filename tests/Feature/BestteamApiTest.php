@@ -171,6 +171,8 @@ class BestteamApiTest extends TestCase
             ->get('/bestteam')
             ->assertOk()
             ->assertSee('js/bestteam.js', false)
+            ->assertDontSee('js/pitch-bench.js', false)
+            ->assertDontSee('soccer-bench', false)
             ->assertSee('Top-Team der Runde', false)
             ->assertSee('Statistiken anzeigen', false);
     }
