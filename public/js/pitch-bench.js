@@ -17,15 +17,33 @@
         return benchLimits(options).max > 0;
     }
 
+    function selectedLeagueId() {
+        return (
+            Number(
+                (global.FFB_LINEUP && global.FFB_LINEUP.selectedLeagueId) ||
+                    (global.FFB_MYTEAM && global.FFB_MYTEAM.selectedLeagueId) ||
+                    0
+            ) || 0
+        );
+    }
+
     function blankSlot(legacyBase, red) {
-        const src = red ? 'shirt_BLANK_RED.png' : 'shirt_BLANK.png';
+        const shirt =
+            global.FfbShirts && typeof global.FfbShirts.blankImg === 'function'
+                ? global.FfbShirts.blankImg(
+                      legacyBase,
+                      red,
+                      'width="55" height="50" alt=""',
+                      'bench'
+                  )
+                : '<img class="shirt" src="' +
+                  legacyBase +
+                  'images/ffb/shirts/' +
+                  (red ? 'shirt_bench_BLANK_RED.svg' : 'shirt_bench_BLANK.svg') +
+                  '" width="55" height="50" alt="">';
         return (
             '<div class="pitch-player pitch-slot pitch-bench-slot">' +
-            '<img class="shirt" src="' +
-            legacyBase +
-            'images/ffb/shirts/' +
-            src +
-            '" width="55" height="50" alt="">' +
+            shirt +
             '<span class="name">Ersatz</span>' +
             '</div>'
         );
@@ -39,14 +57,22 @@
             .replace(/"/g, '&quot;');
     }
 
-    function shirtUrl(legacyBase, teamId, nationality) {
-        const tid = Number(teamId) || 0;
-        const nat = String(nationality || 'AUT').toUpperCase();
-        if (tid <= 0) {
-            return legacyBase + 'images/ffb/shirts/shirt_BLANK.png';
+    function shirtImg(legacyBase, teamId, nationality) {
+        if (global.FfbShirts && typeof global.FfbShirts.imgTag === 'function') {
+            return global.FfbShirts.imgTag(
+                legacyBase,
+                teamId,
+                nationality,
+                'width="55" height="50" alt=""',
+                selectedLeagueId()
+            );
         }
-
-        return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '.png';
+        const blank = legacyBase + 'images/ffb/shirts/shirt_MISSING.svg';
+        return (
+            '<img class="shirt" src="' +
+            blank +
+            '" width="55" height="50" alt="">'
+        );
     }
 
     function flagHtml(legacyBase, code, title) {
@@ -65,21 +91,25 @@
         );
     }
 
-    function playerCard(player, legacyBase) {
+    function playerPrice(player) {
+        if (player.playerteam_player_price != null) {
+            return Number(player.playerteam_player_price);
+        }
+
+        return Number(player.player_price || 0);
+    }
+
+    function editPlayerCard(player, legacyBase) {
         const nat = player.playerteam_team_nationality || 'AUT';
         const teamId = player.playerteam_team_id;
+        const price = playerPrice(player);
 
         return (
             '<div class="pitch-player pitch-bench-slot">' +
             '<a href="#" data-remove-bench="' +
             player.playerteam_id +
             '" title="Klicken um Ersatzspieler zu entfernen">' +
-            '<img class="shirt" src="' +
-            shirtUrl(legacyBase, teamId, nat) +
-            '" width="55" height="50" alt="" ' +
-            'onerror="this.onerror=null;this.src=\'' +
-            legacyBase +
-            'images/ffb/shirts/shirt_BLANK.png\';">' +
+            shirtImg(legacyBase, teamId, nat) +
             '</a>' +
             '<a class="name" href="#" data-remove-bench="' +
             player.playerteam_id +
@@ -90,9 +120,9 @@
             '</a>' +
             '<div class="meta">' +
             '<span title="Preis: ' +
-            player.player_price +
+            price +
             ' Credits">' +
-            player.player_price +
+            price +
             '</span>' +
             flagHtml(legacyBase, nat, player.playerteam_team || '') +
             '<a href="#" data-modal="player" data-id="' +
@@ -100,6 +130,40 @@
             '"><img src="' +
             legacyBase +
             'images/ffb/symbols/info.png" width="16" height="16" alt="Info"></a>' +
+            '</div></div>'
+        );
+    }
+
+    function viewPlayerCard(player, legacyBase, showPrice, matchroundId) {
+        const nat = player.playerteam_team_nationality || 'AUT';
+        const teamId = player.playerteam_team_id;
+        const price = playerPrice(player);
+        const priceHtml = showPrice
+            ? '<span title="Preis: ' + price + ' Credits">' + price + '</span>'
+            : '';
+
+        return (
+            '<div class="pitch-player pitch-bench-slot">' +
+            '<a href="#" data-modal="player" data-id="' +
+            player.playerteam_id +
+            '">' +
+            shirtImg(legacyBase, teamId, nat) +
+            '</a>' +
+            '<span class="name">' +
+            escapeHtml(player.player_fname || '') +
+            '<br>' +
+            escapeHtml(player.player_lname || '') +
+            '</span>' +
+            '<a class="score" href="#" data-modal="player-points" data-id="' +
+            player.playerteam_id +
+            '" data-matchround-id="' +
+            Number(matchroundId || 0) +
+            '">' +
+            Number(player.playerstats_score || 0) +
+            ' Punkte</a>' +
+            '<div class="meta">' +
+            priceHtml +
+            flagHtml(legacyBase, nat, player.playerteam_team || '') +
             '</div></div>'
         );
     }
@@ -138,7 +202,7 @@
         }
 
         if (fieldObserver) {
-            fieldObserver.disconnect();
+            return;
         }
 
         fieldObserver = new ResizeObserver(function () {
@@ -161,8 +225,9 @@
      * @param {object|null} options
      * @param {string} legacyBase
      * @param {Array<object>} [players]
+     * @param {{mode?: string, showPrice?: boolean, matchroundId?: number}} [display]
      */
-    function sync(options, legacyBase, players) {
+    function sync(options, legacyBase, players, display) {
         const stage = document.getElementById('pitch-stage');
         const bench = document.getElementById('soccer-bench');
         const line = document.getElementById('line-bench');
@@ -170,7 +235,12 @@
             return;
         }
 
-        if (!isActive(options)) {
+        display = display || {};
+        const viewMode = display.mode === 'view';
+        const showPrice = display.showPrice !== false;
+        const matchroundId = Number(display.matchroundId || 0);
+
+        function hideBench() {
             stage.classList.remove('has-bench');
             bench.hidden = true;
             line.innerHTML = '';
@@ -179,23 +249,39 @@
                 fieldObserver.disconnect();
                 fieldObserver = null;
             }
+        }
+
+        if (!isActive(options)) {
+            hideBench();
             return;
         }
 
         const limits = benchLimits(options);
         const selected = Array.isArray(players) ? players.slice(0, limits.max) : [];
-        const needMin = Math.max(0, Math.min(limits.min, limits.max) - selected.length);
-        const needBlank = Math.max(0, limits.max - selected.length - needMin);
+
+        // View pages only show filled substitute cards (no empty placeholders).
+        if (viewMode && selected.length === 0) {
+            hideBench();
+            return;
+        }
+
         let html = selected
             .map(function (player) {
-                return playerCard(player, legacyBase || '/');
+                return viewMode
+                    ? viewPlayerCard(player, legacyBase || '/', showPrice, matchroundId)
+                    : editPlayerCard(player, legacyBase || '/');
             })
             .join('');
-        for (let i = 0; i < needMin; i++) {
-            html += blankSlot(legacyBase || '/', true);
-        }
-        for (let i = 0; i < needBlank; i++) {
-            html += blankSlot(legacyBase || '/', false);
+
+        if (!viewMode) {
+            const needMin = Math.max(0, Math.min(limits.min, limits.max) - selected.length);
+            const needBlank = Math.max(0, limits.max - selected.length - needMin);
+            for (let i = 0; i < needMin; i++) {
+                html += blankSlot(legacyBase || '/', true);
+            }
+            for (let i = 0; i < needBlank; i++) {
+                html += blankSlot(legacyBase || '/', false);
+            }
         }
 
         stage.classList.add('has-bench');

@@ -132,11 +132,23 @@
     max-height: none;
     margin: 0 auto;
     position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.soccer-field::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image: var(--soccer-field-bg);
     background-repeat: no-repeat;
     background-position: center;
     background-size: 100% 100%;
-    border-radius: 16px;
-    overflow: hidden;
+    border-radius: inherit;
+    /* Lighten pitch green without affecting players */
+    filter: brightness(1.18);
+    pointer-events: none;
 }
 
 .pitch-stage {
@@ -182,6 +194,7 @@
     object-fit: fill;
     pointer-events: none;
     z-index: 0;
+    filter: brightness(1.08);
 }
 
 .bench-players {
@@ -213,6 +226,7 @@
     left: 0;
     width: 100%;
     text-align: center;
+    z-index: 1;
 }
 
 .field-g { top: 3%; }

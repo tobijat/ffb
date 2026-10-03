@@ -45,57 +45,38 @@
 
     const selectedLeagueId = Number(config.selectedLeagueId || 0) || 0;
 
-    function normalizeShirtNat(code) {
-        return String(code || 'aut')
+    function shirtImgTag(teamId, nationality, attrs) {
+        if (window.FfbShirts && typeof window.FfbShirts.imgTag === 'function') {
+            return window.FfbShirts.imgTag(
+                legacyBase,
+                teamId,
+                nationality,
+                attrs || '',
+                selectedLeagueId
+            );
+        }
+        const tid = Number(teamId) || 0;
+        const nat = String(nationality || 'aut')
             .toLowerCase()
             .trim()
             .replace(/[ .]/g, '_')
             .replace(/[^a-z0-9_-]+/g, '');
-    }
-
-    function shirtUrl(teamId, nationality, gameId) {
-        const tid = Number(teamId) || 0;
-        const nat = normalizeShirtNat(nationality);
-        const gid = Number(gameId ?? selectedLeagueId) || 0;
+        const blank = legacyBase + 'images/ffb/shirts/shirt_MISSING.svg';
         if (tid <= 0 || !nat) {
-            return legacyBase + 'images/ffb/shirts/shirt_BLANK.png';
+            return '<img class="shirt" src="' + blank + '" ' + (attrs || '') + '>';
         }
-        if (gid > 0) {
-            return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '-' + gid + '.png';
-        }
-        return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '.png';
-    }
-
-    function shirtFallbackUrl(teamId, nationality) {
-        const tid = Number(teamId) || 0;
-        const nat = normalizeShirtNat(nationality);
-        if (tid <= 0 || !nat) {
-            return legacyBase + 'images/ffb/shirts/shirt_BLANK.png';
-        }
-        return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '.png';
-    }
-
-    function shirtImgTag(teamId, nationality, attrs) {
-        const gid = Number(selectedLeagueId) || 0;
-        const primary = shirtUrl(teamId, nationality, gid);
-        const fallback = shirtFallbackUrl(teamId, nationality);
-        const blank = legacyBase + 'images/ffb/shirts/shirt_BLANK.png';
-        const onerror =
-            primary !== fallback
-                ? "this.onerror=function(){this.onerror=null;this.src='" +
-                  blank +
-                  "';};this.src='" +
-                  fallback +
-                  "';"
-                : "this.onerror=null;this.src='" + blank + "';";
+        const src =
+            selectedLeagueId > 0
+                ? legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '-' + selectedLeagueId + '.png'
+                : legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '.png';
         return (
             '<img class="shirt" src="' +
-            primary +
+            src +
             '" ' +
             (attrs || '') +
-            ' onerror="' +
-            onerror +
-            '">'
+            ' onerror="this.onerror=null;this.src=\'' +
+            blank +
+            '\'">'
         );
     }
 
@@ -559,14 +540,17 @@
     }
 
     function blankSlot(red, label) {
-        const src = red ? 'shirt_BLANK_RED.png' : 'shirt_BLANK.png';
+        const shirt =
+            window.FfbShirts && typeof window.FfbShirts.blankImg === 'function'
+                ? window.FfbShirts.blankImg(legacyBase, red, 'width="55" height="50" alt=""')
+                : '<img class="shirt" src="' +
+                  legacyBase +
+                  'images/ffb/shirts/' +
+                  (red ? 'shirt_BLANK_RED.png' : 'shirt_BLANK.svg') +
+                  '" width="55" height="50" alt="">';
         return (
             '<div class="pitch-player pitch-slot">' +
-            '<img src="' +
-            legacyBase +
-            'images/ffb/shirts/' +
-            src +
-            '" width="55" height="50" alt="">' +
+            shirt +
             '<span class="name">' +
             label +
             '</span></div>'
@@ -608,52 +592,191 @@
         );
     }
 
-    function updateLineupDisplay() {
-        if (!options) {
-            return;
-        }
-        const grouped = { g: [], d: [], m: [], s: [] };
-        const counts = { g: 0, d: 0, m: 0, s: 0 };
-        lineuplist.forEach(function (p) {
-            const pos = p.playerteam_player_position;
-            if (grouped[pos]) {
-                grouped[pos].push(p);
-                counts[pos]++;
-            }
-        });
+    function positionLabels() {
+        return { g: 'TOR', d: 'VERTEIDIGUNG', m: 'MITTELFELD', s: 'STURM' };
+    }
 
-        const labels = { g: 'TOR', d: 'VERTEIDIGUNG', m: 'MITTELFELD', s: 'STURM' };
-        const mins = {
+    function positionMins() {
+        return {
             g: Number(options.lineup_min_g),
             d: Number(options.lineup_min_d),
             m: Number(options.lineup_min_m),
             s: Number(options.lineup_min_s),
         };
-        const maxs = {
+    }
+
+    function positionMaxs() {
+        return {
             g: Number(options.lineup_max_g),
             d: Number(options.lineup_max_d),
             m: Number(options.lineup_max_m),
             s: Number(options.lineup_max_s),
         };
+    }
 
-        Object.keys(grouped).forEach(function (pos) {
-            let html = grouped[pos].map(playerCard).join('');
-            if (lineuplist.length < Number(options.lineup_max_players)) {
-                const needRed = Math.max(0, mins[pos] - counts[pos]);
-                const needBlank = Math.max(0, maxs[pos] - needRed - counts[pos]);
-                for (let i = 0; i < needRed; i++) {
-                    html += blankSlot(true, labels[pos]);
-                }
-                for (let i = 0; i < needBlank; i++) {
-                    html += blankSlot(false, labels[pos]);
-                }
-            }
-            lines[pos].innerHTML = html;
+    function maxFieldPlayers() {
+        return Number(options.lineup_max_players);
+    }
+
+    function fieldIsComplete() {
+        return lineuplist.length >= maxFieldPlayers();
+    }
+
+    function playersAtPosition(pos) {
+        return lineuplist.filter(function (player) {
+            return player.playerteam_player_position === pos;
         });
+    }
 
-        if (window.FfbPitchBench) {
-            window.FfbPitchBench.sync(options, legacyBase, benchlist);
+    function countAtPosition(pos) {
+        return playersAtPosition(pos).length;
+    }
+
+    function blankHtmlForPosition(pos) {
+        if (fieldIsComplete()) {
+            return '';
         }
+        const labels = positionLabels();
+        const mins = positionMins();
+        const maxs = positionMaxs();
+        const count = countAtPosition(pos);
+        const needRed = Math.max(0, mins[pos] - count);
+        const needBlank = Math.max(0, maxs[pos] - needRed - count);
+        let html = '';
+        for (let i = 0; i < needRed; i++) {
+            html += blankSlot(true, labels[pos]);
+        }
+        for (let i = 0; i < needBlank; i++) {
+            html += blankSlot(false, labels[pos]);
+        }
+        return html;
+    }
+
+    function renderPositionRow(pos) {
+        const line = lines[pos];
+        if (!line) {
+            return;
+        }
+        line.innerHTML = playersAtPosition(pos).map(playerCard).join('') + blankHtmlForPosition(pos);
+    }
+
+    function refreshRowBlanks(pos) {
+        const line = lines[pos];
+        if (!line) {
+            return;
+        }
+        line.querySelectorAll('.pitch-slot').forEach(function (el) {
+            el.remove();
+        });
+        const blanks = blankHtmlForPosition(pos);
+        if (blanks) {
+            line.insertAdjacentHTML('beforeend', blanks);
+        }
+    }
+
+    function findFieldPlayerEl(playerteamId) {
+        const id = String(playerteamId);
+        const field = document.getElementById('soccer-field');
+        if (!field) {
+            return null;
+        }
+        const link = field.querySelector('.pitch-player:not(.pitch-slot) a[data-remove="' + id + '"]');
+        return link ? link.closest('.pitch-player') : null;
+    }
+
+    function replaceFirstBlank(pos, player) {
+        const line = lines[pos];
+        if (!line) {
+            return false;
+        }
+        const blank = line.querySelector('.pitch-slot');
+        if (!blank) {
+            return false;
+        }
+        const tmp = document.createElement('div');
+        tmp.innerHTML = playerCard(player);
+        const card = tmp.firstElementChild;
+        if (!card) {
+            return false;
+        }
+        blank.replaceWith(card);
+        return true;
+    }
+
+    function syncBenchHeight() {
+        if (window.FfbPitchBench) {
+            window.FfbPitchBench.matchBenchToField();
+        }
+    }
+
+    function updateFieldDisplay() {
+        if (!options) {
+            return;
+        }
+        Object.keys(lines).forEach(function (pos) {
+            renderPositionRow(pos);
+        });
+        syncBenchHeight();
+    }
+
+    /**
+     * Patch field after adding a starter. While placeholders are visible, only the
+     * affected row is touched (blank → player). Filling the XI strips blanks on all rows.
+     */
+    function patchFieldAfterAdd(player) {
+        const pos = player.playerteam_player_position;
+        if (fieldIsComplete()) {
+            if (!replaceFirstBlank(pos, player)) {
+                renderPositionRow(pos);
+            }
+            Object.keys(lines).forEach(function (rowPos) {
+                lines[rowPos].querySelectorAll('.pitch-slot').forEach(function (el) {
+                    el.remove();
+                });
+            });
+            syncBenchHeight();
+            return;
+        }
+        if (!replaceFirstBlank(pos, player)) {
+            renderPositionRow(pos);
+        }
+        syncBenchHeight();
+    }
+
+    /**
+     * Patch field after removing a starter. Incomplete XI: drop that card and refresh
+     * blanks on that row only. Leaving a full XI: restore blanks on every row.
+     */
+    function patchFieldAfterRemove(playerteamId, pos, wasComplete) {
+        const card = findFieldPlayerEl(playerteamId);
+        if (card) {
+            card.remove();
+        } else {
+            renderPositionRow(pos);
+        }
+
+        if (wasComplete) {
+            Object.keys(lines).forEach(function (rowPos) {
+                refreshRowBlanks(rowPos);
+            });
+        } else if (!card) {
+            // row already rebuilt above
+        } else {
+            refreshRowBlanks(pos);
+        }
+        syncBenchHeight();
+    }
+
+    function updateBenchDisplay() {
+        if (!window.FfbPitchBench) {
+            return;
+        }
+        window.FfbPitchBench.sync(options, legacyBase, benchlist);
+    }
+
+    function updateLineupDisplay() {
+        updateFieldDisplay();
+        updateBenchDisplay();
     }
 
     function benchEnabled() {
@@ -887,13 +1010,15 @@
             return;
         }
         const record = mapPlayerRecord(player);
-        if (lineuplist.length < Number(options.lineup_max_players)) {
-            lineuplist.push(record);
-        } else {
+        const toBench = lineuplist.length >= maxFieldPlayers();
+        if (toBench) {
             benchlist.push(record);
+            updateBenchDisplay();
+        } else {
+            lineuplist.push(record);
+            patchFieldAfterAdd(record);
         }
         credits -= record.player_price;
-        updateLineupDisplay();
         updateCreditsDisplay();
         setLineupDirty(true);
         dispActionButtons();
@@ -901,14 +1026,23 @@
 
     function removePlayer(playerteamId) {
         clearMessages();
+        const wasComplete = fieldIsComplete();
+        let removed = null;
         for (let i = 0; i < lineuplist.length; i++) {
             if (String(lineuplist[i].playerteam_id) === String(playerteamId)) {
+                removed = lineuplist[i];
                 credits += Number(lineuplist[i].player_price);
                 lineuplist.splice(i, 1);
                 break;
             }
         }
-        updateLineupDisplay();
+        if (removed) {
+            patchFieldAfterRemove(
+                removed.playerteam_id,
+                removed.playerteam_player_position,
+                wasComplete
+            );
+        }
         updateCreditsDisplay();
         setLineupDirty(true);
         dispActionButtons();
@@ -923,7 +1057,7 @@
                 break;
             }
         }
-        updateLineupDisplay();
+        updateBenchDisplay();
         updateCreditsDisplay();
         setLineupDirty(true);
         dispActionButtons();

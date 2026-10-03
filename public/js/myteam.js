@@ -75,58 +75,18 @@
 
     const selectedLeagueId = Number(config.selectedLeagueId || 0) || 0;
 
-    function normalizeShirtNat(code) {
-        return String(code || 'aut')
-            .toLowerCase()
-            .trim()
-            .replace(/[ .]/g, '_')
-            .replace(/[^a-z0-9_-]+/g, '');
-    }
-
-    function shirtUrl(teamId, nationality, gameId) {
-        const tid = Number(teamId) || 0;
-        const nat = normalizeShirtNat(nationality);
-        const gid = Number(gameId ?? selectedLeagueId) || 0;
-        if (tid <= 0 || !nat) {
-            return legacyBase + 'images/ffb/shirts/shirt_BLANK.png';
-        }
-        if (gid > 0) {
-            return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '-' + gid + '.png';
-        }
-        return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '.png';
-    }
-
-    function shirtFallbackUrl(teamId, nationality) {
-        const tid = Number(teamId) || 0;
-        const nat = normalizeShirtNat(nationality);
-        if (tid <= 0 || !nat) {
-            return legacyBase + 'images/ffb/shirts/shirt_BLANK.png';
-        }
-        return legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '.png';
-    }
-
     function shirtImgTag(teamId, nationality, attrs) {
-        const gid = Number(selectedLeagueId) || 0;
-        const primary = shirtUrl(teamId, nationality, gid);
-        const fallback = shirtFallbackUrl(teamId, nationality);
-        const blank = legacyBase + 'images/ffb/shirts/shirt_BLANK.png';
-        const onerror =
-            primary !== fallback
-                ? "this.onerror=function(){this.onerror=null;this.src='" +
-                  blank +
-                  "';};this.src='" +
-                  fallback +
-                  "';"
-                : "this.onerror=null;this.src='" + blank + "';";
-        return (
-            '<img class="shirt" src="' +
-            primary +
-            '" ' +
-            (attrs || '') +
-            ' onerror="' +
-            onerror +
-            '">'
-        );
+        if (window.FfbShirts && typeof window.FfbShirts.imgTag === 'function') {
+            return window.FfbShirts.imgTag(
+                legacyBase,
+                teamId,
+                nationality,
+                attrs || '',
+                selectedLeagueId
+            );
+        }
+        const blank = legacyBase + 'images/ffb/shirts/shirt_MISSING.svg';
+        return '<img class="shirt" src="' + blank + '" ' + (attrs || '') + '>';
     }
 
     function formatPlayerPrice(value) {
@@ -141,12 +101,13 @@
         return Math.round(Number(value) * 10) / 10;
     }
 
-    function playerPricesMatchTeamTotal(players, teamPrice) {
+    function playerPricesMatchTeamTotal(players, substitutes, teamPrice) {
         const total = roundCredits(teamPrice);
         if (!Number.isFinite(total) || total <= 0) {
             return false;
         }
-        const sum = (players || []).reduce(function (acc, player) {
+        const all = (players || []).concat(substitutes || []);
+        const sum = all.reduce(function (acc, player) {
             const price = Number(player.playerteam_player_price);
             return acc + (Number.isFinite(price) ? price : 0);
         }, 0);
@@ -189,7 +150,7 @@
         }
         selectedUserEl.textContent = '';
         if (window.FfbPitchBench) {
-            window.FfbPitchBench.sync(null, legacyBase);
+            window.FfbPitchBench.sync(null, legacyBase, [], { mode: 'view' });
         }
     }
 
@@ -477,11 +438,17 @@
         setPitchMessage('');
         const user = currentUser();
         selectedUserEl.textContent = user ? user.user_nickname : data.user_nickname || '';
+        const round = currentRound();
+        const matchroundId = round ? round.matchround_id : 0;
 
         if (!data.userteam) {
             setPitchMessage('Keine Aufstellung für diesen Mitspieler in dieser Runde.');
             if (window.FfbPitchBench) {
-                window.FfbPitchBench.sync(data.lineup_options || null, legacyBase);
+                window.FfbPitchBench.sync(data.lineup_options || null, legacyBase, [], {
+                    mode: 'view',
+                    showPrice: false,
+                    matchroundId: matchroundId,
+                });
             }
             return;
         }
@@ -489,7 +456,8 @@
         teamScoreEl.textContent = String(data.userteam.userteam_score ?? 0);
         const teamPrice = Number(data.userteam.userteam_price || 0);
         const players = data.players || [];
-        const showPrices = playerPricesMatchTeamTotal(players, teamPrice);
+        const substitutes = data.substitutes || [];
+        const showPrices = playerPricesMatchTeamTotal(players, substitutes, teamPrice);
         if (teamSideStatsEl) {
             teamSideStatsEl.hidden = false;
         }
@@ -518,7 +486,11 @@
         });
 
         if (window.FfbPitchBench) {
-            window.FfbPitchBench.sync(data.lineup_options || null, legacyBase);
+            window.FfbPitchBench.sync(data.lineup_options || null, legacyBase, substitutes, {
+                mode: 'view',
+                showPrice: showPrices,
+                matchroundId: matchroundId,
+            });
         }
     }
 

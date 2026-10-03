@@ -106,6 +106,20 @@ class MyteamApiTest extends TestCase
                             'playerstats_score' => 5,
                         ],
                     ],
+                    'substitutes' => [
+                        [
+                            'playerteam_id' => 77,
+                            'player_fname' => 'Ersatz',
+                            'player_lname' => 'Spieler',
+                            'playerteam_player_position' => 'm',
+                            'playerstats_score' => 1,
+                        ],
+                    ],
+                    'lineup_options' => [
+                        'league_benchmode' => true,
+                        'lineup_min_bench' => 1,
+                        'lineup_max_bench' => 2,
+                    ],
                 ],
             ]);
         });
@@ -114,7 +128,9 @@ class MyteamApiTest extends TestCase
             ->getJson('/api/myteam/team?matchround_id=280&userteam_user_id=12')
             ->assertOk()
             ->assertJsonPath('data.userteam.userteam_score', 42)
-            ->assertJsonPath('data.players.0.playerteam_player_position', 'g');
+            ->assertJsonPath('data.players.0.playerteam_player_position', 'g')
+            ->assertJsonPath('data.substitutes.0.playerteam_id', 77)
+            ->assertJsonPath('data.lineup_options.league_benchmode', true);
     }
 
     public function test_team_forbidden_while_deadline_open(): void
@@ -166,7 +182,9 @@ class MyteamApiTest extends TestCase
             ->assertOk()
             ->assertSee('Mannschaft', false)
             ->assertSee('js/myteam.js', false)
+            ->assertSee('js/pitch-bench.js', false)
             ->assertSee('soccer-field', false)
+            ->assertSee('soccer-bench', false)
             ->assertSee('Statistiken anzeigen', false);
     }
 
