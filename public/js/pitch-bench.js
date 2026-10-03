@@ -99,6 +99,63 @@
         return Number(player.player_price || 0);
     }
 
+    function positionLetter(player) {
+        const pos = String(
+            player.playerteam_player_position || player.player_position || ''
+        ).toLowerCase();
+        const labels = { g: 'T', d: 'V', m: 'M', s: 'S' };
+
+        return labels[pos] || '';
+    }
+
+    function positionTitle(player) {
+        const pos = String(
+            player.playerteam_player_position || player.player_position || ''
+        ).toLowerCase();
+        const titles = {
+            g: 'Tor',
+            d: 'Verteidigung',
+            m: 'Mittelfeld',
+            s: 'Sturm',
+        };
+
+        return titles[pos] || '';
+    }
+
+    function positionMetaHtml(player) {
+        const letter = positionLetter(player);
+        if (!letter) {
+            return '';
+        }
+        const title = positionTitle(player);
+        const titleAttr = title ? ' title="' + escapeHtml(title) + '"' : '';
+
+        return '<span class="pos"' + titleAttr + '>' + letter + '</span>';
+    }
+
+    function changeIconHtml(player, legacyBase) {
+        const change = player && player.change;
+        if (!change || (change.type !== 'in' && change.type !== 'out')) {
+            return '';
+        }
+        const related = String(change.related_name || '').trim();
+        const title =
+            change.type === 'in'
+                ? 'Eingewechselt für ' + related
+                : 'Ersetzt durch ' + related;
+        const icon = change.type === 'in' ? 'stats_change_in.gif' : 'stats_change_out.gif';
+
+        return (
+            '<img src="' +
+            legacyBase +
+            'images/ffb/symbols/' +
+            icon +
+            '" width="16" height="11" alt="" title="' +
+            escapeHtml(title) +
+            '">'
+        );
+    }
+
     function editPlayerCard(player, legacyBase) {
         const nat = player.playerteam_team_nationality || 'AUT';
         const teamId = player.playerteam_team_id;
@@ -130,6 +187,7 @@
             '"><img src="' +
             legacyBase +
             'images/ffb/symbols/info.png" width="16" height="16" alt="Info"></a>' +
+            positionMetaHtml(player) +
             '</div></div>'
         );
     }
@@ -164,6 +222,8 @@
             '<div class="meta">' +
             priceHtml +
             flagHtml(legacyBase, nat, player.playerteam_team || '') +
+            changeIconHtml(player, legacyBase) +
+            positionMetaHtml(player) +
             '</div></div>'
         );
     }

@@ -20,12 +20,69 @@ class AdminScoreController extends Controller
     {
         return $this->render(
             $request,
-            $this->score->normalizeTab($request->query('tab')),
+            (string) $request->query('tab', 'userteam'),
             null,
             [],
             null,
             null,
+            null,
             (int) $request->query('matchround_id', 0),
+        );
+    }
+
+    public function calculateSubstitutions(Request $request): View|RedirectResponse
+    {
+        $userId = $this->auth->userId($request);
+        $result = $this->score->calculateSubstitutions($userId, $request->all());
+        $matchroundId = (int) ($result['matchround_id'] ?? $request->input('matchround_id', 0));
+        $tab = (string) ($result['tab'] ?? 'subs');
+
+        if (! ($result['ok'] ?? false)) {
+            return redirect()
+                ->route('admin.score', array_filter([
+                    'tab' => $tab,
+                    'matchround_id' => $matchroundId > 0 ? $matchroundId : null,
+                ]))
+                ->with('admin_errors', $result['errors'] ?? ['Berechnung fehlgeschlagen.']);
+        }
+
+        return $this->render(
+            $request,
+            'subs',
+            (string) ($result['message'] ?? ''),
+            is_array($result['details'] ?? null) ? $result['details'] : [],
+            null,
+            null,
+            is_array($result['preview'] ?? null) ? $result['preview'] : null,
+            $matchroundId,
+        );
+    }
+
+    public function saveSubstitutions(Request $request): View|RedirectResponse
+    {
+        $userId = $this->auth->userId($request);
+        $result = $this->score->saveSubstitutions($userId, $request->all());
+        $matchroundId = (int) ($result['matchround_id'] ?? $request->input('matchround_id', 0));
+        $tab = (string) ($result['tab'] ?? 'subs');
+
+        if (! ($result['ok'] ?? false)) {
+            return redirect()
+                ->route('admin.score', array_filter([
+                    'tab' => $tab,
+                    'matchround_id' => $matchroundId > 0 ? $matchroundId : null,
+                ]))
+                ->with('admin_errors', $result['errors'] ?? ['Speichern fehlgeschlagen.']);
+        }
+
+        return $this->render(
+            $request,
+            'subs',
+            (string) ($result['message'] ?? ''),
+            is_array($result['details'] ?? null) ? $result['details'] : [],
+            null,
+            null,
+            is_array($result['preview'] ?? null) ? $result['preview'] : null,
+            $matchroundId,
         );
     }
 
@@ -51,6 +108,7 @@ class AdminScoreController extends Controller
             (string) ($result['message'] ?? ''),
             is_array($result['details'] ?? null) ? $result['details'] : [],
             is_array($result['preview'] ?? null) ? $result['preview'] : null,
+            null,
             null,
             $matchroundId,
         );
@@ -78,6 +136,7 @@ class AdminScoreController extends Controller
             (string) ($result['message'] ?? ''),
             is_array($result['details'] ?? null) ? $result['details'] : [],
             is_array($result['preview'] ?? null) ? $result['preview'] : null,
+            null,
             null,
             $matchroundId,
         );
@@ -129,6 +188,7 @@ class AdminScoreController extends Controller
      * @param  list<string>  $details
      * @param  array<string, mixed>|null  $userteamPreview
      * @param  array<string, mixed>|null  $userPreview
+     * @param  array<string, mixed>|null  $subsPreview
      */
     private function render(
         Request $request,
@@ -137,6 +197,7 @@ class AdminScoreController extends Controller
         array $details = [],
         ?array $userteamPreview = null,
         ?array $userPreview = null,
+        ?array $subsPreview = null,
         ?int $matchroundId = null,
     ): View {
         $userId = $this->auth->userId($request);
@@ -150,6 +211,7 @@ class AdminScoreController extends Controller
                 $userteamPreview,
                 $userPreview,
                 $matchroundId,
+                $subsPreview,
             ),
             'errors' => is_array($errors) ? $errors : [],
             'answer' => $answer ?? session('admin_message'),

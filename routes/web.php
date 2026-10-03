@@ -147,6 +147,8 @@ Route::middleware('ffb.admin')->group(function () {
     Route::match(['get', 'post'], '/admin/matchdata/wf-proxy', [AdminMatchdataController::class, 'wfProxy'])->name('admin.matchdata.wfProxy');
 
     Route::get('/admin/score', [AdminScoreController::class, 'show'])->name('admin.score');
+    Route::post('/admin/score/substitutions/calculate', [AdminScoreController::class, 'calculateSubstitutions'])->name('admin.score.calculateSubstitutions');
+    Route::post('/admin/score/substitutions/save', [AdminScoreController::class, 'saveSubstitutions'])->name('admin.score.saveSubstitutions');
     Route::post('/admin/score/userteam-scores/calculate', [AdminScoreController::class, 'calculateUserteamScores'])->name('admin.score.calculateUserteamScores');
     Route::post('/admin/score/userteam-scores/save', [AdminScoreController::class, 'saveUserteamScores'])->name('admin.score.saveUserteamScores');
     Route::post('/admin/score/user-scores/calculate', [AdminScoreController::class, 'calculateUserScores'])->name('admin.score.calculateUserScores');

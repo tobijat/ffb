@@ -73,6 +73,26 @@ class Userteam extends Model
     }
 
     /**
+     * Map substitute playerteam_id => replaced starter playerteam_id (null if unused).
+     *
+     * @return array<int, int|null>
+     */
+    public function substituteReplacesByPlayerteamId(): array
+    {
+        $map = [];
+        foreach ($this->substituteSlots()->orderBy('substitute_slot_slot')->get() as $slot) {
+            $subId = (int) $slot->substitute_slot_playerteam_id;
+            if ($subId <= 0) {
+                continue;
+            }
+            $replaces = $slot->substitute_slot_replaces_playerteam_id;
+            $map[$subId] = $replaces !== null && (int) $replaces > 0 ? (int) $replaces : null;
+        }
+
+        return $map;
+    }
+
+    /**
      * Replace lineup slots with exactly these playerteam IDs (pitch order).
      *
      * @param  list<int>  $playerteamIds

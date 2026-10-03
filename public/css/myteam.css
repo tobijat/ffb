@@ -273,6 +273,10 @@
     text-decoration: none;
 }
 
+.soccer-bench .pitch-player .score {
+    opacity: 0.55;
+}
+
 .pitch-player .meta {
     display: flex;
     justify-content: center;
@@ -283,6 +287,14 @@
 
 .pitch-player .meta img {
     display: block;
+}
+
+.pitch-player .meta .pos {
+    font-size: 8pt;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    text-shadow: 0 0 2px #000;
 }
 
 .round-label {

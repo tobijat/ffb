@@ -14,11 +14,14 @@ class AdminScoreService
 {
     public function __construct(
         private readonly AdminCenterService $adminCenter,
+        private readonly LineupOptionsResolver $lineupOptions,
+        private readonly SubstitutionCalculationService $substitutions,
     ) {}
 
     /**
      * @param  array<string, mixed>|null  $userteamPreview
      * @param  array<string, mixed>|null  $userPreview
+     * @param  array<string, mixed>|null  $subsPreview
      * @return array<string, mixed>
      */
     public function pagePayload(
@@ -27,15 +30,26 @@ class AdminScoreService
         ?array $userteamPreview = null,
         ?array $userPreview = null,
         ?int $matchroundId = null,
+        ?array $subsPreview = null,
     ): array {
         $shell = $this->adminCenter->shellPayload($userId);
-        $tab = $this->normalizeTab($tab);
         $leagueId = (int) ($shell['selected_league_id'] ?? 0);
-        $candidateMatchroundId = $matchroundId ?? (int) ($userteamPreview['matchround_id'] ?? 0);
+        $leagueHasSubstitutions = $this->leagueHasSubstitutions($leagueId);
+        $tab = $this->normalizeTab($tab, $leagueHasSubstitutions);
+
+        $candidateMatchroundId = (int) ($matchroundId ?? 0);
+        if ($candidateMatchroundId <= 0 && is_array($subsPreview)) {
+            $candidateMatchroundId = (int) ($subsPreview['matchround_id'] ?? 0);
+        }
+        if ($candidateMatchroundId <= 0 && is_array($userteamPreview)) {
+            $candidateMatchroundId = (int) ($userteamPreview['matchround_id'] ?? 0);
+        }
         $resolvedMatchroundId = $this->resolveMatchroundId($leagueId, $candidateMatchroundId);
         if ($resolvedMatchroundId < 0) {
             $resolvedMatchroundId = 0;
         }
+
+        $needsRounds = ($tab === 'userteam' || $tab === 'subs') && $leagueId > 0;
 
         return [
             'user' => $shell['user'],
@@ -43,18 +57,126 @@ class AdminScoreService
             'selected_league_id' => $shell['selected_league_id'],
             'selected_league' => $shell['selected_league'],
             'tab' => $tab,
-            'matchrounds' => $tab === 'userteam' && $leagueId > 0
+            'league_has_substitutions' => $leagueHasSubstitutions,
+            'matchrounds' => $needsRounds
                 ? $this->matchroundsForLeague($leagueId)
                 : [],
             'matchround_id' => $resolvedMatchroundId,
             'userteam_preview' => $tab === 'userteam' ? $userteamPreview : null,
             'user_preview' => $tab === 'user' ? $userPreview : null,
+            'subs_preview' => $tab === 'subs' ? $subsPreview : null,
         ];
     }
 
-    public function normalizeTab(mixed $tab): string
+    public function normalizeTab(mixed $tab, bool $leagueHasSubstitutions = false): string
     {
-        return $tab === 'user' ? 'user' : 'userteam';
+        if ($tab === 'user') {
+            return 'user';
+        }
+        if ($tab === 'subs' && $leagueHasSubstitutions) {
+            return 'subs';
+        }
+
+        return 'userteam';
+    }
+
+    public function leagueHasSubstitutions(int $leagueId): bool
+    {
+        if ($leagueId <= 0) {
+            return false;
+        }
+
+        $resolved = $this->lineupOptions->forLeague($leagueId);
+
+        return ($resolved['league_benchmode'] ?? null) !== null
+            && (int) ($resolved['lineup_max_bench'] ?? 0) > 0;
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     details?: list<string>,
+     *     tab?: string,
+     *     matchround_id?: int,
+     *     preview?: array<string, mixed>
+     * }
+     */
+    public function calculateSubstitutions(int $userId, array $input = []): array
+    {
+        $leagueId = $this->adminCenter->selectedLeagueId($userId);
+        if ($leagueId <= 0) {
+            return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga auswählen.'], 'tab' => 'subs'];
+        }
+        if (! $this->leagueHasSubstitutions($leagueId)) {
+            return ['ok' => false, 'errors' => ['Diese Liga hat keine Ersatzbank (Bench-Mode).'], 'tab' => 'userteam'];
+        }
+
+        $matchroundId = (int) ($input['matchround_id'] ?? 0);
+        $built = $this->substitutions->previewForRound($leagueId, $matchroundId);
+        if (! ($built['ok'] ?? false)) {
+            return $built + ['tab' => 'subs', 'matchround_id' => $matchroundId];
+        }
+
+        /** @var array<string, mixed> $preview */
+        $preview = $built['preview'];
+        $details = [];
+        $total = 0;
+        foreach ($preview['rows'] as $row) {
+            $count = (int) ($row['substitution_count'] ?? 0);
+            $total += $count;
+            $details[] = 'userteam_id: '.(int) $row['userteam_id']
+                .' substitutions: '.$count;
+        }
+
+        return [
+            'ok' => true,
+            'message' => 'Auswechslungen berechnet (noch nicht gespeichert): '.$total.' Wechsel.',
+            'details' => $details,
+            'tab' => 'subs',
+            'matchround_id' => (int) $preview['matchround_id'],
+            'preview' => $preview,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array{
+     *     ok: bool,
+     *     message?: string,
+     *     errors?: list<string>,
+     *     details?: list<string>,
+     *     tab?: string,
+     *     matchround_id?: int,
+     *     preview?: array<string, mixed>
+     * }
+     */
+    public function saveSubstitutions(int $userId, array $input = []): array
+    {
+        $built = $this->calculateSubstitutions($userId, $input);
+        if (! ($built['ok'] ?? false)) {
+            return $built;
+        }
+
+        /** @var array<string, mixed> $preview */
+        $preview = $built['preview'];
+        $this->substitutions->savePreview($preview);
+
+        $total = 0;
+        foreach ($preview['rows'] as $row) {
+            $total += (int) ($row['substitution_count'] ?? 0);
+        }
+
+        return [
+            'ok' => true,
+            'message' => 'Auswechslungen gespeichert: '.$total.' Wechsel.',
+            'details' => $built['details'] ?? [],
+            'tab' => 'subs',
+            'matchround_id' => (int) ($preview['matchround_id'] ?? 0),
+            'preview' => $preview,
+        ];
     }
 
     /**

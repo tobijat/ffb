@@ -82,7 +82,27 @@ class LineupSubstituteSlotsTest extends TestCase
         $this->assertCount(11, $loaded['players']);
         $this->assertCount(2, $loaded['substitutes']);
         $this->assertSame($subIds[0], $loaded['substitutes'][0]['playerteam_id']);
+        $this->assertArrayHasKey('replaces_playerteam_id', $loaded['substitutes'][0]);
+        $this->assertNull($loaded['substitutes'][0]['replaces_playerteam_id']);
         $this->assertSame(13.0, (float) $loaded['userteam']['userteam_price']);
+    }
+
+    #[Test]
+    public function get_for_round_includes_saved_replaces_playerteam_id(): void
+    {
+        [$starterIds, $subIds] = $this->seedPlayersWithBench(minBench: 1, maxBench: 2, maxPerTeam: 4);
+        $result = app(LineupService::class)->saveForRound(544, $this->roundId, $starterIds, $subIds);
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $userteamId = (int) $result['data']['userteam']['userteam_id'];
+
+        DB::table('ffb_userteam_substitute_slot')
+            ->where('substitute_slot_userteam_id', $userteamId)
+            ->where('substitute_slot_playerteam_id', $subIds[0])
+            ->update(['substitute_slot_replaces_playerteam_id' => $starterIds[1]]);
+
+        $loaded = app(LineupService::class)->getForRound(544, $this->roundId);
+        $this->assertSame($starterIds[1], $loaded['substitutes'][0]['replaces_playerteam_id']);
+        $this->assertNull($loaded['substitutes'][1]['replaces_playerteam_id']);
     }
 
     #[Test]

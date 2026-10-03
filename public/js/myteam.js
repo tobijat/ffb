@@ -399,6 +399,79 @@
         }
     }
 
+    function playerName(player) {
+        return String(player.player_fname || '')
+            .trim()
+            .concat(' ', String(player.player_lname || '').trim())
+            .trim();
+    }
+
+    function changeIconHtml(player) {
+        const change = player && player.change;
+        if (!change || (change.type !== 'in' && change.type !== 'out')) {
+            return '';
+        }
+        const related = String(change.related_name || '').trim();
+        const title =
+            change.type === 'in'
+                ? 'Eingewechselt für ' + related
+                : 'Ersetzt durch ' + related;
+        const icon = change.type === 'in' ? 'stats_change_in.gif' : 'stats_change_out.gif';
+
+        return (
+            '<img src="' +
+            symbolUrl(icon) +
+            '" width="16" height="11" alt="" title="' +
+            escapeHtml(title) +
+            '">'
+        );
+    }
+
+    /**
+     * After saved substitutions: put came-on subs on the field and replaced
+     * starters onto the corresponding bench slots.
+     */
+    function applySubstitutionDisplay(players, substitutes) {
+        const byId = {};
+        (players || []).forEach(function (player) {
+            byId[Number(player.playerteam_id)] = player;
+        });
+        (substitutes || []).forEach(function (player) {
+            byId[Number(player.playerteam_id)] = player;
+        });
+
+        const replaceByOutId = {};
+        (substitutes || []).forEach(function (sub) {
+            const outId = Number(sub.replaces_playerteam_id || 0);
+            if (outId > 0) {
+                replaceByOutId[outId] = sub;
+            }
+        });
+
+        const field = (players || []).map(function (starter) {
+            const sub = replaceByOutId[Number(starter.playerteam_id)];
+            if (!sub) {
+                return starter;
+            }
+            const copy = Object.assign({}, sub);
+            copy.change = { type: 'in', related_name: playerName(starter) };
+            return copy;
+        });
+
+        const bench = (substitutes || []).map(function (sub) {
+            const outId = Number(sub.replaces_playerteam_id || 0);
+            const out = outId > 0 ? byId[outId] : null;
+            if (!out) {
+                return sub;
+            }
+            const copy = Object.assign({}, out);
+            copy.change = { type: 'out', related_name: playerName(sub) };
+            return copy;
+        });
+
+        return { field: field, bench: bench };
+    }
+
     function playerCard(player, showPrice) {
         const fname = escapeHtml(player.player_fname || '');
         const lname = escapeHtml(player.player_lname || '');
@@ -429,6 +502,7 @@
                 ? '<span title="Preis: ' + price + ' Credits">' + price + '</span>'
                 : '') +
             flagHtml(nat, player.playerteam_team || '') +
+            changeIconHtml(player) +
             '</div></div>'
         );
     }
@@ -457,6 +531,7 @@
         const teamPrice = Number(data.userteam.userteam_price || 0);
         const players = data.players || [];
         const substitutes = data.substitutes || [];
+        const display = applySubstitutionDisplay(players, substitutes);
         const showPrices = playerPricesMatchTeamTotal(players, substitutes, teamPrice);
         if (teamSideStatsEl) {
             teamSideStatsEl.hidden = false;
@@ -474,7 +549,7 @@
         }
 
         const buckets = { g: '', d: '', m: '', s: '' };
-        players.forEach(function (player) {
+        display.field.forEach(function (player) {
             const pos = String(player.playerteam_player_position || '').toLowerCase();
             if (buckets[pos] !== undefined) {
                 buckets[pos] += playerCard(player, showPrices);
@@ -486,7 +561,7 @@
         });
 
         if (window.FfbPitchBench) {
-            window.FfbPitchBench.sync(data.lineup_options || null, legacyBase, substitutes, {
+            window.FfbPitchBench.sync(data.lineup_options || null, legacyBase, display.bench, {
                 mode: 'view',
                 showPrice: showPrices,
                 matchroundId: matchroundId,

@@ -4,15 +4,24 @@
 
 @php
     $selectedLeague = $data['selected_league'] ?? null;
-    $tab = ($data['tab'] ?? 'userteam') === 'user' ? 'user' : 'userteam';
+    $leagueHasSubstitutions = ! empty($data['league_has_substitutions']);
+    $rawTab = (string) ($data['tab'] ?? 'userteam');
+    $tab = match ($rawTab) {
+        'user' => 'user',
+        'subs' => $leagueHasSubstitutions ? 'subs' : 'userteam',
+        default => 'userteam',
+    };
     $matchrounds = is_array($data['matchrounds'] ?? null) ? $data['matchrounds'] : [];
     $matchroundId = (int) ($data['matchround_id'] ?? 0);
     $userteamPreview = is_array($data['userteam_preview'] ?? null) ? $data['userteam_preview'] : null;
     $userPreview = is_array($data['user_preview'] ?? null) ? $data['user_preview'] : null;
+    $subsPreview = is_array($data['subs_preview'] ?? null) ? $data['subs_preview'] : null;
     $userteamRows = is_array($userteamPreview['rows'] ?? null) ? $userteamPreview['rows'] : [];
     $userRows = is_array($userPreview['rows'] ?? null) ? $userPreview['rows'] : [];
+    $subsRows = is_array($subsPreview['rows'] ?? null) ? $subsPreview['rows'] : [];
     $flashErrors = $errors ?: (session('admin_errors') ?: []);
     $flashDetails = is_array($details ?? null) ? $details : [];
+    $positionLabels = ['g' => 'T', 'd' => 'V', 'm' => 'M', 's' => 'S'];
 @endphp
 
 @section('content')
@@ -22,6 +31,14 @@
         </div>
 
         <nav class="admin-squad-tabs ffb-tabs" aria-label="Score-Bereiche">
+            @if ($leagueHasSubstitutions)
+                <a
+                    class="admin-squad-tab ffb-tab{{ $tab === 'subs' ? ' is-active' : '' }}"
+                    href="{{ route('admin.score', array_filter(['tab' => 'subs', 'matchround_id' => $matchroundId > 0 ? $matchroundId : null])) }}"
+                >
+                    Auswechslungen
+                </a>
+            @endif
             <a
                 class="admin-squad-tab ffb-tab{{ $tab === 'userteam' ? ' is-active' : '' }}"
                 href="{{ route('admin.score', array_filter(['tab' => 'userteam', 'matchround_id' => $matchroundId > 0 ? $matchroundId : null])) }}"
@@ -71,7 +88,107 @@
             </div>
         @endif
 
-        @if ($tab === 'userteam')
+        @if ($tab === 'subs')
+            <div class="section-head">
+                <h3 id="admin-score-subs-title">Auswechslungen</h3>
+            </div>
+            <p class="hint">
+                Berechnet Ersatz-Wechsel je Userteam für die gewählte Spielrunde
+                (Bench-Mode: <code>{{ $subsPreview['benchmode'] ?? '—' }}</code>).
+                Speichern schreibt <code>substitute_slot_replaces_playerteam_id</code>.
+            </p>
+
+            @if ($selectedLeague)
+                <form class="admin-form" method="post" action="{{ route('admin.score.calculateSubstitutions') }}" accept-charset="UTF-8">
+                    @csrf
+                    <div class="admin-field">
+                        <label for="score_subs_matchround">Spielrunde</label>
+                        <select id="score_subs_matchround" name="matchround_id" required>
+                            <option value="" @selected($matchroundId === 0)>— bitte wählen —</option>
+                            @foreach ($matchrounds as $round)
+                                <option
+                                    value="{{ (int) $round['matchround_id'] }}"
+                                    @selected($matchroundId === (int) $round['matchround_id'])
+                                >
+                                    {{ $round['matchround_title'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="admin-actions admin-actions-flush">
+                        <button type="submit" class="admin-submit" name="calculate_substitutions" value="1">
+                            Auswechslungen berechnen
+                        </button>
+                        <button
+                            type="submit"
+                            class="admin-submit"
+                            formaction="{{ route('admin.score.saveSubstitutions') }}"
+                            name="save_substitutions"
+                            value="1"
+                            @disabled($subsPreview === null)
+                            title="{{ $subsPreview === null ? 'Zuerst Auswechslungen berechnen' : 'Berechnete Auswechslungen speichern' }}"
+                        >
+                            Speichern
+                        </button>
+                    </div>
+                </form>
+            @endif
+
+            @if ($subsPreview !== null)
+                @if ($subsRows === [])
+                    <p class="muted">Keine Userteams für die gewählte Spielrunde.</p>
+                @else
+                    <div class="admin-squad-table-wrap">
+                        <table class="admin-squad-table">
+                            <thead>
+                                <tr>
+                                    <th>Userteam</th>
+                                    <th>User</th>
+                                    <th>Wechsel</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($subsRows as $row)
+                                    @php
+                                        $subs = is_array($row['substitutions'] ?? null) ? $row['substitutions'] : [];
+                                    @endphp
+                                    <tr>
+                                        <td>#{{ (int) ($row['userteam_id'] ?? 0) }}</td>
+                                        <td>
+                                            {{ ($row['user_nickname'] ?? '') !== '' ? $row['user_nickname'] : '—' }}
+                                            <span class="muted">(#{{ (int) ($row['user_id'] ?? 0) }})</span>
+                                        </td>
+                                        <td>{{ (int) ($row['substitution_count'] ?? 0) }}</td>
+                                        <td>
+                                            @if ($subs === [])
+                                                <span class="muted">keine</span>
+                                            @else
+                                                <ul class="admin-score-details">
+                                                    @foreach ($subs as $sub)
+                                                        @php
+                                                            $outPos = $positionLabels[$sub['out_position'] ?? ''] ?? strtoupper((string) ($sub['out_position'] ?? '?'));
+                                                            $inPos = $positionLabels[$sub['substitute_position'] ?? ''] ?? strtoupper((string) ($sub['substitute_position'] ?? '?'));
+                                                        @endphp
+                                                        <li>
+                                                            <strong>{{ $sub['substitute_name'] ?? '' }}</strong>
+                                                            ({{ $inPos }}, {{ (int) ($sub['substitute_score'] ?? 0) }} P)
+                                                            ersetzt
+                                                            <strong>{{ $sub['out_name'] ?? '' }}</strong>
+                                                            ({{ $outPos }}{{ ! empty($sub['out_played']) ? ', '.(int) ($sub['out_score'] ?? 0).' P' : ', nicht gespielt' }})
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            @endif
+        @elseif ($tab === 'userteam')
             <div class="section-head">
                 <h3 id="admin-score-userteam-title">Userteam Score</h3>
             </div>

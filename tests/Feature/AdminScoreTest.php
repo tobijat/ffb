@@ -34,10 +34,9 @@ class AdminScoreTest extends TestCase
         });
 
         $this->mock(AdminScoreService::class, function ($mock) {
-            $mock->shouldReceive('normalizeTab')->once()->with(null)->andReturn('userteam');
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, 'userteam', null, null, 0)
+                ->with(544, 'userteam', null, null, 0, null)
                 ->andReturn([
                     'user' => [
                         'user_id' => 544,
@@ -61,6 +60,7 @@ class AdminScoreTest extends TestCase
                         'symbol_url' => '/images/ffb/games/na.png',
                     ],
                     'tab' => 'userteam',
+                    'league_has_substitutions' => false,
                     'matchrounds' => [
                         ['matchround_id' => 3, 'matchround_title' => 'Spieltag 1'],
                         ['matchround_id' => 4, 'matchround_title' => 'Spieltag 2'],
@@ -68,6 +68,7 @@ class AdminScoreTest extends TestCase
                     'matchround_id' => 0,
                     'userteam_preview' => null,
                     'user_preview' => null,
+                    'subs_preview' => null,
                 ]);
         });
 
@@ -77,6 +78,7 @@ class AdminScoreTest extends TestCase
             ->assertSee('UserScore Settings', false)
             ->assertSee('Userteam Score', false)
             ->assertSee('User Score', false)
+            ->assertDontSee('Auswechslungen', false)
             ->assertSee('Alle Spielrunden', false)
             ->assertSee('Spieltag 1', false)
             ->assertSee('Score berechnen', false)
@@ -91,10 +93,9 @@ class AdminScoreTest extends TestCase
         });
 
         $this->mock(AdminScoreService::class, function ($mock) {
-            $mock->shouldReceive('normalizeTab')->once()->with('user')->andReturn('user');
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, 'user', null, null, 0)
+                ->with(544, 'user', null, null, 0, null)
                 ->andReturn([
                     'user' => [
                         'user_id' => 544,
@@ -110,10 +111,12 @@ class AdminScoreTest extends TestCase
                         'symbol_url' => '/images/ffb/games/na.png',
                     ],
                     'tab' => 'user',
+                    'league_has_substitutions' => false,
                     'matchrounds' => [],
                     'matchround_id' => 0,
                     'userteam_preview' => null,
                     'user_preview' => null,
+                    'subs_preview' => null,
                 ]);
         });
 
@@ -122,6 +125,49 @@ class AdminScoreTest extends TestCase
             ->assertOk()
             ->assertSee('ffb_userscore', false)
             ->assertSee('Score berechnen', false);
+    }
+
+    public function test_score_page_shows_subs_tab_when_league_has_bench(): void
+    {
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $this->mock(AdminScoreService::class, function ($mock) {
+            $mock->shouldReceive('pagePayload')
+                ->once()
+                ->with(544, 'subs', null, null, 0, null)
+                ->andReturn([
+                    'user' => [
+                        'user_id' => 544,
+                        'user_nickname' => 'adminuser',
+                        'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                        'is_ffb_admin' => true,
+                    ],
+                    'navigation' => [],
+                    'selected_league_id' => 7,
+                    'selected_league' => [
+                        'league_id' => 7,
+                        'league_title' => 'Bundesliga Test',
+                        'symbol_url' => '/images/ffb/games/na.png',
+                    ],
+                    'tab' => 'subs',
+                    'league_has_substitutions' => true,
+                    'matchrounds' => [
+                        ['matchround_id' => 3, 'matchround_title' => 'Spieltag 1'],
+                    ],
+                    'matchround_id' => 0,
+                    'userteam_preview' => null,
+                    'user_preview' => null,
+                    'subs_preview' => null,
+                ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->get('/admin/score?tab=subs')
+            ->assertOk()
+            ->assertSee('Auswechslungen', false)
+            ->assertSee('Auswechslungen berechnen', false);
     }
 
     public function test_calculate_userteam_scores_passes_selected_matchround(): void
@@ -162,7 +208,7 @@ class AdminScoreTest extends TestCase
                 ]);
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, 'userteam', $preview, null, 3)
+                ->with(544, 'userteam', $preview, null, 3, null)
                 ->andReturn([
                     'user' => [
                         'user_id' => 544,
@@ -178,12 +224,14 @@ class AdminScoreTest extends TestCase
                         'symbol_url' => '/images/ffb/games/na.png',
                     ],
                     'tab' => 'userteam',
+                    'league_has_substitutions' => false,
                     'matchrounds' => [
                         ['matchround_id' => 3, 'matchround_title' => 'Spieltag 1'],
                     ],
                     'matchround_id' => 3,
                     'userteam_preview' => $preview,
                     'user_preview' => null,
+                    'subs_preview' => null,
                 ]);
         });
 
@@ -234,7 +282,7 @@ class AdminScoreTest extends TestCase
                 ]);
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, 'userteam', $preview, null, 0)
+                ->with(544, 'userteam', $preview, null, 0, null)
                 ->andReturn([
                     'user' => [
                         'user_id' => 544,
@@ -250,12 +298,14 @@ class AdminScoreTest extends TestCase
                         'symbol_url' => '/images/ffb/games/na.png',
                     ],
                     'tab' => 'userteam',
+                    'league_has_substitutions' => false,
                     'matchrounds' => [
                         ['matchround_id' => 3, 'matchround_title' => 'Spieltag 1'],
                     ],
                     'matchround_id' => 0,
                     'userteam_preview' => $preview,
                     'user_preview' => null,
+                    'subs_preview' => null,
                 ]);
         });
 
@@ -304,7 +354,7 @@ class AdminScoreTest extends TestCase
                 ]);
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, 'userteam', $preview, null, 3)
+                ->with(544, 'userteam', $preview, null, 3, null)
                 ->andReturn([
                     'user' => [
                         'user_id' => 544,
@@ -320,12 +370,14 @@ class AdminScoreTest extends TestCase
                         'symbol_url' => '/images/ffb/games/na.png',
                     ],
                     'tab' => 'userteam',
+                    'league_has_substitutions' => false,
                     'matchrounds' => [
                         ['matchround_id' => 3, 'matchround_title' => 'Spieltag 1'],
                     ],
                     'matchround_id' => 3,
                     'userteam_preview' => $preview,
                     'user_preview' => null,
+                    'subs_preview' => null,
                 ]);
         });
 
@@ -366,7 +418,7 @@ class AdminScoreTest extends TestCase
             ]);
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, 'user', null, $preview, null)
+                ->with(544, 'user', null, $preview, null, null)
                 ->andReturn([
                     'user' => [
                         'user_id' => 544,
@@ -382,10 +434,12 @@ class AdminScoreTest extends TestCase
                         'symbol_url' => '/images/ffb/games/na.png',
                     ],
                     'tab' => 'user',
+                    'league_has_substitutions' => false,
                     'matchrounds' => [],
                     'matchround_id' => 0,
                     'userteam_preview' => null,
                     'user_preview' => $preview,
+                    'subs_preview' => null,
                 ]);
         });
 
@@ -428,7 +482,7 @@ class AdminScoreTest extends TestCase
             ]);
             $mock->shouldReceive('pagePayload')
                 ->once()
-                ->with(544, 'user', null, $preview, null)
+                ->with(544, 'user', null, $preview, null, null)
                 ->andReturn([
                     'user' => [
                         'user_id' => 544,
@@ -444,10 +498,12 @@ class AdminScoreTest extends TestCase
                         'symbol_url' => '/images/ffb/games/na.png',
                     ],
                     'tab' => 'user',
+                    'league_has_substitutions' => false,
                     'matchrounds' => [],
                     'matchround_id' => 0,
                     'userteam_preview' => null,
                     'user_preview' => $preview,
+                    'subs_preview' => null,
                 ]);
         });
 

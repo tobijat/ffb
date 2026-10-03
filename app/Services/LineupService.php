@@ -384,6 +384,7 @@ class LineupService
 
         $slotIds = $userteam->playerteamIdsInSlotOrder();
         $substituteIds = $userteam->substitutePlayerteamIdsInSlotOrder();
+        $replacesBySubstituteId = $userteam->substituteReplacesByPlayerteamId();
         $allIds = array_values(array_unique([...$slotIds, ...$substituteIds]));
         $playerteams = Playerteam::query()
             ->with(['player', 'team'])
@@ -421,6 +422,7 @@ class LineupService
                 $cardWarnings,
             );
             if ($row !== null) {
+                $row['replaces_playerteam_id'] = $replacesBySubstituteId[$playerteamId] ?? null;
                 $substitutes[] = $row;
             }
         }
