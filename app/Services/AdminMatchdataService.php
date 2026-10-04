@@ -13,6 +13,7 @@ use App\Models\Playerstats;
 use App\Models\Playerteam;
 use App\Models\Psgoal;
 use App\Models\Team;
+use App\Support\FfbDateTime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -73,15 +74,15 @@ class AdminMatchdataService
             ->orderByDesc('matchround_startdate')
             ->get()
             ->map(function (Matchround $round) use ($now) {
-                $start = strtotime((string) $round->matchround_startdate) ?: 0;
-                $end = strtotime((string) $round->matchround_enddate) ?: 0;
+                $startUtc = FfbDateTime::parseUtcDb((string) $round->matchround_startdate);
+                $startTs = $startUtc?->getTimestamp() ?? 0;
 
                 return [
                     'matchround_id' => (int) $round->matchround_id,
                     'matchround_title' => (string) $round->matchround_title,
-                    'matchround_startdate' => date('j.n.Y G:i', $start),
-                    'matchround_enddate' => date('j.n.Y G:i', $end),
-                    'started' => $start <= $now,
+                    'matchround_startdate' => FfbDateTime::utcDbToDisplay((string) $round->matchround_startdate),
+                    'matchround_enddate' => FfbDateTime::utcDbToDisplay((string) $round->matchround_enddate),
+                    'started' => $startTs > 0 && $startTs <= $now,
                 ];
             })
             ->values()

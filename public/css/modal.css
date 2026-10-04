@@ -508,7 +508,7 @@
 
 .ffb-player-rounds .result-cell {
     min-width: 12rem;
-    white-space: nowrap;
+    white-space: normal;
 }
 
 .ffb-player-rounds .result-line {
@@ -516,6 +516,14 @@
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     gap: 0.35rem;
     align-items: center;
+}
+
+.ffb-player-rounds .result-home,
+.ffb-player-rounds .result-guest {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.25;
 }
 
 .ffb-player-rounds .result-home {

@@ -15,6 +15,7 @@ use App\Models\UserDetails;
 use App\Models\Userscore;
 use App\Models\Userteam;
 use App\Models\WebUser;
+use App\Support\FfbDateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -240,9 +241,9 @@ class LineupService
                     'matchround_id' => (int) $round->matchround_id,
                     'matchround_title' => (string) $round->matchround_title,
                     'matchround_status' => (int) $round->matchround_status,
-                    'matchround_startdate' => date('j.n.Y', strtotime((string) $round->matchround_startdate)),
-                    'matchround_enddate' => date('j.n.Y', strtotime((string) $round->matchround_enddate)),
-                    'matchround_deadline' => date('j.n.Y G:i', strtotime((string) $round->matchround_startdate)),
+                    'matchround_startdate' => FfbDateTime::utcDbToDisplay((string) $round->matchround_startdate, 'j.n.Y'),
+                    'matchround_enddate' => FfbDateTime::utcDbToDisplay((string) $round->matchround_enddate, 'j.n.Y'),
+                    'matchround_deadline' => FfbDateTime::utcDbToDisplay((string) $round->matchround_startdate),
                     'matches' => $matches,
                     'teams' => $teams,
                 ],
@@ -613,12 +614,11 @@ class LineupService
 
     private function isMatchroundOpen(Matchround $matchround): bool
     {
-        $start = $matchround->matchround_startdate;
-        if ($start === null || $start === '') {
-            return false;
-        }
-
-        return strtotime((string) $start) > time();
+        return FfbDateTime::isFutureUtc(
+            $matchround->matchround_startdate !== null
+                ? (string) $matchround->matchround_startdate
+                : null
+        );
     }
 
     /**

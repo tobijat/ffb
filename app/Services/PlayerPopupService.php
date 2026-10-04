@@ -12,6 +12,7 @@ use App\Models\Playerstats;
 use App\Models\Playerteam;
 use App\Models\UserDetails;
 use App\Models\Userteam;
+use App\Support\FfbDateTime;
 use App\Support\PlayerPicture;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -90,7 +91,7 @@ class PlayerPopupService
                 'matchround_id' => $roundId,
                 'matchround_title' => $this->formatRoundDisplayTitle($leagueTitle, (string) $round->matchround_title),
                 'matchround_num_lineups' => $lineupsByRound[$roundId] ?? 0,
-                'matchround_running' => strtotime((string) $round->matchround_startdate) > time() ? 1 : 0,
+                'matchround_running' => FfbDateTime::isFutureUtc((string) $round->matchround_startdate) ? 1 : 0,
             ];
 
             $stat = $statsByRound[$roundId] ?? null;

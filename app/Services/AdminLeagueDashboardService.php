@@ -17,6 +17,7 @@ use App\Models\Team;
 use App\Models\Teamprice;
 use App\Models\Userscore;
 use App\Models\Userteam;
+use App\Support\FfbDateTime;
 use App\Support\Flag;
 use App\Support\TeamShirt;
 use Illuminate\Support\Carbon;
@@ -2314,9 +2315,7 @@ class AdminLeagueDashboardService
             return '';
         }
 
-        $timestamp = strtotime((string) $value);
-
-        return $timestamp ? date('j.n.Y G:i', $timestamp) : '';
+        return FfbDateTime::utcDbToDisplay((string) $value);
     }
 
     /**

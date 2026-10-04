@@ -8,7 +8,8 @@ use App\Models\Matchround;
 use App\Models\MatchroundOptions;
 use App\Models\Playerstats;
 use App\Models\Userteam;
-use DateTimeImmutable;
+use App\Support\FfbDateTime;
+use Carbon\CarbonImmutable;
 
 class AdminMatchroundService
 {
@@ -306,15 +307,12 @@ class AdminMatchroundService
             ->orderByDesc('matchround_id')
             ->get()
             ->map(function (Matchround $item) {
-                $start = strtotime((string) $item->matchround_startdate) ?: 0;
-                $end = strtotime((string) $item->matchround_enddate) ?: 0;
-
                 return [
                     'matchround_id' => (int) $item->matchround_id,
                     'matchround_title' => (string) $item->matchround_title,
                     'matchround_status' => (int) $item->matchround_status,
-                    'matchround_startdate' => $start ? date('j.n.Y G:i', $start) : '',
-                    'matchround_enddate' => $end ? date('j.n.Y G:i', $end) : '',
+                    'matchround_startdate' => FfbDateTime::utcDbToDisplay((string) $item->matchround_startdate),
+                    'matchround_enddate' => FfbDateTime::utcDbToDisplay((string) $item->matchround_enddate),
                 ];
             })
             ->values()
@@ -541,21 +539,28 @@ class AdminMatchroundService
      */
     private function nextFormAfterCreate(array $form, string $startDb, string $endDb): array
     {
-        $start = new DateTimeImmutable($startDb);
-        $end = new DateTimeImmutable($endDb);
-        $durationSeconds = max(0, $end->getTimestamp() - $start->getTimestamp());
-        $nextStart = $end;
-        $nextEnd = $nextStart->modify('+'.$durationSeconds.' seconds');
-
+        $start = FfbDateTime::parseUtcDb($startDb);
+        $end = FfbDateTime::parseUtcDb($endDb);
         $leagueId = (int) $form['matchround_league_id'];
+
+        $nextStartLocal = (string) $form['matchround_enddate'];
+        $nextEndLocal = (string) $form['matchround_enddate'];
+
+        if ($start !== null && $end !== null) {
+            $durationSeconds = max(0, $end->getTimestamp() - $start->getTimestamp());
+            $nextStart = $end;
+            $nextEnd = $nextStart->addSeconds($durationSeconds);
+            $nextStartLocal = $nextStart->timezone(FfbDateTime::displayTimezone())->format('Y-m-d\TH:00');
+            $nextEndLocal = $nextEnd->timezone(FfbDateTime::displayTimezone())->format('Y-m-d\TH:00');
+        }
 
         return [
             'matchround_id' => '',
             'matchround_league_id' => $leagueId,
             'matchround_title' => $this->bumpTitle((string) $form['matchround_title']),
             'matchround_status' => (int) $form['matchround_status'],
-            'matchround_startdate' => $nextStart->format('Y-m-d\TH:00'),
-            'matchround_enddate' => $nextEnd->format('Y-m-d\TH:00'),
+            'matchround_startdate' => $nextStartLocal,
+            'matchround_enddate' => $nextEndLocal,
             'lineup_options_enabled' => 0,
             ...$this->lineupOptionsFormForLeague($leagueId),
         ];
@@ -579,7 +584,7 @@ class AdminMatchroundService
             return '';
         }
 
-        $parsed = $this->parseDatetimeLocal($value);
+        $parsed = FfbDateTime::parseLocalInput($value);
         if ($parsed === null) {
             return $value;
         }
@@ -587,47 +592,18 @@ class AdminMatchroundService
         return $parsed->format('Y-m-d\TH:00');
     }
 
-    private function parseDatetimeLocal(string $value): ?DateTimeImmutable
+    private function parseDatetimeLocal(string $value): ?CarbonImmutable
     {
-        $value = trim(str_replace(' ', 'T', $value));
-        if ($value === '') {
-            return null;
-        }
-
-        $formats = ['Y-m-d\TH:i', 'Y-m-d\TH:i:s', 'Y-m-d H:i:s', 'Y-m-d H:i'];
-        foreach ($formats as $format) {
-            $dt = DateTimeImmutable::createFromFormat($format, $value);
-            if ($dt instanceof DateTimeImmutable) {
-                return $dt->setTime((int) $dt->format('G'), 0, 0);
-            }
-        }
-
-        try {
-            $dt = new DateTimeImmutable($value);
-
-            return $dt->setTime((int) $dt->format('G'), 0, 0);
-        } catch (\Exception) {
-            return null;
-        }
+        return FfbDateTime::parseLocalInput($value);
     }
 
     private function toDatetimeLocalValue(string $dbValue): string
     {
-        $parsed = $this->parseDatetimeLocal($dbValue);
-        if ($parsed === null) {
-            return '';
-        }
-
-        return $parsed->format('Y-m-d\TH:00');
+        return FfbDateTime::utcDbToLocalInput($dbValue);
     }
 
     private function toDbDateTime(string $datetimeLocal): string
     {
-        $parsed = $this->parseDatetimeLocal($datetimeLocal);
-        if ($parsed === null) {
-            return $datetimeLocal;
-        }
-
-        return $parsed->format('Y-m-d H:i:s');
+        return FfbDateTime::localInputToUtcDb($datetimeLocal);
     }
 }

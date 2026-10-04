@@ -20,6 +20,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Display timezone (admin forms + deadline labels)
+    |--------------------------------------------------------------------------
+    |
+    | Matchround start/end are stored and compared as UTC. Admins enter and see
+    | wall-clock times in this timezone (Europe/Vienna by default).
+    |
+    */
+    'display_timezone' => env('FFB_DISPLAY_TIMEZONE', 'Europe/Vienna'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Public home path (browser Location / window.location)
     |--------------------------------------------------------------------------
     |

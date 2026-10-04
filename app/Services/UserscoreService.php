@@ -9,6 +9,7 @@ use App\Models\UserDetails;
 use App\Models\Userscore;
 use App\Models\Userteam;
 use App\Models\WebUser;
+use App\Support\FfbDateTime;
 use Illuminate\Support\Facades\DB;
 
 class UserscoreService
@@ -508,8 +509,8 @@ class UserscoreService
             'matchround_running' => 0,
             'matchround_future' => 0,
             'matchround_status' => (int) $round->matchround_status,
-            'matchround_startdate' => date('j.n.Y', strtotime((string) $round->matchround_startdate)),
-            'matchround_enddate' => date('j.n.Y', strtotime((string) $round->matchround_enddate)),
+            'matchround_startdate' => FfbDateTime::utcDbToDisplay((string) $round->matchround_startdate, 'j.n.Y'),
+            'matchround_enddate' => FfbDateTime::utcDbToDisplay((string) $round->matchround_enddate, 'j.n.Y'),
             'matchround_startdate_raw' => (string) $round->matchround_startdate,
             'matchround_enddate_raw' => (string) $round->matchround_enddate,
         ];

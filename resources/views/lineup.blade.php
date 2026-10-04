@@ -6,7 +6,7 @@
     <title>Aufstellung — SoccerSportsfan</title>
     <link rel="stylesheet" href="css/start.css?v=23">
     <link rel="stylesheet" href="css/dashboard.css?v=12">
-    <link rel="stylesheet" href="css/modal.css?v=15">
+    <link rel="stylesheet" href="css/modal.css?v=16">
     <link rel="stylesheet" href="css/myteam.css?v=32">
     <link rel="stylesheet" href="css/lineup.css?v=22">
 </head>

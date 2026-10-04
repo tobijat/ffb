@@ -8,6 +8,7 @@ use App\Models\Playerstats;
 use App\Models\Playerteam;
 use App\Models\Userteam;
 use App\Models\WebUser;
+use App\Support\FfbDateTime;
 
 class MyteamService
 {
@@ -122,7 +123,7 @@ class MyteamService
             return ['ok' => false, 'status' => 404, 'error' => 'Matchround not found'];
         }
 
-        $deadlineOpen = strtotime((string) $matchround->matchround_startdate) > time();
+        $deadlineOpen = FfbDateTime::isFutureUtc((string) $matchround->matchround_startdate);
         if ($deadlineOpen && $targetUserId !== $viewerId && ! $viewerIsAdmin) {
             return [
                 'ok' => false,
@@ -134,8 +135,8 @@ class MyteamService
         $payload = $this->lineups->getForRound($targetUserId, $matchroundId);
         $payload['matchround_running'] = $deadlineOpen ? 1 : 0;
         $payload['matchround_title'] = (string) $matchround->matchround_title;
-        $payload['matchround_startdate'] = date('j.n.Y', strtotime((string) $matchround->matchround_startdate));
-        $payload['matchround_enddate'] = date('j.n.Y', strtotime((string) $matchround->matchround_enddate));
+        $payload['matchround_startdate'] = FfbDateTime::utcDbToDisplay((string) $matchround->matchround_startdate, 'j.n.Y');
+        $payload['matchround_enddate'] = FfbDateTime::utcDbToDisplay((string) $matchround->matchround_enddate, 'j.n.Y');
 
         return [
             'ok' => true,
@@ -157,7 +158,7 @@ class MyteamService
             return ['ok' => false, 'status' => 404, 'error' => 'Matchround not found'];
         }
 
-        $deadlineOpen = strtotime((string) $matchround->matchround_startdate) > time();
+        $deadlineOpen = FfbDateTime::isFutureUtc((string) $matchround->matchround_startdate);
         if ($deadlineOpen && $targetUserId !== $viewerId && ! $viewerIsAdmin) {
             return [
                 'ok' => false,
