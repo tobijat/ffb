@@ -849,7 +849,8 @@ class LineupService
     }
 
     /**
-     * Resolve lineup credits: ffb_playerprice, else ffb_teamprice for the player's team.
+     * Resolve lineup credits: current ffb_playerprice, else newest previous
+     * league-round playerprice (> 0), else ffb_teamprice for the player's team.
      *
      * @param  list<int>  $playerteamIds
      * @param  Collection<int, Playerteam>  $playerteams
@@ -867,7 +868,38 @@ class LineupService
             ->get()
             ->mapWithKeys(fn ($row) => [(int) $row->playerprice_playerteam_id => (float) $row->playerprice_price]);
 
+        $resolved = collect();
+        $missing = [];
+        foreach ($playerteamIds as $ptId) {
+            $playerPrice = $fromPlayer->has($ptId) ? (float) $fromPlayer->get($ptId) : null;
+            if ($playerPrice !== null && $playerPrice > 0) {
+                $resolved->put($ptId, $playerPrice);
+
+                continue;
+            }
+
+            $missing[] = $ptId;
+        }
+
+        if ($missing !== []) {
+            $fromPrevious = $this->playerPricesFromPreviousMatchrounds($missing, $matchroundId);
+            foreach ($missing as $ptId) {
+                if ($fromPrevious->has($ptId)) {
+                    $resolved->put($ptId, (float) $fromPrevious->get($ptId));
+                }
+            }
+            $missing = array_values(array_filter(
+                $missing,
+                static fn (int $ptId): bool => ! $resolved->has($ptId),
+            ));
+        }
+
+        if ($missing === []) {
+            return $resolved;
+        }
+
         $teamIds = $playerteams
+            ->only($missing)
             ->map(fn (Playerteam $pt): int => (int) $pt->playerteam_team_id)
             ->filter(fn (int $id): bool => $id > 0)
             ->unique()
@@ -882,15 +914,7 @@ class LineupService
                 ->get()
                 ->mapWithKeys(fn ($row) => [(int) $row->teamprice_team_id => (float) $row->teamprice_price]);
 
-        $resolved = collect();
-        foreach ($playerteamIds as $ptId) {
-            $playerPrice = $fromPlayer->has($ptId) ? (float) $fromPlayer->get($ptId) : null;
-            if ($playerPrice !== null && $playerPrice > 0) {
-                $resolved->put($ptId, $playerPrice);
-
-                continue;
-            }
-
+        foreach ($missing as $ptId) {
             $teamId = (int) ($playerteams->get($ptId)?->playerteam_team_id ?? 0);
             if ($teamId > 0 && $fromTeam->has($teamId)) {
                 $resolved->put($ptId, (float) $fromTeam->get($teamId));
@@ -901,7 +925,79 @@ class LineupService
     }
 
     /**
-     * Recent performance (−1…+1) from ffb_playerprice; missing/null → 0.
+     * Previous matchround ids in the same league, newest first.
+     *
+     * @return list<int>
+     */
+    private function previousMatchroundIds(int $matchroundId): array
+    {
+        $selected = Matchround::query()->find($matchroundId);
+        if (! $selected || $selected->matchround_startdate === null) {
+            return [];
+        }
+
+        $leagueId = (int) $selected->matchround_league_id;
+        if ($leagueId <= 0) {
+            return [];
+        }
+
+        return Matchround::query()
+            ->where('matchround_league_id', $leagueId)
+            ->where('matchround_startdate', '<', $selected->matchround_startdate)
+            ->orderByDesc('matchround_startdate')
+            ->orderByDesc('matchround_id')
+            ->pluck('matchround_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+    }
+
+    /**
+     * Newest previous-league-round playerprice (> 0) per playerteam.
+     *
+     * @param  list<int>  $playerteamIds
+     * @return Collection<int, float>
+     */
+    private function playerPricesFromPreviousMatchrounds(array $playerteamIds, int $matchroundId): Collection
+    {
+        if ($playerteamIds === []) {
+            return collect();
+        }
+
+        $pastRoundIds = $this->previousMatchroundIds($matchroundId);
+        if ($pastRoundIds === []) {
+            return collect();
+        }
+
+        $rows = Playerprice::query()
+            ->whereIn('playerprice_matchround_id', $pastRoundIds)
+            ->whereIn('playerprice_playerteam_id', $playerteamIds)
+            ->where('playerprice_price', '>', 0)
+            ->get(['playerprice_playerteam_id', 'playerprice_matchround_id', 'playerprice_price']);
+
+        /** @var array<int, array<int, float>> $byPlayerAndRound */
+        $byPlayerAndRound = [];
+        foreach ($rows as $row) {
+            $ptId = (int) $row->playerprice_playerteam_id;
+            $roundId = (int) $row->playerprice_matchround_id;
+            $byPlayerAndRound[$ptId][$roundId] = (float) $row->playerprice_price;
+        }
+
+        $resolved = collect();
+        foreach ($playerteamIds as $ptId) {
+            foreach ($pastRoundIds as $roundId) {
+                if (isset($byPlayerAndRound[$ptId][$roundId])) {
+                    $resolved->put($ptId, $byPlayerAndRound[$ptId][$roundId]);
+                    break;
+                }
+            }
+        }
+
+        return $resolved;
+    }
+
+    /**
+     * Recent performance / tendency (−1…+1) from ffb_playerprice.
+     * Current round if set, else newest previous league round, else 0.
      *
      * @param  list<int>  $playerteamIds
      * @return Collection<int, float>
@@ -912,16 +1008,18 @@ class LineupService
             return collect();
         }
 
-        $rows = Playerprice::query()
-            ->where('playerprice_matchround_id', $matchroundId)
-            ->whereIn('playerprice_playerteam_id', $playerteamIds)
-            ->get(['playerprice_playerteam_id', 'playerprice_recent_performance']);
-
         $resolved = collect();
         foreach ($playerteamIds as $ptId) {
             $resolved->put($ptId, 0.0);
         }
 
+        $rows = Playerprice::query()
+            ->where('playerprice_matchround_id', $matchroundId)
+            ->whereIn('playerprice_playerteam_id', $playerteamIds)
+            ->get(['playerprice_playerteam_id', 'playerprice_recent_performance']);
+
+        /** @var array<int, true> $missing */
+        $missing = array_fill_keys($playerteamIds, true);
         foreach ($rows as $row) {
             $ptId = (int) $row->playerprice_playerteam_id;
             $raw = $row->playerprice_recent_performance;
@@ -929,8 +1027,41 @@ class LineupService
                 continue;
             }
 
-            $value = max(-1.0, min(1.0, (float) $raw));
-            $resolved->put($ptId, $value);
+            $resolved->put($ptId, max(-1.0, min(1.0, (float) $raw)));
+            unset($missing[$ptId]);
+        }
+
+        if ($missing === []) {
+            return $resolved;
+        }
+
+        $pastRoundIds = $this->previousMatchroundIds($matchroundId);
+        if ($pastRoundIds === []) {
+            return $resolved;
+        }
+
+        $missingIds = array_keys($missing);
+        $prevRows = Playerprice::query()
+            ->whereIn('playerprice_matchround_id', $pastRoundIds)
+            ->whereIn('playerprice_playerteam_id', $missingIds)
+            ->whereNotNull('playerprice_recent_performance')
+            ->get(['playerprice_playerteam_id', 'playerprice_matchround_id', 'playerprice_recent_performance']);
+
+        /** @var array<int, array<int, float>> $byPlayerAndRound */
+        $byPlayerAndRound = [];
+        foreach ($prevRows as $row) {
+            $ptId = (int) $row->playerprice_playerteam_id;
+            $roundId = (int) $row->playerprice_matchround_id;
+            $byPlayerAndRound[$ptId][$roundId] = max(-1.0, min(1.0, (float) $row->playerprice_recent_performance));
+        }
+
+        foreach ($missingIds as $ptId) {
+            foreach ($pastRoundIds as $roundId) {
+                if (isset($byPlayerAndRound[$ptId][$roundId])) {
+                    $resolved->put($ptId, $byPlayerAndRound[$ptId][$roundId]);
+                    break;
+                }
+            }
         }
 
         return $resolved;
@@ -1071,8 +1202,20 @@ class LineupService
             return false;
         }
 
-        return Playerprice::query()
+        if (Playerprice::query()
             ->where('playerprice_matchround_id', $matchroundId)
+            ->whereNotNull('playerprice_recent_performance')
+            ->exists()) {
+            return true;
+        }
+
+        $pastRoundIds = $this->previousMatchroundIds($matchroundId);
+        if ($pastRoundIds === []) {
+            return false;
+        }
+
+        return Playerprice::query()
+            ->whereIn('playerprice_matchround_id', $pastRoundIds)
             ->whereNotNull('playerprice_recent_performance')
             ->exists();
     }

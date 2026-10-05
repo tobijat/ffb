@@ -122,6 +122,90 @@ class LineupDynamicPriceModeTest extends TestCase
     }
 
     #[Test]
+    public function team_players_fall_back_to_previous_recent_performance(): void
+    {
+        [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();
+        [$newerPastRoundId, $olderRoundId] = $this->seedPastRounds($leagueId, 2);
+
+        Playerprice::query()->insert([
+            'playerprice_playerteam_id' => $ptId,
+            'playerprice_matchround_id' => $roundId,
+            'playerprice_price' => 9.5,
+            'playerprice_player_power' => 1,
+            'playerprice_av_power' => 1,
+            'playerprice_recent_performance' => null,
+        ]);
+        Playerprice::query()->insert([
+            'playerprice_playerteam_id' => $ptId,
+            'playerprice_matchround_id' => $olderRoundId,
+            'playerprice_price' => 4.0,
+            'playerprice_player_power' => 1,
+            'playerprice_av_power' => 1,
+            'playerprice_recent_performance' => -0.5,
+        ]);
+        Playerprice::query()->insert([
+            'playerprice_playerteam_id' => $ptId,
+            'playerprice_matchround_id' => $newerPastRoundId,
+            'playerprice_price' => 5.0,
+            'playerprice_player_power' => 1,
+            'playerprice_av_power' => 1,
+            'playerprice_recent_performance' => 0.6,
+        ]);
+
+        $result = $this->app->make(LineupService::class)->teamPlayers(544, $teamId, $roundId);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $this->assertSame(0.6, $result['data']['players'][0]['recent_performance']);
+    }
+
+    #[Test]
+    public function team_players_fall_back_to_previous_matchround_playerprice_before_teamprice(): void
+    {
+        [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();
+        // seedPastRounds returns newest-past first (later calendar dates first).
+        [$newerPastRoundId, $olderRoundId] = $this->seedPastRounds($leagueId, 2);
+
+        Teamprice::query()->insert([
+            'teamprice_team_id' => $teamId,
+            'teamprice_matchround_id' => $roundId,
+            'teamprice_price' => 6.0,
+        ]);
+        $this->seedPlayerprice($ptId, $olderRoundId, 4.0);
+        $this->seedPlayerprice($ptId, $newerPastRoundId, 8.5);
+
+        $result = $this->app->make(LineupService::class)->teamPlayers(544, $teamId, $roundId);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $this->assertSame(8.5, $result['data']['players'][0]['playerteam_player_price']);
+    }
+
+    #[Test]
+    public function team_players_skip_zero_previous_playerprice_when_falling_back(): void
+    {
+        [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();
+        [$newerPastRoundId, $olderRoundId] = $this->seedPastRounds($leagueId, 2);
+
+        Teamprice::query()->insert([
+            'teamprice_team_id' => $teamId,
+            'teamprice_matchround_id' => $roundId,
+            'teamprice_price' => 6.0,
+        ]);
+        $this->seedPlayerprice($ptId, $olderRoundId, 7.0);
+        Playerprice::query()->insert([
+            'playerprice_playerteam_id' => $ptId,
+            'playerprice_matchround_id' => $newerPastRoundId,
+            'playerprice_price' => 0,
+            'playerprice_player_power' => 1,
+            'playerprice_av_power' => 1,
+        ]);
+
+        $result = $this->app->make(LineupService::class)->teamPlayers(544, $teamId, $roundId);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $this->assertSame(7.0, $result['data']['players'][0]['playerteam_player_price']);
+    }
+
+    #[Test]
     public function team_players_fall_back_to_teamprice_when_playerprice_missing(): void
     {
         [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();
@@ -203,6 +287,36 @@ class LineupDynamicPriceModeTest extends TestCase
             'playerprice_player_power' => 1,
             'playerprice_av_power' => 1,
             'playerprice_recent_performance' => 0.0,
+        ]);
+
+        $result = $this->app->make(LineupService::class)->matchroundAndTeams(544);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $this->assertTrue($result['data']['show_recent_performance']);
+    }
+
+    #[Test]
+    public function matchround_shows_recent_performance_when_only_previous_round_has_values(): void
+    {
+        [$leagueId, $roundId, $teamId, $ptId] = $this->seedDynamicSquad();
+        $this->seedMatchForRound($roundId, $teamId);
+        [$pastRoundId] = $this->seedPastRounds($leagueId, 1);
+
+        Playerprice::query()->insert([
+            'playerprice_playerteam_id' => $ptId,
+            'playerprice_matchround_id' => $roundId,
+            'playerprice_price' => 9.5,
+            'playerprice_player_power' => 1,
+            'playerprice_av_power' => 1,
+            'playerprice_recent_performance' => null,
+        ]);
+        Playerprice::query()->insert([
+            'playerprice_playerteam_id' => $ptId,
+            'playerprice_matchround_id' => $pastRoundId,
+            'playerprice_price' => 8.0,
+            'playerprice_player_power' => 1,
+            'playerprice_av_power' => 1,
+            'playerprice_recent_performance' => 0.25,
         ]);
 
         $result = $this->app->make(LineupService::class)->matchroundAndTeams(544);
