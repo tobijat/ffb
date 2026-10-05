@@ -21,6 +21,8 @@
     let showRecentPerformance = false;
     let teams = [];
     let matches = [];
+    /** @type {Record<string, {min_player_price: number|null, cheapest_by_position: Record<string, {playerteam_id: number, price: number}|null>}>} */
+    let teamSelectHints = {};
     let lineuplist = [];
     let benchlist = [];
     let credits = 0;
@@ -277,6 +279,202 @@
         lineupDirty = !!dirty;
     }
 
+    function priceFitsBudget(price, ctx) {
+        return Math.round((ctx.credits - Number(price)) * 10) / 10 >= 0;
+    }
+
+    function fieldPositionIsAllowed(pos, ctx) {
+        if (!options) {
+            return false;
+        }
+        const left = ctx.left;
+        const numG = ctx.numG;
+        const numD = ctx.numD;
+        const numM = ctx.numM;
+        const numS = ctx.numS;
+
+        if (pos === 'g' && numG + 1 > Number(options.lineup_max_g)) {
+            return false;
+        }
+        if (pos === 'd' && numD + 1 > Number(options.lineup_max_d)) {
+            return false;
+        }
+        if (pos === 'm' && numM + 1 > Number(options.lineup_max_m)) {
+            return false;
+        }
+        if (pos === 's' && numS + 1 > Number(options.lineup_max_s)) {
+            return false;
+        }
+
+        if (pos === 'g') {
+            if (
+                Number(options.lineup_min_d) - numD > left - 1 ||
+                Number(options.lineup_min_m) - numM > left - 1 ||
+                Number(options.lineup_min_s) - numS > left - 1
+            ) {
+                return false;
+            }
+        }
+        if (pos === 'd') {
+            if (
+                Number(options.lineup_min_g) - numG > left - 1 ||
+                Number(options.lineup_min_m) - numM > left - 1 ||
+                Number(options.lineup_min_s) - numS > left - 1
+            ) {
+                return false;
+            }
+        }
+        if (pos === 'm') {
+            if (
+                Number(options.lineup_min_g) - numG > left - 1 ||
+                Number(options.lineup_min_d) - numD > left - 1 ||
+                Number(options.lineup_min_s) - numS > left - 1
+            ) {
+                return false;
+            }
+        }
+        if (pos === 's') {
+            if (
+                Number(options.lineup_min_g) - numG > left - 1 ||
+                Number(options.lineup_min_m) - numM > left - 1 ||
+                Number(options.lineup_min_d) - numD > left - 1
+            ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function hintEntryUsable(entry, ctx, requireFieldPosition, pos) {
+        if (!entry) {
+            return false;
+        }
+        if (ctx.selectedIds[String(entry.playerteam_id)]) {
+            return false;
+        }
+        if (!priceFitsBudget(entry.price, ctx)) {
+            return false;
+        }
+        if (requireFieldPosition && !fieldPositionIsAllowed(pos, ctx)) {
+            return false;
+        }
+        return true;
+    }
+
+    function teamHasUsableHint(teamId, ctx) {
+        const hint = teamSelectHints[String(teamId)];
+        if (!hint) {
+            return null;
+        }
+
+        if (hint.min_player_price != null && !priceFitsBudget(hint.min_player_price, ctx)) {
+            return false;
+        }
+
+        const byPos = hint.cheapest_by_position || {};
+        const positions = ['g', 'd', 'm', 's'];
+        const requireField = !ctx.addingToBench;
+        let sawEntry = false;
+        let sawUnselectedEntry = false;
+
+        for (let i = 0; i < positions.length; i++) {
+            const pos = positions[i];
+            const entry = byPos[pos];
+            if (!entry) {
+                continue;
+            }
+            sawEntry = true;
+            // Cheapest already picked — other squad players may still be usable.
+            if (ctx.selectedIds[String(entry.playerteam_id)]) {
+                continue;
+            }
+            sawUnselectedEntry = true;
+            if (hintEntryUsable(entry, ctx, requireField, pos)) {
+                return true;
+            }
+        }
+
+        if (!sawEntry || !sawUnselectedEntry) {
+            return null;
+        }
+
+        return false;
+    }
+
+    function teamIsBlocked(teamId, ctx) {
+        if (!options) {
+            return false;
+        }
+        ctx = ctx || lineupSelectionContext();
+
+        if (ctx.addingToBench) {
+            if (!benchEnabled() || benchlist.length >= maxBenchAllowed()) {
+                return true;
+            }
+        }
+
+        const teamCount = ctx.teamCounts[String(teamId)] || 0;
+        if (teamCount >= Number(options.lineup_max_players_team)) {
+            return true;
+        }
+
+        const cached = playerCache[teamId];
+        if (cached && cached.length) {
+            for (let i = 0; i < cached.length; i++) {
+                if (!lineupBlockReason(cached[i], ctx)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        const hintUsable = teamHasUsableHint(teamId, ctx);
+        if (hintUsable === false) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function teamBlockReason(teamId, teamName, ctx) {
+        if (!options) {
+            return 'Von diesem Team kannst du aktuell keine weiteren Spieler aufstellen.';
+        }
+        ctx = ctx || lineupSelectionContext();
+
+        if (lineupFullyFilled()) {
+            return 'Deine Aufstellung ist komplett. Speichern nicht vergessen!';
+        }
+
+        if (ctx.addingToBench) {
+            if (!benchEnabled()) {
+                return 'Du hast bereits ' + ctx.maxPlayers + ' Spieler aufgestellt!';
+            }
+            if (benchlist.length >= maxBenchAllowed()) {
+                return 'Du hast bereits ' + maxBenchAllowed() + ' Ersatzspieler aufgestellt!';
+            }
+        }
+
+        const teamCount = ctx.teamCounts[String(teamId)] || 0;
+        if (teamCount >= Number(options.lineup_max_players_team)) {
+            return (
+                'Du hast bereits ' +
+                options.lineup_max_players_team +
+                ' Spieler von ' +
+                teamName +
+                ' aufgestellt!'
+            );
+        }
+
+        const hint = teamSelectHints[String(teamId)];
+        if (hint && hint.min_player_price != null && !priceFitsBudget(hint.min_player_price, ctx)) {
+            return 'Du hast zu wenig Credits um Spieler aus diesem Team zu kaufen!';
+        }
+
+        return 'Von diesem Team kannst du aktuell keine weiteren Spieler aufstellen.';
+    }
+
     function formatLineupCenter(match) {
         if (window.FfbMatchList) {
             if (window.FfbMatchList.hasPenaltyScore(match) || window.FfbMatchList.hasResultScore(match)) {
@@ -298,26 +496,31 @@
         );
     }
 
-    function teamTileHtml(side, match) {
+    function teamTileHtml(side, match, ctx) {
         const isHome = side === 'home';
         const teamId = isHome ? match.match_hometeam_id : match.match_guestteam_id;
         const name = isHome ? match.match_hometeam_name : match.match_guestteam_name;
         const nat = isHome ? match.match_hometeam_nationality : match.match_guestteam_nationality;
         const isActive =
             Number(expandedTeamId) === Number(teamId) && Number(expandedMatchId) === Number(match.match_id);
+        const blocked = teamIsBlocked(teamId, ctx);
         const flag = flagHtml(nat);
         const nameHtml = '<span class="lineup-tile-name">' + escapeHtml(name) + '</span>';
         const inner = isHome ? nameHtml + flag : flag + nameHtml;
+        const title = blocked ? teamBlockReason(teamId, name, ctx) : 'Spieler anzeigen';
 
         return (
             '<button type="button" class="lineup-team-tile ' +
             side +
             (isActive ? ' is-active' : '') +
+            (blocked ? ' is-blocked' : '') +
             '" data-select-team="' +
             escapeHtml(teamId) +
             '" data-match-id="' +
             escapeHtml(match.match_id) +
-            '" title="Spieler anzeigen">' +
+            '" title="' +
+            escapeHtml(title) +
+            '">' +
             inner +
             '</button>'
         );
@@ -351,6 +554,7 @@
         hint.className = 'lineup-pick-hint';
         hint.textContent = 'Klick auf ein Team um Spieler auszuwählen';
 
+        const ctx = options ? lineupSelectionContext() : null;
         const ul = document.createElement('ul');
         ul.className = 'match-list lineup-match-list';
         matchesForDisplay().forEach(function (match) {
@@ -361,13 +565,13 @@
                 Number(expandedMatchId) === Number(match.match_id) && expandedTeamId > 0;
             li.innerHTML =
                 '<div class="match-list-row">' +
-                teamTileHtml('home', match) +
+                teamTileHtml('home', match, ctx) +
                 '<span class="score"><a class="nolink under" href="#" data-modal="match" data-id="' +
                 escapeHtml(match.match_id) +
                 '" title="Klicken für Matchinfos">' +
                 formatLineupCenter(match) +
                 '</a></span>' +
-                teamTileHtml('away', match) +
+                teamTileHtml('away', match, ctx) +
                 '</div>' +
                 '<div class="lineup-match-players playerlist' +
                 (showRecentPerformance ? ' playerlist--with-perf' : '') +
@@ -392,6 +596,34 @@
         }
     }
 
+    function syncTeamTileStates() {
+        if (!matchlistEl || !options) {
+            return;
+        }
+        const ctx = lineupSelectionContext();
+        matchlistEl.querySelectorAll('.lineup-team-tile[data-select-team]').forEach(function (btn) {
+            const teamId = btn.getAttribute('data-select-team');
+            const matchId = btn.getAttribute('data-match-id');
+            const match = matches.find(function (m) {
+                return Number(m.match_id) === Number(matchId);
+            });
+            let teamName = '';
+            if (match) {
+                teamName =
+                    Number(match.match_hometeam_id) === Number(teamId)
+                        ? match.match_hometeam_name
+                        : match.match_guestteam_name;
+            }
+            const blocked = teamIsBlocked(teamId, ctx);
+            const isActive =
+                Number(expandedTeamId) === Number(teamId) &&
+                Number(expandedMatchId) === Number(matchId);
+            btn.classList.toggle('is-blocked', blocked);
+            btn.classList.toggle('is-active', isActive);
+            btn.title = blocked ? teamBlockReason(teamId, teamName, ctx) : 'Spieler anzeigen';
+        });
+    }
+
     function selectedTeamNationality(teamId, matchId) {
         const match = matches.find(function (m) {
             return Number(m.match_id) === Number(matchId);
@@ -408,15 +640,171 @@
         return '';
     }
 
+    function lineupSelectionContext() {
+        const maxPlayers = Number(options.lineup_max_players);
+        const selectedIds = {};
+        const teamCounts = {};
+        let numG = 0;
+        let numD = 0;
+        let numM = 0;
+        let numS = 0;
+
+        lineuplist.forEach(function (p) {
+            selectedIds[String(p.playerteam_id)] = true;
+            const teamId = String(p.playerteam_team_id);
+            teamCounts[teamId] = (teamCounts[teamId] || 0) + 1;
+            const pos = p.playerteam_player_position;
+            if (pos === 'g') {
+                numG++;
+            } else if (pos === 'd') {
+                numD++;
+            } else if (pos === 'm') {
+                numM++;
+            } else if (pos === 's') {
+                numS++;
+            }
+        });
+        benchlist.forEach(function (p) {
+            selectedIds[String(p.playerteam_id)] = true;
+            const teamId = String(p.playerteam_team_id);
+            teamCounts[teamId] = (teamCounts[teamId] || 0) + 1;
+        });
+
+        return {
+            maxPlayers: maxPlayers,
+            addingToBench: lineuplist.length >= maxPlayers,
+            left: maxPlayers - lineuplist.length,
+            selectedIds: selectedIds,
+            teamCounts: teamCounts,
+            numG: numG,
+            numD: numD,
+            numM: numM,
+            numS: numS,
+            credits: credits,
+        };
+    }
+
+    /**
+     * Same rules as checkLineup, but returns the error text (or null if allowed).
+     */
+    function lineupBlockReason(player, ctx) {
+        if (!options || !player) {
+            return null;
+        }
+        ctx = ctx || lineupSelectionContext();
+        const maxPlayers = ctx.maxPlayers;
+
+        if (lineupFullyFilled()) {
+            return 'Deine Aufstellung ist komplett. Speichern nicht vergessen!';
+        }
+
+        if (ctx.addingToBench) {
+            if (!benchEnabled()) {
+                return 'Du hast bereits ' + maxPlayers + ' Spieler aufgestellt!';
+            }
+            if (benchlist.length + 1 > maxBenchAllowed()) {
+                return 'Du hast bereits ' + maxBenchAllowed() + ' Ersatzspieler aufgestellt!';
+            }
+        }
+
+        const price = Number(
+            player.playerteam_player_price != null
+                ? player.playerteam_player_price
+                : player.player_price
+        );
+        if (Math.round((ctx.credits - price) * 10) / 10 < 0) {
+            return 'Du hast zuwenig Credits um diesen Spieler zu kaufen!';
+        }
+
+        if (ctx.selectedIds[String(player.playerteam_id)]) {
+            return 'Dieser Spieler befindet sich bereits in deiner Aufstellung!';
+        }
+
+        const teamCount = ctx.teamCounts[String(player.playerteam_team_id)] || 0;
+        if (teamCount + 1 > Number(options.lineup_max_players_team)) {
+            return (
+                'Du hast bereits ' +
+                options.lineup_max_players_team +
+                ' Spieler von ' +
+                player.playerteam_team +
+                ' aufgestellt!'
+            );
+        }
+
+        if (ctx.addingToBench) {
+            return null;
+        }
+
+        const left = ctx.left;
+        const numG = ctx.numG;
+        const numD = ctx.numD;
+        const numM = ctx.numM;
+        const numS = ctx.numS;
+        const pos = player.player_position || player.playerteam_player_position;
+
+        if (pos === 'g' && numG + 1 > Number(options.lineup_max_g)) {
+            return 'Du hast bereits ' + options.lineup_max_g + ' Spieler im Tor!';
+        }
+        if (pos === 'd' && numD + 1 > Number(options.lineup_max_d)) {
+            return 'Du hast bereits ' + options.lineup_max_d + ' Spieler in der Verteidigung!';
+        }
+        if (pos === 'm' && numM + 1 > Number(options.lineup_max_m)) {
+            return 'Du hast bereits ' + options.lineup_max_m + ' Spieler im Mittelfeld!';
+        }
+        if (pos === 's' && numS + 1 > Number(options.lineup_max_s)) {
+            return 'Du hast bereits ' + options.lineup_max_s + ' Spieler im Sturm!';
+        }
+
+        if (pos === 'g') {
+            if (
+                Number(options.lineup_min_d) - numD > left - 1 ||
+                Number(options.lineup_min_m) - numM > left - 1 ||
+                Number(options.lineup_min_s) - numS > left - 1
+            ) {
+                return 'Du benötigst noch Spieler an anderen Positionen!';
+            }
+        }
+        if (pos === 'd') {
+            if (
+                Number(options.lineup_min_g) - numG > left - 1 ||
+                Number(options.lineup_min_m) - numM > left - 1 ||
+                Number(options.lineup_min_s) - numS > left - 1
+            ) {
+                return 'Du benötigst noch Spieler an anderen Positionen!';
+            }
+        }
+        if (pos === 'm') {
+            if (
+                Number(options.lineup_min_g) - numG > left - 1 ||
+                Number(options.lineup_min_d) - numD > left - 1 ||
+                Number(options.lineup_min_s) - numS > left - 1
+            ) {
+                return 'Du benötigst noch Spieler an anderen Positionen!';
+            }
+        }
+        if (pos === 's') {
+            if (
+                Number(options.lineup_min_g) - numG > left - 1 ||
+                Number(options.lineup_min_m) - numM > left - 1 ||
+                Number(options.lineup_min_d) - numD > left - 1
+            ) {
+                return 'Du benötigst noch Spieler an anderen Positionen!';
+            }
+        }
+
+        return null;
+    }
+
     function playerListHtml(players, teamNationality) {
         const flag = flagHtml(teamNationality);
+        const ctx = options ? lineupSelectionContext() : null;
         let html = showRecentPerformance
             ? '<div class="playerlist-head"><span class="playerlist-team-flag">' +
               flag +
-              '</span><span></span><span>Name</span><span>Preis</span><span></span><span>Leistung</span></div>'
+              '</span><span></span><span>Name</span><span>Preis</span><span>Leistung</span></div>'
             : '<div class="playerlist-head"><span class="playerlist-team-flag">' +
               flag +
-              '</span><span>Name</span><span>Preis</span><span></span></div>';
+              '</span><span>Name</span><span>Preis</span></div>';
         const sections = [
             { key: 'g', title: 'Torhüter' },
             { key: 'd', title: 'Verteidiger' },
@@ -430,8 +818,27 @@
                     return p.playerteam_player_position === sec.key;
                 })
                 .forEach(function (p) {
+                    const reason = ctx ? lineupBlockReason(p, ctx) : null;
+                    const blocked = !!reason;
+                    const inLineup = !!(ctx && ctx.selectedIds[String(p.playerteam_id)]);
+                    const lineClasses = ['playerline'];
+                    if (blocked) {
+                        lineClasses.push('is-blocked');
+                    }
+                    if (inLineup) {
+                        lineClasses.push('is-in-lineup');
+                    }
+                    const nameClasses = [];
+                    if (blocked) {
+                        nameClasses.push('is-blocked');
+                    }
+                    if (inLineup) {
+                        nameClasses.push('is-in-lineup');
+                    }
                     html +=
-                        '<div class="playerline">' +
+                        '<div class="' +
+                        lineClasses.join(' ') +
+                        '">' +
                         '<span class="info"><a href="#" data-modal="player" data-id="' +
                         p.playerteam_id +
                         '"><img src="' +
@@ -446,14 +853,17 @@
                     html +=
                         '<span class="name"><a href="#" data-add="' +
                         p.playerteam_id +
-                        '">' +
+                        '"' +
+                        (nameClasses.length ? ' class="' + nameClasses.join(' ') + '"' : '') +
+                        (blocked
+                            ? ' aria-disabled="true" title="' + escapeHtml(reason) + '"'
+                            : '') +
+                        '>' +
+                        buildSelectionWarning(p) +
                         escapeHtml(p.player_fname + ' ' + p.player_lname) +
                         '</a></span>' +
                         '<span class="price">' +
                         escapeHtml(formatTeamPrice(p.playerteam_player_price)) +
-                        '</span>' +
-                        '<span class="status">' +
-                        buildSelectionWarning(p) +
                         '</span>';
                     if (showRecentPerformance) {
                         html +=
@@ -467,6 +877,31 @@
         return html;
     }
 
+    function refreshOpenPlayersPanel() {
+        if (!expandedTeamId || !expandedMatchId || !matchlistEl) {
+            syncTeamTileStates();
+            return;
+        }
+        const panel = matchlistEl.querySelector(
+            '.lineup-match-players[data-players-for="' + expandedMatchId + '"]'
+        );
+        const cached = playerCache[expandedTeamId];
+        if (!panel || panel.hidden || !cached) {
+            syncTeamTileStates();
+            return;
+        }
+        const byId = panel._playersById || {};
+        panel.innerHTML = playerListHtml(cached, selectedTeamNationality(expandedTeamId, expandedMatchId));
+        panel._playersById = byId;
+        if (!panel._playersById || Object.keys(panel._playersById).length === 0) {
+            panel._playersById = {};
+            cached.forEach(function (p) {
+                panel._playersById[String(p.playerteam_id)] = p;
+            });
+        }
+        syncTeamTileStates();
+    }
+
     function fillPlayersPanel(panel, teamId) {
         const nat = selectedTeamNationality(teamId, expandedMatchId);
         const cached = playerCache[teamId];
@@ -477,6 +912,7 @@
                 panel._playersById[String(p.playerteam_id)] = p;
             });
             panel.hidden = false;
+            syncTeamTileStates();
             return Promise.resolve();
         }
 
@@ -497,6 +933,7 @@
                 const players = data.players || [];
                 playerCache[teamId] = players;
                 if (Number(expandedTeamId) !== Number(teamId)) {
+                    syncTeamTileStates();
                     return;
                 }
                 panel.innerHTML = playerListHtml(players, nat);
@@ -504,6 +941,7 @@
                 players.forEach(function (p) {
                     panel._playersById[String(p.playerteam_id)] = p;
                 });
+                syncTeamTileStates();
             })
             .catch(function (err) {
                 if (Number(expandedTeamId) !== Number(teamId)) {
@@ -803,6 +1241,20 @@
         return Math.max(0, Number(options.lineup_max_bench) || 0);
     }
 
+    function lineupFullyFilled() {
+        if (!options) {
+            return false;
+        }
+        if (lineuplist.length < Number(options.lineup_max_players)) {
+            return false;
+        }
+        if (!benchEnabled()) {
+            return true;
+        }
+
+        return benchlist.length >= maxBenchAllowed();
+    }
+
     function mapPlayerRecord(player) {
         return {
             player_id: player.player_id,
@@ -878,128 +1330,10 @@
     }
 
     function checkLineup(player) {
-        const maxPlayers = Number(options.lineup_max_players);
-        const startersFull = lineuplist.length >= maxPlayers;
-        const addingToBench = startersFull;
-
-        if (addingToBench) {
-            if (!benchEnabled()) {
-                addErrorMessage('Du hast bereits ' + maxPlayers + ' Spieler aufgestellt!');
-                return false;
-            }
-            if (benchlist.length + 1 > maxBenchAllowed()) {
-                addErrorMessage(
-                    'Du hast bereits ' + maxBenchAllowed() + ' Ersatzspieler aufgestellt!'
-                );
-                return false;
-            }
-        }
-
-        if (Math.round((credits - Number(
-            player.playerteam_player_price != null ? player.playerteam_player_price : player.player_price
-        )) * 10) / 10 < 0) {
-            addErrorMessage('Du hast zuwenig Credits um diesen Spieler zu kaufen!');
+        const reason = lineupBlockReason(player);
+        if (reason) {
+            addErrorMessage(reason);
             return false;
-        }
-
-        let numG = 0;
-        let numD = 0;
-        let numM = 0;
-        let numS = 0;
-        let numTeam = 0;
-        const selected = lineuplist.concat(benchlist);
-        for (let i = 0; i < selected.length; i++) {
-            if (String(selected[i].playerteam_id) === String(player.playerteam_id)) {
-                addErrorMessage('Dieser Spieler befindet sich bereits in deiner Aufstellung!');
-                return false;
-            }
-            if (String(selected[i].playerteam_team_id) === String(player.playerteam_team_id)) {
-                numTeam++;
-            }
-        }
-
-        if (numTeam + 1 > Number(options.lineup_max_players_team)) {
-            addErrorMessage(
-                'Du hast bereits ' +
-                    options.lineup_max_players_team +
-                    ' Spieler von ' +
-                    player.playerteam_team +
-                    ' aufgestellt!'
-            );
-            return false;
-        }
-
-        // Bench has no position restrictions.
-        if (addingToBench) {
-            return true;
-        }
-
-        for (let i = 0; i < lineuplist.length; i++) {
-            const pos = lineuplist[i].playerteam_player_position;
-            if (pos === 'g') numG++;
-            if (pos === 'd') numD++;
-            if (pos === 'm') numM++;
-            if (pos === 's') numS++;
-        }
-
-        const left = maxPlayers - lineuplist.length;
-        const pos = player.player_position || player.playerteam_player_position;
-        if (pos === 'g' && numG + 1 > Number(options.lineup_max_g)) {
-            addErrorMessage('Du hast bereits ' + options.lineup_max_g + ' Spieler im Tor!');
-            return false;
-        }
-        if (pos === 'd' && numD + 1 > Number(options.lineup_max_d)) {
-            addErrorMessage('Du hast bereits ' + options.lineup_max_d + ' Spieler in der Verteidigung!');
-            return false;
-        }
-        if (pos === 'm' && numM + 1 > Number(options.lineup_max_m)) {
-            addErrorMessage('Du hast bereits ' + options.lineup_max_m + ' Spieler im Mittelfeld!');
-            return false;
-        }
-        if (pos === 's' && numS + 1 > Number(options.lineup_max_s)) {
-            addErrorMessage('Du hast bereits ' + options.lineup_max_s + ' Spieler im Sturm!');
-            return false;
-        }
-
-        if (pos === 'g') {
-            if (
-                Number(options.lineup_min_d) - numD > left - 1 ||
-                Number(options.lineup_min_m) - numM > left - 1 ||
-                Number(options.lineup_min_s) - numS > left - 1
-            ) {
-                addErrorMessage('Du benötigst noch Spieler an anderen Positionen!');
-                return false;
-            }
-        }
-        if (pos === 'd') {
-            if (
-                Number(options.lineup_min_g) - numG > left - 1 ||
-                Number(options.lineup_min_m) - numM > left - 1 ||
-                Number(options.lineup_min_s) - numS > left - 1
-            ) {
-                addErrorMessage('Du benötigst noch Spieler an anderen Positionen!');
-                return false;
-            }
-        }
-        if (pos === 'm') {
-            if (
-                Number(options.lineup_min_g) - numG > left - 1 ||
-                Number(options.lineup_min_d) - numD > left - 1 ||
-                Number(options.lineup_min_s) - numS > left - 1
-            ) {
-                addErrorMessage('Du benötigst noch Spieler an anderen Positionen!');
-                return false;
-            }
-        }
-        if (pos === 's') {
-            if (
-                Number(options.lineup_min_g) - numG > left - 1 ||
-                Number(options.lineup_min_m) - numM > left - 1 ||
-                Number(options.lineup_min_d) - numD > left - 1
-            ) {
-                addErrorMessage('Du benötigst noch Spieler an anderen Positionen!');
-                return false;
-            }
         }
         return true;
     }
@@ -1022,6 +1356,7 @@
         updateCreditsDisplay();
         setLineupDirty(true);
         dispActionButtons();
+        refreshOpenPlayersPanel();
     }
 
     function removePlayer(playerteamId) {
@@ -1046,6 +1381,7 @@
         updateCreditsDisplay();
         setLineupDirty(true);
         dispActionButtons();
+        refreshOpenPlayersPanel();
     }
 
     function removeBenchPlayer(playerteamId) {
@@ -1061,6 +1397,7 @@
         updateCreditsDisplay();
         setLineupDirty(true);
         dispActionButtons();
+        refreshOpenPlayersPanel();
     }
 
     async function saveLineup() {
@@ -1105,6 +1442,7 @@
                 updateCreditsDisplay();
                 setLineupDirty(false);
                 dispActionButtons();
+                refreshOpenPlayersPanel();
                 return;
             }
             credits -= Number(data.userteam.userteam_price || 0);
@@ -1114,11 +1452,13 @@
             updateCreditsDisplay();
             setLineupDirty(false);
             dispActionButtons();
+            refreshOpenPlayersPanel();
         } catch (err) {
             updateLineupDisplay();
             updateCreditsDisplay();
             setLineupDirty(false);
             dispActionButtons();
+            refreshOpenPlayersPanel();
             addErrorMessage(escapeHtml((err && err.message) || 'Aufstellung konnte nicht geladen werden.'));
         }
     }
@@ -1186,6 +1526,19 @@
 
             matches = matchround.matches || [];
             teams = matchround.teams || [];
+            teamSelectHints = {};
+            teams.forEach(function (team) {
+                teamSelectHints[String(team.team_id)] = {
+                    min_player_price:
+                        team.min_player_price != null ? Number(team.min_player_price) : null,
+                    cheapest_by_position: team.cheapest_by_position || {
+                        g: null,
+                        d: null,
+                        m: null,
+                        s: null,
+                    },
+                };
+            });
             roundMetaEl.innerHTML =
                 escapeHtml(matchround.matchround_title) +
                 '<span class="lineup-deadline"><u>Deadline:</u> <em>' +

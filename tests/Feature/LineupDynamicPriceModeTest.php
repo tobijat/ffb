@@ -326,6 +326,68 @@ class LineupDynamicPriceModeTest extends TestCase
     }
 
     #[Test]
+    public function matchround_includes_cheapest_player_hints_per_team(): void
+    {
+        [$leagueId, $roundId, $teamId, $midPtId] = $this->seedDynamicSquad();
+        $this->seedMatchForRound($roundId, $teamId);
+
+        $defenderId = (int) Player::query()->insertGetId([
+            'player_foreign_id' => '',
+            'player_fname' => 'Alex',
+            'player_lname' => 'Abwehr',
+            'player_nationality' => 'AUT',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ], 'player_id');
+
+        $defPtId = (int) Playerteam::query()->insertGetId([
+            'playerteam_player_id' => $defenderId,
+            'playerteam_team_id' => $teamId,
+            'playerteam_league_id' => $leagueId,
+            'playerteam_player_picture' => '',
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 'd',
+            'playerteam_date_transfer' => '2008-01-01 00:00:00',
+        ], 'playerteam_id');
+
+        Playerprice::query()->insert([
+            'playerprice_playerteam_id' => $midPtId,
+            'playerprice_matchround_id' => $roundId,
+            'playerprice_price' => 9.5,
+            'playerprice_player_power' => 1,
+            'playerprice_av_power' => 1,
+            'playerprice_recent_performance' => null,
+        ]);
+        Playerprice::query()->insert([
+            'playerprice_playerteam_id' => $defPtId,
+            'playerprice_matchround_id' => $roundId,
+            'playerprice_price' => 4.0,
+            'playerprice_player_power' => 1,
+            'playerprice_av_power' => 1,
+            'playerprice_recent_performance' => null,
+        ]);
+
+        $result = $this->app->make(LineupService::class)->matchroundAndTeams(544);
+
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+        $this->assertCount(1, $result['data']['matchround']['teams']);
+
+        $team = $result['data']['matchround']['teams'][0];
+        $this->assertSame($teamId, $team['team_id']);
+        $this->assertSame(4.0, $team['min_player_price']);
+        $this->assertSame(
+            ['playerteam_id' => $defPtId, 'price' => 4.0],
+            $team['cheapest_by_position']['d'],
+        );
+        $this->assertSame(
+            ['playerteam_id' => $midPtId, 'price' => 9.5],
+            $team['cheapest_by_position']['m'],
+        );
+        $this->assertNull($team['cheapest_by_position']['g']);
+        $this->assertNull($team['cheapest_by_position']['s']);
+    }
+
+    #[Test]
     public function team_players_are_ordered_by_lastname_within_position(): void
     {
         [$leagueId, $roundId, $teamId] = $this->seedDynamicSquad();

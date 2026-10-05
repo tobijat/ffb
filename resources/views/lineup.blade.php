@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/dashboard.css?v=12">
     <link rel="stylesheet" href="css/modal.css?v=16">
     <link rel="stylesheet" href="css/myteam.css?v=32">
-    <link rel="stylesheet" href="css/lineup.css?v=22">
+    <link rel="stylesheet" href="css/lineup.css?v=32">
 </head>
 <body class="dash-body">
     @php
@@ -101,6 +101,6 @@
     <script src="js/player-modal.js?v=11" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
     <script src="js/pitch-bench.js?v=20" defer></script>
-    <script src="js/lineup.js?v=29" defer></script>
+    <script src="js/lineup.js?v=37" defer></script>
 </body>
 </html>

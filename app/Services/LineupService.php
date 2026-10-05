@@ -190,20 +190,37 @@ class LineupService
             }
             $pickerTeamIds = array_values(array_unique(array_filter($pickerTeamIds)));
 
+            $selectHints = $this->teamSelectHints(
+                $pickerTeamIds,
+                (int) $round->matchround_id,
+                $leagueId,
+            );
+
             $teams = $pickerTeamIds === []
                 ? []
                 : Team::query()
                     ->whereIn('team_id', $pickerTeamIds)
                     ->orderBy('team_name')
                     ->get()
-                    ->map(function (Team $t) use ($pricesByTeamId): array {
+                    ->map(function (Team $t) use ($pricesByTeamId, $selectHints): array {
                         $teamId = (int) $t->team_id;
+                        $hint = $selectHints[$teamId] ?? [
+                            'min_player_price' => null,
+                            'cheapest_by_position' => [
+                                'g' => null,
+                                'd' => null,
+                                'm' => null,
+                                's' => null,
+                            ],
+                        ];
                         $row = [
                             'team_id' => $teamId,
                             'team_name' => (string) $t->team_name,
                             'team_nationality' => (string) $t->team_nationality,
                             'team_status' => (int) ($t->team_status ?? 0),
                             'team_price' => null,
+                            'min_player_price' => $hint['min_player_price'],
+                            'cheapest_by_position' => $hint['cheapest_by_position'],
                         ];
 
                         if (array_key_exists($teamId, $pricesByTeamId)) {
@@ -846,6 +863,91 @@ class LineupService
         }
 
         return null;
+    }
+
+    /**
+     * Cheapest priced active players per team / position for lineup team-tile gating.
+     *
+     * @param  list<int>  $teamIds
+     * @return array<int, array{
+     *     min_player_price: float|null,
+     *     cheapest_by_position: array{
+     *         g: array{playerteam_id: int, price: float}|null,
+     *         d: array{playerteam_id: int, price: float}|null,
+     *         m: array{playerteam_id: int, price: float}|null,
+     *         s: array{playerteam_id: int, price: float}|null
+     *     }
+     * }>
+     */
+    private function teamSelectHints(array $teamIds, int $matchroundId, int $leagueId): array
+    {
+        $emptyPositions = [
+            'g' => null,
+            'd' => null,
+            'm' => null,
+            's' => null,
+        ];
+        $hints = [];
+        foreach ($teamIds as $teamId) {
+            $hints[(int) $teamId] = [
+                'min_player_price' => null,
+                'cheapest_by_position' => $emptyPositions,
+            ];
+        }
+
+        if ($teamIds === [] || $matchroundId <= 0) {
+            return $hints;
+        }
+
+        $playerteams = Playerteam::query()
+            ->whereIn('playerteam_team_id', $teamIds)
+            ->where('playerteam_status', 1)
+            ->when($leagueId > 0, fn ($q) => $q->forLeague($leagueId))
+            ->get(['playerteam_id', 'playerteam_team_id', 'playerteam_player_position'])
+            ->keyBy(fn (Playerteam $pt): int => (int) $pt->playerteam_id);
+
+        if ($playerteams->isEmpty()) {
+            return $hints;
+        }
+
+        $prices = $this->resolvePlayerPrices(
+            $playerteams->keys()->map(fn ($id): int => (int) $id)->all(),
+            $matchroundId,
+            $playerteams,
+        );
+
+        foreach ($playerteams as $pt) {
+            $ptId = (int) $pt->playerteam_id;
+            if (! $prices->has($ptId)) {
+                continue;
+            }
+
+            $price = round((float) $prices->get($ptId), 1);
+            $teamId = (int) $pt->playerteam_team_id;
+            if (! isset($hints[$teamId])) {
+                continue;
+            }
+
+            $min = $hints[$teamId]['min_player_price'];
+            if ($min === null || $price < $min) {
+                $hints[$teamId]['min_player_price'] = $price;
+            }
+
+            $pos = strtolower((string) $pt->playerteam_player_position);
+            if (! array_key_exists($pos, $hints[$teamId]['cheapest_by_position'])) {
+                continue;
+            }
+
+            $current = $hints[$teamId]['cheapest_by_position'][$pos];
+            if ($current === null || $price < (float) $current['price']) {
+                $hints[$teamId]['cheapest_by_position'][$pos] = [
+                    'playerteam_id' => $ptId,
+                    'price' => $price,
+                ];
+            }
+        }
+
+        return $hints;
     }
 
     /**
