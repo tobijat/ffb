@@ -3,7 +3,7 @@
 @section('title', 'Spieldaten')
 
 @push('scripts')
-    <script src="{{ url('js/admin-matchdata.js') }}?v=24" defer></script>
+    <script src="{{ url('js/admin-matchdata.js') }}?v=25" defer></script>
 @endpush
 
 @section('content')

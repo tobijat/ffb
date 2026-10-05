@@ -622,6 +622,65 @@
         return cleared;
     }
 
+    /**
+     * Capture current form values keyed by playerteam_id so a squad reload
+     * can keep unsaved edits for players who are still on the match.
+     */
+    function snapshotPlayerFormState() {
+        const byPt = {};
+        ['Home', 'Guest'].forEach((side) => {
+            players[side].forEach((_, index) => {
+                const payload = playerPayload(side, index);
+                const ptId = String(payload.playerteam_id || '');
+                if (ptId !== '') {
+                    byPt[ptId] = payload;
+                }
+            });
+        });
+        return byPt;
+    }
+
+    function restorePlayerFormState(byPt) {
+        if (!byPt) {
+            return;
+        }
+        ['Home', 'Guest'].forEach((side) => {
+            players[side].forEach((player, index) => {
+                const saved = byPt[String(player.playerteam_id ?? '')];
+                if (!saved) {
+                    return;
+                }
+                applyScrapedPlayer(side, index, saved);
+            });
+        });
+    }
+
+    /**
+     * Re-fetch home/guest squads from the DB (e.g. after adding players in /admin/squad).
+     * Preserves in-form values for playerteam ids that still exist.
+     */
+    async function reloadPlayersForCurrentMatch() {
+        if (!currentMatchId) {
+            return;
+        }
+        const match = matchesCache.find((m) => Number(m.match_id) === Number(currentMatchId));
+        if (!match) {
+            return;
+        }
+        const snapshot = snapshotPlayerFormState();
+        displayLock += 1;
+        const lock = displayLock;
+        await Promise.all([
+            loadPlayers('Home', match.match_hometeam_id, match.match_id, lock),
+            loadPlayers('Guest', match.match_guestteam_id, match.match_id, lock),
+        ]);
+        if (lock !== displayLock) {
+            return;
+        }
+        restorePlayerFormState(snapshot);
+        refreshSavebar();
+    }
+
     function applyScrapePayload(data, options) {
         const opts = options || {};
         if (data.url && matchUrlInput) {
@@ -857,6 +916,11 @@
 
             waitingForFrame = false;
             stopFramePoll();
+            if (scrapeHint) {
+                scrapeHint.hidden = false;
+                scrapeHint.textContent = 'Spielerliste wird aktualisiert…';
+            }
+            await reloadPlayersForCurrentMatch();
             applyScrapePayload(data, { invalidateAbsent: true });
         } catch (err) {
             if (scrapeHint) {
@@ -906,6 +970,11 @@
                 const msg = (data.errors && data.errors[0]) || data.message || 'Laden fehlgeschlagen.';
                 throw new Error(msg);
             }
+            if (scrapeHint) {
+                scrapeHint.hidden = false;
+                scrapeHint.textContent = 'Spielerliste wird aktualisiert…';
+            }
+            await reloadPlayersForCurrentMatch();
             applyScrapePayload(data, { invalidateAbsent: true });
         } catch (err) {
             if (scrapeHint) {
@@ -955,6 +1024,11 @@
                 const msg = (data.errors && data.errors[0]) || data.message || 'Laden fehlgeschlagen.';
                 throw new Error(msg);
             }
+            if (scrapeHint) {
+                scrapeHint.hidden = false;
+                scrapeHint.textContent = 'Spielerliste wird aktualisiert…';
+            }
+            await reloadPlayersForCurrentMatch();
             applyScrapePayload(data, { invalidateAbsent: true });
         } catch (err) {
             if (scrapeHint) {
