@@ -29,6 +29,8 @@ class AdminLeagueDashboardService
 
     private const AVERAGE_LINEUP_BUDGET_RATIO = 0.9;
 
+    private const AVERAGE_LINEUP_WITH_BENCH_BUDGET_RATIO = 1.0;
+
     public function __construct(
         private readonly AdminCenterService $adminCenter,
         private readonly ExtremeTeamService $extremeTeams,
@@ -78,7 +80,7 @@ class AdminLeagueDashboardService
      *     key: string,
      *     title: string,
      *     ok: bool,
-     *     checklist: list<array{key: string, label: string, ok: bool, options_overview?: list<array{title: string, items: list<array{label: string, value: string}>}>}>
+     *     checklist: list<array{key: string, label: string, ok: bool, options_overview?: list<array{title: string, items: list<array{label: string, value: string}>}>, match_list?: list<array{label: string, detail: string}>, match_list_summary?: string}>
      * }
      */
     private function leagueSection(int $leagueId): array
@@ -104,37 +106,47 @@ class AdminLeagueDashboardService
         $isVisible = (bool) $league->league_visible;
         $scheduleOk = $this->leagueScheduleMatchesArchiveState($league);
         $hasOptions = $league->options !== null;
+        $consistencyIssues = $hasOptions
+            ? $this->leagueOptionsConsistencyEntries($league->options)
+            : [];
+        $optionsOk = $hasOptions && $consistencyIssues === [];
         $optionsOverview = $hasOptions
             ? $this->optionsOverview($league->options)
             : [];
 
+        $optionsItem = [
+            'key' => 'options',
+            'label' => 'Liga-Optionen sind korrekt gesetzt',
+            'ok' => $optionsOk,
+            'options_overview' => $optionsOverview,
+        ];
+        if ($consistencyIssues !== []) {
+            $optionsItem['match_list'] = $consistencyIssues;
+            $optionsItem['match_list_summary'] = 'Inkonsistente Liga-Optionen';
+        }
+
         $checklist = [
             [
                 'key' => 'logo',
-                'label' => 'Logo vorhanden',
+                'label' => 'Ein Liga-Logo ist vorhanden',
                 'ok' => $hasLogo,
             ],
             [
                 'key' => 'visible',
-                'label' => 'Liga sichtbar',
+                'label' => 'Die Liga ist sichtbar',
                 'ok' => $isVisible,
             ],
             [
                 'key' => 'schedule',
                 'label' => (bool) $league->league_archive
-                    ? 'Archiviert und nur vergangene Spielrunden'
-                    : 'Aktiv und aktuelle/zukünftige Spielrunden vorhanden',
+                    ? 'Die Liga ist archiviert und es sind nur vergangene Spielrunden vorhanden'
+                    : 'Die Liga ist aktiv und es sind aktuelle oder zukünftige Spielrunden vorhanden',
                 'ok' => $scheduleOk,
             ],
-            [
-                'key' => 'options',
-                'label' => 'Liga-Optionen gesetzt',
-                'ok' => $hasOptions,
-                'options_overview' => $optionsOverview,
-            ],
+            $optionsItem,
         ];
 
-        $ok = $hasLogo && $isVisible && $scheduleOk && $hasOptions;
+        $ok = $hasLogo && $isVisible && $scheduleOk && $optionsOk;
 
         return [
             'key' => 'league',
@@ -149,8 +161,7 @@ class AdminLeagueDashboardService
      *     key: string,
      *     title: string,
      *     ok: bool,
-     *     checklist: list<array{key: string, label: string, ok: bool}>,
-     *     groups: list<array{key: string, title: string, rounds: list<array<string, mixed>>}>
+     *     checklist: list<array{key: string, label: string, ok: bool, options_overview?: list<array{title: string, items: list<array{label: string, value: string}>}>, match_list?: list<array{label: string, detail: string}>, match_list_summary?: string}>
      * }
      */
     private function matchroundsSection(int $leagueId): array
@@ -161,10 +172,12 @@ class AdminLeagueDashboardService
                 'title' => 'Spielrunden',
                 'ok' => false,
                 'checklist' => [],
-                'groups' => [],
             ];
         }
 
+        $leagueBenchMode = trim((string) (LeagueOptions::query()
+            ->where('options_league_id', $leagueId)
+            ->value('options_league_benchmode') ?? ''));
         $now = Carbon::now();
         $rounds = Matchround::query()
             ->with('options')
@@ -174,18 +187,20 @@ class AdminLeagueDashboardService
             ->orderBy('matchround_id')
             ->get();
 
-        $grouped = [
-            'current' => [],
-            'future' => [],
-            'past' => [],
-        ];
-
         $checklist = [];
         $allRoundsHaveMatches = true;
         $hasActiveRound = false;
+        $allRoundOptionsOk = true;
+        $counts = [
+            'current' => 0,
+            'future' => 0,
+            'past' => 0,
+        ];
 
         foreach ($rounds as $round) {
             $period = $this->matchroundPeriod($round, $now);
+            $counts[$period]++;
+
             $matchCount = (int) ($round->matches_count ?? 0);
             $hasMatches = $matchCount > 0;
             $isActive = (int) $round->matchround_status === 1;
@@ -206,19 +221,25 @@ class AdminLeagueDashboardService
                 'ok' => $hasMatches,
             ];
 
-            $grouped[$period][] = [
-                'matchround_id' => (int) $round->matchround_id,
-                'title' => $title,
-                'startdate' => $this->formatMatchroundDate($round->matchround_startdate),
-                'enddate' => $this->formatMatchroundDate($round->matchround_enddate),
-                'match_count' => $matchCount,
-                'has_matches' => $hasMatches,
-                'active' => $isActive,
-                'has_lineup_options' => $hasLineupOptions,
-                'lineup_options' => $hasLineupOptions
-                    ? $this->matchroundLineupOptionsOverview($options)
-                    : [],
-            ];
+            if ($hasLineupOptions) {
+                $consistencyIssues = $this->matchroundOptionsConsistencyEntries($options, $leagueBenchMode);
+                $optionsOk = $consistencyIssues === [];
+                if (! $optionsOk) {
+                    $allRoundOptionsOk = false;
+                }
+
+                $optionsItem = [
+                    'key' => 'round-options-'.(int) $round->matchround_id,
+                    'label' => $title.': Runden-Optionen konsistent',
+                    'ok' => $optionsOk,
+                    'options_overview' => $this->matchroundLineupOptionsOverview($options),
+                ];
+                if ($consistencyIssues !== []) {
+                    $optionsItem['match_list'] = $consistencyIssues;
+                    $optionsItem['match_list_summary'] = 'Inkonsistente Runden-Optionen';
+                }
+                $checklist[] = $optionsItem;
+            }
         }
 
         if ($rounds->isEmpty()) {
@@ -231,31 +252,7 @@ class AdminLeagueDashboardService
             'ok' => $hasActiveRound,
         ];
 
-        $counts = [
-            'current' => count($grouped['current']),
-            'future' => count($grouped['future']),
-            'past' => count($grouped['past']),
-        ];
-
-        $groups = [];
-        foreach ([
-            'current' => 'Aktuell',
-            'future' => 'Zukünftig',
-            'past' => 'Vergangen',
-        ] as $key => $label) {
-            $groupRounds = $grouped[$key];
-            if ($key === 'past') {
-                $groupRounds = array_reverse($groupRounds);
-            }
-
-            $groups[] = [
-                'key' => $key,
-                'title' => $label,
-                'rounds' => $groupRounds,
-            ];
-        }
-
-        $ok = $allRoundsHaveMatches && $hasActiveRound && $rounds->isNotEmpty();
+        $ok = $allRoundsHaveMatches && $hasActiveRound && $rounds->isNotEmpty() && $allRoundOptionsOk;
 
         return [
             'key' => 'matchrounds',
@@ -267,7 +264,6 @@ class AdminLeagueDashboardService
             ),
             'ok' => $ok,
             'checklist' => $checklist,
-            'groups' => $groups,
         ];
     }
 
@@ -361,22 +357,22 @@ class AdminLeagueDashboardService
         $checklist = [
             [
                 'key' => 'has-matches',
-                'label' => 'Spiele vorhanden',
+                'label' => 'Spiele sind vorhanden',
                 'ok' => $hasMatches,
             ],
             [
                 'key' => 'dates-within-rounds',
-                'label' => 'Alle Spieldaten innerhalb der Spielrunden',
+                'label' => 'Alle Anstoßzeiten liegen innerhalb der Spielrunden',
                 'ok' => $datesWithinRounds,
                 'match_list' => $outsideRoundDates,
-                'match_list_summary' => 'Spiele außerhalb der Spielrunde',
+                'match_list_summary' => 'Spiele mit Anstoßzeiten außerhalb der Spielrunden',
             ],
             [
                 'key' => 'past-results',
-                'label' => 'Vergangene Spiele mit Ergebnis und Spieldauer',
+                'label' => 'Alle vergangene Spiele haben Ergebnis und Spieldauer gesetzt',
                 'ok' => $pastMatchesComplete,
                 'match_list' => $incompletePastMatches,
-                'match_list_summary' => 'Vergangene Spiele ohne Ergebnis/Dauer',
+                'match_list_summary' => 'Vergangene Spiele ohne Ergebnis oder Spieldauer',
                 'info_list' => $incompletePastWithStatus,
                 'info_list_summary' => 'Vergangene Spiele mit Status-Hinweis',
             ],
@@ -472,24 +468,24 @@ class AdminLeagueDashboardService
             'checklist' => [
                 [
                     'key' => 'teams-active',
-                    'label' => 'Alle Teams aktiv',
+                    'label' => 'Alle teilnehmenden Mannschaften sind aktiv',
                     'ok' => $allActive,
                     'match_list' => $inactive,
-                    'match_list_summary' => 'Inaktive Teams',
+                    'match_list_summary' => 'Inaktive Mannschaften',
                 ],
                 [
                     'key' => 'teams-flag',
-                    'label' => 'Alle Teams mit Logo/Flagge',
+                    'label' => 'Alle teilnehmenden Mannschaften haben ein Logo oder Flagge',
                     'ok' => $allHaveFlag,
                     'match_list' => $missingFlag,
-                    'match_list_summary' => 'Teams ohne Logo/Flagge',
+                    'match_list_summary' => 'Mannschaften ohne Logo oder Flagge',
                 ],
                 [
                     'key' => 'teams-jersey',
-                    'label' => 'Alle Teams mit Trikot',
+                    'label' => 'Alle teilnehmenden Mannschaften haben ein Trikot',
                     'ok' => $allHaveJersey,
                     'match_list' => $missingJersey,
-                    'match_list_summary' => 'Teams ohne Trikot',
+                    'match_list_summary' => 'Mannschaften ohne Trikot',
                 ],
             ],
         ];
@@ -652,14 +648,14 @@ class AdminLeagueDashboardService
                 ],
                 [
                     'key' => 'squad-positions',
-                    'label' => 'Jede Mannschaft hat alle Positionen (G/D/M/S)',
+                    'label' => 'In jeder Mannschaft sind alle Positionen (G/D/M/S) vorhanden',
                     'ok' => $allPositions,
                     'match_list' => $missingPositions,
                     'match_list_summary' => 'Mannschaften mit fehlenden Positionen',
                 ],
                 [
                     'key' => 'squad-unique-players',
-                    'label' => 'Kein Spieler aktiv in mehr als einer Mannschaft',
+                    'label' => 'Kein Spieler befindet sich gleichzeitig in mehr als einer Mannschaft',
                     'ok' => $noMultiTeam,
                     'match_list' => $multiTeamPlayers,
                     'match_list_summary' => 'Spieler in mehreren Mannschaften',
@@ -742,43 +738,60 @@ class AdminLeagueDashboardService
         $teamPricesOk = $missingTeamPrices === [];
         $performanceOk = $missingPerformance === [];
         $playerPricesOk = $missingPlayerPrices === [];
-        $averageLineup = $this->averageLineupBudgetEntries($leagueId, $isDynamic, $roundIds);
+        $averageLineup = $this->averageLineupBudgetEntries($leagueId, $isDynamic, $roundIds, false);
         $averageLineupOk = (bool) ($averageLineup['ok'] ?? false);
+        $benchModeOn = $this->leagueHasBenchMode($leagueId);
+        $averageLineupWithBench = $benchModeOn
+            ? $this->averageLineupBudgetEntries($leagueId, $isDynamic, $roundIds, true)
+            : ['ok' => true, 'entries' => []];
+        $averageLineupWithBenchOk = (bool) ($averageLineupWithBench['ok'] ?? false);
+
+        $checklist = [
+            [
+                'key' => 'team-prices',
+                'label' => 'Teampreis ist für jede Mannschaft gesetzt',
+                'ok' => $teamPricesOk,
+                'match_list' => $missingTeamPrices,
+                'match_list_summary' => 'Mannschaften ohne Teampreis',
+            ],
+            [
+                'key' => 'round-performance',
+                'label' => 'Dynamisch: Runden-Performance für vergangene Spiele sind für alle Spieler gesetzt',
+                'ok' => $performanceOk,
+                'match_list' => $missingPerformance,
+                'match_list_summary' => 'Spieler ohne Runden-Performance',
+            ],
+            [
+                'key' => 'player-prices',
+                'label' => 'Dynamisch: Spielerpreise sind für alle aktiven Spieler für die nächste Spielrunde gesetzt',
+                'ok' => $playerPricesOk,
+                'match_list' => $missingPlayerPrices,
+                'match_list_summary' => 'Aktive Spieler ohne Spielerpreis',
+            ],
+            [
+                'key' => 'average-lineup-budget',
+                'label' => 'Durchschnittliche Aufstellung kostet ≤ 90% des Budgets',
+                'ok' => $averageLineupOk,
+                'info_list' => $averageLineup['entries'],
+                'info_list_summary' => 'Kosten für eine durchschnittliche Aufstellung',
+            ],
+        ];
+
+        if ($benchModeOn) {
+            $checklist[] = [
+                'key' => 'average-lineup-budget-with-bench',
+                'label' => 'Durchschnittliche Aufstellung inkl. Ersatzspieler kostet ≤ 100% des Budgets',
+                'ok' => $averageLineupWithBenchOk,
+                'info_list' => $averageLineupWithBench['entries'],
+                'info_list_summary' => 'Kosten für eine durchschnittliche Aufstellung inkl. Ersatzspieler',
+            ];
+        }
 
         return [
             'key' => 'playerprice',
             'title' => 'Preis/Performance',
-            'ok' => $teamPricesOk && $performanceOk && $playerPricesOk && $averageLineupOk,
-            'checklist' => [
-                [
-                    'key' => 'team-prices',
-                    'label' => 'Jede Mannschaft hat einen Teampreis',
-                    'ok' => $teamPricesOk,
-                    'match_list' => $missingTeamPrices,
-                    'match_list_summary' => 'Mannschaften ohne Teampreis',
-                ],
-                [
-                    'key' => 'round-performance',
-                    'label' => 'Dynamisch: Round-Performance für vergangene Spiele gesetzt',
-                    'ok' => $performanceOk,
-                    'match_list' => $missingPerformance,
-                    'match_list_summary' => 'Stats ohne Round-Performance',
-                ],
-                [
-                    'key' => 'player-prices',
-                    'label' => 'Dynamisch: Spielerpreise für nächste Spielrunde gesetzt',
-                    'ok' => $playerPricesOk,
-                    'match_list' => $missingPlayerPrices,
-                    'match_list_summary' => 'Aktive Spieler ohne Spielerpreis',
-                ],
-                [
-                    'key' => 'average-lineup-budget',
-                    'label' => 'Durchschnitts-Aufstellung ≤ 90% des Budgets',
-                    'ok' => $averageLineupOk,
-                    'info_list' => $averageLineup['entries'],
-                    'info_list_summary' => 'Anteil am Budget je Spielrunde',
-                ],
-            ],
+            'ok' => $teamPricesOk && $performanceOk && $playerPricesOk && $averageLineupOk && $averageLineupWithBenchOk,
+            'checklist' => $checklist,
         ];
     }
 
@@ -788,12 +801,11 @@ class AdminLeagueDashboardService
      *     ok: bool,
      *     entries: list<array{
      *         label: string,
-     *         detail: string,
-     *         lineup?: list<array{label: string, detail: string}>
+     *         detail: string
      *     }>
      * }
      */
-    private function averageLineupBudgetEntries(int $leagueId, bool $isDynamic, array $roundIds): array
+    private function averageLineupBudgetEntries(int $leagueId, bool $isDynamic, array $roundIds, bool $withBench): array
     {
         if ($leagueId <= 0 || $roundIds === []) {
             return ['ok' => true, 'entries' => []];
@@ -815,18 +827,23 @@ class AdminLeagueDashboardService
 
         $allOk = true;
         $entries = [];
+        $maxRatio = $withBench
+            ? self::AVERAGE_LINEUP_WITH_BENCH_BUDGET_RATIO
+            : self::AVERAGE_LINEUP_BUDGET_RATIO;
 
         foreach ($rounds as $round) {
             $roundId = (int) $round->matchround_id;
             $roundTitle = trim((string) $round->matchround_title);
             $label = $roundTitle !== '' ? $roundTitle : 'Spielrunde #'.$roundId;
 
-            $result = $this->averageLineupForMatchround($leagueId, $roundId);
+            $result = $this->averageLineupForMatchround($leagueId, $roundId, $withBench);
             if ($result === null) {
                 $allOk = false;
                 $entries[] = [
                     'label' => $label,
-                    'detail' => 'keine gültige Durchschnitts-Aufstellung möglich',
+                    'detail' => $withBench
+                        ? 'keine gültige Durchschnitts-Aufstellung inkl. Ersatzspieler möglich'
+                        : 'keine gültige Durchschnitts-Aufstellung möglich',
                 ];
 
                 continue;
@@ -836,34 +853,40 @@ class AdminLeagueDashboardService
             $cost = (float) $result['cost'];
             $ratio = $budget > 0.0 ? ($cost / $budget) : 0.0;
             $percent = round($ratio * 100, 1);
-            $withinBudget = $ratio <= self::AVERAGE_LINEUP_BUDGET_RATIO;
+            $percentLabel = $this->formatCredits($percent);
+            $withinBudget = $ratio <= $maxRatio;
             if (! $withinBudget) {
                 $allOk = false;
             }
 
-            $entry = [
+            $entries[] = [
                 'label' => $label,
-                'detail' => $this->formatCredits($percent).'% des Budgets ('
+                'detail' => $percentLabel.'% des Budgets ('
+                    .$this->formatCredits($cost).' / '.$this->formatCredits($budget).')',
+                'detail_percent' => $percentLabel,
+                'detail_percent_alert' => ! $withinBudget,
+                'detail_rest' => '% des Budgets ('
                     .$this->formatCredits($cost).' / '.$this->formatCredits($budget).')',
             ];
-
-            if (! $withinBudget) {
-                $entry['lineup'] = array_map(
-                    static fn (array $player): array => [
-                        'label' => (string) $player['name'],
-                        'detail' => (string) $player['team'].' · '.$player['price_label'],
-                    ],
-                    $result['players'],
-                );
-            }
-
-            $entries[] = $entry;
         }
 
         return [
             'ok' => $allOk,
             'entries' => $entries,
         ];
+    }
+
+    private function leagueHasBenchMode(int $leagueId): bool
+    {
+        if ($leagueId <= 0) {
+            return false;
+        }
+
+        $mode = trim((string) (LeagueOptions::query()
+            ->where('options_league_id', $leagueId)
+            ->value('options_league_benchmode') ?? ''));
+
+        return in_array($mode, ['cover', 'bestof'], true);
     }
 
     /**
@@ -892,12 +915,18 @@ class AdminLeagueDashboardService
      *     players: list<array{name: string, team: string, price: float, price_label: string}>
      * }|null
      */
-    private function averageLineupForMatchround(int $leagueId, int $matchroundId): ?array
+    private function averageLineupForMatchround(int $leagueId, int $matchroundId, bool $withBench = false): ?array
     {
         $options = $this->lineupOptions->forMatchround($matchroundId);
         $budget = (float) $options['lineup_max_credits'];
         $formations = $this->lineupFormationsFromOptions($options);
         if ($formations === [] || $budget <= 0.0) {
+            return null;
+        }
+
+        $maxBench = (int) ($options['lineup_max_bench'] ?? 0);
+        $benchMode = $options['league_benchmode'] ?? null;
+        if ($withBench && ($benchMode === null || $maxBench < 1)) {
             return null;
         }
 
@@ -990,6 +1019,14 @@ class AdminLeagueDashboardService
             $picks = $this->pickMedianLineupPlayers($formation, $byPosition, $maxPerTeam);
             if ($picks === null) {
                 continue;
+            }
+
+            if ($withBench) {
+                $benchPicks = $this->pickAverageBenchPlayers($picks, $byPosition, $maxBench, $maxPerTeam);
+                if ($benchPicks === null) {
+                    continue;
+                }
+                $picks = array_merge($picks, $benchPicks);
             }
 
             $cost = 0.0;
@@ -1126,6 +1163,74 @@ class AdminLeagueDashboardService
     }
 
     /**
+     * @param  list<array{playerteam_id: int, team_id: int, name: string, team: string, price: float}>  $starters
+     * @param  array<string, list<array{playerteam_id: int, team_id: int, name: string, team: string, price: float}>>  $byPosition
+     * @return list<array{playerteam_id: int, team_id: int, name: string, team: string, price: float}>|null
+     */
+    private function pickAverageBenchPlayers(array $starters, array $byPosition, int $maxBench, int $maxPerTeam): ?array
+    {
+        if ($maxBench < 1) {
+            return null;
+        }
+
+        $used = [];
+        $teamCounts = [];
+        foreach ($starters as $starter) {
+            $used[(int) $starter['playerteam_id']] = true;
+            $teamId = (int) $starter['team_id'];
+            $teamCounts[$teamId] = ($teamCounts[$teamId] ?? 0) + 1;
+        }
+
+        $pool = [];
+        foreach (['g', 'd', 'm', 's'] as $pos) {
+            foreach ($byPosition[$pos] ?? [] as $player) {
+                $playerteamId = (int) $player['playerteam_id'];
+                if (isset($used[$playerteamId])) {
+                    continue;
+                }
+                $pool[] = $player;
+            }
+        }
+
+        usort($pool, static function (array $a, array $b): int {
+            $byPrice = $a['price'] <=> $b['price'];
+            if ($byPrice !== 0) {
+                return $byPrice;
+            }
+
+            return $a['playerteam_id'] <=> $b['playerteam_id'];
+        });
+
+        $order = $this->medianOutwardIndexes(count($pool));
+        $picks = [];
+        foreach ($order as $index) {
+            $player = $pool[$index];
+            $playerteamId = (int) $player['playerteam_id'];
+            if (isset($used[$playerteamId])) {
+                continue;
+            }
+
+            $teamId = (int) $player['team_id'];
+            if (($teamCounts[$teamId] ?? 0) >= $maxPerTeam) {
+                continue;
+            }
+
+            $picks[] = $player;
+            $used[$playerteamId] = true;
+            $teamCounts[$teamId] = ($teamCounts[$teamId] ?? 0) + 1;
+            if (count($picks) >= $maxBench) {
+                break;
+            }
+        }
+
+        if (count($picks) < $maxBench) {
+            return null;
+        }
+
+        return $picks;
+    }
+
+    /**
      * @return list<int>
      */
     private function medianOutwardIndexes(int $count): array
@@ -1226,12 +1331,22 @@ class AdminLeagueDashboardService
         }
 
         $now = Carbon::now();
-        $pastMatchIds = MatchGame::query()
-            ->whereIn('match_round', $roundIds)
-            ->get(['match_id', 'match_date'])
-            ->filter(fn (MatchGame $match): bool => $this->matchIsPast($match, $now))
-            ->map(fn (MatchGame $match): int => (int) $match->match_id)
+        $pastRoundIds = Matchround::query()
+            ->whereIn('matchround_id', $roundIds)
+            ->get(['matchround_id', 'matchround_startdate', 'matchround_enddate'])
+            ->filter(fn (Matchround $round): bool => $this->matchroundPeriod($round, $now) === 'past')
+            ->map(fn (Matchround $round): int => (int) $round->matchround_id)
             ->values()
+            ->all();
+
+        if ($pastRoundIds === []) {
+            return [];
+        }
+
+        $pastMatchIds = MatchGame::query()
+            ->whereIn('match_round', $pastRoundIds)
+            ->pluck('match_id')
+            ->map(fn ($id): int => (int) $id)
             ->all();
 
         if ($pastMatchIds === []) {
@@ -1284,6 +1399,11 @@ class AdminLeagueDashboardService
      */
     private function missingPlayerpriceEntries(int $leagueId, $teams): array
     {
+        // Prices for the next round are only due once no round is still current.
+        if ($this->leagueHasCurrentMatchround($leagueId)) {
+            return [];
+        }
+
         $targetRound = $this->nextUpcomingMatchround($leagueId);
         if ($targetRound === null) {
             return [];
@@ -1446,10 +1566,8 @@ class AdminLeagueDashboardService
             : collect();
 
         $missingStats = [];
-        $missingPlayerstatsGoals = [];
-        $missingPsHits = [];
-        $missingTableGoals = [];
-        $missingTablePsGoals = [];
+        $missingGoals = [];
+        $missingPsGoals = [];
 
         foreach ($matchesWithResult as $match) {
             $matchId = (int) $match->match_id;
@@ -1491,10 +1609,44 @@ class AdminLeagueDashboardService
             if ($homeScore !== 0 || $guestScore !== 0) {
                 $homeFromStats = ($goalsByTeam[$homeId] ?? 0) + ($owngoalsByTeam[$guestId] ?? 0);
                 $guestFromStats = ($goalsByTeam[$guestId] ?? 0) + ($owngoalsByTeam[$homeId] ?? 0);
-                if ($homeFromStats !== $homeScore || $guestFromStats !== $guestScore) {
-                    $missingPlayerstatsGoals[] = [
-                        'label' => $label,
-                        'detail' => sprintf(
+                $statsMatchResult = $homeFromStats === $homeScore && $guestFromStats === $guestScore;
+
+                $homeFromTable = null;
+                $guestFromTable = null;
+                $tableMatchResult = true;
+                if ($isNewPointsMode) {
+                    /** @var Collection<int, Goal> $goals */
+                    $goals = $goalsByMatch->get($matchId) ?? collect();
+                    $tableGoalsByTeam = [];
+                    $tableOwngoalsByTeam = [];
+                    foreach ($goals as $goal) {
+                        $teamId = (int) ($goal->playerteam?->playerteam_team_id ?? 0);
+                        if ($teamId <= 0) {
+                            continue;
+                        }
+                        if ((int) ($goal->goal_owngoal ?? 0) === 1) {
+                            $tableOwngoalsByTeam[$teamId] = ($tableOwngoalsByTeam[$teamId] ?? 0) + 1;
+                        } else {
+                            $tableGoalsByTeam[$teamId] = ($tableGoalsByTeam[$teamId] ?? 0) + 1;
+                        }
+                    }
+                    $homeFromTable = ($tableGoalsByTeam[$homeId] ?? 0) + ($tableOwngoalsByTeam[$guestId] ?? 0);
+                    $guestFromTable = ($tableGoalsByTeam[$guestId] ?? 0) + ($tableOwngoalsByTeam[$homeId] ?? 0);
+                    $tableMatchResult = $homeFromTable === $homeScore && $guestFromTable === $guestScore;
+                }
+
+                if (! $statsMatchResult || ! $tableMatchResult) {
+                    $detail = $isNewPointsMode
+                        ? sprintf(
+                            'Ergebnis %d:%d · Spielerdaten %d:%d · ffb_goal %d:%d',
+                            $homeScore,
+                            $guestScore,
+                            $homeFromStats,
+                            $guestFromStats,
+                            (int) $homeFromTable,
+                            (int) $guestFromTable,
+                        )
+                        : sprintf(
                             'Ergebnis %d:%d · Tore in playerstats Heim %d / Gast %d (erwartet %d / %d)',
                             $homeScore,
                             $guestScore,
@@ -1502,7 +1654,11 @@ class AdminLeagueDashboardService
                             $guestFromStats,
                             $homeScore,
                             $guestScore,
-                        ),
+                        );
+
+                    $missingGoals[] = [
+                        'label' => $label,
+                        'detail' => $detail,
                     ];
                 }
             }
@@ -1512,10 +1668,39 @@ class AdminLeagueDashboardService
                 $guestPs = (int) $match->match_guestscore_penalty;
                 $homeHits = $psHitsByTeam[$homeId] ?? 0;
                 $guestHits = $psHitsByTeam[$guestId] ?? 0;
-                if ($homeHits !== $homePs || $guestHits !== $guestPs) {
-                    $missingPsHits[] = [
-                        'label' => $label,
-                        'detail' => sprintf(
+                $statsMatchPs = $homeHits === $homePs && $guestHits === $guestPs;
+
+                $homeTableHits = null;
+                $guestTableHits = null;
+                $tableMatchPs = true;
+                if ($isNewPointsMode) {
+                    /** @var Collection<int, Psgoal> $psGoals */
+                    $psGoals = $psGoalsByMatch->get($matchId) ?? collect();
+                    $tableHitsByTeam = [];
+                    foreach ($psGoals as $psGoal) {
+                        $teamId = (int) ($psGoal->playerteam?->playerteam_team_id ?? 0);
+                        if ($teamId <= 0) {
+                            continue;
+                        }
+                        $tableHitsByTeam[$teamId] = ($tableHitsByTeam[$teamId] ?? 0) + 1;
+                    }
+                    $homeTableHits = $tableHitsByTeam[$homeId] ?? 0;
+                    $guestTableHits = $tableHitsByTeam[$guestId] ?? 0;
+                    $tableMatchPs = $homeTableHits === $homePs && $guestTableHits === $guestPs;
+                }
+
+                if (! $statsMatchPs || ! $tableMatchPs) {
+                    $detail = $isNewPointsMode
+                        ? sprintf(
+                            'Elfmeter %d:%d · Spielerdaten %d:%d · ffb_psgoal %d:%d',
+                            $homePs,
+                            $guestPs,
+                            $homeHits,
+                            $guestHits,
+                            (int) $homeTableHits,
+                            (int) $guestTableHits,
+                        )
+                        : sprintf(
                             'Elfmeter %d:%d · Treffer in playerstats Heim %d / Gast %d (erwartet %d / %d)',
                             $homePs,
                             $guestPs,
@@ -1523,137 +1708,55 @@ class AdminLeagueDashboardService
                             $guestHits,
                             $homePs,
                             $guestPs,
-                        ),
-                    ];
-                }
-            }
+                        );
 
-            if (! $isNewPointsMode) {
-                continue;
-            }
-
-            if ($homeScore !== 0 || $guestScore !== 0) {
-                /** @var Collection<int, Goal> $goals */
-                $goals = $goalsByMatch->get($matchId) ?? collect();
-                $tableGoalsByTeam = [];
-                $tableOwngoalsByTeam = [];
-                foreach ($goals as $goal) {
-                    $teamId = (int) ($goal->playerteam?->playerteam_team_id ?? 0);
-                    if ($teamId <= 0) {
-                        continue;
-                    }
-                    if ((int) ($goal->goal_owngoal ?? 0) === 1) {
-                        $tableOwngoalsByTeam[$teamId] = ($tableOwngoalsByTeam[$teamId] ?? 0) + 1;
-                    } else {
-                        $tableGoalsByTeam[$teamId] = ($tableGoalsByTeam[$teamId] ?? 0) + 1;
-                    }
-                }
-                $homeFromTable = ($tableGoalsByTeam[$homeId] ?? 0) + ($tableOwngoalsByTeam[$guestId] ?? 0);
-                $guestFromTable = ($tableGoalsByTeam[$guestId] ?? 0) + ($tableOwngoalsByTeam[$homeId] ?? 0);
-                if ($homeFromTable !== $homeScore || $guestFromTable !== $guestScore) {
-                    $missingTableGoals[] = [
+                    $missingPsGoals[] = [
                         'label' => $label,
-                        'detail' => sprintf(
-                            'Ergebnis %d:%d · Tore in ffb_goal Heim %d / Gast %d (erwartet %d / %d)',
-                            $homeScore,
-                            $guestScore,
-                            $homeFromTable,
-                            $guestFromTable,
-                            $homeScore,
-                            $guestScore,
-                        ),
-                    ];
-                }
-            }
-
-            if ($this->matchHasPenaltyShootoutResult($match)) {
-                $homePs = (int) $match->match_homescore_penalty;
-                $guestPs = (int) $match->match_guestscore_penalty;
-                /** @var Collection<int, Psgoal> $psGoals */
-                $psGoals = $psGoalsByMatch->get($matchId) ?? collect();
-                $tableHitsByTeam = [];
-                foreach ($psGoals as $psGoal) {
-                    $teamId = (int) ($psGoal->playerteam?->playerteam_team_id ?? 0);
-                    if ($teamId <= 0) {
-                        continue;
-                    }
-                    $tableHitsByTeam[$teamId] = ($tableHitsByTeam[$teamId] ?? 0) + 1;
-                }
-                $homeTableHits = $tableHitsByTeam[$homeId] ?? 0;
-                $guestTableHits = $tableHitsByTeam[$guestId] ?? 0;
-                if ($homeTableHits !== $homePs || $guestTableHits !== $guestPs) {
-                    $missingTablePsGoals[] = [
-                        'label' => $label,
-                        'detail' => sprintf(
-                            'Elfmeter %d:%d · Treffer in ffb_psgoal Heim %d / Gast %d (erwartet %d / %d)',
-                            $homePs,
-                            $guestPs,
-                            $homeTableHits,
-                            $guestTableHits,
-                            $homePs,
-                            $guestPs,
-                        ),
+                        'detail' => $detail,
                     ];
                 }
             }
         }
 
         $statsOk = $missingStats === [];
-        $playerstatsGoalsOk = $missingPlayerstatsGoals === [];
-        $psHitsOk = $missingPsHits === [];
-        $tableGoalsOk = $missingTableGoals === [];
-        $tablePsGoalsOk = $missingTablePsGoals === [];
-
-        $checklist = [
-            [
-                'key' => 'match-playerstats',
-                'label' => 'Spiele mit Ergebnis haben ≥11 Playerstats je Mannschaft',
-                'ok' => $statsOk,
-                'match_list' => $missingStats,
-                'match_list_summary' => 'Spiele mit unzureichenden Playerstats',
-            ],
-            [
-                'key' => 'match-playerstats-goals',
-                'label' => 'Tore in Playerstats passen zum Ergebnis',
-                'ok' => $playerstatsGoalsOk,
-                'match_list' => $missingPlayerstatsGoals,
-                'match_list_summary' => 'Spiele mit fehlenden/abweichenden Toren in Playerstats',
-            ],
-            [
-                'key' => 'match-playerstats-ps-hits',
-                'label' => 'Elfmeterschießen-Treffer in Playerstats passen zum Elfmeter-Ergebnis',
-                'ok' => $psHitsOk,
-                'match_list' => $missingPsHits,
-                'match_list_summary' => 'Spiele mit fehlenden/abweichenden Elfmeter-Treffern in Playerstats',
-            ],
-        ];
-
-        if ($isNewPointsMode) {
-            $checklist[] = [
-                'key' => 'match-ffb-goal',
-                'label' => 'Neu: Tore in ffb_goal passen zum Ergebnis',
-                'ok' => $tableGoalsOk,
-                'match_list' => $missingTableGoals,
-                'match_list_summary' => 'Spiele mit fehlenden/abweichenden Toren in ffb_goal',
-            ];
-            $checklist[] = [
-                'key' => 'match-ffb-psgoal',
-                'label' => 'Neu: Elfmeterschießen-Treffer in ffb_psgoal passen zum Elfmeter-Ergebnis',
-                'ok' => $tablePsGoalsOk,
-                'match_list' => $missingTablePsGoals,
-                'match_list_summary' => 'Spiele mit fehlenden/abweichenden Elfmeter-Treffern in ffb_psgoal',
-            ];
-        }
+        $goalsOk = $missingGoals === [];
+        $psGoalsOk = $missingPsGoals === [];
 
         return [
             'key' => 'matchdata',
             'title' => 'Spieldaten',
-            'ok' => $statsOk
-                && $playerstatsGoalsOk
-                && $psHitsOk
-                && $tableGoalsOk
-                && $tablePsGoalsOk,
-            'checklist' => $checklist,
+            'ok' => $statsOk && $goalsOk && $psGoalsOk,
+            'checklist' => [
+                [
+                    'key' => 'match-playerstats',
+                    'label' => 'Für jedes Spiel gibt es mindestens 11 Spieler je Mannschaft mit Spielerdaten',
+                    'ok' => $statsOk,
+                    'match_list' => $missingStats,
+                    'match_list_summary' => 'Spiele mit unzureichenden Spielerdaten',
+                ],
+                [
+                    'key' => 'match-goals',
+                    'label' => $isNewPointsMode
+                        ? 'Tore aus Ergebnis, Spielerdaten und ffb_goal stimmen überein'
+                        : 'Die Anzahl der Tore in den Spielerdaten passt zum Ergebnis',
+                    'ok' => $goalsOk,
+                    'match_list' => $missingGoals,
+                    'match_list_summary' => $isNewPointsMode
+                        ? 'Spiele mit abweichender Tor-Anzahl zwischen Ergebnis, Spielerdaten und ffb_goal'
+                        : 'Spiele mit abweichender Tor-Anzahl zwischen Ergebnis und Spielerdaten',
+                ],
+                [
+                    'key' => 'match-ps-goals',
+                    'label' => $isNewPointsMode
+                        ? 'Elfmeter-Treffer aus Ergebnis, Spielerdaten und ffb_psgoal stimmen überein'
+                        : 'Die Anzahl der Elfer-Treffer in den Spielerdaten passt zum Elfmeterschießen-Ergebnis',
+                    'ok' => $psGoalsOk,
+                    'match_list' => $missingPsGoals,
+                    'match_list_summary' => $isNewPointsMode
+                        ? 'Spiele mit abweichender Elfer-Treffer-Anzahl zwischen Ergebnis, Spielerdaten und ffb_psgoal'
+                        : 'Spiele mit abweichender Elfer-Treffer-Anzahl zwischen Elfmeterschießen-Ergebnis und Spielerdaten',
+                ],
+            ],
         ];
     }
 
@@ -1750,17 +1853,17 @@ class AdminLeagueDashboardService
             'checklist' => [
                 [
                     'key' => 'extremeteam-past-rounds',
-                    'label' => 'Vergangene Spielrunden haben Top- und Flop-Team',
+                    'label' => 'Vergangene Spielrunden haben je ein Top- und Flop-Team gesetzt',
                     'ok' => $presenceOk,
                     'match_list' => $missing,
                     'match_list_summary' => 'Spielrunden ohne Top/Flop',
                 ],
                 [
                     'key' => 'extremeteam-options',
-                    'label' => 'Top/Flop-Teams erfüllen Limits und Credit-Rahmen',
+                    'label' => 'Top/Flop-Teams erfüllen definierte Limits und Budget',
                     'ok' => $complianceOk,
                     'match_list' => $invalid,
-                    'match_list_summary' => 'Top/Flop außerhalb der Limits',
+                    'match_list_summary' => 'Top/Flop außerhalb der definierten Limits',
                 ],
             ],
         ];
@@ -1807,51 +1910,43 @@ class AdminLeagueDashboardService
                 ->get(['matchround_id', 'matchround_title'])
                 ->keyBy(fn (Matchround $round): int => (int) $round->matchround_id);
 
-        $missingLineupScores = [];
+        $lineupScoreMismatches = [];
         if ($dueRoundIds !== []) {
-            $lineups = Userteam::query()
-                ->with('user:user_id,user_nickname')
-                ->whereIn('userteam_matchround_id', $dueRoundIds)
-                ->orderBy('userteam_matchround_id')
-                ->orderBy('userteam_user_id')
-                ->get([
-                    'userteam_id',
-                    'userteam_user_id',
-                    'userteam_matchround_id',
-                    'userteam_score',
-                    'userteam_lc_points',
-                ]);
+            $lineups = $this->userteamsWithSlotsForRounds($dueRoundIds);
+            $expectedScoresByUserteamId = $this->expectedUserteamScoresFromPlayerstats($lineups, $dueRoundIds);
 
             foreach ($lineups as $lineup) {
-                $missing = [];
-                if ($lineup->userteam_score === null) {
-                    $missing[] = 'Score fehlt';
+                $userteamId = (int) $lineup->userteam_id;
+                $roundId = (int) $lineup->userteam_matchround_id;
+                $expectedScore = $expectedScoresByUserteamId[$userteamId] ?? 0;
+
+                $detail = null;
+                $actualScore = $lineup->userteam_score;
+                if ($actualScore === null) {
+                    $detail = sprintf('Score fehlt (erwartet Summe Spieler %d)', $expectedScore);
+                } elseif ((int) $actualScore !== $expectedScore) {
+                    $detail = sprintf('Score %d ≠ Summe Spieler %d', (int) $actualScore, $expectedScore);
                 }
-                if ($isLcMode && $lineup->userteam_lc_points === null) {
-                    $missing[] = 'LC-Punkte fehlen';
-                }
-                if ($missing === []) {
+
+                if ($detail === null) {
                     continue;
                 }
 
-                $roundId = (int) $lineup->userteam_matchround_id;
-                $roundTitle = (string) ($dueRounds->get($roundId)?->matchround_title ?? 'Runde #'.$roundId);
-                $nickname = trim((string) ($lineup->user?->user_nickname ?? ''));
-                $userLabel = $nickname !== ''
-                    ? $nickname
-                    : 'User #'.(int) $lineup->userteam_user_id;
-
-                $missingLineupScores[] = [
-                    'label' => $roundTitle.' · '.$userLabel,
-                    'detail' => implode(' · ', $missing),
+                $lineupScoreMismatches[] = [
+                    'label' => $this->lineupMatchListLabel($dueRounds, $roundId, $lineup),
+                    'detail' => $detail,
                 ];
             }
         }
 
-        $lineupScoresOk = $missingLineupScores === [];
-        $lineupScoresLabel = $isLcMode
-            ? 'Aufstellungen fälliger Spielrunden haben Score und LC-Punkte'
-            : 'Aufstellungen fälliger Spielrunden haben Score';
+        $lineupScoresOk = $lineupScoreMismatches === [];
+
+        $lineupLcMismatches = [];
+        $lineupLcOk = true;
+        if ($isLcMode) {
+            $lineupLcMismatches = $this->lineupLcPointMismatches($leagueId, $now);
+            $lineupLcOk = $lineupLcMismatches === [];
+        }
 
         $userscoreMismatches = [];
         if ($roundIds !== []) {
@@ -1921,30 +2016,282 @@ class AdminLeagueDashboardService
 
         $userscoreOk = $userscoreMismatches === [];
         $userscoreLabel = $isLcMode
-            ? 'Userscore Total/LC entspricht Summe der Aufstellungen'
-            : 'Userscore Total entspricht Summe der Aufstellungen';
+            ? 'Gesamtscore und LigaCup-Punkte für alle Mitspieler entsprechen jeweils der Summe ihrer Aufstellungs-Scores'
+            : 'Gesamtscore für alle Mitspieler entspricht jeweils der Summe ihrer Aufstellungs-Scores';
+
+        $checklist = [
+            [
+                'key' => 'lineup-scores',
+                'label' => 'Für Aufstellungen vergangener Runden entspricht der Score der Summe der Spieler-Scores',
+                'ok' => $lineupScoresOk,
+                'match_list' => $lineupScoreMismatches,
+                'match_list_summary' => 'Aufstellungen mit Score-Abweichung',
+            ],
+        ];
+
+        if ($isLcMode) {
+            $checklist[] = [
+                'key' => 'lineup-lc-points',
+                'label' => 'LigaCup-Punkte beendeter Runden sind nach Rang korrekt verteilt',
+                'ok' => $lineupLcOk,
+                'match_list' => $lineupLcMismatches,
+                'match_list_summary' => 'Aufstellungen mit inkorrekten LigaCup-Punkten',
+            ];
+        }
+
+        $checklist[] = [
+            'key' => 'userscore-sums',
+            'label' => $userscoreLabel,
+            'ok' => $userscoreOk,
+            'match_list' => $userscoreMismatches,
+            'match_list_summary' => 'Userscores mit Abweichung',
+        ];
 
         return [
             'key' => 'score',
             'title' => $title,
-            'ok' => $lineupScoresOk && $userscoreOk,
-            'checklist' => [
-                [
-                    'key' => 'lineup-scores',
-                    'label' => $lineupScoresLabel,
-                    'ok' => $lineupScoresOk,
-                    'match_list' => $missingLineupScores,
-                    'match_list_summary' => 'Aufstellungen ohne Score',
-                ],
-                [
-                    'key' => 'userscore-sums',
-                    'label' => $userscoreLabel,
-                    'ok' => $userscoreOk,
-                    'match_list' => $userscoreMismatches,
-                    'match_list_summary' => 'Userscores mit Abweichung',
-                ],
-            ],
+            'ok' => $lineupScoresOk && $lineupLcOk && $userscoreOk,
+            'checklist' => $checklist,
         ];
+    }
+
+    /**
+     * @param  list<int>  $roundIds
+     * @return Collection<int, Userteam>
+     */
+    private function userteamsWithSlotsForRounds(array $roundIds): Collection
+    {
+        if ($roundIds === []) {
+            return collect();
+        }
+
+        return Userteam::query()
+            ->with([
+                'user:user_id,user_nickname',
+                'slots' => static fn ($query) => $query
+                    ->where('userteam_slot_playerteam_id', '>', 0)
+                    ->orderBy('userteam_slot_slot')
+                    ->select([
+                        'userteam_slot_id',
+                        'userteam_slot_userteam_id',
+                        'userteam_slot_slot',
+                        'userteam_slot_playerteam_id',
+                    ]),
+            ])
+            ->whereIn('userteam_matchround_id', $roundIds)
+            ->orderBy('userteam_matchround_id')
+            ->orderBy('userteam_user_id')
+            ->get([
+                'userteam_id',
+                'userteam_user_id',
+                'userteam_matchround_id',
+                'userteam_score',
+                'userteam_lc_points',
+            ]);
+    }
+
+    /**
+     * Expected userteam score = sum of playerstats_score for starter slots (same as AdminScoreService).
+     *
+     * @param  Collection<int, Userteam>  $lineups
+     * @param  list<int>  $roundIds
+     * @return array<int, int>
+     */
+    private function expectedUserteamScoresFromPlayerstats(Collection $lineups, array $roundIds): array
+    {
+        if ($lineups->isEmpty() || $roundIds === []) {
+            return [];
+        }
+
+        $playerteamIds = $lineups
+            ->flatMap(static fn (Userteam $lineup): Collection => $lineup->slots
+                ->pluck('userteam_slot_playerteam_id')
+                ->map(static fn ($id): int => (int) $id))
+            ->unique()
+            ->values()
+            ->all();
+
+        /** @var array<string, int> $playerScoreByRoundAndPlayerteam */
+        $playerScoreByRoundAndPlayerteam = [];
+        if ($playerteamIds !== []) {
+            $statRows = Playerstats::query()
+                ->whereIn('playerstats_matchround_id', $roundIds)
+                ->whereIn('playerstats_playerteam_id', $playerteamIds)
+                ->selectRaw('playerstats_matchround_id, playerstats_playerteam_id, COALESCE(SUM(playerstats_score), 0) as total_score')
+                ->groupBy('playerstats_matchround_id', 'playerstats_playerteam_id')
+                ->get();
+
+            foreach ($statRows as $statRow) {
+                $key = (int) $statRow->playerstats_matchround_id.':'.(int) $statRow->playerstats_playerteam_id;
+                $playerScoreByRoundAndPlayerteam[$key] = (int) $statRow->total_score;
+            }
+        }
+
+        /** @var array<int, int> $expectedByUserteamId */
+        $expectedByUserteamId = [];
+        foreach ($lineups as $lineup) {
+            $roundId = (int) $lineup->userteam_matchround_id;
+            $expectedScore = 0;
+            foreach ($lineup->slots as $slot) {
+                $playerteamId = (int) $slot->userteam_slot_playerteam_id;
+                $key = $roundId.':'.$playerteamId;
+                $expectedScore += $playerScoreByRoundAndPlayerteam[$key] ?? 0;
+            }
+            $expectedByUserteamId[(int) $lineup->userteam_id] = $expectedScore;
+        }
+
+        return $expectedByUserteamId;
+    }
+
+    /**
+     * LC distribution for finished rounds (enddate < now), ranked by expected player-sum scores.
+     *
+     * @return list<array{label: string, detail: string}>
+     */
+    private function lineupLcPointMismatches(int $leagueId, Carbon $now): array
+    {
+        $options = LeagueOptions::query()->where('options_league_id', $leagueId)->first()
+            ?? LeagueOptions::query()->where('options_league_id', 0)->first();
+
+        $raw = trim((string) ($options?->options_league_lcpoints ?? ''));
+        if ($raw === '') {
+            return [];
+        }
+
+        $lcPoints = array_map(
+            static fn (string $value): int => (int) trim($value),
+            explode(',', $raw)
+        );
+        if ($lcPoints === []) {
+            return [];
+        }
+
+        $finishedRounds = Matchround::query()
+            ->where('matchround_league_id', $leagueId)
+            ->where('matchround_enddate', '<', $now->format('Y-m-d H:i:s'))
+            ->orderBy('matchround_startdate')
+            ->orderBy('matchround_id')
+            ->get(['matchround_id', 'matchround_title'])
+            ->keyBy(fn (Matchround $round): int => (int) $round->matchround_id);
+
+        $finishedRoundIds = $finishedRounds->keys()->map(static fn ($id): int => (int) $id)->all();
+        if ($finishedRoundIds === []) {
+            return [];
+        }
+
+        $lineups = $this->userteamsWithSlotsForRounds($finishedRoundIds);
+        if ($lineups->isEmpty()) {
+            return [];
+        }
+
+        $expectedScoresByUserteamId = $this->expectedUserteamScoresFromPlayerstats($lineups, $finishedRoundIds);
+        $expectedLcByUserteamId = $this->computeLcPointsByUserteamId(
+            $lcPoints,
+            $expectedScoresByUserteamId,
+            $lineups,
+        );
+
+        $mismatches = [];
+        foreach ($lineups as $lineup) {
+            $userteamId = (int) $lineup->userteam_id;
+            if (! array_key_exists($userteamId, $expectedLcByUserteamId)) {
+                continue;
+            }
+
+            $expectedLc = $expectedLcByUserteamId[$userteamId];
+            $actualLc = $lineup->userteam_lc_points;
+            if ($actualLc === null) {
+                $detail = sprintf('LC fehlt (erwartet %d)', $expectedLc);
+            } elseif ((int) $actualLc !== $expectedLc) {
+                $detail = sprintf('LC %d ≠ erwartet %d', (int) $actualLc, $expectedLc);
+            } else {
+                continue;
+            }
+
+            $roundId = (int) $lineup->userteam_matchround_id;
+            $mismatches[] = [
+                'label' => $this->lineupMatchListLabel($finishedRounds, $roundId, $lineup),
+                'detail' => $detail,
+            ];
+        }
+
+        return $mismatches;
+    }
+
+    /**
+     * @param  list<int>  $lcPoints
+     * @param  array<int, int>  $scoresByUserteamId
+     * @param  Collection<int, Userteam>  $userteams
+     * @return array<int, int>
+     */
+    private function computeLcPointsByUserteamId(array $lcPoints, array $scoresByUserteamId, Collection $userteams): array
+    {
+        /** @var array<int, list<Userteam>> $byRound */
+        $byRound = [];
+        foreach ($userteams as $userteam) {
+            $byRound[(int) $userteam->userteam_matchround_id][] = $userteam;
+        }
+
+        /** @var array<int, int> $result */
+        $result = [];
+
+        foreach ($byRound as $roundUserteams) {
+            $users = [];
+            foreach ($roundUserteams as $userteam) {
+                $userteamId = (int) $userteam->userteam_id;
+                $users[] = [
+                    'user_nickname' => strtolower((string) ($userteam->user?->user_nickname ?? '')),
+                    'user_userteam_id' => $userteamId,
+                    'user_score' => (int) ($scoresByUserteamId[$userteamId] ?? 0),
+                ];
+            }
+
+            usort($users, static function (array $a, array $b): int {
+                if ($a['user_score'] !== $b['user_score']) {
+                    return $b['user_score'] <=> $a['user_score'];
+                }
+
+                return strcmp($a['user_nickname'], $b['user_nickname']);
+            });
+
+            $rank = 0;
+            $tieSpan = 1;
+            $lastScore = 100000;
+            foreach ($users as $item) {
+                $currScore = $item['user_score'];
+                if ($currScore < $lastScore) {
+                    $rank += $tieSpan;
+                    $tieSpan = 1;
+                } else {
+                    $tieSpan++;
+                }
+
+                if ($rank < count($lcPoints)) {
+                    $lc = $lcPoints[$rank - 1];
+                } else {
+                    $lc = $lcPoints[count($lcPoints) - 1];
+                }
+
+                $result[$item['user_userteam_id']] = $lc;
+                $lastScore = $currScore;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param  Collection<int, Matchround>  $roundsById
+     */
+    private function lineupMatchListLabel(Collection $roundsById, int $roundId, Userteam $lineup): string
+    {
+        $roundTitle = (string) ($roundsById->get($roundId)?->matchround_title ?? 'Runde #'.$roundId);
+        $nickname = trim((string) ($lineup->user?->user_nickname ?? ''));
+        $userLabel = $nickname !== ''
+            ? $nickname
+            : 'User #'.(int) $lineup->userteam_user_id;
+
+        return $roundTitle.' · '.$userLabel;
     }
 
     /**
@@ -2063,6 +2410,22 @@ class AdminLeagueDashboardService
         }
 
         return null;
+    }
+
+    private function leagueHasCurrentMatchround(int $leagueId): bool
+    {
+        $now = Carbon::now();
+        $rounds = Matchround::query()
+            ->where('matchround_league_id', $leagueId)
+            ->get(['matchround_startdate', 'matchround_enddate']);
+
+        foreach ($rounds as $round) {
+            if ($this->matchroundPeriod($round, $now) === 'current') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -2338,6 +2701,280 @@ class AdminLeagueDashboardService
                 ],
             ],
         ];
+    }
+
+    /**
+     * @return list<array{label: string, detail: string}>
+     */
+    private function leagueOptionsConsistencyEntries(LeagueOptions $options): array
+    {
+        $benchMode = trim((string) ($options->options_league_benchmode ?? ''));
+        $entries = $this->lineupLimitsConsistencyEntries([
+            'max_players' => (int) ($options->options_lineup_max_players ?? 0),
+            'max_credits' => (int) ($options->options_lineup_max_credits ?? 0),
+            'max_players_team' => (int) ($options->options_lineup_max_players_team ?? 0),
+            'min_g' => (int) ($options->options_lineup_min_g ?? 0),
+            'max_g' => (int) ($options->options_lineup_max_g ?? 0),
+            'min_d' => (int) ($options->options_lineup_min_d ?? 0),
+            'max_d' => (int) ($options->options_lineup_max_d ?? 0),
+            'min_m' => (int) ($options->options_lineup_min_m ?? 0),
+            'max_m' => (int) ($options->options_lineup_max_m ?? 0),
+            'min_s' => (int) ($options->options_lineup_min_s ?? 0),
+            'max_s' => (int) ($options->options_lineup_max_s ?? 0),
+            'min_bench' => (int) ($options->options_lineup_min_bench ?? 0),
+            'max_bench' => (int) ($options->options_lineup_max_bench ?? 0),
+        ], $benchMode);
+
+        $thresholdLower = (int) ($options->options_score_minutes_threshold_lower ?? 0);
+        $thresholdUpper = (int) ($options->options_score_minutes_threshold_upper ?? 0);
+        $remindHours = (int) ($options->options_league_remind_hours_before ?? 0);
+        $rankMode = trim((string) ($options->options_league_rankmode ?? ''));
+        $priceMode = trim((string) ($options->options_league_pricemode ?? ''));
+        $lcPointsRaw = trim((string) ($options->options_league_lcpoints ?? ''));
+
+        if ($thresholdLower > $thresholdUpper) {
+            $entries[] = [
+                'label' => 'Minuten-Schwellen',
+                'detail' => 'untere Schwelle ('.$thresholdLower.') > obere Schwelle ('.$thresholdUpper.')',
+            ];
+        }
+
+        if (! in_array($rankMode, ['lc', 'points'], true)) {
+            $entries[] = [
+                'label' => 'Rangliste',
+                'detail' => 'ungültiger Modus ('.($rankMode !== '' ? $rankMode : 'leer').')',
+            ];
+        }
+
+        if (! in_array($priceMode, ['dynamic', 'static', 'constant'], true)) {
+            $entries[] = [
+                'label' => 'Preisberechnung',
+                'detail' => 'ungültiger Modus ('.($priceMode !== '' ? $priceMode : 'leer').')',
+            ];
+        }
+
+        if (! in_array($benchMode, ['', 'cover', 'bestof'], true)) {
+            $entries[] = [
+                'label' => 'Ersatzbank-Modus',
+                'detail' => 'ungültiger Modus ('.$benchMode.')',
+            ];
+        }
+
+        if ($lcPointsRaw === '') {
+            $entries[] = [
+                'label' => 'LigaCup Punkte',
+                'detail' => 'Liste ist leer',
+            ];
+        } else {
+            $parts = array_map(
+                static fn (string $part): string => trim($part),
+                explode(',', $lcPointsRaw)
+            );
+            $parts = array_values(array_filter($parts, static fn (string $part): bool => $part !== ''));
+            $allIntegers = true;
+            $values = [];
+            foreach ($parts as $part) {
+                if (! preg_match('/^-?\d+$/', $part)) {
+                    $allIntegers = false;
+                    break;
+                }
+                $values[] = (int) $part;
+            }
+
+            if (! $allIntegers || $parts === []) {
+                $entries[] = [
+                    'label' => 'LigaCup Punkte',
+                    'detail' => 'müssen kommagetrennte Ganzzahlen sein (aktuell '.$lcPointsRaw.')',
+                ];
+            } else {
+                for ($i = 1, $count = count($values); $i < $count; $i++) {
+                    if ($values[$i] > $values[$i - 1]) {
+                        $entries[] = [
+                            'label' => 'LigaCup Punkte',
+                            'detail' => 'sind nicht absteigend (aktuell '.$lcPointsRaw.')',
+                        ];
+                        break;
+                    }
+                }
+            }
+        }
+
+        if ($remindHours < 0) {
+            $entries[] = [
+                'label' => 'Erinnerung (h)',
+                'detail' => 'darf nicht negativ sein (aktuell '.$remindHours.')',
+            ];
+        }
+
+        return $entries;
+    }
+
+    /**
+     * @return list<array{label: string, detail: string}>
+     */
+    private function matchroundOptionsConsistencyEntries(MatchroundOptions $options, string $leagueBenchMode): array
+    {
+        return $this->lineupLimitsConsistencyEntries([
+            'max_players' => (int) ($options->matchround_options_lineup_max_players ?? 0),
+            'max_credits' => (int) ($options->matchround_options_lineup_max_credits ?? 0),
+            'max_players_team' => (int) ($options->matchround_options_lineup_max_players_team ?? 0),
+            'min_g' => (int) ($options->matchround_options_lineup_min_g ?? 0),
+            'max_g' => (int) ($options->matchround_options_lineup_max_g ?? 0),
+            'min_d' => (int) ($options->matchround_options_lineup_min_d ?? 0),
+            'max_d' => (int) ($options->matchround_options_lineup_max_d ?? 0),
+            'min_m' => (int) ($options->matchround_options_lineup_min_m ?? 0),
+            'max_m' => (int) ($options->matchround_options_lineup_max_m ?? 0),
+            'min_s' => (int) ($options->matchround_options_lineup_min_s ?? 0),
+            'max_s' => (int) ($options->matchround_options_lineup_max_s ?? 0),
+            'min_bench' => (int) ($options->matchround_options_lineup_min_bench ?? 0),
+            'max_bench' => (int) ($options->matchround_options_lineup_max_bench ?? 0),
+        ], $leagueBenchMode, allowZeroBenchMax: true);
+    }
+
+    /**
+     * @param  array{
+     *     max_players: int,
+     *     max_credits: int,
+     *     max_players_team: int,
+     *     min_g: int,
+     *     max_g: int,
+     *     min_d: int,
+     *     max_d: int,
+     *     min_m: int,
+     *     max_m: int,
+     *     min_s: int,
+     *     max_s: int,
+     *     min_bench: int,
+     *     max_bench: int
+     * }  $limits
+     * @return list<array{label: string, detail: string}>
+     */
+    private function lineupLimitsConsistencyEntries(array $limits, string $benchMode, bool $allowZeroBenchMax = false): array
+    {
+        $entries = [];
+
+        $maxPlayers = $limits['max_players'];
+        $maxCredits = $limits['max_credits'];
+        $maxPlayersTeam = $limits['max_players_team'];
+        $minG = $limits['min_g'];
+        $maxG = $limits['max_g'];
+        $minD = $limits['min_d'];
+        $maxD = $limits['max_d'];
+        $minM = $limits['min_m'];
+        $maxM = $limits['max_m'];
+        $minS = $limits['min_s'];
+        $maxS = $limits['max_s'];
+        $minBench = $limits['min_bench'];
+        $maxBench = $limits['max_bench'];
+
+        if ($maxPlayers <= 0) {
+            $entries[] = [
+                'label' => 'Max. Spieler',
+                'detail' => 'muss größer als 0 sein (aktuell '.$maxPlayers.')',
+            ];
+        }
+        if ($maxCredits <= 0) {
+            $entries[] = [
+                'label' => 'Max. Credits',
+                'detail' => 'muss größer als 0 sein (aktuell '.$maxCredits.')',
+            ];
+        }
+        if ($maxPlayersTeam <= 0) {
+            $entries[] = [
+                'label' => 'Max. Spieler / Team',
+                'detail' => 'muss größer als 0 sein (aktuell '.$maxPlayersTeam.')',
+            ];
+        }
+
+        if ($maxPlayers > 0 && $maxPlayersTeam > $maxPlayers) {
+            $entries[] = [
+                'label' => 'Max. Spieler / Team',
+                'detail' => 'Max. Spieler/Team ('.$maxPlayersTeam.') > Max. Spieler ('.$maxPlayers.')',
+            ];
+        }
+
+        $lineupBounds = [
+            'Tor min' => $minG,
+            'Tor max' => $maxG,
+            'Abwehr min' => $minD,
+            'Abwehr max' => $maxD,
+            'Mittelfeld min' => $minM,
+            'Mittelfeld max' => $maxM,
+            'Angriff min' => $minS,
+            'Angriff max' => $maxS,
+            'Bank min' => $minBench,
+            'Bank max' => $maxBench,
+        ];
+        $negativeBounds = [];
+        foreach ($lineupBounds as $label => $value) {
+            if ($value < 0) {
+                $negativeBounds[] = $label.' ('.$value.')';
+            }
+        }
+        if ($negativeBounds !== []) {
+            $entries[] = [
+                'label' => 'Aufstellungslimits',
+                'detail' => 'dürfen nicht negativ sein: '.implode(', ', $negativeBounds),
+            ];
+        }
+
+        $positionPairs = [
+            'Tor' => [$minG, $maxG],
+            'Abwehr' => [$minD, $maxD],
+            'Mittelfeld' => [$minM, $maxM],
+            'Angriff' => [$minS, $maxS],
+        ];
+        foreach ($positionPairs as $position => [$min, $max]) {
+            if ($max < $min) {
+                $entries[] = [
+                    'label' => $position.' (min/max)',
+                    'detail' => 'Max ('.$max.') < Min ('.$min.')',
+                ];
+            }
+        }
+
+        $minSum = $minG + $minD + $minM + $minS;
+        if ($maxPlayers > 0 && $minSum > $maxPlayers) {
+            $entries[] = [
+                'label' => 'Positions-Mins',
+                'detail' => 'Summe der Positions-Mins ('.$minSum.') > Max. Spieler ('.$maxPlayers.')',
+            ];
+        }
+
+        $maxSum = $maxG + $maxD + $maxM + $maxS;
+        if ($maxPlayers > 0 && $maxSum < $maxPlayers) {
+            $entries[] = [
+                'label' => 'Positions-Maxs',
+                'detail' => 'Summe der Positions-Maxs ('.$maxSum.') < Max. Spieler ('.$maxPlayers.')',
+            ];
+        }
+
+        if ($minBench > $maxBench) {
+            $entries[] = [
+                'label' => 'Bank (min/max)',
+                'detail' => 'Bank-Min ('.$minBench.') > Bank-Max ('.$maxBench.')',
+            ];
+        }
+
+        if ($benchMode === '') {
+            if ($minBench !== 0 || $maxBench !== 0) {
+                $entries[] = [
+                    'label' => 'Ersatzbank-Modus',
+                    'detail' => 'ohne Bankmodus müssen Bank-Min/Max 0 sein (aktuell '.$minBench.' / '.$maxBench.')',
+                ];
+            }
+        } elseif (in_array($benchMode, ['cover', 'bestof'], true)) {
+            // Matchround options may set Bank-Max = 0 to disable substitutes for that round
+            // even when the league default allows a bench.
+            if ($maxBench < 1 && ! $allowZeroBenchMax) {
+                $entries[] = [
+                    'label' => 'Ersatzbank-Modus',
+                    'detail' => 'bei aktivem Bankmodus muss Bank-Max ≥ 1 sein (aktuell '.$maxBench.')',
+                ];
+            }
+        }
+
+        return $entries;
     }
 
     /**

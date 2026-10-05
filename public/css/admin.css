@@ -205,6 +205,11 @@
     margin: 0;
 }
 
+.admin-dashboard-value-alert {
+    color: #c62828;
+    font-weight: 700;
+}
+
 .admin-dashboard-lineup-list {
     list-style: none;
     margin: 4px 0 0 12px;

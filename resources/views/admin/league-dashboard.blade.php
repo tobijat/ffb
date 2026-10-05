@@ -33,7 +33,6 @@
                     : $legacyBase.'images/ffb/symbols/delete.png';
                 $statusLabel = $ok ? 'ok' : 'offen';
                 $checklist = is_array($section['checklist'] ?? null) ? $section['checklist'] : [];
-                $groups = is_array($section['groups'] ?? null) ? $section['groups'] : [];
                 $sectionOpenAttr = $ok ? '' : ' open';
             @endphp
             <section class="panel admin-main admin-dashboard-section" data-section="{{ $section['key'] }}">
@@ -133,7 +132,11 @@
                                                         @endphp
                                                         <li>
                                                             <span>{{ $entry['label'] }}</span>
-                                                            @if (($entry['detail'] ?? '') !== '')
+                                                            @if (($entry['detail_percent'] ?? '') !== '')
+                                                                <span class="muted">—
+                                                                    <span @class(['admin-dashboard-value-alert' => (bool) ($entry['detail_percent_alert'] ?? false)])>{{ $entry['detail_percent'] }}</span>{{ $entry['detail_rest'] ?? '' }}
+                                                                </span>
+                                                            @elseif (($entry['detail'] ?? '') !== '')
                                                                 <span class="muted">— {{ $entry['detail'] }}</span>
                                                             @endif
                                                             @if ($entryLineup !== [])
@@ -156,75 +159,6 @@
                                     </li>
                                 @endforeach
                             </ul>
-                        @endif
-
-                        @if ($groups !== [])
-                            <div class="admin-dashboard-groups">
-                                @foreach ($groups as $group)
-                                    @php
-                                        $rounds = is_array($group['rounds'] ?? null) ? $group['rounds'] : [];
-                                    @endphp
-                                    <div class="admin-dashboard-group" data-group="{{ $group['key'] }}">
-                                        <h3 class="admin-dashboard-group-title">
-                                            {{ $group['title'] }}
-                                            <span class="muted">({{ count($rounds) }})</span>
-                                        </h3>
-
-                                        @if ($rounds === [])
-                                            <p class="hint">Keine Spielrunden.</p>
-                                        @else
-                                            <ul class="admin-dashboard-rounds">
-                                                @foreach ($rounds as $round)
-                                                    @php
-                                                        $roundHasMatches = (bool) ($round['has_matches'] ?? false);
-                                                        $roundActive = (bool) ($round['active'] ?? false);
-                                                        $hasLineupOptions = (bool) ($round['has_lineup_options'] ?? false);
-                                                        $lineupOptions = is_array($round['lineup_options'] ?? null)
-                                                            ? $round['lineup_options']
-                                                            : [];
-                                                    @endphp
-                                                    <li class="admin-dashboard-round">
-                                                        <div class="admin-dashboard-round-head">
-                                                            <strong>{{ $round['title'] }}</strong>
-                                                            <span class="muted">
-                                                                {{ $round['startdate'] }}
-                                                                @if (($round['enddate'] ?? '') !== '')
-                                                                    – {{ $round['enddate'] }}
-                                                                @endif
-                                                            </span>
-                                                        </div>
-                                                        <div class="admin-dashboard-round-meta">
-                                                            <span>Spiele: {{ (int) ($round['match_count'] ?? 0) }} ({{ $roundHasMatches ? 'ja' : 'nein' }})</span>
-                                                            <span>Status: {{ $roundActive ? 'aktiv' : 'inaktiv' }}</span>
-                                                            <span>Runden-Optionen: {{ $hasLineupOptions ? 'ja' : 'nein' }}</span>
-                                                        </div>
-                                                        @if ($hasLineupOptions && $lineupOptions !== [])
-                                                            <details class="admin-dashboard-options">
-                                                                <summary>Aufstellungslimits (Runde)</summary>
-                                                                <div class="admin-dashboard-options-body">
-                                                                    @foreach ($lineupOptions as $optionsGroup)
-                                                                        <div class="admin-dashboard-options-group">
-                                                                            <h3>{{ $optionsGroup['title'] }}</h3>
-                                                                            <dl>
-                                                                                @foreach (($optionsGroup['items'] ?? []) as $row)
-                                                                                    <div class="admin-dashboard-options-row">
-                                                                                        <dt>{{ $row['label'] }}</dt>
-                                                                                        <dd>{{ $row['value'] !== '' ? $row['value'] : '—' }}</dd>
-                                                                                    </div>
-                                                                                @endforeach
-                                                                            </dl>
-                                                                        </div>
-                                                                    @endforeach
-                                                                </div>
-                                                            </details>
-                                                        @endif
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
                         @endif
                     </div>
                 </details>

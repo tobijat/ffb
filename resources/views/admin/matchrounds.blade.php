@@ -58,7 +58,7 @@
                 </div>
 
                 <div class="admin-field">
-                    <label for="matchround_startdate">* Start</label>
+                    <label for="matchround_startdate">* Start (Ankick-Zeit des 1. Spiels)</label>
                     <input
                         id="matchround_startdate"
                         type="datetime-local"
@@ -70,7 +70,7 @@
                 </div>
 
                 <div class="admin-field">
-                    <label for="matchround_enddate">* Ende</label>
+                    <label for="matchround_enddate">* Ende (~2h nach Ankick-Zeit des letzten Spiels)</label>
                     <input
                         id="matchround_enddate"
                         type="datetime-local"
