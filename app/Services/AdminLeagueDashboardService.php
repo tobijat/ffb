@@ -35,6 +35,7 @@ class AdminLeagueDashboardService
         private readonly AdminCenterService $adminCenter,
         private readonly ExtremeTeamService $extremeTeams,
         private readonly LineupOptionsResolver $lineupOptions,
+        private readonly SubstitutionCalculationService $substitutions,
     ) {}
 
     /**
@@ -62,7 +63,7 @@ class AdminLeagueDashboardService
      */
     private function sections(int $leagueId): array
     {
-        return [
+        $sections = [
             $this->leagueSection($leagueId),
             $this->matchroundsSection($leagueId),
             $this->matchesSection($leagueId),
@@ -70,9 +71,17 @@ class AdminLeagueDashboardService
             $this->squadSection($leagueId),
             $this->playerpriceSection($leagueId),
             $this->matchdataSection($leagueId),
-            $this->extremeteamSection($leagueId),
-            $this->scoreSection($leagueId),
         ];
+
+        $substitutions = $this->substitutionsSection($leagueId);
+        if ($substitutions !== null) {
+            $sections[] = $substitutions;
+        }
+
+        $sections[] = $this->extremeteamSection($leagueId);
+        $sections[] = $this->scoreSection($leagueId);
+
+        return $sections;
     }
 
     /**
@@ -1755,6 +1764,122 @@ class AdminLeagueDashboardService
                     'match_list_summary' => $isNewPointsMode
                         ? 'Spiele mit abweichender Elfer-Treffer-Anzahl zwischen Ergebnis, Spielerdaten und ffb_psgoal'
                         : 'Spiele mit abweichender Elfer-Treffer-Anzahl zwischen Elfmeterschießen-Ergebnis und Spielerdaten',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Present only when the league has an active bench mode (cover/bestof).
+     *
+     * @return array{
+     *     key: string,
+     *     title: string,
+     *     ok: bool,
+     *     checklist: list<array<string, mixed>>
+     * }|null
+     */
+    private function substitutionsSection(int $leagueId): ?array
+    {
+        if ($leagueId <= 0 || ! $this->leagueHasBenchMode($leagueId)) {
+            return null;
+        }
+
+        $now = Carbon::now();
+        $pastRounds = Matchround::query()
+            ->where('matchround_league_id', $leagueId)
+            ->orderBy('matchround_startdate')
+            ->orderBy('matchround_id')
+            ->get(['matchround_id', 'matchround_title', 'matchround_startdate', 'matchround_enddate'])
+            ->filter(fn (Matchround $round): bool => $this->matchroundPeriod($round, $now) === 'past')
+            ->values();
+
+        $missing = [];
+        $applicableCount = 0;
+
+        foreach ($pastRounds as $round) {
+            $roundId = (int) $round->matchround_id;
+            $resolved = $this->lineupOptions->forMatchround($roundId);
+            $maxBench = (int) ($resolved['lineup_max_bench'] ?? 0);
+            if ($maxBench <= 0) {
+                continue;
+            }
+
+            $applicableCount++;
+            $roundTitle = trim((string) $round->matchround_title);
+            $label = $roundTitle !== '' ? $roundTitle : 'Spielrunde #'.$roundId;
+
+            $built = $this->substitutions->previewForRound($leagueId, $roundId);
+            if (! ($built['ok'] ?? false)) {
+                $missing[] = [
+                    'label' => $label,
+                    'detail' => implode(' · ', $built['errors'] ?? ['Auswechslungen nicht prüfbar']),
+                ];
+
+                continue;
+            }
+
+            /** @var list<array<string, mixed>> $rows */
+            $rows = is_array($built['preview']['rows'] ?? null) ? $built['preview']['rows'] : [];
+            $mismatchCount = 0;
+            $expectedTotal = 0;
+
+            foreach ($rows as $row) {
+                $expectedBySub = [];
+                $subs = is_array($row['substitutions'] ?? null) ? $row['substitutions'] : [];
+                foreach ($subs as $sub) {
+                    $subId = (int) ($sub['substitute_playerteam_id'] ?? 0);
+                    $outId = (int) ($sub['out_playerteam_id'] ?? 0);
+                    if ($subId > 0 && $outId > 0) {
+                        $expectedBySub[$subId] = $outId;
+                    }
+                }
+                $expectedTotal += count($expectedBySub);
+
+                $previous = is_array($row['previous_replaces'] ?? null) ? $row['previous_replaces'] : [];
+                foreach ($previous as $subId => $actualReplace) {
+                    $want = $expectedBySub[(int) $subId] ?? null;
+                    $actual = $actualReplace !== null ? (int) $actualReplace : null;
+                    if ($actual !== $want) {
+                        $mismatchCount++;
+                    }
+                }
+
+                foreach ($expectedBySub as $subId => $outId) {
+                    if (! array_key_exists($subId, $previous)) {
+                        $mismatchCount++;
+                    }
+                }
+            }
+
+            if ($mismatchCount === 0) {
+                continue;
+            }
+
+            $missing[] = [
+                'label' => $label,
+                'detail' => $expectedTotal > 0
+                    ? sprintf('Auswechslungen nicht berechnet (erwartet %d Wechsel)', $expectedTotal)
+                    : 'Gespeicherte Auswechslungen weichen von der Berechnung ab',
+            ];
+        }
+
+        $ok = $missing === [];
+        $title = $applicableCount === 1
+            ? 'Auswechslungen: 1 vergangene Spielrunde'
+            : 'Auswechslungen: '.$applicableCount.' vergangene Spielrunden';
+
+        return [
+            'key' => 'substitutions',
+            'title' => $title,
+            'ok' => $ok,
+            'checklist' => [
+                [
+                    'key' => 'substitutions-calculated',
+                    'label' => 'Alle Auswechslungen für vergangene Spielrunden wurden berechnet',
+                    'ok' => $ok,
+                    'match_list' => $missing,
+                    'match_list_summary' => 'Spielrunden ohne berechnete Auswechslungen',
                 ],
             ],
         ];

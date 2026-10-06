@@ -25,6 +25,7 @@ use App\Services\ExtremeTeamService;
 use App\Services\FfbAdminAccess;
 use App\Services\FfbAuth;
 use App\Services\LineupOptionsResolver;
+use App\Services\SubstitutionCalculationService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Mockery;
@@ -60,6 +61,7 @@ class AdminLeagueDashboardTest extends TestCase
         }
 
         Schema::dropIfExists('ffb_userscore');
+        Schema::dropIfExists('ffb_userteam_substitute_slot');
         Schema::dropIfExists('ffb_userteam_slot');
         Schema::dropIfExists('ffb_userteam');
         Schema::dropIfExists('web_user');
@@ -574,7 +576,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $leagueSection = $payload['sections'][0];
 
         $this->assertSame('league', $leagueSection['key']);
@@ -619,7 +621,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $leagueSection = $payload['sections'][0];
 
         $this->assertFalse($leagueSection['ok']);
@@ -661,7 +663,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $leagueSection = $payload['sections'][0];
 
         $this->assertFalse($leagueSection['ok']);
@@ -726,7 +728,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $leagueSection = $payload['sections'][0];
         $optionsItem = $leagueSection['checklist'][3];
 
@@ -832,7 +834,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][1];
         $optionsItem = collect($section['checklist'])->firstWhere('key', 'round-options-'.(int) $current->matchround_id);
 
@@ -924,7 +926,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][1];
         $optionsItem = collect($section['checklist'])->firstWhere('key', 'round-options-'.(int) $current->matchround_id);
 
@@ -997,7 +999,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][1];
         $optionsItem = collect($section['checklist'])->firstWhere('key', 'round-options-'.(int) $current->matchround_id);
 
@@ -1050,7 +1052,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][1];
 
         $this->assertFalse($section['ok']);
@@ -1105,7 +1107,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][2];
 
         $this->assertSame('matches', $section['key']);
@@ -1157,7 +1159,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][2];
 
         $this->assertTrue($section['checklist'][1]['ok']);
@@ -1207,7 +1209,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][2];
 
         $this->assertFalse($section['ok']);
@@ -1267,7 +1269,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][2];
 
         $this->assertTrue($section['ok']);
@@ -1325,7 +1327,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][2];
 
         $this->assertTrue($section['checklist'][2]['ok']);
@@ -1376,7 +1378,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][2];
 
         $this->assertFalse($section['checklist'][2]['ok']);
@@ -1446,7 +1448,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][3];
 
         $this->assertSame('teams', $section['key']);
@@ -1512,7 +1514,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][3];
 
         $this->assertSame('2 Teams', $section['title']);
@@ -1569,7 +1571,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][4];
 
         $this->assertSame('squad', $section['key']);
@@ -1633,7 +1635,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][4];
 
         $this->assertSame('Kader: 2 aktive Spieler in 2', $section['title']);
@@ -1711,7 +1713,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][5];
 
         $this->assertSame('playerprice', $section['key']);
@@ -1809,7 +1811,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][5];
 
         $this->assertFalse($section['ok']);
@@ -1907,7 +1909,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][5];
 
         $this->assertTrue($section['checklist'][2]['ok']);
@@ -1993,7 +1995,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][5];
 
         $this->assertFalse($section['checklist'][2]['ok']);
@@ -2074,7 +2076,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][5];
 
         $this->assertTrue($section['checklist'][1]['ok']);
@@ -2146,7 +2148,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $item = $payload['sections'][5]['checklist'][3];
 
         $this->assertSame('average-lineup-budget', $item['key']);
@@ -2250,7 +2252,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $item = $payload['sections'][5]['checklist'][3];
 
         $this->assertTrue($item['ok']);
@@ -2324,7 +2326,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][5];
         $startersItem = $section['checklist'][3];
         $benchItem = $section['checklist'][4];
@@ -2393,7 +2395,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][6];
 
         $this->assertSame('matchdata', $section['key']);
@@ -2456,7 +2458,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][6];
 
         $this->assertFalse($section['ok']);
@@ -2569,7 +2571,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][6];
 
         $this->assertTrue($section['ok']);
@@ -2655,7 +2657,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][6];
 
         $this->assertFalse($section['ok']);
@@ -2667,6 +2669,242 @@ class AdminLeagueDashboardTest extends TestCase
         $this->assertFalse($section['checklist'][2]['ok']);
         $this->assertSame('match-ps-goals', $section['checklist'][2]['key']);
         $this->assertStringContainsString('Elfmeter 4:3 · Spielerdaten 4:3 · ffb_psgoal 1:0', $section['checklist'][2]['match_list'][0]['detail']);
+    }
+
+    #[Test]
+    public function substitutions_section_is_absent_when_league_has_no_bench_mode(): void
+    {
+        $this->createSchema();
+
+        $league = League::query()->create([
+            'league_title' => 'WM 2026',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_symbol' => '',
+        ]);
+        LeagueOptions::query()->create([
+            'options_league_id' => (int) $league->league_id,
+            'options_league_benchmode' => '',
+            'options_lineup_max_bench' => 0,
+        ]);
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('shellPayload')->once()->with(7)->andReturn([
+            'user' => ['user_id' => 7, 'user_nickname' => 'admin', 'photo_url' => '', 'is_ffb_admin' => true],
+            'navigation' => [],
+            'selected_league_id' => (int) $league->league_id,
+            'selected_league' => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => 'WM 2026',
+                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+            ],
+        ]);
+
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
+        $keys = array_column($payload['sections'], 'key');
+
+        $this->assertNotContains('substitutions', $keys);
+        $this->assertSame('matchdata', $keys[6]);
+        $this->assertSame('extremeteam', $keys[7]);
+    }
+
+    #[Test]
+    public function substitutions_section_is_ok_for_past_bench_rounds_without_userteams(): void
+    {
+        $this->createSchema();
+        $this->travelTo('2026-07-15 12:00:00');
+
+        $league = League::query()->create([
+            'league_title' => 'WM 2026',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_symbol' => '',
+        ]);
+        LeagueOptions::query()->create([
+            'options_league_id' => (int) $league->league_id,
+            'options_league_benchmode' => 'cover',
+            'options_lineup_max_players' => 11,
+            'options_lineup_max_credits' => 100,
+            'options_lineup_max_players_team' => 3,
+            'options_lineup_min_g' => 1,
+            'options_lineup_max_g' => 1,
+            'options_lineup_min_d' => 3,
+            'options_lineup_max_d' => 5,
+            'options_lineup_min_m' => 3,
+            'options_lineup_max_m' => 5,
+            'options_lineup_min_s' => 1,
+            'options_lineup_max_s' => 3,
+            'options_lineup_min_bench' => 0,
+            'options_lineup_max_bench' => 3,
+        ]);
+        $pastRound = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'Runde mit Bank',
+            'matchround_startdate' => '2026-06-01 00:00:00',
+            'matchround_enddate' => '2026-06-30 23:59:59',
+            'matchround_status' => 1,
+        ]);
+        MatchroundOptions::query()->create([
+            'matchround_options_matchround_id' => (int) $pastRound->matchround_id,
+            'matchround_options_lineup_max_players' => 11,
+            'matchround_options_lineup_max_credits' => 100,
+            'matchround_options_lineup_max_players_team' => 3,
+            'matchround_options_lineup_min_g' => 1,
+            'matchround_options_lineup_min_d' => 3,
+            'matchround_options_lineup_min_m' => 3,
+            'matchround_options_lineup_min_s' => 1,
+            'matchround_options_lineup_max_g' => 1,
+            'matchround_options_lineup_max_d' => 5,
+            'matchround_options_lineup_max_m' => 5,
+            'matchround_options_lineup_max_s' => 3,
+            'matchround_options_lineup_min_bench' => 0,
+            'matchround_options_lineup_max_bench' => 3,
+        ]);
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('shellPayload')->once()->with(7)->andReturn([
+            'user' => ['user_id' => 7, 'user_nickname' => 'admin', 'photo_url' => '', 'is_ffb_admin' => true],
+            'navigation' => [],
+            'selected_league_id' => (int) $league->league_id,
+            'selected_league' => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => 'WM 2026',
+                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+            ],
+        ]);
+
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
+        $section = collect($payload['sections'])->firstWhere('key', 'substitutions');
+
+        $this->assertNotNull($section);
+        $this->assertSame('Auswechslungen: 1 Spielrunde mit Bank', $section['title']);
+        $this->assertTrue($section['ok']);
+        $this->assertTrue($section['checklist'][0]['ok']);
+        $this->assertSame([], $section['checklist'][0]['match_list']);
+    }
+
+    #[Test]
+    public function substitutions_section_lists_past_bench_rounds_without_calculated_substitutions(): void
+    {
+        $this->createSchema();
+        $this->travelTo('2026-07-15 12:00:00');
+
+        $league = League::query()->create([
+            'league_title' => 'WM 2026',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_symbol' => '',
+        ]);
+        LeagueOptions::query()->create([
+            'options_league_id' => (int) $league->league_id,
+            'options_league_benchmode' => 'cover',
+            'options_lineup_max_players' => 11,
+            'options_lineup_max_credits' => 100,
+            'options_lineup_max_players_team' => 3,
+            'options_lineup_min_g' => 1,
+            'options_lineup_max_g' => 1,
+            'options_lineup_min_d' => 3,
+            'options_lineup_max_d' => 5,
+            'options_lineup_min_m' => 3,
+            'options_lineup_max_m' => 5,
+            'options_lineup_min_s' => 1,
+            'options_lineup_max_s' => 3,
+            'options_lineup_min_bench' => 0,
+            'options_lineup_max_bench' => 3,
+        ]);
+        $pastRound = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'Runde ohne Berechnung',
+            'matchround_startdate' => '2026-06-01 00:00:00',
+            'matchround_enddate' => '2026-06-30 23:59:59',
+            'matchround_status' => 1,
+        ]);
+        $disabledRound = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'Runde ohne Bank',
+            'matchround_startdate' => '2026-05-01 00:00:00',
+            'matchround_enddate' => '2026-05-30 23:59:59',
+            'matchround_status' => 1,
+        ]);
+        MatchroundOptions::query()->create([
+            'matchround_options_matchround_id' => (int) $pastRound->matchround_id,
+            'matchround_options_lineup_max_players' => 11,
+            'matchround_options_lineup_max_credits' => 100,
+            'matchround_options_lineup_max_players_team' => 3,
+            'matchround_options_lineup_min_g' => 1,
+            'matchround_options_lineup_min_d' => 3,
+            'matchround_options_lineup_min_m' => 3,
+            'matchround_options_lineup_min_s' => 1,
+            'matchround_options_lineup_max_g' => 1,
+            'matchround_options_lineup_max_d' => 5,
+            'matchround_options_lineup_max_m' => 5,
+            'matchround_options_lineup_max_s' => 3,
+            'matchround_options_lineup_min_bench' => 0,
+            'matchround_options_lineup_max_bench' => 3,
+        ]);
+        MatchroundOptions::query()->create([
+            'matchround_options_matchround_id' => (int) $disabledRound->matchround_id,
+            'matchround_options_lineup_max_players' => 11,
+            'matchround_options_lineup_max_credits' => 100,
+            'matchround_options_lineup_max_players_team' => 3,
+            'matchround_options_lineup_min_g' => 1,
+            'matchround_options_lineup_min_d' => 3,
+            'matchround_options_lineup_min_m' => 3,
+            'matchround_options_lineup_min_s' => 1,
+            'matchround_options_lineup_max_g' => 1,
+            'matchround_options_lineup_max_d' => 5,
+            'matchround_options_lineup_max_m' => 5,
+            'matchround_options_lineup_max_s' => 3,
+            'matchround_options_lineup_min_bench' => 0,
+            'matchround_options_lineup_max_bench' => 0,
+        ]);
+
+        $substitutions = Mockery::mock(SubstitutionCalculationService::class);
+        $substitutions->shouldReceive('previewForRound')
+            ->once()
+            ->with((int) $league->league_id, (int) $pastRound->matchround_id)
+            ->andReturn([
+                'ok' => true,
+                'preview' => [
+                    'rows' => [
+                        [
+                            'substitutions' => [
+                                [
+                                    'substitute_playerteam_id' => 20,
+                                    'out_playerteam_id' => 10,
+                                ],
+                            ],
+                            'previous_replaces' => [
+                                20 => null,
+                                21 => null,
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('shellPayload')->once()->with(7)->andReturn([
+            'user' => ['user_id' => 7, 'user_nickname' => 'admin', 'photo_url' => '', 'is_ffb_admin' => true],
+            'navigation' => [],
+            'selected_league_id' => (int) $league->league_id,
+            'selected_league' => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => 'WM 2026',
+                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+            ],
+        ]);
+
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), $substitutions))->pagePayload(7);
+        $section = collect($payload['sections'])->firstWhere('key', 'substitutions');
+
+        $this->assertNotNull($section);
+        $this->assertSame('Auswechslungen: 1 Spielrunde mit Bank', $section['title']);
+        $this->assertFalse($section['ok']);
+        $this->assertFalse($section['checklist'][0]['ok']);
+        $this->assertCount(1, $section['checklist'][0]['match_list']);
+        $this->assertSame('Runde ohne Berechnung', $section['checklist'][0]['match_list'][0]['label']);
+        $this->assertStringContainsString('erwartet 1 Wechsel', $section['checklist'][0]['match_list'][0]['detail']);
     }
 
     #[Test]
@@ -2735,7 +2973,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][7];
 
         $this->assertSame('extremeteam', $section['key']);
@@ -2781,7 +3019,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][7];
 
         $this->assertFalse($section['ok']);
@@ -2971,7 +3209,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][8];
 
         $this->assertSame('score', $section['key']);
@@ -3068,7 +3306,7 @@ class AdminLeagueDashboardTest extends TestCase
             ],
         ]);
 
-        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class)))->pagePayload(7);
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][8];
 
         $this->assertFalse($section['ok']);
@@ -3165,6 +3403,7 @@ class AdminLeagueDashboardTest extends TestCase
     private function createSchema(): void
     {
         Schema::dropIfExists('ffb_userscore');
+        Schema::dropIfExists('ffb_userteam_substitute_slot');
         Schema::dropIfExists('ffb_userteam_slot');
         Schema::dropIfExists('ffb_userteam');
         Schema::dropIfExists('web_user');
@@ -3386,6 +3625,15 @@ class AdminLeagueDashboardTest extends TestCase
             $table->unsignedTinyInteger('userteam_slot_slot');
             $table->unsignedInteger('userteam_slot_playerteam_id');
             $table->unique(['userteam_slot_userteam_id', 'userteam_slot_slot']);
+        });
+
+        Schema::create('ffb_userteam_substitute_slot', function (Blueprint $table) {
+            $table->increments('substitute_slot_id');
+            $table->unsignedInteger('substitute_slot_userteam_id');
+            $table->unsignedTinyInteger('substitute_slot_slot');
+            $table->unsignedInteger('substitute_slot_playerteam_id');
+            $table->unsignedInteger('substitute_slot_replaces_playerteam_id')->nullable();
+            $table->unique(['substitute_slot_userteam_id', 'substitute_slot_slot']);
         });
 
         Schema::create('ffb_userscore', function (Blueprint $table) {
