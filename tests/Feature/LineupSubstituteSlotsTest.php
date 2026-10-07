@@ -106,6 +106,26 @@ class LineupSubstituteSlotsTest extends TestCase
     }
 
     #[Test]
+    public function get_for_round_keeps_inactive_squad_players_with_status_zero(): void
+    {
+        [$starterIds, $subIds] = $this->seedPlayersWithBench(minBench: 1, maxBench: 2, maxPerTeam: 4);
+        $result = app(LineupService::class)->saveForRound(544, $this->roundId, $starterIds, $subIds);
+        $this->assertTrue($result['ok'], $result['error'] ?? '');
+
+        DB::table('ffb_playerteam')->where('playerteam_id', $starterIds[0])->update([
+            'playerteam_status' => 0,
+        ]);
+
+        $loaded = app(LineupService::class)->getForRound(544, $this->roundId);
+        $player = collect($loaded['players'])->firstWhere('playerteam_id', $starterIds[0]);
+
+        $this->assertNotNull($player);
+        $this->assertSame(0, (int) $player['playerteam_status']);
+        $this->assertNotSame('', (string) ($player['playerteam_team'] ?? ''));
+        unset($subIds);
+    }
+
+    #[Test]
     public function save_requires_min_bench_and_rejects_over_max_bench(): void
     {
         [$starterIds, $subIds] = $this->seedPlayersWithBench(minBench: 2, maxBench: 2, maxPerTeam: 4);

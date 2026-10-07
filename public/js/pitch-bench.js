@@ -99,6 +99,62 @@
         return Number(player.player_price || 0);
     }
 
+    function inactiveSquadWarningText(player) {
+        if (Number(player.playerteam_status) === 1) {
+            return '';
+        }
+        if (player.playerteam_status == null || player.playerteam_status === '') {
+            return '';
+        }
+        const team = String(player.playerteam_team || '').trim() || 'diesem Team';
+        return (
+            'Der Spieler befindet sich aktuell nicht im Kader von ' +
+            team +
+            '. Bitte Aufstellung prüfen!'
+        );
+    }
+
+    function selectionWarningText(player) {
+        const inactive = inactiveSquadWarningText(player);
+        if (inactive !== '') {
+            return inactive;
+        }
+        const note = String(player.playerteam_player_note || '').trim();
+        if (note !== '') {
+            return note;
+        }
+        const card = player.card_warning;
+        if (card) {
+            return String(card);
+        }
+        return '';
+    }
+
+    function playerInfoLinkHtml(player, legacyBase) {
+        const warning = selectionWarningText(player);
+        const icon = warning !== '' ? 'info_warning.svg' : 'info.svg';
+        const titleAttr =
+            warning !== ''
+                ? ' title="' +
+                  escapeHtml(warning) +
+                  '" aria-label="' +
+                  escapeHtml(warning) +
+                  '"'
+                : '';
+
+        return (
+            '<a href="#" data-modal="player" data-id="' +
+            player.playerteam_id +
+            '"' +
+            titleAttr +
+            '><img src="' +
+            legacyBase +
+            'images/ffb/symbols/' +
+            icon +
+            '" width="16" height="16" alt="Info"></a>'
+        );
+    }
+
     function positionLetter(player) {
         const pos = String(
             player.playerteam_player_position || player.player_position || ''
@@ -182,11 +238,7 @@
             price +
             '</span>' +
             flagHtml(legacyBase, nat, player.playerteam_team || '') +
-            '<a href="#" data-modal="player" data-id="' +
-            player.playerteam_id +
-            '"><img src="' +
-            legacyBase +
-            'images/ffb/symbols/info.png" width="16" height="16" alt="Info"></a>' +
+            playerInfoLinkHtml(player, legacyBase) +
             positionMetaHtml(player) +
             '</div></div>'
         );

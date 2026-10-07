@@ -289,7 +289,7 @@ class PopupApiTest extends TestCase
         ];
 
         $this->mock(PlayerPopupService::class, function ($mock) use ($payload) {
-            $mock->shouldReceive('forPlayerteam')->once()->with(544, 55)->andReturn([
+            $mock->shouldReceive('forPlayerteam')->once()->with(544, 55, 0)->andReturn([
                 'ok' => true,
                 'data' => $payload,
             ]);

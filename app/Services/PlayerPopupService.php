@@ -13,6 +13,7 @@ use App\Models\Playerteam;
 use App\Models\UserDetails;
 use App\Models\Userteam;
 use App\Support\FfbDateTime;
+use App\Support\PlayerCardWarning;
 use App\Support\PlayerPicture;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -22,7 +23,7 @@ class PlayerPopupService
     /**
      * @return array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}
      */
-    public function forPlayerteam(int $viewerId, int $playerteamId): array
+    public function forPlayerteam(int $viewerId, int $playerteamId, int $matchroundId = 0): array
     {
         if ($playerteamId <= 0) {
             return ['ok' => false, 'status' => 422, 'error' => 'playerteam_id is required'];
@@ -169,6 +170,9 @@ class PlayerPopupService
                         (int) $playerteam->playerteam_player_id,
                     ),
                 ],
+                'warning' => $matchroundId > 0
+                    ? $this->selectionWarning($playerteam, $leagueId, $matchroundId)
+                    : null,
                 'pricemode' => $priceMode,
                 'has_playerprices' => $this->playerHasPlayerpricesInLeague($ptIds, $leagueId),
                 'stats' => [
@@ -194,6 +198,40 @@ class PlayerPopupService
                 'pastmatches' => $pastMatches,
             ],
         ];
+    }
+
+    /**
+     * Lineup-only warning (inactive squad, note, or recent cards) for the selected matchround.
+     */
+    private function selectionWarning(Playerteam $playerteam, int $leagueId, int $matchroundId): ?string
+    {
+        if ($matchroundId <= 0 || $leagueId <= 0) {
+            return null;
+        }
+
+        if ((int) $playerteam->playerteam_status !== 1) {
+            $teamName = trim((string) ($playerteam->team?->team_name ?? ''));
+            if ($teamName === '') {
+                $teamName = 'diesem Team';
+            }
+
+            return 'Der Spieler befindet sich aktuell nicht im Kader von '.$teamName.'. Bitte Aufstellung prüfen!';
+        }
+
+        $note = trim((string) ($playerteam->playerteam_player_note ?? ''));
+        if ($note !== '') {
+            return $note;
+        }
+
+        $warnings = PlayerCardWarning::forPlayerteams(
+            collect([(int) $playerteam->playerteam_id => $playerteam]),
+            $matchroundId,
+            $leagueId,
+        );
+
+        $warning = $warnings->get((int) $playerteam->playerteam_id);
+
+        return is_string($warning) && $warning !== '' ? $warning : null;
     }
 
     /**

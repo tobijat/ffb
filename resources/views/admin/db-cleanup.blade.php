@@ -8,7 +8,7 @@
         $runUrl = (string) ($data['run_url'] ?? route('admin.dbCleanup.run'));
         $okSrc = $legacyBase.'images/ffb/symbols/ok.png';
         $failSrc = $legacyBase.'images/ffb/symbols/delete.png';
-        $idleSrc = $legacyBase.'images/ffb/symbols/info.png';
+        $idleSrc = $legacyBase.'images/ffb/symbols/info.svg';
     @endphp
 
     <section class="panel admin-main" aria-labelledby="admin-db-cleanup-title">

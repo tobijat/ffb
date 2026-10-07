@@ -6,7 +6,7 @@
     <title>Aufstellung — SoccerSportsfan</title>
     <link rel="stylesheet" href="css/start.css?v=23">
     <link rel="stylesheet" href="css/dashboard.css?v=12">
-    <link rel="stylesheet" href="css/modal.css?v=16">
+    <link rel="stylesheet" href="css/modal.css?v=18">
     <link rel="stylesheet" href="css/myteam.css?v=32">
     <link rel="stylesheet" href="css/lineup.css?v=32">
 </head>
@@ -98,9 +98,9 @@
         };
     </script>
     <script src="js/modal.js?v=12" defer></script>
-    <script src="js/player-modal.js?v=11" defer></script>
+    <script src="js/player-modal.js?v=14" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
-    <script src="js/pitch-bench.js?v=20" defer></script>
-    <script src="js/lineup.js?v=37" defer></script>
+    <script src="js/pitch-bench.js?v=22" defer></script>
+    <script src="js/lineup.js?v=39" defer></script>
 </body>
 </html>

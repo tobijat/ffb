@@ -232,23 +232,27 @@
         );
     }
 
-    function buildCardWarning(warning) {
-        if (!warning) {
+    function inactiveSquadWarningText(player) {
+        if (Number(player.playerteam_status) === 1) {
             return '';
         }
-
-        const text = String(warning);
-
+        // Missing status (e.g. selection list) means active / not applicable.
+        if (player.playerteam_status == null || player.playerteam_status === '') {
+            return '';
+        }
+        const team = String(player.playerteam_team || '').trim() || 'diesem Team';
         return (
-            '<span class="card-warn" title="' +
-            escapeHtml(text) +
-            '" aria-label="' +
-            escapeHtml(text) +
-            '">!</span>'
+            'Der Spieler befindet sich aktuell nicht im Kader von ' +
+            team +
+            '. Bitte Aufstellung prüfen!'
         );
     }
 
     function selectionWarningText(player) {
+        const inactive = inactiveSquadWarningText(player);
+        if (inactive !== '') {
+            return inactive;
+        }
         const note = String(player.playerteam_player_note || '').trim();
         if (note !== '') {
             return note;
@@ -260,8 +264,27 @@
         return '';
     }
 
-    function buildSelectionWarning(player) {
-        return buildCardWarning(selectionWarningText(player) || null);
+    function playerInfoLinkHtml(player) {
+        const warning = selectionWarningText(player);
+        const icon = warning !== '' ? 'info_warning.svg' : 'info.svg';
+        const titleAttr =
+            warning !== ''
+                ? ' title="' +
+                  escapeHtml(warning) +
+                  '" aria-label="' +
+                  escapeHtml(warning) +
+                  '"'
+                : '';
+
+        return (
+            '<a href="#" data-modal="player" data-id="' +
+            player.playerteam_id +
+            '"' +
+            titleAttr +
+            '><img src="' +
+            symbolUrl(icon) +
+            '" width="16" height="16" alt="Info"></a>'
+        );
     }
 
     function formatTeamPrice(value) {
@@ -839,11 +862,9 @@
                         '<div class="' +
                         lineClasses.join(' ') +
                         '">' +
-                        '<span class="info"><a href="#" data-modal="player" data-id="' +
-                        p.playerteam_id +
-                        '"><img src="' +
-                        symbolUrl('info.png') +
-                        '" width="16" height="16" alt="Info"></a></span>';
+                        '<span class="info">' +
+                        playerInfoLinkHtml(p) +
+                        '</span>';
                     if (showRecentPerformance) {
                         html +=
                             '<span class="trend">' +
@@ -859,7 +880,6 @@
                             ? ' aria-disabled="true" title="' + escapeHtml(reason) + '"'
                             : '') +
                         '>' +
-                        buildSelectionWarning(p) +
                         escapeHtml(p.player_fname + ' ' + p.player_lname) +
                         '</a></span>' +
                         '<span class="price">' +
@@ -998,7 +1018,6 @@
     function playerCard(player) {
         const nat = player.playerteam_team_nationality || 'AUT';
         const teamId = player.playerteam_team_id;
-        const warn = buildSelectionWarning(player);
         return (
             '<div class="pitch-player">' +
             '<a href="#" data-remove="' +
@@ -1020,12 +1039,7 @@
             player.player_price +
             '</span>' +
             flagHtml(nat, player.playerteam_team || '') +
-            warn +
-            '<a href="#" data-modal="player" data-id="' +
-            player.playerteam_id +
-            '"><img src="' +
-            symbolUrl('info.png') +
-            '" width="16" height="16" alt="Info"></a>' +
+            playerInfoLinkHtml(player) +
             '</div></div>'
         );
     }
@@ -1274,6 +1288,8 @@
             playerteam_team: player.playerteam_team,
             playerteam_team_nationality: player.playerteam_team_nationality,
             playerteam_id: player.playerteam_id,
+            playerteam_status:
+                player.playerteam_status == null ? 1 : Number(player.playerteam_status) ? 1 : 0,
             playerteam_player_note: player.playerteam_player_note || '',
             card_warning: player.card_warning || null,
         };
@@ -1501,6 +1517,9 @@
                 return;
             }
             matchround = mrJson.data.matchround;
+            config.matchroundId = matchround ? Number(matchround.matchround_id) || 0 : 0;
+            window.FFB_LINEUP = window.FFB_LINEUP || config;
+            window.FFB_LINEUP.matchroundId = config.matchroundId;
             showRecentPerformance = !!mrJson.data.show_recent_performance;
             if (mrJson.data.lineup_options) {
                 options = mrJson.data.lineup_options;

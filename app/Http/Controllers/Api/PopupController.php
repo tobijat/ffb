@@ -44,7 +44,8 @@ class PopupController extends Controller
     public function player(Request $request, int $playerteamId): JsonResponse
     {
         $viewerId = (int) $request->attributes->get('ffb_user_id');
-        $result = $this->players->forPlayerteam($viewerId, $playerteamId);
+        $matchroundId = (int) $request->query('matchround_id', 0);
+        $result = $this->players->forPlayerteam($viewerId, $playerteamId, $matchroundId);
 
         return $this->respond($result);
     }

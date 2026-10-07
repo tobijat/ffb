@@ -492,6 +492,32 @@
     margin-right: 0.15rem;
 }
 
+.ffb-player-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.4rem 0.5rem;
+    box-sizing: border-box;
+    border: 1px solid #c00;
+    border-radius: var(--radius-sm);
+    background: #ffe5e5;
+}
+
+.ffb-player-warning img {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin-top: 0.1rem;
+}
+
+.ffb-player-warning span {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.35;
+}
+
 .ffb-player-tables {
     margin-top: 0.75rem;
     overflow-x: auto;

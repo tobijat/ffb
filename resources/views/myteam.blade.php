@@ -6,7 +6,7 @@
     <title>Mannschaft — SoccerSportsfan</title>
     <link rel="stylesheet" href="css/start.css?v=23">
     <link rel="stylesheet" href="css/dashboard.css?v=12">
-    <link rel="stylesheet" href="css/modal.css?v=16">
+    <link rel="stylesheet" href="css/modal.css?v=18">
     <link rel="stylesheet" href="css/myteam.css?v=32">
 </head>
 <body class="dash-body">
@@ -136,7 +136,7 @@
         };
     </script>
     <script src="js/modal.js?v=12" defer></script>
-    <script src="js/player-modal.js?v=11" defer></script>
+    <script src="js/player-modal.js?v=14" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
     <script src="js/pitch-bench.js?v=20" defer></script>
     <script src="js/myteam.js?v=17" defer></script>

@@ -359,7 +359,7 @@
             '<a class="nolink ffb-match-info" href="#" data-modal="player" data-id="' +
             escapeHtml(playerteamId) +
             '" title="Klicken für Spielerinfos">' +
-            '<img src="' + symbolUrl('info.png') + '" alt="" height="12"></a>'
+            '<img src="' + symbolUrl('info.svg') + '" alt="" height="12"></a>'
         );
     }
 

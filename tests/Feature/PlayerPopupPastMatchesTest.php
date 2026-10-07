@@ -129,6 +129,77 @@ class PlayerPopupPastMatchesTest extends TestCase
     }
 
     #[Test]
+    public function player_popup_prefers_player_note_as_warning_when_matchround_given(): void
+    {
+        DB::table('ffb_playerteam')->where('playerteam_id', 100)->update([
+            'playerteam_player_note' => 'Knöchelprobleme',
+        ]);
+
+        $result = (new PlayerPopupService)->forPlayerteam(544, 100, 1);
+
+        $this->assertTrue($result['ok']);
+        $this->assertSame('Knöchelprobleme', $result['data']['warning']);
+    }
+
+    #[Test]
+    public function player_popup_omits_warning_without_matchround_context(): void
+    {
+        DB::table('ffb_playerteam')->where('playerteam_id', 100)->update([
+            'playerteam_player_note' => 'Knöchelprobleme',
+        ]);
+
+        $result = (new PlayerPopupService)->forPlayerteam(544, 100);
+
+        $this->assertTrue($result['ok']);
+        $this->assertNull($result['data']['warning']);
+    }
+
+    #[Test]
+    public function player_popup_warns_when_player_is_inactive_in_squad(): void
+    {
+        DB::table('ffb_playerteam')->where('playerteam_id', 100)->update([
+            'playerteam_status' => 0,
+            'playerteam_player_note' => 'Notiz wird von Kader-Warnung verdeckt',
+        ]);
+
+        $result = (new PlayerPopupService)->forPlayerteam(544, 100, 1);
+
+        $this->assertTrue($result['ok']);
+        $this->assertSame(
+            'Der Spieler befindet sich aktuell nicht im Kader von Feffernitz. Bitte Aufstellung prüfen!',
+            $result['data']['warning'],
+        );
+    }
+
+    #[Test]
+    public function player_popup_includes_card_warning_for_matchround(): void
+    {
+        DB::table('ffb_matchround')->insert([
+            'matchround_id' => 10,
+            'matchround_league_id' => 1,
+            'matchround_title' => 'Next',
+            'matchround_startdate' => now()->addDay()->toDateTimeString(),
+            'matchround_status' => 1,
+        ]);
+        DB::table('ffb_playerstats')->insert([
+            'playerstats_id' => 2,
+            'playerstats_playerteam_id' => 100,
+            'playerstats_matchround_id' => 1,
+            'playerstats_match_id' => 19,
+            'playerstats_minutes' => 90,
+            'playerstats_goals' => 0,
+            'playerstats_assists' => 0,
+            'playerstats_score' => 0,
+            'playerstats_cards' => 'yr',
+        ]);
+
+        $result = (new PlayerPopupService)->forPlayerteam(544, 100, 10);
+
+        $this->assertTrue($result['ok']);
+        $this->assertSame('Gelb-Rot im vorhergehenden Spiel.', $result['data']['warning']);
+    }
+
+    #[Test]
     public function player_popup_includes_same_team_matches_from_other_leagues(): void
     {
         $result = (new PlayerPopupService)->forPlayerteam(544, 100);

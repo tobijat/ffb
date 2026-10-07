@@ -11,6 +11,7 @@
     const selectedLeagueId = Number(config.selectedLeagueId) || 0;
     const MAX_ROUNDS = 15;
     let lastPlayerData = null;
+    let lastPlayerCacheKey = '';
 
     function symbolUrl(name) {
         return legacyBase + 'images/ffb/symbols/' + name;
@@ -242,6 +243,30 @@
         return html;
     }
 
+    function isLineupContext() {
+        return !!(window.FFB_LINEUP && typeof window.FFB_LINEUP === 'object');
+    }
+
+    function renderPlayerWarning(message) {
+        if (!isLineupContext()) {
+            return '';
+        }
+        const text = String(message || '').trim();
+        if (text === '') {
+            return '';
+        }
+
+        return (
+            '<div class="ffb-player-warning">' +
+            '<img src="' +
+            symbolUrl('info_warning.svg') +
+            '" width="16" height="16" alt="">' +
+            '<span>Achtung: ' +
+            escapeHtml(text) +
+            '</span></div>'
+        );
+    }
+
     function renderPlayerInfoBody(data, showAll) {
         const player = data.player;
         const s = data.stats;
@@ -298,6 +323,7 @@
             '<div class="ffb-profile-rows">' +
             rows +
             '</div></div>' +
+            renderPlayerWarning(data.warning) +
             '<div class="ffb-player-tables">' +
             tables +
             '</div>'
@@ -943,20 +969,36 @@
         );
     }
 
+    function resolveMatchroundId(opts) {
+        if (!isLineupContext()) {
+            return 0;
+        }
+        const fromOpts = Number(
+            (opts && (opts.matchroundId || opts.matchround_id || opts['matchround-id'])) || 0
+        );
+        if (fromOpts > 0) {
+            return fromOpts;
+        }
+        const fromLineup = Number(window.FFB_LINEUP.matchroundId || 0);
+        return fromLineup > 0 ? fromLineup : 0;
+    }
+
     async function openPlayer(playerteamId, opts) {
         const tab = (opts && opts.tab) || 'info';
         const showAll = !!(opts && (opts.showAll || opts.show_all || opts['show-all']));
+        const matchroundId = resolveMatchroundId(opts);
+        const cacheKey = String(playerteamId) + ':' + String(matchroundId);
 
         waitingUi();
 
-        if (
-            !lastPlayerData ||
-            Number(lastPlayerData.player.playerteam_id) !== Number(playerteamId)
-        ) {
-            const json = await fetchJson(
-                apiBase + '/popups/player/' + encodeURIComponent(playerteamId)
-            );
+        if (!lastPlayerData || lastPlayerCacheKey !== cacheKey) {
+            let url = apiBase + '/popups/player/' + encodeURIComponent(playerteamId);
+            if (matchroundId > 0) {
+                url += '?matchround_id=' + encodeURIComponent(matchroundId);
+            }
+            const json = await fetchJson(url);
             lastPlayerData = json.data;
+            lastPlayerCacheKey = cacheKey;
         }
 
         const data = lastPlayerData;
