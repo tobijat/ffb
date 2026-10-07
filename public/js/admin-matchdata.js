@@ -697,20 +697,6 @@
                 r.homescore_penalty,
                 r.guestscore_penalty
             );
-            // Keep the match dropdown label in sync before save.
-            if (currentMatchId && matchesCache.length) {
-                const cached = matchesCache.find((m) => Number(m.match_id) === Number(currentMatchId));
-                if (cached) {
-                    cached.match_homescore = Number(r.homescore);
-                    cached.match_guestscore = Number(r.guestscore);
-                    const selected = matchSelect?.selectedOptions?.[0];
-                    if (selected) {
-                        const hs = Number(cached.match_homescore) < 0 ? '—' : cached.match_homescore;
-                        const gs = Number(cached.match_guestscore) < 0 ? '—' : cached.match_guestscore;
-                        selected.textContent = `${cached.match_hometeam_name} ${hs}:${gs} ${cached.match_guestteam_name}`;
-                    }
-                }
-            }
         }
 
         const mapped = data.players || {};
@@ -1163,15 +1149,34 @@
         }
     }
 
+    function matchSelectLabel(match) {
+        const hs = Number(match.match_homescore) < 0 ? '—' : match.match_homescore;
+        const gs = Number(match.match_guestscore) < 0 ? '—' : match.match_guestscore;
+        return `${match.match_hometeam_name} ${hs}:${gs} ${match.match_guestteam_name}`;
+    }
+
+    function syncSelectedMatchLabelFromResult() {
+        if (!currentMatchId || !matchesCache.length) return;
+        const cached = matchesCache.find((m) => Number(m.match_id) === Number(currentMatchId));
+        if (!cached) return;
+        const values = readResultValues();
+        cached.match_homescore = Number(values.homescore);
+        cached.match_guestscore = Number(values.guestscore);
+        cached.match_homescore_penalty = Number(values.homescore_penalty);
+        cached.match_guestscore_penalty = Number(values.guestscore_penalty);
+        const selected = matchSelect?.selectedOptions?.[0];
+        if (selected) {
+            selected.textContent = matchSelectLabel(cached);
+        }
+    }
+
     function fillMatchSelect(matches) {
         matchesCache = matches || [];
         matchSelect.innerHTML = '<option value="">— Spiel wählen —</option>';
         matchesCache.forEach((m) => {
-            const hs = Number(m.match_homescore) < 0 ? '—' : m.match_homescore;
-            const gs = Number(m.match_guestscore) < 0 ? '—' : m.match_guestscore;
             const opt = document.createElement('option');
             opt.value = String(m.match_id);
-            opt.textContent = `${m.match_hometeam_name} ${hs}:${gs} ${m.match_guestteam_name}`;
+            opt.textContent = matchSelectLabel(m);
             matchSelect.appendChild(opt);
         });
         matchSelect.disabled = matchesCache.length === 0;
@@ -1253,6 +1258,7 @@
                     body: JSON.stringify(readResultValues()),
                 });
                 resultInitial = readResultValues();
+                syncSelectedMatchLabelFromResult();
             }
 
             const jobs = dirtyPlayers.map(({ side, index, payload }) => {

@@ -535,7 +535,7 @@
                         <select
                             id="uefa_team_id"
                             name="uefa_team_id"
-                            onchange="this.form.submit()"
+                            data-squad-reload-on-change
                             @disabled($uefaTeams === [])
                         >
                             <option value="">— Team wählen —</option>
@@ -572,6 +572,7 @@
                         <button
                             type="submit"
                             class="admin-submit"
+                            data-squad-analyze-btn
                             @disabled($uefaTeamId === '')
                         >
                             Kader prüfen
@@ -671,7 +672,7 @@
                         <select
                             id="fifa_team_id"
                             name="fifa_team_id"
-                            onchange="this.form.submit()"
+                            data-squad-reload-on-change
                             @disabled($fifaTeams === [])
                         >
                             <option value="">— Team wählen —</option>
@@ -708,6 +709,7 @@
                         <button
                             type="submit"
                             class="admin-submit"
+                            data-squad-analyze-btn
                             @disabled($fifaTeamId === '')
                         >
                             Kader prüfen
@@ -835,7 +837,12 @@
 ]</pre>
                 </div>
                 <div class="admin-actions">
-                    <button type="submit" class="admin-submit" @disabled($squadFiles === [])>Kader prüfen</button>
+                    <button
+                        type="submit"
+                        class="admin-submit"
+                        data-squad-analyze-btn
+                        @disabled($squadFiles === [])
+                    >Kader prüfen</button>
                 </div>
             </form>
 
@@ -1016,6 +1023,17 @@
 <script src="{{ url('js/admin-bulk-json-form.js') }}"></script>
 <script>
 (function () {
+    document.querySelectorAll('[data-squad-reload-on-change]').forEach(function (select) {
+        select.addEventListener('change', function () {
+            document.querySelectorAll('[data-squad-analyze-btn]').forEach(function (btn) {
+                btn.disabled = true;
+            });
+            if (select.form) {
+                select.form.submit();
+            }
+        });
+    });
+
     const autoTable = document.getElementById('admin-auto-squad-table');
     const autoAlmostTable = document.getElementById('admin-auto-squad-almost-table');
     const autoSubmit = document.getElementById('admin-auto-squad-submit');

@@ -176,11 +176,19 @@
                 <select id="pp_perf_matchround_pick" name="matchround_id" onchange="this.form.submit()">
                     <option value="">Spielrunde wählen…</option>
                     @foreach ($matchrounds as $round)
+                        @php
+                            $timingLabel = match ($round['timing'] ?? '') {
+                                'past' => 'vergangen',
+                                'current' => 'aktuell',
+                                'future' => 'zukünftig',
+                                default => '',
+                            };
+                        @endphp
                         <option
                             value="{{ $round['matchround_id'] }}"
                             @selected($matchroundId === (int) $round['matchround_id'])
                         >
-                            {{ $round['matchround_title'] }}
+                            {{ $round['matchround_title'] }}@if ($timingLabel !== '') ({{ $timingLabel }})@endif
                         </option>
                     @endforeach
                 </select>

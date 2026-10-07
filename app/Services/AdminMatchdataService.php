@@ -311,7 +311,7 @@ class AdminMatchdataService
             return ['ok' => false, 'errors' => ['URL muss mit http:// oder https:// beginnen.']];
         }
 
-        $match = MatchGame::query()->find($matchId);
+        $match = MatchGame::query()->with(['homeTeam', 'guestTeam'])->find($matchId);
         if (! $match) {
             return ['ok' => false, 'errors' => ['Spiel nicht gefunden.']];
         }
@@ -351,9 +351,11 @@ class AdminMatchdataService
         $pm = $this->pointsMode($userId);
         $homeDb = $this->playersForTeam($userId, (int) $match->match_hometeam_id, $matchId);
         $guestDb = $this->playersForTeam($userId, (int) $match->match_guestteam_id, $matchId);
+        $homeTeamName = trim((string) ($match->homeTeam?->team_name ?? ''));
+        $guestTeamName = trim((string) ($match->guestTeam?->team_name ?? ''));
 
-        [$homeMapped, $homeUnmatched, $homeScore, $homePs] = $this->mapScrapedSide($parsed['home'], $homeDb, $pm);
-        [$guestMapped, $guestUnmatched, $guestScore, $guestPs] = $this->mapScrapedSide($parsed['guest'], $guestDb, $pm);
+        [$homeMapped, $homeUnmatched, $homeScore, $homePs] = $this->mapScrapedSide($parsed['home'], $homeDb, $pm, $homeTeamName);
+        [$guestMapped, $guestUnmatched, $guestScore, $guestPs] = $this->mapScrapedSide($parsed['guest'], $guestDb, $pm, $guestTeamName);
 
         // Own goals count for the opponent.
         $homeOwn = $this->sumScrapedOwngoals($parsed['home']);
@@ -445,9 +447,11 @@ class AdminMatchdataService
         $pm = $this->pointsMode($userId);
         $homeDb = $this->playersForTeam($userId, (int) $match->match_hometeam_id, $matchId);
         $guestDb = $this->playersForTeam($userId, (int) $match->match_guestteam_id, $matchId);
+        $homeTeamName = trim((string) ($match->homeTeam?->team_name ?? ''));
+        $guestTeamName = trim((string) ($match->guestTeam?->team_name ?? ''));
 
-        [$homeMapped, $homeUnmatched] = $this->mapScrapedSide($parsed['home'], $homeDb, $pm);
-        [$guestMapped, $guestUnmatched] = $this->mapScrapedSide($parsed['guest'], $guestDb, $pm);
+        [$homeMapped, $homeUnmatched] = $this->mapScrapedSide($parsed['home'], $homeDb, $pm, $homeTeamName);
+        [$guestMapped, $guestUnmatched] = $this->mapScrapedSide($parsed['guest'], $guestDb, $pm, $guestTeamName);
 
         // Own goals count for the opponent — result already comes from UEFA score,
         // so prefer official score when present.
@@ -536,9 +540,11 @@ class AdminMatchdataService
         $pm = $this->pointsMode($userId);
         $homeDb = $this->playersForTeam($userId, (int) $match->match_hometeam_id, $matchId);
         $guestDb = $this->playersForTeam($userId, (int) $match->match_guestteam_id, $matchId);
+        $homeTeamName = trim((string) ($match->homeTeam?->team_name ?? ''));
+        $guestTeamName = trim((string) ($match->guestTeam?->team_name ?? ''));
 
-        [$homeMapped, $homeUnmatched] = $this->mapScrapedSide($parsed['home'], $homeDb, $pm);
-        [$guestMapped, $guestUnmatched] = $this->mapScrapedSide($parsed['guest'], $guestDb, $pm);
+        [$homeMapped, $homeUnmatched] = $this->mapScrapedSide($parsed['home'], $homeDb, $pm, $homeTeamName);
+        [$guestMapped, $guestUnmatched] = $this->mapScrapedSide($parsed['guest'], $guestDb, $pm, $guestTeamName);
 
         $players = $homeMapped + $guestMapped;
         $unmatched = array_values(array_unique(array_merge($homeUnmatched, $guestUnmatched)));
@@ -760,13 +766,14 @@ class AdminMatchdataService
      * @param  list<array<string, mixed>>  $dbPlayers
      * @return array{0: array<string, array<string, int|string>>, 1: list<string>, 2: int, 3: int}
      */
-    private function mapScrapedSide(array $scraped, array $dbPlayers, string $pm): array
+    private function mapScrapedSide(array $scraped, array $dbPlayers, string $pm, string $teamName = ''): array
     {
         $mapped = [];
         $unmatched = [];
         $goals = 0;
         $psHits = 0;
         $usedPt = [];
+        $teamName = trim($teamName);
 
         foreach ($scraped as $sp) {
             $name = trim((string) ($sp['player_name'] ?? ''));
@@ -781,9 +788,13 @@ class AdminMatchdataService
 
             $ptId = $this->findMatchingPlayerteamId($name, $dbPlayers, $usedPt, $uefaId, $fifaId);
             if ($ptId === null) {
-                $unmatched[] = $name !== ''
+                $label = $name !== ''
                     ? $name
                     : ($fifaId !== '' ? 'FIFA#'.$fifaId : 'UEFA#'.$uefaId);
+                if ($teamName !== '') {
+                    $label .= ' ('.$teamName.')';
+                }
+                $unmatched[] = $label;
 
                 continue;
             }
@@ -921,6 +932,9 @@ class AdminMatchdataService
             return ['ok' => false, 'errors' => ['No Match for this ID was found!']];
         }
 
+        // Always use the match league options — save endpoints do not pass a user id,
+        // and falling back to options_league_id=0 would use pointsmode "old".
+        $this->useOptionsForMatch($match);
         $pm = $this->pointsMode();
 
         $homescore = $this->intOrDefault($input['homescore'] ?? null, -1);
@@ -1038,11 +1052,14 @@ class AdminMatchdataService
         }
 
         $playerteam = Playerteam::query()->find($playerteamId);
-        $match = MatchGame::query()->find($matchId);
+        $match = MatchGame::query()->with('matchround')->find($matchId);
         if (! $playerteam || ! $match) {
             return ['ok' => false, 'errors' => ['No player/match found!']];
         }
 
+        // Always use the match league options — save endpoints do not pass a user id,
+        // and falling back to options_league_id=0 would use pointsmode "old".
+        $this->useOptionsForMatch($match);
         $pm = $this->pointsMode();
         $position = (string) ($playerteam->playerteam_player_position ?: '');
         $teamId = (int) $playerteam->playerteam_team_id;
@@ -1511,7 +1528,24 @@ class AdminMatchdataService
 
         $leagueId = $this->adminCenter->selectedLeagueId($userId);
 
-        return $this->optionsCache = LeagueOptions::query()->where('options_league_id', $leagueId)->first()
+        return $this->optionsCache = $this->optionsForLeagueId($leagueId);
+    }
+
+    /**
+     * Bind scoring/pointsmode options to the league that owns the match.
+     */
+    private function useOptionsForMatch(MatchGame $match): void
+    {
+        $leagueId = (int) ($match->matchround?->matchround_league_id
+            ?? Matchround::query()->whereKey((int) $match->match_round)->value('matchround_league_id')
+            ?? 0);
+
+        $this->optionsCache = $this->optionsForLeagueId($leagueId);
+    }
+
+    private function optionsForLeagueId(int $leagueId): LeagueOptions
+    {
+        return LeagueOptions::query()->where('options_league_id', $leagueId)->first()
             ?? LeagueOptions::query()->where('options_league_id', 0)->first()
             ?? new LeagueOptions;
     }

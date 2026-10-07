@@ -50,10 +50,26 @@ class TeamShirtTest extends TestCase
     }
 
     #[Test]
-    public function blank_urls_stay_at_shirts_root(): void
+    public function url_prefers_svg_over_png_and_accepts_svg_only_shirts(): void
     {
-        $this->assertSame('/images/ffb/shirts/shirt_BLANK.png', TeamShirt::blankUrl());
-        $this->assertSame('/images/ffb/shirts/shirt_BLANK_RED.png', TeamShirt::blankUrl(true));
+        File::ensureDirectoryExists($this->shirtsDir.DIRECTORY_SEPARATOR.'163');
+        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.'163'.DIRECTORY_SEPARATOR.'kos.svg', 'default-svg');
+        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.'163'.DIRECTORY_SEPARATOR.'kos-38.svg', 'league-svg');
+        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.'163'.DIRECTORY_SEPARATOR.'kos.png', 'default-png');
+
+        $this->assertSame('/images/ffb/shirts/163/kos-38.svg', TeamShirt::url(163, 'kos', 38));
+        $this->assertSame('/images/ffb/shirts/163/kos.svg', TeamShirt::url(163, 'kos', 99));
+        $this->assertSame('shirts/163/kos-38.svg', TeamShirt::relativePath(163, 'kos', 38));
+    }
+
+    #[Test]
+    public function blank_urls_prefer_existing_svg(): void
+    {
+        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.'shirt_BLANK.svg', 'blank');
+        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.'shirt_BLANK_RED.svg', 'blank-red');
+
+        $this->assertSame('/images/ffb/shirts/shirt_BLANK.svg', TeamShirt::blankUrl());
+        $this->assertSame('/images/ffb/shirts/shirt_BLANK_RED.svg', TeamShirt::blankUrl(true));
     }
 
     #[Test]

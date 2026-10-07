@@ -16,6 +16,7 @@ use App\Services\EloRatingClient;
 use App\Services\FfbAdminAccess;
 use App\Services\FfbAuth;
 use App\Services\LineupOptionsResolver;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Mockery;
@@ -42,6 +43,41 @@ class AdminPlayerpricePerformanceTest extends TestCase
         Schema::dropIfExists('ffb_team');
         Schema::dropIfExists('ffb_league');
         parent::tearDown();
+    }
+
+    #[Test]
+    public function matchrounds_payload_marks_past_current_and_future_timing(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-06-15 12:00:00', 'UTC'));
+
+        $league = League::query()->create(['league_title' => 'Timing Liga']);
+        $leagueId = (int) $league->league_id;
+
+        $past = Matchround::query()->create([
+            'matchround_league_id' => $leagueId,
+            'matchround_title' => 'Past Round',
+            'matchround_startdate' => '2026-06-01 00:00:00',
+            'matchround_enddate' => '2026-06-10 00:00:00',
+        ]);
+        $current = Matchround::query()->create([
+            'matchround_league_id' => $leagueId,
+            'matchround_title' => 'Current Round',
+            'matchround_startdate' => '2026-06-12 00:00:00',
+            'matchround_enddate' => '2026-06-20 00:00:00',
+        ]);
+        $future = Matchround::query()->create([
+            'matchround_league_id' => $leagueId,
+            'matchround_title' => 'Future Round',
+            'matchround_startdate' => '2026-06-22 00:00:00',
+            'matchround_enddate' => '2026-06-30 00:00:00',
+        ]);
+
+        $payload = $this->service($leagueId)->pagePayload(544, null, 'performance');
+        $byId = collect($payload['matchrounds'])->keyBy('matchround_id');
+
+        $this->assertSame('past', $byId[(int) $past->matchround_id]['timing']);
+        $this->assertSame('current', $byId[(int) $current->matchround_id]['timing']);
+        $this->assertSame('future', $byId[(int) $future->matchround_id]['timing']);
     }
 
     #[Test]
@@ -920,6 +956,7 @@ class AdminPlayerpricePerformanceTest extends TestCase
             $table->unsignedInteger('matchround_league_id');
             $table->string('matchround_title')->default('');
             $table->string('matchround_startdate')->nullable();
+            $table->string('matchround_enddate')->nullable();
         });
 
         Schema::create('ffb_team', function (Blueprint $table) {

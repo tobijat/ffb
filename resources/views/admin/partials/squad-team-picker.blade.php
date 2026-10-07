@@ -10,7 +10,7 @@
         <select
             id="{{ $teamSelectId ?? 'team_id' }}"
             name="team_id"
-            onchange="this.form.submit()"
+            data-squad-reload-on-change
             @disabled($squadLeagueId <= 0 || ($teams ?? []) === [])
         >
             <option value="">— Team wählen —</option>

@@ -12,6 +12,8 @@ use App\Models\Team;
 use App\Models\Teamelo;
 use App\Models\Teamprice;
 use App\Models\Userteam;
+use App\Support\FfbDateTime;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -1982,19 +1984,44 @@ class AdminPlayerpriceService
     }
 
     /**
-     * @return list<array{matchround_id: int, matchround_title: string}>
+     * @return list<array{matchround_id: int, matchround_title: string, timing: 'past'|'current'|'future'}>
      */
     private function matchrounds(int $leagueId): array
     {
+        $now = CarbonImmutable::now('UTC');
+
         return Matchround::query()
             ->where('matchround_league_id', $leagueId)
             ->orderBy('matchround_startdate')
-            ->get(['matchround_id', 'matchround_title'])
-            ->map(static fn (Matchround $r): array => [
+            ->get(['matchround_id', 'matchround_title', 'matchround_startdate', 'matchround_enddate'])
+            ->map(fn (Matchround $r): array => [
                 'matchround_id' => (int) $r->matchround_id,
                 'matchround_title' => (string) $r->matchround_title,
+                'timing' => $this->matchroundTiming(
+                    (string) $r->matchround_startdate,
+                    (string) $r->matchround_enddate,
+                    $now,
+                ),
             ])
             ->all();
+    }
+
+    /**
+     * @return 'past'|'current'|'future'
+     */
+    private function matchroundTiming(string $startDb, string $endDb, CarbonImmutable $now): string
+    {
+        $start = FfbDateTime::parseUtcDb($startDb);
+        if ($start !== null && $start->greaterThan($now)) {
+            return 'future';
+        }
+
+        $end = FfbDateTime::parseUtcDb($endDb);
+        if ($end !== null && $end->lessThan($now)) {
+            return 'past';
+        }
+
+        return 'current';
     }
 
     /**

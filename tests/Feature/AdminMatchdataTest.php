@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Services\AdminMatchdataService;
 use App\Services\FfbAdminAccess;
 use App\Services\FfbAuth;
+use PHPUnit\Framework\Attributes\Test;
+use ReflectionMethod;
 use Tests\TestCase;
 
 class AdminMatchdataTest extends TestCase
@@ -321,7 +323,7 @@ class AdminMatchdataTest extends TestCase
                             'minute_out' => 0,
                         ],
                     ],
-                    'unmatched' => ['Unknown Player'],
+                    'unmatched' => ['Unknown Player (Heim FC)'],
                     'matched' => 1,
                 ]);
         });
@@ -333,7 +335,40 @@ class AdminMatchdataTest extends TestCase
             ->assertOk()
             ->assertJsonPath('ok', true)
             ->assertJsonPath('players.11.minutes', 90)
-            ->assertJsonPath('unmatched.0', 'Unknown Player');
+            ->assertJsonPath('unmatched.0', 'Unknown Player (Heim FC)');
+    }
+
+    #[Test]
+    public function unmatched_scrape_labels_include_team_name(): void
+    {
+        $service = app(AdminMatchdataService::class);
+        $method = new ReflectionMethod(AdminMatchdataService::class, 'mapScrapedSide');
+
+        [, $unmatched] = $method->invoke($service, [
+            [
+                'player_name' => 'Unknown Player',
+                'player_num_goals' => 0,
+                'player_penalties_hit' => 0,
+            ],
+            [
+                'player_name' => '',
+                'player_uefa_id' => '123',
+                'player_num_goals' => 0,
+                'player_penalties_hit' => 0,
+            ],
+            [
+                'player_name' => '',
+                'player_fifa_id' => '456',
+                'player_num_goals' => 0,
+                'player_penalties_hit' => 0,
+            ],
+        ], [], 'new', 'Deutschland');
+
+        $this->assertSame([
+            'Unknown Player (Deutschland)',
+            'UEFA#123 (Deutschland)',
+            'FIFA#456 (Deutschland)',
+        ], $unmatched);
     }
 
     public function test_save_player_json(): void

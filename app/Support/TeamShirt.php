@@ -5,11 +5,17 @@ namespace App\Support;
 /**
  * Team shirt paths: per team folder, nationality default + optional league override.
  *
- * Default: shirts/{team_id}/{nationality}.png
- * League:  shirts/{team_id}/{nationality}-{league_id}.png
+ * Prefers SVG over PNG (same order as public/js/ffb-shirts.js):
+ *   shirts/{team_id}/{nationality}-{league_id}.svg
+ *   shirts/{team_id}/{nationality}.svg
+ *   shirts/{team_id}/{nationality}-{league_id}.png
+ *   shirts/{team_id}/{nationality}.png
  */
 final class TeamShirt
 {
+    /** @var list<string> */
+    private const EXTENSIONS = ['svg', 'png'];
+
     public static function normalizeNationality(?string $nationality): string
     {
         $value = strtolower(trim((string) $nationality));
@@ -42,16 +48,24 @@ final class TeamShirt
             return null;
         }
 
-        if ($leagueId !== null && $leagueId > 0) {
-            $league = 'shirts/'.$teamId.'/'.$nat.'-'.$leagueId.'.png';
-            if (self::fileExists($league)) {
-                return $league;
-            }
-        }
+        $stem = 'shirts/'.$teamId.'/'.$nat;
+        $hasLeague = $leagueId !== null && $leagueId > 0;
 
-        $default = 'shirts/'.$teamId.'/'.$nat.'.png';
-        if (self::fileExists($default)) {
-            return $default;
+        // Same order as public/js/ffb-shirts.js candidates().
+        $candidates = [];
+        if ($hasLeague) {
+            $candidates[] = $stem.'-'.$leagueId.'.svg';
+        }
+        $candidates[] = $stem.'.svg';
+        if ($hasLeague) {
+            $candidates[] = $stem.'-'.$leagueId.'.png';
+        }
+        $candidates[] = $stem.'.png';
+
+        foreach ($candidates as $relative) {
+            if (self::fileExists($relative)) {
+                return $relative;
+            }
         }
 
         return null;
@@ -59,6 +73,7 @@ final class TeamShirt
 
     /**
      * Absolute filesystem path for the default (non-league) shirt file.
+     * Upload target remains PNG; existence checks use relativePath().
      */
     public static function defaultStoragePath(int $teamId, ?string $nationality): string
     {
@@ -71,6 +86,7 @@ final class TeamShirt
 
     /**
      * Absolute filesystem path for a league-specific shirt file.
+     * Upload target remains PNG; existence checks use relativePath().
      */
     public static function leagueStoragePath(int $teamId, ?string $nationality, int $leagueId): string
     {
@@ -103,7 +119,15 @@ final class TeamShirt
 
     public static function blankUrl(bool $red = false): string
     {
-        return '/images/ffb/shirts/'.($red ? 'shirt_BLANK_RED.png' : 'shirt_BLANK.png');
+        $stem = $red ? 'shirt_BLANK_RED' : 'shirt_BLANK';
+        foreach (self::EXTENSIONS as $ext) {
+            $relative = 'shirts/'.$stem.'.'.$ext;
+            if (self::fileExists($relative)) {
+                return '/images/ffb/'.$relative;
+            }
+        }
+
+        return '/images/ffb/shirts/'.$stem.'.png';
     }
 
     /**
@@ -120,7 +144,9 @@ final class TeamShirt
 
         $names = [];
         foreach ([strtoupper($nat), $nat] as $variant) {
-            $names[] = 'shirt_'.$variant.'.png';
+            foreach (self::EXTENSIONS as $ext) {
+                $names[] = 'shirt_'.$variant.'.'.$ext;
+            }
         }
 
         return array_values(array_unique($names));
