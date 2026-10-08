@@ -405,7 +405,13 @@
     function playerEventIcons(player, matchMinutes, side) {
         const card = player.player_playerstats_cards;
         const goals = Number(player.player_playerstats_goals) || 0;
+        const assists = Number(player.player_playerstats_assists) || 0;
         const owngoals = Number(player.player_playerstats_owngoals) || 0;
+        const penSaved = Number(player.player_playerstats_penaltiessaved) || 0;
+        const penLost = Number(player.player_playerstats_penaltieslost) || 0;
+        const psHit = Number(player.player_playerstats_penaltyshootout_hit) || 0;
+        const psLost = Number(player.player_playerstats_penaltyshootout_lost) || 0;
+        const psSave = Number(player.player_playerstats_penaltyshootout_save) || 0;
         const minutesIn = Number(player.player_playerstats_minute_in) || 0;
         const minutesOut = Number(player.player_playerstats_minute_out) || 0;
         let html = '';
@@ -442,40 +448,66 @@
         }
 
         const goalHtml = repeatIcon(symbolUrl('stats_goal.svg'), goals, 'Tor');
+        const assistHtml = repeatIcon(symbolUrl('stats_assist.svg'), assists, 'Assist');
         const ownHtml = repeatIcon(symbolUrl('stats_owngoal.svg'), owngoals, 'Eigentor');
+        const penSavedHtml = repeatIcon(
+            symbolUrl('stats_penaltysaved.svg'),
+            penSaved,
+            'Elfer gehalten'
+        );
+        const penLostHtml = repeatIcon(
+            symbolUrl('stats_penaltylost.svg'),
+            penLost,
+            'Elfer verschossen'
+        );
+        const psHitHtml = repeatIcon(
+            symbolUrl('stats_ps_hit.svg'),
+            psHit,
+            'Elfmeterschießen - getroffen'
+        );
+        const psLostHtml = repeatIcon(
+            symbolUrl('stats_ps_fail.svg'),
+            psLost,
+            'Elfmeterschießen - nicht getroffen'
+        );
+        const psSaveHtml = repeatIcon(
+            symbolUrl('stats_ps_hit.svg'),
+            psSave,
+            'Elfmeterschießen - gehalten'
+        );
+
+        const playEvents = [
+            goalHtml,
+            assistHtml,
+            ownHtml,
+            penSavedHtml,
+            penLostHtml,
+            psHitHtml,
+            psLostHtml,
+            psSaveHtml,
+        ].filter(Boolean);
+        const changeEvents = [changeIn, changeOut].filter(Boolean);
 
         if (side === 'home') {
-            if (changeIn) {
-                html += '&nbsp;' + changeIn;
-            }
-            if (changeOut) {
-                html += '&nbsp;' + changeOut;
-            }
+            changeEvents.forEach(function (part) {
+                html += '&nbsp;' + part;
+            });
             if (cardHtml) {
                 html += '&nbsp;' + cardHtml;
             }
-            if (goalHtml) {
-                html += '&nbsp;' + goalHtml;
-            }
-            if (ownHtml) {
-                html += '&nbsp;' + ownHtml;
-            }
+            playEvents.forEach(function (part) {
+                html += '&nbsp;' + part;
+            });
         } else {
-            if (goalHtml) {
-                html += goalHtml + '&nbsp;';
-            }
-            if (ownHtml) {
-                html += ownHtml + '&nbsp;';
-            }
+            playEvents.forEach(function (part) {
+                html += part + '&nbsp;';
+            });
             if (cardHtml) {
                 html += cardHtml + '&nbsp;';
             }
-            if (changeIn) {
-                html += changeIn + '&nbsp;';
-            }
-            if (changeOut) {
-                html += changeOut + '&nbsp;';
-            }
+            changeEvents.forEach(function (part) {
+                html += part + '&nbsp;';
+            });
         }
 
         return html;

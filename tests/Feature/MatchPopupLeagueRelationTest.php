@@ -177,4 +177,55 @@ class MatchPopupLeagueRelationTest extends TestCase
         $this->assertTrue($result['ok']);
         $this->assertSame('24.09.2026', $result['data']['match']['match_date']);
     }
+
+    #[Test]
+    public function match_popup_includes_player_event_stat_icons_payload(): void
+    {
+        DB::table('ffb_player')->insert([
+            'player_id' => 7,
+            'player_fname' => 'Max',
+            'player_lname' => 'Torwart',
+            'player_nationality' => 'aut',
+            'player_status' => 1,
+        ]);
+        DB::table('ffb_playerteam')->insert([
+            'playerteam_id' => 70,
+            'playerteam_player_id' => 7,
+            'playerteam_team_id' => 1,
+            'playerteam_league_id' => 9,
+            'playerteam_player_position' => 'g',
+            'playerteam_status' => 1,
+        ]);
+        DB::table('ffb_playerstats')->insert([
+            'playerstats_id' => 700,
+            'playerstats_playerteam_id' => 70,
+            'playerstats_matchround_id' => 3,
+            'playerstats_match_id' => 50,
+            'playerstats_minutes' => 90,
+            'playerstats_minute_in' => 1,
+            'playerstats_minute_out' => 90,
+            'playerstats_goals' => 0,
+            'playerstats_assists' => 1,
+            'playerstats_owngoals' => 0,
+            'playerstats_penaltiessaved' => 2,
+            'playerstats_penaltieslost' => 1,
+            'playerstats_penaltyshootout_hit' => 1,
+            'playerstats_penaltyshootout_lost' => 1,
+            'playerstats_penaltyshootout_save' => 1,
+            'playerstats_cards' => 'n',
+            'playerstats_score' => 0,
+        ]);
+
+        $result = app(MatchPopupService::class)->forMatch(50);
+
+        $this->assertTrue($result['ok']);
+        $this->assertCount(1, $result['data']['hometeam_players']);
+        $player = $result['data']['hometeam_players'][0];
+        $this->assertSame(1, $player['player_playerstats_assists']);
+        $this->assertSame(2, $player['player_playerstats_penaltiessaved']);
+        $this->assertSame(1, $player['player_playerstats_penaltieslost']);
+        $this->assertSame(1, $player['player_playerstats_penaltyshootout_hit']);
+        $this->assertSame(1, $player['player_playerstats_penaltyshootout_lost']);
+        $this->assertSame(1, $player['player_playerstats_penaltyshootout_save']);
+    }
 }

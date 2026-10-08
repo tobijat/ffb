@@ -97,7 +97,13 @@ class MatchPopupService
                 'player_playerstats_minutes' => (int) ($item->playerstats_minutes ?? 0),
                 'player_playerstats_cards' => (string) ($item->playerstats_cards ?: 'n'),
                 'player_playerstats_goals' => (int) ($item->playerstats_goals ?? 0),
+                'player_playerstats_assists' => (int) ($item->playerstats_assists ?? 0),
                 'player_playerstats_owngoals' => (int) ($item->playerstats_owngoals ?? 0),
+                'player_playerstats_penaltiessaved' => (int) ($item->playerstats_penaltiessaved ?? 0),
+                'player_playerstats_penaltieslost' => (int) ($item->playerstats_penaltieslost ?? 0),
+                'player_playerstats_penaltyshootout_hit' => (int) ($item->playerstats_penaltyshootout_hit ?? 0),
+                'player_playerstats_penaltyshootout_lost' => (int) ($item->playerstats_penaltyshootout_lost ?? 0),
+                'player_playerstats_penaltyshootout_save' => (int) ($item->playerstats_penaltyshootout_save ?? 0),
             ];
         })->all();
     }

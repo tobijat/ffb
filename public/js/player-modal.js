@@ -125,7 +125,22 @@
         const guestPen = row.matchround_guestteam_score_penalty;
         let score;
         if (homePen != null && homePen > -1 && guestPen != null && guestPen > -1) {
-            score = escapeHtml(homePen) + ':' + escapeHtml(guestPen) + ' n.E.';
+            score =
+                '<span class="score-final">' +
+                escapeHtml(homePen) +
+                ':' +
+                escapeHtml(guestPen) +
+                ' <span class="score-hint" title="nach Elfmeterschießen">n.E.</span></span>';
+            const hs = row.matchround_hometeam_score;
+            const gs = row.matchround_guestteam_score;
+            if (hs != null && Number(hs) >= 0 && gs != null && Number(gs) >= 0) {
+                score +=
+                    '<span class="score-reg">(' +
+                    escapeHtml(hs) +
+                    ':' +
+                    escapeHtml(gs) +
+                    ' <span class="score-hint" title="nach Verlängerung">n.V.</span>)</span>';
+            }
         } else {
             const hs =
                 row.matchround_hometeam_score == null || Number(row.matchround_hometeam_score) < 0
@@ -138,19 +153,27 @@
             score = hs + ':' + gs;
         }
         return (
-            '<span class="result-line">' +
-            '<span class="result-home">' +
+            '<ul class="match-list ffb-player-result-list">' +
+            '<li>' +
+            '<button type="button" class="match-list-row match-list-row--clickable" data-modal="match" data-id="' +
+            escapeHtml(row.match_id) +
+            '" title="Klicken für Matchinfos">' +
+            '<span class="home">' +
+            '<span class="match-team-name">' +
             escapeHtml(row.matchround_hometeam_name || '') +
             '</span>' +
-            '<a class="result-score under" href="#" data-modal="match" data-id="' +
-            escapeHtml(row.match_id) +
-            '">' +
+            '</span>' +
+            '<span class="score">' +
             score +
-            '</a>' +
-            '<span class="result-guest">' +
+            '</span>' +
+            '<span class="away">' +
+            '<span class="match-team-name">' +
             escapeHtml(row.matchround_guestteam_name || '') +
             '</span>' +
-            '</span>'
+            '</span>' +
+            '</button>' +
+            '</li>' +
+            '</ul>'
         );
     }
 

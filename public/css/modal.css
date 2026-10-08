@@ -368,9 +368,13 @@
     background: transparent;
 }
 
-.ffb-match-header-wrap > li:hover > .ffb-match-header.match-list-row,
+/* Kill .match-list hover green so it doesn't cover the flag backgrounds */
 .ffb-match-header-wrap > li:hover {
-    background: #e0ffe0;
+    background: #ccffcc;
+}
+
+.ffb-match-header-wrap > li:hover > .ffb-match-header.match-list-row {
+    background: transparent;
 }
 
 .ffb-match-header .score {
@@ -596,36 +600,28 @@
 }
 
 .ffb-player-rounds .result-cell {
-    min-width: 12rem;
+    min-width: 13rem;
+    padding: 2px 3px;
     white-space: normal;
 }
 
-.ffb-player-rounds .result-line {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    gap: 0.35rem;
-    align-items: center;
-}
-
-.ffb-player-rounds .result-home,
-.ffb-player-rounds .result-guest {
+.ffb-player-rounds .ffb-player-result-list {
     min-width: 0;
-    overflow-wrap: anywhere;
-    word-break: break-word;
-    line-height: 1.25;
 }
 
-.ffb-player-rounds .result-home {
-    text-align: right;
+.ffb-player-rounds .ffb-player-result-list > li {
+    font-size: 8pt;
 }
 
-.ffb-player-rounds .result-score {
-    text-align: center;
-    white-space: nowrap;
+.ffb-player-rounds .ffb-player-result-list .match-list-row {
+    grid-template-columns: minmax(0, 1fr) max-content minmax(0, 1fr);
+    gap: 2px 3px;
+    padding: 1px 3px;
 }
 
-.ffb-player-rounds .result-guest {
-    text-align: left;
+.ffb-player-rounds .ffb-player-result-list .score {
+    min-width: 0;
+    padding: 0;
 }
 
 .ffb-player-more {

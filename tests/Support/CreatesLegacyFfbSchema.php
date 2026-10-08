@@ -122,8 +122,16 @@ trait CreatesLegacyFfbSchema
             $table->integer('playerstats_matchround_id');
             $table->integer('playerstats_match_id')->nullable();
             $table->integer('playerstats_minutes')->default(0);
+            $table->integer('playerstats_minute_in')->default(0);
+            $table->integer('playerstats_minute_out')->default(0);
             $table->integer('playerstats_goals')->default(0);
             $table->integer('playerstats_assists')->default(0);
+            $table->integer('playerstats_owngoals')->default(0);
+            $table->integer('playerstats_penaltiessaved')->default(0);
+            $table->integer('playerstats_penaltieslost')->default(0);
+            $table->integer('playerstats_penaltyshootout_hit')->default(0);
+            $table->integer('playerstats_penaltyshootout_lost')->default(0);
+            $table->integer('playerstats_penaltyshootout_save')->default(0);
             $table->integer('playerstats_score')->default(0);
             $table->string('playerstats_cards')->default('n');
         });
