@@ -37,7 +37,7 @@
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
-            "@php artisan migrate --force"
+            "@php -r \"fwrite(STDOUT, 'Import database/seed/ffb_seed.sql into your empty MySQL database (see README).'.PHP_EOL);\""
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
