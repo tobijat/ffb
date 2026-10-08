@@ -33,31 +33,15 @@ Import the seed dump (schema + data):
 mysql -h 127.0.0.1 -u your_db_user -p your_db_name < database/seed/ffb_seed.sql
 ```
 
-Or with the Composer setup helper (still configure `.env` and create the empty DB first):
-
-```bash
-composer setup
-```
-
-Do **not** run `php artisan migrate` — the dump is the schema source of truth.
-
 ### Seed logins
 
-| Nickname | Password | Notes |
-|----------|----------|--------|
+
+| Nickname    | Password   | Notes |
+| ----------- | ---------- | ----- |
 | `AdminUser` | `password` | Admin |
-| `Ronaldo` | `password` | |
-| `Haaland` | `password` | |
+| `Ronaldo`   | `password` |       |
+| `Haaland`   | `password` |       |
 
-Leagues in the seed keep their original IDs: **38** (Nations League 2026) and **39** (WM 2026). Other entity IDs are also preserved so image filenames stay aligned.
-
-### Regenerating the seed
-
-From a full local DB that still contains source leagues 38/39 and those users:
-
-```bash
-php artisan ffb:build-seed-db --force
-```
 
 ## Run
 
@@ -72,3 +56,4 @@ App URL: `http://localhost:8000` (or `APP_URL` from `.env`).
 ```bash
 php artisan test
 ```
+
