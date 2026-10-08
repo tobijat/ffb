@@ -425,6 +425,145 @@ class UefaMatchStatsMapperTest extends TestCase
     }
 
     #[Test]
+    public function open_play_penalty_miss_is_not_double_counted_from_events_and_player_events(): void
+    {
+        $match = [
+            'id' => 'geo-nir',
+            'homeTeam' => ['id' => '10'],
+            'awayTeam' => ['id' => '20'],
+            'score' => [
+                'regular' => ['home' => 0, 'away' => 0],
+                'total' => ['home' => 0, 'away' => 0],
+            ],
+            'winner' => ['match' => ['reason' => 'DRAW']],
+            'playerEvents' => [
+                'penaltiesMissed' => [
+                    [
+                        'player' => ['id' => '501'],
+                        'time' => ['minute' => 84],
+                    ],
+                ],
+            ],
+        ];
+        $lineups = [
+            'homeTeam' => [
+                'team' => ['id' => '10'],
+                'field' => [
+                    ['player' => [
+                        'id' => '501',
+                        'internationalName' => 'Isaac Price',
+                        'translations' => [
+                            'firstName' => ['DE' => 'Isaac'],
+                            'lastName' => ['DE' => 'Price'],
+                        ],
+                    ]],
+                    ['player' => [
+                        'id' => '502',
+                        'internationalName' => 'Home Keeper',
+                        'translations' => [
+                            'firstName' => ['DE' => 'Home'],
+                            'lastName' => ['DE' => 'Keeper'],
+                        ],
+                    ]],
+                ],
+                'bench' => [],
+            ],
+            'awayTeam' => [
+                'team' => ['id' => '20'],
+                'field' => [
+                    ['player' => [
+                        'id' => '601',
+                        'internationalName' => 'Away Keeper',
+                        'translations' => [
+                            'firstName' => ['DE' => 'Away'],
+                            'lastName' => ['DE' => 'Keeper'],
+                        ],
+                    ]],
+                ],
+                'bench' => [],
+            ],
+        ];
+        $events = [
+            [
+                'type' => 'PENALTY',
+                'phase' => 'SECOND_HALF',
+                'time' => ['minute' => 84],
+                'primaryActor' => [
+                    'type' => 'PLAYER',
+                    'person' => ['id' => '501'],
+                    'team' => ['id' => '10'],
+                ],
+                'secondaryActor' => [
+                    'type' => 'PLAYER',
+                    'person' => ['id' => '601'],
+                    'team' => ['id' => '20'],
+                ],
+            ],
+        ];
+
+        $mapped = (new UefaMatchStatsMapper)->map($match, $lineups, $events);
+        $homeById = [];
+        foreach ($mapped['home'] as $row) {
+            $homeById[$row['player_uefa_id']] = $row;
+        }
+        $guestById = [];
+        foreach ($mapped['guest'] as $row) {
+            $guestById[$row['player_uefa_id']] = $row;
+        }
+
+        $this->assertSame(1, $homeById['501']['player_penalties_lost']);
+        $this->assertSame(0, $homeById['501']['player_penalties_saved']);
+        $this->assertSame(1, $guestById['601']['player_penalties_saved']);
+    }
+
+    #[Test]
+    public function penalties_missed_player_events_still_count_when_timeline_has_no_penalty_event(): void
+    {
+        $match = [
+            'id' => 'miss-only',
+            'homeTeam' => ['id' => '10'],
+            'awayTeam' => ['id' => '20'],
+            'score' => [
+                'regular' => ['home' => 0, 'away' => 0],
+                'total' => ['home' => 0, 'away' => 0],
+            ],
+            'winner' => ['match' => ['reason' => 'DRAW']],
+            'playerEvents' => [
+                'penaltiesMissed' => [
+                    [
+                        'player' => ['id' => '701'],
+                        'time' => ['minute' => 55],
+                    ],
+                ],
+            ],
+        ];
+        $lineups = [
+            'homeTeam' => [
+                'team' => ['id' => '10'],
+                'field' => [
+                    ['player' => [
+                        'id' => '701',
+                        'internationalName' => 'Miss Only',
+                        'translations' => [
+                            'firstName' => ['DE' => 'Miss'],
+                            'lastName' => ['DE' => 'Only'],
+                        ],
+                    ]],
+                ],
+                'bench' => [],
+            ],
+            'awayTeam' => [
+                'team' => ['id' => '20'],
+                'field' => [],
+                'bench' => [],
+            ],
+        ];
+
+        $mapped = (new UefaMatchStatsMapper)->map($match, $lineups, []);
+        $this->assertSame(1, $mapped['home'][0]['player_penalties_lost']);
+    }
+
+    #[Test]
     public function straight_red_card_ends_playing_time_at_dismissal_minute(): void
     {
         $match = [

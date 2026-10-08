@@ -224,8 +224,8 @@ class UefaMatchStatsMapper
         $cardEvents = [];
         /** @var array<string, int> $dismissedAt */
         $dismissedAt = [];
-        /** @var array<string, int> $penaltiesLost */
-        $penaltiesLost = [];
+        /** @var array<string, list<int>> $penaltiesLostMinutes */
+        $penaltiesLostMinutes = [];
         /** @var array<string, int> $penaltiesSaved */
         $penaltiesSaved = [];
         /** @var array<string, int> $psHit */
@@ -290,8 +290,9 @@ class UefaMatchStatsMapper
 
             if ($type === 'PENALTY') {
                 // Missed/saved spot-kick in open play; primary is usually the taker.
+                // Deduped by minute against playerEvents.penaltiesMissed below.
                 if ($primaryId !== '' && isset($roster[$primaryId]) && ($eventTeamId === '' || $eventTeamId === $teamUefaId)) {
-                    $penaltiesLost[$primaryId] = ($penaltiesLost[$primaryId] ?? 0) + 1;
+                    $this->appendUniqueMinute($penaltiesLostMinutes, $primaryId, $minute);
                 }
                 if ($secondaryId !== '' && isset($roster[$secondaryId])) {
                     $penaltiesSaved[$secondaryId] = ($penaltiesSaved[$secondaryId] ?? 0) + 1;
@@ -331,7 +332,13 @@ class UefaMatchStatsMapper
             if ($pid === '' || ! isset($roster[$pid])) {
                 continue;
             }
-            $penaltiesLost[$pid] = ($penaltiesLost[$pid] ?? 0) + 1;
+            $missMinute = (int) ($row['time']['minute'] ?? 0);
+            // Fallback only — timeline PENALTY events are authoritative when present.
+            if ($missMinute > 0) {
+                $this->appendUniqueMinute($penaltiesLostMinutes, $pid, $missMinute);
+            } elseif (($penaltiesLostMinutes[$pid] ?? []) === []) {
+                $this->appendUniqueMinute($penaltiesLostMinutes, $pid, 0);
+            }
         }
 
         foreach (is_array($playerEvents['redCards'] ?? null) ? $playerEvents['redCards'] : [] as $row) {
@@ -413,7 +420,7 @@ class UefaMatchStatsMapper
                 'player_num_owngoals' => count($ownMinutes),
                 'player_owngoal' => $ownMinutes === [] ? '0' : implode(';', $ownMinutes),
                 'player_num_assists' => (int) ($assistsByPlayerId[$uefaId] ?? 0),
-                'player_penalties_lost' => (int) ($penaltiesLost[$uefaId] ?? 0),
+                'player_penalties_lost' => count($penaltiesLostMinutes[$uefaId] ?? []),
                 'player_penalties_saved' => (int) ($penaltiesSaved[$uefaId] ?? 0),
                 'player_penalties_hit' => (int) ($psHit[$uefaId] ?? 0),
                 'player_penalties_fail' => (int) ($psLost[$uefaId] ?? 0),
@@ -551,6 +558,18 @@ class UefaMatchStatsMapper
     private function isDismissalCard(string $type): bool
     {
         return in_array(strtoupper($type), ['RED_CARD', 'SECOND_YELLOW', 'SECOND_YELLOW_CARD'], true);
+    }
+
+    /**
+     * @param  array<string, list<int>>  $byPlayer
+     */
+    private function appendUniqueMinute(array &$byPlayer, string $playerId, int $minute): void
+    {
+        $normalized = $minute > 0 ? $minute : 0;
+        if (isset($byPlayer[$playerId]) && in_array($normalized, $byPlayer[$playerId], true)) {
+            return;
+        }
+        $byPlayer[$playerId][] = $normalized;
     }
 
     private function earliestPositiveMinute(int $current, int $candidate): int
