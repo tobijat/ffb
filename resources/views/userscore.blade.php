@@ -74,8 +74,8 @@
             selectedLeagueId: @json($data['selected_league_id'] ?? 0),
         };
     </script>
-    <script src="js/modal.js?v=27" defer></script>
-    <script src="js/player-modal.js?v=25" defer></script>
+    <script src="js/modal.js?v=29" defer></script>
+    <script src="js/player-modal.js?v=29" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
     <script src="js/userscore.js?v=10" defer></script>
 </body>
