@@ -1119,7 +1119,9 @@
             match.match_homescore_penalty,
             match.match_guestscore_penalty
         );
-        setMatchMinutes(match.match_minutes || 90);
+        // UI only has 90/120; coerce display, but keep the stored baseline for dirty detection
+        // so matches with match_minutes=0 register as needing a save when shown as 90.
+        setMatchMinutes(match.match_minutes);
         if (matchUrlInput) matchUrlInput.value = match.match_url || '';
         if (scrapeBtn) scrapeBtn.disabled = false;
         if (scrapeUefaBtn) scrapeUefaBtn.disabled = false;
@@ -1130,6 +1132,11 @@
         }
         resetFrameUi();
         resultInitial = readResultValues();
+        const storedMinutes = Number(match.match_minutes);
+        if (storedMinutes !== 90 && storedMinutes !== 120) {
+            resultInitial.minutes = String(Number.isFinite(storedMinutes) ? storedMinutes : 0);
+        }
+        refreshSavebar();
 
         resultEl.hidden = false;
         legendEl.hidden = false;
@@ -1164,6 +1171,8 @@
         cached.match_guestscore = Number(values.guestscore);
         cached.match_homescore_penalty = Number(values.homescore_penalty);
         cached.match_guestscore_penalty = Number(values.guestscore_penalty);
+        cached.match_minutes = Number(values.minutes);
+        cached.match_url = String(values.url || '');
         const selected = matchSelect?.selectedOptions?.[0];
         if (selected) {
             selected.textContent = matchSelectLabel(cached);

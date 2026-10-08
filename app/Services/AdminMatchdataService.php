@@ -118,7 +118,8 @@ class AdminMatchdataService
                     'match_homescore_penalty' => (int) $item->match_homescore_penalty,
                     'match_guestscore_penalty' => (int) $item->match_guestscore_penalty,
                     'match_url' => (string) ($item->match_url ?? ''),
-                    'match_minutes' => (int) ($item->match_minutes ?: 90) === 120 ? 120 : 90,
+                    // Keep raw value (incl. 0) so the admin UI can detect a pending backfill to 90/120.
+                    'match_minutes' => (int) ($item->match_minutes ?? 0),
                 ];
             })
             ->values()
@@ -878,6 +879,15 @@ class AdminMatchdataService
         foreach ($dbPlayers as $db) {
             $ptId = (int) ($db['playerteam_id'] ?? 0);
             if ($ptId <= 0 || isset($usedPt[$ptId])) {
+                continue;
+            }
+            // Do not name-match a DB player who already has a different UEFA/FIFA id.
+            $dbUefaId = trim((string) ($db['player_uefa_id'] ?? ''));
+            $dbFifaId = trim((string) ($db['player_fifa_id'] ?? ''));
+            if ($uefaId !== '' && $dbUefaId !== '' && $dbUefaId !== $uefaId) {
+                continue;
+            }
+            if ($fifaId !== '' && $dbFifaId !== '' && $dbFifaId !== $fifaId) {
                 continue;
             }
             $candidates = array_filter([

@@ -1033,7 +1033,14 @@ class AdminSquadService
             }
 
             if ($existing === null) {
-                $existing = $this->findExactPlayerAmong($candidates, $fname, $lname, $usedPlayerIds);
+                $existing = $this->findExactPlayerAmong(
+                    $candidates,
+                    $fname,
+                    $lname,
+                    $usedPlayerIds,
+                    $uefaPlayerId,
+                    $fifaPlayerId,
+                );
                 if ($existing !== null) {
                     $matchKind = 'exact';
                 }
@@ -1046,6 +1053,8 @@ class AdminSquadService
                     $lname,
                     $jsonSingleName,
                     $usedPlayerIds,
+                    $uefaPlayerId,
+                    $fifaPlayerId,
                 );
                 if ($existing !== null) {
                     $matchKind = 'almost';
@@ -2789,8 +2798,14 @@ class AdminSquadService
      * @param  Collection<int, Player>  $candidates
      * @param  array<int, true>  $usedPlayerIds
      */
-    private function findExactPlayerAmong($candidates, string $fname, string $lname, array $usedPlayerIds): ?Player
-    {
+    private function findExactPlayerAmong(
+        $candidates,
+        string $fname,
+        string $lname,
+        array $usedPlayerIds,
+        string $uefaPlayerId = '',
+        string $fifaPlayerId = '',
+    ): ?Player {
         if ($fname === '' || $lname === '') {
             return null;
         }
@@ -2798,6 +2813,9 @@ class AdminSquadService
         foreach ($candidates as $candidate) {
             $id = (int) $candidate->player_id;
             if (isset($usedPlayerIds[$id])) {
+                continue;
+            }
+            if ($this->externalIdsConflict($candidate, $uefaPlayerId, $fifaPlayerId)) {
                 continue;
             }
             if ((string) $candidate->player_fname === $fname && (string) $candidate->player_lname === $lname) {
@@ -2818,6 +2836,8 @@ class AdminSquadService
         string $lname,
         bool $jsonSingleName,
         array $usedPlayerIds,
+        string $uefaPlayerId = '',
+        string $fifaPlayerId = '',
     ): ?Player {
         if ($fname === '' || $lname === '') {
             return null;
@@ -2826,6 +2846,9 @@ class AdminSquadService
         foreach ($candidates as $candidate) {
             $id = (int) $candidate->player_id;
             if (isset($usedPlayerIds[$id])) {
+                continue;
+            }
+            if ($this->externalIdsConflict($candidate, $uefaPlayerId, $fifaPlayerId)) {
                 continue;
             }
             if ($this->isAlmostNameMatch(
@@ -2840,6 +2863,26 @@ class AdminSquadService
         }
 
         return null;
+    }
+
+    /**
+     * Skip name-based matches when the DB player already has a different UEFA/FIFA id.
+     */
+    private function externalIdsConflict(Player $candidate, string $uefaPlayerId, string $fifaPlayerId): bool
+    {
+        $uefaPlayerId = trim($uefaPlayerId);
+        $fifaPlayerId = trim($fifaPlayerId);
+        $dbUefaId = trim((string) ($candidate->player_uefa_id ?? ''));
+        $dbFifaId = trim((string) ($candidate->player_fifa_id ?? ''));
+
+        if ($uefaPlayerId !== '' && $dbUefaId !== '' && $dbUefaId !== $uefaPlayerId) {
+            return true;
+        }
+        if ($fifaPlayerId !== '' && $dbFifaId !== '' && $dbFifaId !== $fifaPlayerId) {
+            return true;
+        }
+
+        return false;
     }
 
     private function isAlmostNameMatch(

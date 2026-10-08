@@ -308,6 +308,72 @@ class AdminSquadAutoUefaTest extends TestCase
     }
 
     #[Test]
+    public function analyze_skips_name_match_when_db_uefa_id_conflicts(): void
+    {
+        [$teamId, $leagueId] = $this->seedTeamAndLeague('mlt', '88');
+
+        // Same/similar name as UEFA "New Striker", but already linked to another UEFA id.
+        Player::query()->create([
+            'player_foreign_id' => '',
+            'player_uefa_id' => '99999',
+            'player_fname' => 'New',
+            'player_lname' => 'Striker',
+            'player_nationality' => 'MLT',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+
+        $this->fakeUefaCompetitionHttp();
+
+        $result = $this->service()->analyzeSquadsFromUefa($leagueId, '88');
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+
+        $byName = [];
+        foreach ($result['auto']['players'] as $row) {
+            $byName[$row['json_name']] = $row;
+        }
+
+        $this->assertArrayHasKey('New Striker', $byName);
+        $this->assertTrue($byName['New Striker']['is_new']);
+        $this->assertSame(0, (int) $byName['New Striker']['player_id']);
+        $this->assertSame('2', $byName['New Striker']['player_uefa_id']);
+        $this->assertSame([], $result['auto']['almost']);
+    }
+
+    #[Test]
+    public function analyze_skips_almost_name_match_when_db_uefa_id_conflicts(): void
+    {
+        [$teamId, $leagueId] = $this->seedTeamAndLeague('mlt', '88');
+
+        // Swapped first/last would normally be an "almost" match for "New Striker".
+        Player::query()->create([
+            'player_foreign_id' => '',
+            'player_uefa_id' => '99999',
+            'player_fname' => 'Striker',
+            'player_lname' => 'New',
+            'player_nationality' => 'MLT',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+
+        $this->fakeUefaCompetitionHttp();
+
+        $result = $this->service()->analyzeSquadsFromUefa($leagueId, '88');
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+
+        $byName = [];
+        foreach ($result['auto']['players'] as $row) {
+            $byName[$row['json_name']] = $row;
+        }
+
+        $this->assertArrayHasKey('New Striker', $byName);
+        $this->assertTrue($byName['New Striker']['is_new']);
+        $this->assertSame([], $result['auto']['almost']);
+    }
+
+    #[Test]
     public function analyze_resolves_ffb_team_by_team_code_when_uefa_id_missing(): void
     {
         [$teamId, $leagueId] = $this->seedTeamAndLeague('mlt', '', 'MLT');

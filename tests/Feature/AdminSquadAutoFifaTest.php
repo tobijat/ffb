@@ -184,6 +184,40 @@ class AdminSquadAutoFifaTest extends TestCase
     }
 
     #[Test]
+    public function analyze_skips_name_match_when_db_fifa_id_conflicts(): void
+    {
+        [$teamId, $leagueId] = $this->seedTeamAndLeague('ger');
+
+        Player::query()->create([
+            'player_foreign_id' => '',
+            'player_uefa_id' => '',
+            'player_fifa_id' => '111111',
+            'player_fname' => 'Antonio',
+            'player_lname' => 'Ruediger',
+            'player_nationality' => 'GER',
+            'player_status' => 1,
+            'player_status_description' => '',
+        ]);
+
+        $this->fakeFifaCompetitionHttp();
+
+        $result = $this->service()->analyzeSquadsFromFifa($leagueId, '43948');
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+
+        $byName = [];
+        foreach ($result['auto']['players'] as $row) {
+            $byName[$row['json_name']] = $row;
+        }
+
+        $this->assertArrayHasKey('Antonio Ruediger', $byName);
+        $this->assertTrue($byName['Antonio Ruediger']['is_new']);
+        $this->assertSame(0, (int) $byName['Antonio Ruediger']['player_id']);
+        $this->assertSame('379955', $byName['Antonio Ruediger']['player_fifa_id']);
+        $this->assertSame([], $result['auto']['almost']);
+    }
+
+    #[Test]
     public function analyze_errors_when_fifa_team_is_missing(): void
     {
         [, $leagueId] = $this->seedTeamAndLeague('ger');

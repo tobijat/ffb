@@ -103,6 +103,6 @@
     <script src="js/player-modal.js?v=29" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
     <script src="js/pitch-bench.js?v=23" defer></script>
-    <script src="js/lineup.js?v=41" defer></script>
+    <script src="js/lineup.js?v=42" defer></script>
 </body>
 </html>

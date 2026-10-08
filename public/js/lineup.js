@@ -286,11 +286,45 @@
         return Math.round((ctx.credits - Number(price)) * 10) / 10 >= 0;
     }
 
+    /**
+     * After adding one player at `pos`, remaining slots must cover all unmet position mins.
+     * (Legacy checked each other-position min separately, which allowed 5-5-0-0 dead ends.)
+     */
+    function addingPositionLeavesMinsUnsatisfiable(pos, ctx) {
+        const leftAfter = ctx.left - 1;
+        if (leftAfter < 0) {
+            return true;
+        }
+
+        let numG = ctx.numG;
+        let numD = ctx.numD;
+        let numM = ctx.numM;
+        let numS = ctx.numS;
+        if (pos === 'g') {
+            numG++;
+        } else if (pos === 'd') {
+            numD++;
+        } else if (pos === 'm') {
+            numM++;
+        } else if (pos === 's') {
+            numS++;
+        } else {
+            return false;
+        }
+
+        const stillNeeded =
+            Math.max(0, Number(options.lineup_min_g) - numG) +
+            Math.max(0, Number(options.lineup_min_d) - numD) +
+            Math.max(0, Number(options.lineup_min_m) - numM) +
+            Math.max(0, Number(options.lineup_min_s) - numS);
+
+        return stillNeeded > leftAfter;
+    }
+
     function fieldPositionIsAllowed(pos, ctx) {
         if (!options) {
             return false;
         }
-        const left = ctx.left;
         const numG = ctx.numG;
         const numD = ctx.numD;
         const numM = ctx.numM;
@@ -309,41 +343,8 @@
             return false;
         }
 
-        if (pos === 'g') {
-            if (
-                Number(options.lineup_min_d) - numD > left - 1 ||
-                Number(options.lineup_min_m) - numM > left - 1 ||
-                Number(options.lineup_min_s) - numS > left - 1
-            ) {
-                return false;
-            }
-        }
-        if (pos === 'd') {
-            if (
-                Number(options.lineup_min_g) - numG > left - 1 ||
-                Number(options.lineup_min_m) - numM > left - 1 ||
-                Number(options.lineup_min_s) - numS > left - 1
-            ) {
-                return false;
-            }
-        }
-        if (pos === 'm') {
-            if (
-                Number(options.lineup_min_g) - numG > left - 1 ||
-                Number(options.lineup_min_d) - numD > left - 1 ||
-                Number(options.lineup_min_s) - numS > left - 1
-            ) {
-                return false;
-            }
-        }
-        if (pos === 's') {
-            if (
-                Number(options.lineup_min_g) - numG > left - 1 ||
-                Number(options.lineup_min_m) - numM > left - 1 ||
-                Number(options.lineup_min_d) - numD > left - 1
-            ) {
-                return false;
-            }
+        if (addingPositionLeavesMinsUnsatisfiable(pos, ctx)) {
+            return false;
         }
 
         return true;
@@ -738,7 +739,6 @@
             return null;
         }
 
-        const left = ctx.left;
         const numG = ctx.numG;
         const numD = ctx.numD;
         const numM = ctx.numM;
@@ -758,41 +758,8 @@
             return 'Du hast bereits ' + options.lineup_max_s + ' Spieler im Sturm!';
         }
 
-        if (pos === 'g') {
-            if (
-                Number(options.lineup_min_d) - numD > left - 1 ||
-                Number(options.lineup_min_m) - numM > left - 1 ||
-                Number(options.lineup_min_s) - numS > left - 1
-            ) {
-                return 'Du benötigst noch Spieler an anderen Positionen!';
-            }
-        }
-        if (pos === 'd') {
-            if (
-                Number(options.lineup_min_g) - numG > left - 1 ||
-                Number(options.lineup_min_m) - numM > left - 1 ||
-                Number(options.lineup_min_s) - numS > left - 1
-            ) {
-                return 'Du benötigst noch Spieler an anderen Positionen!';
-            }
-        }
-        if (pos === 'm') {
-            if (
-                Number(options.lineup_min_g) - numG > left - 1 ||
-                Number(options.lineup_min_d) - numD > left - 1 ||
-                Number(options.lineup_min_s) - numS > left - 1
-            ) {
-                return 'Du benötigst noch Spieler an anderen Positionen!';
-            }
-        }
-        if (pos === 's') {
-            if (
-                Number(options.lineup_min_g) - numG > left - 1 ||
-                Number(options.lineup_min_m) - numM > left - 1 ||
-                Number(options.lineup_min_d) - numD > left - 1
-            ) {
-                return 'Du benötigst noch Spieler an anderen Positionen!';
-            }
+        if (addingPositionLeavesMinsUnsatisfiable(pos, ctx)) {
+            return 'Du benötigst noch Spieler an anderen Positionen!';
         }
 
         return null;

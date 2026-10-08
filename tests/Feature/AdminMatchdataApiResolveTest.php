@@ -94,6 +94,33 @@ class AdminMatchdataApiResolveTest extends TestCase
     }
 
     #[Test]
+    public function matches_for_round_preserves_zero_match_minutes(): void
+    {
+        [, $roundId] = $this->seedLeagueWithUefa();
+        $home = $this->createTeam('Spanien', '1', 'ESP');
+        $guest = $this->createTeam('Tschechien', '2', 'CZE');
+
+        MatchGame::query()->create([
+            'match_round' => $roundId,
+            'match_date' => '2011-03-25 11:11:11.111',
+            'match_hometeam_id' => (int) $home->team_id,
+            'match_guestteam_id' => (int) $guest->team_id,
+            'match_status' => '',
+            'match_homescore' => '2',
+            'match_guestscore' => '1',
+            'match_homescore_penalty' => '-1',
+            'match_guestscore_penalty' => '-1',
+            'match_minutes' => 0,
+            'match_url' => '',
+        ]);
+
+        $matches = app(AdminMatchdataService::class)->matchesForRound($roundId);
+
+        $this->assertCount(1, $matches);
+        $this->assertSame(0, $matches[0]['match_minutes']);
+    }
+
+    #[Test]
     public function resolves_fifa_match_when_stored_kickoff_datetime_shares_berlin_calendar_day(): void
     {
         [, $roundId] = $this->seedLeagueWithFifa();
