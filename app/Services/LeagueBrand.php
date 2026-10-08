@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\League;
+use App\Support\LeagueSymbol;
 
 class LeagueBrand
 {
@@ -23,7 +24,7 @@ class LeagueBrand
         return [
             'league_id' => (int) $league->league_id,
             'league_title' => (string) $league->league_title,
-            'symbol_url' => '/images/ffb/symbols/'.($league->league_symbol ?: 'symbol_game_na.png'),
+            'symbol_url' => LeagueSymbol::url((int) $league->league_id),
         ];
     }
 }

@@ -20,7 +20,6 @@ class League extends Model
         'league_visible',
         'league_archive',
         'league_test',
-        'league_symbol',
         'league_uefa_competition_identifier',
         'league_fifa_competition_identifier',
     ];

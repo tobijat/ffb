@@ -29,9 +29,9 @@
         data-mail-url-template="{{ url('/admin/mailservice/mails') }}/__ID__"
         data-send-url="{{ route('admin.mailservice.send') }}"
         data-csrf="{{ csrf_token() }}"
-        data-symbol-pos="{{ $legacyBase }}images/ffb/symbols/status_pos.png"
-        data-symbol-neg="{{ $legacyBase }}images/ffb/symbols/status_neg.png"
-        data-symbol-load="{{ $legacyBase }}images/ffb/symbols/change.png"
+        data-symbol-pos="{{ $legacyBase }}images/ffb/symbols/status_pos.svg"
+        data-symbol-neg="{{ $legacyBase }}images/ffb/symbols/status_neg.svg"
+        data-symbol-load="{{ $legacyBase }}images/ffb/symbols/change.svg"
     >
         <div class="admin-ms-grid">
             <div class="admin-ms-left">
@@ -131,7 +131,7 @@
                                 data-mail-id="{{ $item['mail_id'] }}"
                                 title="Load Email"
                             >
-                                <img src="{{ $legacyBase }}images/ffb/symbols/change.png" alt="" width="16" height="16">
+                                <img src="{{ $legacyBase }}images/ffb/symbols/change.svg" alt="" width="16" height="16">
                             </button>
                         </span>
                     </div>

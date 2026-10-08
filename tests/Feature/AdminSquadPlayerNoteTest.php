@@ -97,7 +97,6 @@ class AdminSquadPlayerNoteTest extends TestCase
         $leagueId = (int) League::query()->insertGetId([
             'league_title' => 'Testliga',
             'league_type' => 'nation',
-            'league_symbol' => '',
             'league_archive' => 0,
         ], 'league_id');
 
@@ -138,7 +137,6 @@ class AdminSquadPlayerNoteTest extends TestCase
             $table->increments('league_id');
             $table->string('league_title')->default('');
             $table->string('league_type')->default('');
-            $table->string('league_symbol')->default('');
             $table->integer('league_archive')->default(0);
         });
 

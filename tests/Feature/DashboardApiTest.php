@@ -68,10 +68,9 @@ class DashboardApiTest extends TestCase
                     [
                         'league_id' => 26,
                         'league_title' => 'Testliga',
-                        'league_symbol' => 'x.png',
                         'league_archive' => 0,
                         'league_visible' => 1,
-                        'symbol_url' => '/images/ffb/symbols/x.png',
+                        'symbol_url' => '/images/ffb/leagues/26.png',
                     ],
                 ],
                 'archive' => false,

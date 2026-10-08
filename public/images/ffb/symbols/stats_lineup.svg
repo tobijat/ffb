@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <defs>
+    <linearGradient id="pitch" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6ec45a"/><stop offset="1" stop-color="#3a9a32"/></linearGradient>
+  </defs>
+  <rect x="1" y="1" width="14" height="14" rx="1" fill="url(#pitch)" stroke="#2d7a28" stroke-width="0.8"/>
+  <rect x="1.8" y="1.8" width="12.4" height="12.4" fill="none" stroke="#ffffff" stroke-width="0.7" opacity="0.85"/>
+  <line x1="1.8" y1="8" x2="14.2" y2="8" stroke="#ffffff" stroke-width="0.7" opacity="0.85"/>
+  <circle cx="8" cy="8" r="2.2" fill="none" stroke="#ffffff" stroke-width="0.7" opacity="0.85"/>
+  <circle cx="8" cy="13.2" r="0.95" fill="#ffffff"/>
+  <circle cx="3.8" cy="10.6" r="0.95" fill="#ffffff"/>
+  <circle cx="8" cy="10.6" r="0.95" fill="#ffffff"/>
+  <circle cx="12.2" cy="10.6" r="0.95" fill="#ffffff"/>
+  <circle cx="3.8" cy="7.4" r="0.95" fill="#ffffff"/>
+  <circle cx="6.5" cy="7.4" r="0.95" fill="#ffffff"/>
+  <circle cx="9.5" cy="7.4" r="0.95" fill="#ffffff"/>
+  <circle cx="12.2" cy="7.4" r="0.95" fill="#ffffff"/>
+  <circle cx="4.8" cy="4.2" r="0.95" fill="#ffffff"/>
+  <circle cx="8" cy="4.2" r="0.95" fill="#ffffff"/>
+  <circle cx="11.2" cy="4.2" r="0.95" fill="#ffffff"/>
+</svg>

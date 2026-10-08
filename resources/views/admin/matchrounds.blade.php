@@ -215,14 +215,14 @@
                     </div>
                     <div class="admin-list-actions">
                         <a class="admin-icon-btn" href="{{ route('admin.matchrounds.edit', ['matchround' => $item['matchround_id']]) }}" title="Bearbeiten">
-                            <img src="{{ $legacyBase }}images/ffb/symbols/edit.png" alt="Bearbeiten" width="16" height="16">
+                            <img src="{{ $legacyBase }}images/ffb/symbols/edit.svg" alt="Bearbeiten" width="16" height="16">
                         </a>
                         <form method="post" action="{{ route('admin.matchrounds.destroy', ['matchround' => $item['matchround_id']]) }}" onsubmit="return confirm('Diese Spielrunde wirklich löschen?');">
                             @csrf
                             @method('DELETE')
                             <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
                             <button type="submit" class="admin-icon-btn" title="Löschen">
-                                <img src="{{ $legacyBase }}images/ffb/symbols/delete.png" alt="Löschen" width="16" height="16">
+                                <img src="{{ $legacyBase }}images/ffb/symbols/delete.svg" alt="Löschen" width="16" height="16">
                             </button>
                         </form>
                     </div>

@@ -167,7 +167,7 @@ class AdminNewsService
                     'news_date' => (string) $item->news_date,
                     'news_symbol' => $symbol,
                     'news_symbol_url' => $symbol !== ''
-                        ? '/images/ffb/symbols/'.$symbol
+                        ? $this->newsSymbolUrl($symbol)
                         : null,
                     'news_priority' => (int) $item->news_priority,
                     'news_league_id' => (int) $item->news_league_id,
@@ -245,5 +245,19 @@ class AdminNewsService
         }
 
         return $errors;
+    }
+
+    private function newsSymbolUrl(string $filename): string
+    {
+        $name = basename(str_replace('\\', '/', trim($filename)));
+        if ($name === '' || $name === '.' || $name === '..') {
+            return '/images/ffb/symbols/'.$filename;
+        }
+
+        if (strtolower($name) !== 'symb_err_anim.gif') {
+            $name = (string) preg_replace('/\.(png|gif|jpe?g|webp)$/i', '.svg', $name);
+        }
+
+        return '/images/ffb/symbols/'.$name;
     }
 }

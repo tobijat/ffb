@@ -29,8 +29,8 @@
             @php
                 $ok = (bool) ($section['ok'] ?? false);
                 $statusSrc = $ok
-                    ? $legacyBase.'images/ffb/symbols/ok.png'
-                    : $legacyBase.'images/ffb/symbols/delete.png';
+                    ? $legacyBase.'images/ffb/symbols/ok.svg'
+                    : $legacyBase.'images/ffb/symbols/delete.svg';
                 $statusLabel = $ok ? 'ok' : 'offen';
                 $checklist = is_array($section['checklist'] ?? null) ? $section['checklist'] : [];
                 $sectionOpenAttr = $ok ? '' : ' open';
@@ -56,8 +56,8 @@
                                     @php
                                         $itemOk = (bool) ($item['ok'] ?? false);
                                         $itemSrc = $itemOk
-                                            ? $legacyBase.'images/ffb/symbols/ok.png'
-                                            : $legacyBase.'images/ffb/symbols/delete.png';
+                                            ? $legacyBase.'images/ffb/symbols/ok.svg'
+                                            : $legacyBase.'images/ffb/symbols/delete.svg';
                                         $itemLabel = $itemOk ? 'ja' : 'nein';
                                         $optionsOverview = is_array($item['options_overview'] ?? null)
                                             ? $item['options_overview']

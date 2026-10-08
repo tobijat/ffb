@@ -212,16 +212,16 @@
         html += '<div class="stats-heading">-- Spielrunden Statistik --</div>';
 
         html += '<div class="stats-subheading"><u>Statistik</u></div>';
-        html += statsRow('symbol_user.png', 'Teilnehmer:', Number(stats.num_users) + ' Mitspieler');
-        html += statsRow('stats_point.png', 'Anzahl Spiele:', Number(stats.num_matches) + ' Spiele');
-        html += statsRow('stats_goal.gif', 'gefallene Tore:', Number(stats.goals) + ' Tore');
-        html += statsRow('stats_owngoal.gif', 'gefallene Eigentore:', Number(stats.owngoals) + ' Tore');
+        html += statsRow('symbol_user.svg', 'Teilnehmer:', Number(stats.num_users) + ' Mitspieler');
+        html += statsRow('stats_point.svg', 'Anzahl Spiele:', Number(stats.num_matches) + ' Spiele');
+        html += statsRow('stats_goal.svg', 'gefallene Tore:', Number(stats.goals) + ' Tore');
+        html += statsRow('stats_owngoal.svg', 'gefallene Eigentore:', Number(stats.owngoals) + ' Tore');
         html += statsRow(
-            'stats_card_yr.gif',
+            'stats_card_yr.svg',
             'Karten (G/GR/R):',
             Number(stats.cards_y) + '/' + Number(stats.cards_yr) + '/' + Number(stats.cards_r)
         );
-        html += statsRow('stats_point.png', 'Punkte pro Spieler:', Number(stats.score_per_player) + ' Punkte');
+        html += statsRow('stats_point.svg', 'Punkte pro Spieler:', Number(stats.score_per_player) + ' Punkte');
         html += '</div>';
         return html;
     }

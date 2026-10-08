@@ -355,14 +355,14 @@
                                                         title="Rückgängig"
                                                         hidden
                                                     >
-                                                        <img src="{{ $legacyBase }}images/ffb/symbols/change.png" alt="Rückgängig" width="16" height="16">
+                                                        <img src="{{ $legacyBase }}images/ffb/symbols/change.svg" alt="Rückgängig" width="16" height="16">
                                                     </button>
                                                     <button
                                                         type="button"
                                                         class="admin-icon-btn admin-squad-delete-btn"
                                                         title="Zum Löschen vormerken"
                                                     >
-                                                        <img src="{{ $legacyBase }}images/ffb/symbols/delete.png" alt="Löschen" width="16" height="16">
+                                                        <img src="{{ $legacyBase }}images/ffb/symbols/delete.svg" alt="Löschen" width="16" height="16">
                                                     </button>
                                                 </div>
                                             </td>
@@ -1470,7 +1470,7 @@
                     '</label>' +
                 '</div>' +
                 '<button type="button" class="admin-icon-btn admin-squad-pick-remove" title="Aus Auswahl entfernen" data-remove-id="' + id + '">' +
-                    '<img src="' + escapeHtml(pickLegacyBase) + 'images/ffb/symbols/delete.png" alt="Entfernen" width="16" height="16">' +
+                    '<img src="' + escapeHtml(pickLegacyBase) + 'images/ffb/symbols/delete.svg" alt="Entfernen" width="16" height="16">' +
                 '</button>' +
             '</article>'
         );
@@ -1568,7 +1568,7 @@
 
     function renderItem(item) {
         const id = item.player_id;
-        const statusIcon = item.player_status ? 'status_pos.png' : 'status_neg.png';
+        const statusIcon = item.player_status ? 'status_pos.svg' : 'status_neg.svg';
         const statusAlt = item.player_status ? 'aktiv' : 'inaktiv';
         const photoSrc = item.picture_url || (legacyBase + 'images/ffb/players/image_na.gif');
         const photo = '<img class="admin-player-photo" src="' + escapeHtml(photoSrc) + '" alt="" width="40" height="40" loading="lazy">';

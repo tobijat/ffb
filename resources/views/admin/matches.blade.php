@@ -303,7 +303,7 @@
                                                                 title="Zeile verwerfen"
                                                                 aria-label="Zeile verwerfen"
                                                             >
-                                                                <img src="{{ $legacyBase }}images/ffb/symbols/delete.png" alt="" width="16" height="16">
+                                                                <img src="{{ $legacyBase }}images/ffb/symbols/delete.svg" alt="" width="16" height="16">
                                                             </button>
                                                         </td>
                                                     </tr>
@@ -712,7 +712,7 @@
                     <div class="admin-list-body">
                         <div class="admin-match-meta">
                             <img
-                                src="{{ $legacyBase }}images/ffb/symbols/{{ $item['status_ok'] ? 'status_pos.png' : 'status_neg.png' }}"
+                                src="{{ $legacyBase }}images/ffb/symbols/{{ $item['status_ok'] ? 'status_pos.svg' : 'status_neg.svg' }}"
                                 alt="{{ $item['status_ok'] ? 'OK' : 'Hinweis' }}"
                                 width="16"
                                 height="16"
@@ -746,14 +746,14 @@
                     </div>
                     <div class="admin-list-actions">
                         <a class="admin-icon-btn" href="{{ route('admin.matches.edit', ['match' => $item['match_id']]) }}" title="Bearbeiten">
-                            <img src="{{ $legacyBase }}images/ffb/symbols/edit.png" alt="Bearbeiten" width="16" height="16">
+                            <img src="{{ $legacyBase }}images/ffb/symbols/edit.svg" alt="Bearbeiten" width="16" height="16">
                         </a>
                         <form method="post" action="{{ route('admin.matches.destroy', ['match' => $item['match_id']]) }}" onsubmit="return confirm('Dieses Spiel wirklich löschen?');">
                             @csrf
                             @method('DELETE')
                             <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
                             <button type="submit" class="admin-icon-btn" title="Löschen">
-                                <img src="{{ $legacyBase }}images/ffb/symbols/delete.png" alt="Löschen" width="16" height="16">
+                                <img src="{{ $legacyBase }}images/ffb/symbols/delete.svg" alt="Löschen" width="16" height="16">
                             </button>
                         </form>
                     </div>

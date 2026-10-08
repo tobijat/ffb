@@ -74,7 +74,6 @@ class AdminMatchdataSaveGoalsTest extends TestCase
             'league_title' => 'EM Test',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -193,7 +192,6 @@ class AdminMatchdataSaveGoalsTest extends TestCase
             $table->string('league_title')->default('');
             $table->tinyInteger('league_visible')->default(1);
             $table->tinyInteger('league_archive')->default(0);
-            $table->string('league_symbol')->default('');
         });
 
         Schema::create('ffb_league_options', function (Blueprint $table) {

@@ -7,13 +7,12 @@ use App\Models\LeagueOptions;
 use App\Models\Matchround;
 use App\Models\News;
 use App\Models\Userscore;
+use App\Support\LeagueSymbol;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 class AdminLeagueService
 {
-    private const DEFAULT_SYMBOL = 'symbol_game_na.png';
-
     public function __construct(
         private readonly AdminCenterService $adminCenter,
     ) {}
@@ -48,10 +47,9 @@ class AdminLeagueService
                 'league_visible' => 1,
                 'league_archive' => 0,
                 'league_test' => 0,
-                'league_symbol' => self::DEFAULT_SYMBOL,
                 'league_uefa_competition_identifier' => '',
                 'league_fifa_competition_identifier' => '',
-                'symbol_url' => '/images/ffb/symbols/'.self::DEFAULT_SYMBOL,
+                'symbol_url' => LeagueSymbol::url(0),
             ],
             $this->defaultOptionsForm(),
         );
@@ -67,7 +65,6 @@ class AdminLeagueService
             return null;
         }
 
-        $symbol = (string) ($league->league_symbol ?: self::DEFAULT_SYMBOL);
         $options = $league->options;
         $optionForm = $options
             ? $this->optionsToForm($options)
@@ -80,10 +77,9 @@ class AdminLeagueService
                 'league_visible' => (int) (bool) $league->league_visible,
                 'league_archive' => (int) (bool) $league->league_archive,
                 'league_test' => (int) (bool) $league->league_test,
-                'league_symbol' => $symbol,
                 'league_uefa_competition_identifier' => (string) ($league->league_uefa_competition_identifier ?? ''),
                 'league_fifa_competition_identifier' => (string) ($league->league_fifa_competition_identifier ?? ''),
-                'symbol_url' => '/images/ffb/symbols/'.$symbol,
+                'symbol_url' => LeagueSymbol::url((int) $league->league_id),
             ],
             $optionForm,
         );
@@ -101,35 +97,33 @@ class AdminLeagueService
             return ['ok' => false, 'errors' => $errors, 'form' => $form];
         }
 
-        if ($symbolFile !== null) {
-            $uploaded = $this->storeSymbol($symbolFile);
-            if ($uploaded === null) {
-                return [
-                    'ok' => false,
-                    'errors' => ['Symbol-Upload fehlgeschlagen.'],
-                    'form' => $form,
-                ];
-            }
-            $form['league_symbol'] = $uploaded;
-            $form['symbol_url'] = '/images/ffb/symbols/'.$uploaded;
-        }
-
-        DB::transaction(function () use ($form): void {
+        $createdId = 0;
+        DB::transaction(function () use ($form, &$createdId): void {
             $league = League::query()->create([
                 'league_title' => $form['league_title'],
                 'league_visible' => (int) $form['league_visible'],
                 'league_archive' => (int) $form['league_archive'],
                 'league_test' => (int) $form['league_test'],
-                'league_symbol' => $form['league_symbol'],
                 'league_uefa_competition_identifier' => $form['league_uefa_competition_identifier'],
                 'league_fifa_competition_identifier' => $form['league_fifa_competition_identifier'],
             ]);
+            $createdId = (int) $league->league_id;
 
             LeagueOptions::query()->create(array_merge(
-                ['options_league_id' => (int) $league->league_id],
+                ['options_league_id' => $createdId],
                 $this->optionsFromForm($form, pointsMode: 'new'),
             ));
         });
+
+        if ($symbolFile !== null && $createdId > 0) {
+            if (! LeagueSymbol::store($createdId, $symbolFile)) {
+                return [
+                    'ok' => false,
+                    'errors' => ['Liga angelegt, aber Symbol-Upload fehlgeschlagen.'],
+                    'form' => $form,
+                ];
+            }
+        }
 
         return ['ok' => true, 'message' => 'Liga erfolgreich angelegt.'];
     }
@@ -151,33 +145,26 @@ class AdminLeagueService
 
         $form = $this->normalizeInput($input + [
             'league_id' => $leagueId,
-            'league_symbol' => (string) ($league->league_symbol ?: self::DEFAULT_SYMBOL),
         ]);
+        $form['symbol_url'] = LeagueSymbol::url($leagueId);
         $errors = $this->validate($form, $symbolFile);
         if ($errors !== []) {
             return ['ok' => false, 'errors' => $errors, 'form' => $form];
         }
 
-        $oldSymbol = (string) ($league->league_symbol ?: '');
-        if ($symbolFile !== null) {
-            $uploaded = $this->storeSymbol($symbolFile);
-            if ($uploaded === null) {
-                return [
-                    'ok' => false,
-                    'errors' => ['Symbol-Upload fehlgeschlagen.'],
-                    'form' => $form,
-                ];
-            }
-            $form['league_symbol'] = $uploaded;
-            $form['symbol_url'] = '/images/ffb/symbols/'.$uploaded;
+        if ($symbolFile !== null && ! LeagueSymbol::store($leagueId, $symbolFile)) {
+            return [
+                'ok' => false,
+                'errors' => ['Symbol-Upload fehlgeschlagen.'],
+                'form' => $form,
+            ];
         }
 
-        DB::transaction(function () use ($league, $form, $oldSymbol): void {
+        DB::transaction(function () use ($league, $form): void {
             $league->league_title = $form['league_title'];
             $league->league_visible = (int) $form['league_visible'];
             $league->league_archive = (int) $form['league_archive'];
             $league->league_test = (int) $form['league_test'];
-            $league->league_symbol = $form['league_symbol'];
             $league->league_uefa_competition_identifier = $form['league_uefa_competition_identifier'];
             $league->league_fifa_competition_identifier = $form['league_fifa_competition_identifier'];
             $league->save();
@@ -192,15 +179,9 @@ class AdminLeagueService
                     $this->optionsFromForm($form, pointsMode: 'new'),
                 ));
             }
-
-            if (
-                $oldSymbol !== ''
-                && $oldSymbol !== $form['league_symbol']
-                && $oldSymbol !== self::DEFAULT_SYMBOL
-            ) {
-                $this->deleteSymbolFile($oldSymbol);
-            }
         });
+
+        $form['symbol_url'] = LeagueSymbol::url($leagueId);
 
         return ['ok' => true, 'message' => 'Liga erfolgreich aktualisiert.'];
     }
@@ -227,12 +208,8 @@ class AdminLeagueService
             return ['ok' => false, 'errors' => ['Löschen nicht möglich: Es gibt zugehörige Ranglisten-Daten.']];
         }
 
-        $symbol = (string) ($league->league_symbol ?: '');
         $league->delete();
-
-        if ($symbol !== '' && $symbol !== self::DEFAULT_SYMBOL) {
-            $this->deleteSymbolFile($symbol);
-        }
+        LeagueSymbol::deleteForLeague($leagueId);
 
         return ['ok' => true, 'message' => 'Liga erfolgreich gelöscht.'];
     }
@@ -247,15 +224,15 @@ class AdminLeagueService
             ->orderBy('league_title')
             ->get()
             ->map(function (League $league) {
-                $symbol = (string) ($league->league_symbol ?: self::DEFAULT_SYMBOL);
+                $leagueId = (int) $league->league_id;
 
                 return [
-                    'league_id' => (int) $league->league_id,
+                    'league_id' => $leagueId,
                     'league_title' => (string) $league->league_title,
                     'league_visible' => (int) (bool) $league->league_visible,
                     'league_archive' => (int) (bool) $league->league_archive,
                     'league_test' => (int) (bool) $league->league_test,
-                    'symbol_url' => '/images/ffb/symbols/'.$symbol,
+                    'symbol_url' => LeagueSymbol::url($leagueId),
                 ];
             })
             ->values()
@@ -268,10 +245,7 @@ class AdminLeagueService
      */
     private function normalizeInput(array $input): array
     {
-        $symbol = trim((string) ($input['league_symbol'] ?? self::DEFAULT_SYMBOL));
-        if ($symbol === '') {
-            $symbol = self::DEFAULT_SYMBOL;
-        }
+        $leagueId = (int) ($input['league_id'] ?? 0);
 
         $form = [
             'league_id' => (string) ($input['league_id'] ?? ''),
@@ -279,10 +253,9 @@ class AdminLeagueService
             'league_visible' => (int) ($input['league_visible'] ?? 0) === 1 ? 1 : 0,
             'league_archive' => (int) ($input['league_archive'] ?? 0) === 1 ? 1 : 0,
             'league_test' => (int) ($input['league_test'] ?? 0) === 1 ? 1 : 0,
-            'league_symbol' => $symbol,
             'league_uefa_competition_identifier' => trim((string) ($input['league_uefa_competition_identifier'] ?? '')),
             'league_fifa_competition_identifier' => trim((string) ($input['league_fifa_competition_identifier'] ?? '')),
-            'symbol_url' => '/images/ffb/symbols/'.$symbol,
+            'symbol_url' => LeagueSymbol::url($leagueId),
         ];
 
         foreach ($this->optionKeys() as $key) {
@@ -503,46 +476,5 @@ class AdminLeagueService
         }
 
         return true;
-    }
-
-    private function storeSymbol(UploadedFile $file): ?string
-    {
-        $dir = $this->symbolsDir();
-        if (! is_dir($dir) && ! @mkdir($dir, 0775, true) && ! is_dir($dir)) {
-            return null;
-        }
-
-        $ext = strtolower((string) $file->getClientOriginalExtension());
-        if (! in_array($ext, ['png', 'jpg', 'jpeg', 'gif', 'webp'], true)) {
-            $ext = 'png';
-        }
-
-        $name = 'symbol_game_'.bin2hex(random_bytes(8)).'.'.$ext;
-        try {
-            $file->move($dir, $name);
-        } catch (\Throwable) {
-            return null;
-        }
-
-        return $name;
-    }
-
-    private function deleteSymbolFile(string $filename): void
-    {
-        if ($filename === '' || str_contains($filename, '/') || str_contains($filename, '\\')) {
-            return;
-        }
-
-        $path = $this->symbolsDir().DIRECTORY_SEPARATOR.$filename;
-        if (is_file($path)) {
-            @unlink($path);
-        }
-    }
-
-    private function symbolsDir(): string
-    {
-        $base = rtrim((string) config('ffb.legacy_images_path'), DIRECTORY_SEPARATOR.'\\/');
-
-        return $base.DIRECTORY_SEPARATOR.'symbols';
     }
 }

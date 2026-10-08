@@ -70,7 +70,6 @@ class LeagueVisibilityTest extends TestCase
             'league_title' => 'Empty Current',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
 
         $this->mock(FfbAdminAccess::class, function ($mock) {
@@ -109,7 +108,6 @@ class LeagueVisibilityTest extends TestCase
             'league_title' => 'Empty Current',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
 
         $this->mock(FfbAdminAccess::class, function ($mock) {
@@ -254,7 +252,6 @@ class LeagueVisibilityTest extends TestCase
             'league_visible' => 1,
             'league_archive' => 0,
             'league_test' => 1,
-            'league_symbol' => '',
         ]);
         DB::table('ffb_matchround')->insert([
             'matchround_id' => 6,
@@ -301,7 +298,6 @@ class LeagueVisibilityTest extends TestCase
             'league_visible' => 0,
             'league_archive' => 0,
             'league_test' => 1,
-            'league_symbol' => '',
         ]);
         DB::table('ffb_matchround')->insert([
             'matchround_id' => 6,
@@ -334,7 +330,6 @@ class LeagueVisibilityTest extends TestCase
             'league_visible' => 1,
             'league_archive' => 0,
             'league_test' => 1,
-            'league_symbol' => '',
         ]);
         DB::table('ffb_userscore')->insert([
             [
@@ -462,28 +457,24 @@ class LeagueVisibilityTest extends TestCase
                 'league_title' => 'Visible Current',
                 'league_visible' => 1,
                 'league_archive' => 0,
-                'league_symbol' => '',
             ],
             [
                 'league_id' => 2,
                 'league_title' => 'Hidden Current',
                 'league_visible' => 0,
                 'league_archive' => 0,
-                'league_symbol' => '',
             ],
             [
                 'league_id' => 3,
                 'league_title' => 'Visible Archive',
                 'league_visible' => 1,
                 'league_archive' => 1,
-                'league_symbol' => '',
             ],
             [
                 'league_id' => 4,
                 'league_title' => 'Hidden Archive',
                 'league_visible' => 0,
                 'league_archive' => 1,
-                'league_symbol' => '',
             ],
         ]);
 

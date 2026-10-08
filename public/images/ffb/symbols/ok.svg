@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <defs>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5ec53b"/><stop offset="1" stop-color="#1e711b"/></linearGradient>
+    <linearGradient id="bevel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b7e1af"/><stop offset="1" stop-color="#abd39b"/></linearGradient>
+    <linearGradient id="face" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7acc6d"/><stop offset="1" stop-color="#6cb556"/></linearGradient>
+  </defs>
+  <circle cx="8" cy="8" r="7" fill="url(#rim)"/>
+  <circle cx="8" cy="8" r="6" fill="url(#bevel)"/>
+  <circle cx="8" cy="8" r="5.1" fill="url(#face)"/>
+  <path d="M4.8 8.3 L7 10.4 L11 6" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

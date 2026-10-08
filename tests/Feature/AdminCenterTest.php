@@ -68,14 +68,13 @@ class AdminCenterTest extends TestCase
                 'selected_league' => [
                     'league_id' => 26,
                     'league_title' => 'Testliga',
-                    'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                    'symbol_url' => '/images/ffb/leagues/na.png',
                 ],
                 'leagues' => [
                     [
                         'league_id' => 26,
                         'league_title' => 'Testliga',
-                        'league_symbol' => 'symbol_game_na.png',
-                        'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                        'symbol_url' => '/images/ffb/leagues/na.png',
                         'league_archive' => 0,
                         'league_visible' => 1,
                         'league_test' => 1,
@@ -88,8 +87,7 @@ class AdminCenterTest extends TestCase
                     [
                         'league_id' => 10,
                         'league_title' => 'Alte Liga',
-                        'league_symbol' => 'symbol_game_na.png',
-                        'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                        'symbol_url' => '/images/ffb/leagues/na.png',
                         'league_archive' => 1,
                         'league_visible' => 0,
                         'league_test' => 0,
@@ -120,7 +118,7 @@ class AdminCenterTest extends TestCase
             ->assertSee('class="brand" href="/admin"', false)
             ->assertSee('AdminCenter', false)
             ->assertSee('Testliga', false)
-            ->assertSee('symbol_game_na.png', false)
+            ->assertSee('leagues/na.png', false)
             ->assertSee('Soccer Sportsfan', false)
             ->assertSee('href="/"', false)
             ->assertSee('Dashboard', false)
@@ -144,7 +142,6 @@ class AdminCenterTest extends TestCase
                 'league_visible' => 1,
                 'league_archive' => 0,
                 'league_test' => 0,
-                'league_symbol' => '',
             ],
             [
                 'league_id' => 2,
@@ -152,7 +149,6 @@ class AdminCenterTest extends TestCase
                 'league_visible' => 1,
                 'league_archive' => 0,
                 'league_test' => 1,
-                'league_symbol' => '',
             ],
         ]);
         DB::table('web_user')->insert([

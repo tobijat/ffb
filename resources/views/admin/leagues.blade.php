@@ -44,7 +44,6 @@
                 @method('PUT')
                 <input type="hidden" name="league_id" value="{{ $form['league_id'] }}">
             @endif
-            <input type="hidden" name="league_symbol" value="{{ $form['league_symbol'] }}">
 
             <fieldset class="admin-fieldset">
                 <legend>Grunddaten</legend>
@@ -346,13 +345,13 @@
                 </div>
                 <div class="admin-list-actions">
                     <a class="admin-icon-btn" href="{{ route('admin.leagues.edit', ['league' => $item['league_id']]) }}" title="Bearbeiten">
-                        <img src="{{ $legacyBase }}images/ffb/symbols/edit.png" alt="Bearbeiten" width="16" height="16">
+                        <img src="{{ $legacyBase }}images/ffb/symbols/edit.svg" alt="Bearbeiten" width="16" height="16">
                     </a>
                     <form method="post" action="{{ route('admin.leagues.destroy', ['league' => $item['league_id']]) }}" onsubmit="return confirm('Diese Liga wirklich löschen?');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="admin-icon-btn" title="Löschen">
-                            <img src="{{ $legacyBase }}images/ffb/symbols/delete.png" alt="Löschen" width="16" height="16">
+                            <img src="{{ $legacyBase }}images/ffb/symbols/delete.svg" alt="Löschen" width="16" height="16">
                         </button>
                     </form>
                 </div>

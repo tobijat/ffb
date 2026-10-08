@@ -6,8 +6,8 @@
     @php
         $sections = is_array($data['sections'] ?? null) ? $data['sections'] : [];
         $runUrl = (string) ($data['run_url'] ?? route('admin.dbCleanup.run'));
-        $okSrc = $legacyBase.'images/ffb/symbols/ok.png';
-        $failSrc = $legacyBase.'images/ffb/symbols/delete.png';
+        $okSrc = $legacyBase.'images/ffb/symbols/ok.svg';
+        $failSrc = $legacyBase.'images/ffb/symbols/delete.svg';
         $idleSrc = $legacyBase.'images/ffb/symbols/info.svg';
     @endphp
 

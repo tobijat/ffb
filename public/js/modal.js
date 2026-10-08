@@ -91,7 +91,7 @@
     function defaultCloseBtn() {
         return (
             '<button type="button" class="ffb-modal-close" data-ffb-modal-close title="Schließen" aria-label="Schließen">' +
-            '<img src="' + symbolUrl('delete.png') + '" alt="">' +
+            '<img src="' + symbolUrl('delete.svg') + '" alt="">' +
             '</button>'
         );
     }
@@ -162,16 +162,16 @@
         let rows = '';
 
         if (user.user_perm_profile && user.user_name) {
-            rows += profileRow('symbol_profile.png', 'Name:', escapeHtml(user.user_name));
+            rows += profileRow('symbol_profile.svg', 'Name:', escapeHtml(user.user_name));
         }
         if (user.user_details_city) {
-            rows += profileRow('symbol_home.png', 'kommt aus:', escapeHtml(user.user_details_city));
+            rows += profileRow('symbol_home.svg', 'kommt aus:', escapeHtml(user.user_details_city));
         }
         if (user.user_details_website) {
             const ws = String(user.user_details_website);
             const label = ws.length > 23 ? 'klicken' : ws;
             rows += profileRow(
-                'symbol_globe.png',
+                'symbol_globe.svg',
                 'Website:',
                 '<a class="nolink" target="_blank" rel="noopener noreferrer" href="' +
                     escapeHtml(websiteHref(ws)) +
@@ -181,16 +181,16 @@
             );
         }
         if (user.user_perm_profile && user.user_details_phone) {
-            rows += profileRow('symbol_phone.png', 'Telefon:', escapeHtml(user.user_details_phone));
+            rows += profileRow('symbol_phone.svg', 'Telefon:', escapeHtml(user.user_details_phone));
         }
         if (user.user_date_register) {
-            rows += profileRow('calendar.png', 'Mitglied seit:', escapeHtml(user.user_date_register));
+            rows += profileRow('calendar.svg', 'Mitglied seit:', escapeHtml(user.user_date_register));
         }
         if (user.user_date_llogin) {
-            rows += profileRow('stats_time.png', 'letzte Aktivität:', escapeHtml(user.user_date_llogin));
+            rows += profileRow('stats_time.svg', 'letzte Aktivität:', escapeHtml(user.user_date_llogin));
         }
         if (user.favourite_team && user.favourite_team.name) {
-            rows += profileRow('symbol_shoes.png', 'Lieblingsteam:', escapeHtml(user.favourite_team.name));
+            rows += profileRow('symbol_shoes.svg', 'Lieblingsteam:', escapeHtml(user.favourite_team.name));
         }
 
         let table = '';
@@ -220,7 +220,12 @@
                 }
 
                 let liga = '';
-                if (p.league_symbol) {
+                if (p.league_symbol_url) {
+                    liga +=
+                        '<img src="' +
+                        escapeHtml(imgUrl(p.league_symbol_url)) +
+                        '" alt="" width="16" height="16">';
+                } else if (p.league_symbol) {
                     liga += '<img src="' + symbolUrl(p.league_symbol) + '" alt="" width="16" height="16">';
                 }
                 liga += escapeHtml(p.league_title);
@@ -382,7 +387,7 @@
         const changeIn =
             minutesIn > 1
                 ? '<img src="' +
-                  symbolUrl('stats_change_in.gif') +
+                  symbolUrl('stats_change_in.svg') +
                   '" height="12" title="Einwechslung: ' +
                   minutesIn +
                   '. Minute">'
@@ -390,7 +395,7 @@
         const changeOut =
             minutesOut < matchMinutes && minutesOut !== 0
                 ? '<img src="' +
-                  symbolUrl('stats_change_out.gif') +
+                  symbolUrl('stats_change_out.svg') +
                   '" height="12" title="Auswechslung: ' +
                   minutesOut +
                   '. Minute">'
@@ -399,19 +404,19 @@
         let cardHtml = '';
         if (card === 'y') {
             cardHtml =
-                '<img src="' + symbolUrl('stats_card_y.gif') + '" height="12" title="Gelbe Karte">';
+                '<img src="' + symbolUrl('stats_card_y.svg') + '" height="12" title="Gelbe Karte">';
         } else if (card === 'yr') {
             cardHtml =
                 '<img src="' +
-                symbolUrl('stats_card_yr.gif') +
+                symbolUrl('stats_card_yr.svg') +
                 '" height="12" title="Gelb-Rote Karte">';
         } else if (card === 'r') {
             cardHtml =
-                '<img src="' + symbolUrl('stats_card_r.gif') + '" height="12" title="Rote Karte">';
+                '<img src="' + symbolUrl('stats_card_r.svg') + '" height="12" title="Rote Karte">';
         }
 
-        const goalHtml = repeatIcon(symbolUrl('stats_goal.gif'), goals, 'Tor');
-        const ownHtml = repeatIcon(symbolUrl('stats_owngoal.gif'), owngoals, 'Eigentor');
+        const goalHtml = repeatIcon(symbolUrl('stats_goal.svg'), goals, 'Tor');
+        const ownHtml = repeatIcon(symbolUrl('stats_owngoal.svg'), owngoals, 'Eigentor');
 
         if (side === 'home') {
             if (changeIn) {
@@ -594,10 +599,10 @@
             const symbol =
                 g.psgoal_hit
                     ? '<img src="' +
-                      symbolUrl('stats_ps_hit.png') +
+                      symbolUrl('stats_ps_hit.svg') +
                       '" width="16" height="16" alt="getroffen" title="getroffen">'
                     : '<img src="' +
-                      symbolUrl('stats_ps_fail.png') +
+                      symbolUrl('stats_ps_fail.svg') +
                       '" width="16" height="16" alt="nicht getroffen" title="nicht getroffen">';
             const flag = flagHtml(g.psgoal_team_nationality, g.psgoal_team_name);
             const name = playerLink(g.psgoal_playerteam_id, g.psgoal_player_name);

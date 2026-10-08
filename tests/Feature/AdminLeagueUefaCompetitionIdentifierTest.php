@@ -89,7 +89,6 @@ class AdminLeagueUefaCompetitionIdentifierTest extends TestCase
             $table->tinyInteger('league_visible')->default(1);
             $table->tinyInteger('league_archive')->default(0);
             $table->tinyInteger('league_test')->default(0);
-            $table->string('league_symbol')->default('');
             $table->string('league_uefa_competition_identifier')->default('');
             $table->string('league_fifa_competition_identifier')->default('');
         });

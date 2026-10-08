@@ -36,25 +36,25 @@ class AdminLeagueDashboardTest extends TestCase
 {
     private string $imagesRoot = '';
 
-    private string $symbolsDir = '';
+    private string $leaguesDir = '';
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->imagesRoot = sys_get_temp_dir().DIRECTORY_SEPARATOR.'ffb-league-dash-'.uniqid('', true);
-        $this->symbolsDir = $this->imagesRoot.DIRECTORY_SEPARATOR.'symbols';
-        mkdir($this->symbolsDir, 0775, true);
+        $this->leaguesDir = $this->imagesRoot.DIRECTORY_SEPARATOR.'leagues';
+        mkdir($this->leaguesDir, 0775, true);
         config(['ffb.legacy_images_path' => $this->imagesRoot]);
     }
 
     protected function tearDown(): void
     {
-        if ($this->symbolsDir !== '' && is_dir($this->symbolsDir)) {
-            foreach (glob($this->symbolsDir.DIRECTORY_SEPARATOR.'*') ?: [] as $file) {
+        if ($this->leaguesDir !== '' && is_dir($this->leaguesDir)) {
+            foreach (glob($this->leaguesDir.DIRECTORY_SEPARATOR.'*') ?: [] as $file) {
                 @unlink($file);
             }
-            @rmdir($this->symbolsDir);
+            @rmdir($this->leaguesDir);
         }
         if ($this->imagesRoot !== '' && is_dir($this->imagesRoot)) {
             $this->removeDirectory($this->imagesRoot);
@@ -173,7 +173,7 @@ class AdminLeagueDashboardTest extends TestCase
                 'selected_league' => [
                     'league_id' => 1,
                     'league_title' => 'Testliga',
-                    'symbol_url' => '/images/ffb/symbols/x.png',
+                    'symbol_url' => '/images/ffb/leagues/na.png',
                 ],
                 'sections' => [
                     [
@@ -505,14 +505,13 @@ class AdminLeagueDashboardTest extends TestCase
     public function league_section_is_ok_when_all_checks_pass(): void
     {
         $this->createSchema();
-        file_put_contents($this->symbolsDir.DIRECTORY_SEPARATOR.'logo.webp', 'x');
 
         $league = League::query()->create([
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => 'logo.webp',
         ]);
+        file_put_contents($this->leaguesDir.DIRECTORY_SEPARATOR.$league->league_id.'.webp', 'x');
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
             'options_league_rankmode' => 'lc',
@@ -572,7 +571,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/logo.webp',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -599,7 +598,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'Archiv-Liga',
             'league_visible' => 0,
             'league_archive' => 1,
-            'league_symbol' => 'missing.webp',
         ]);
         Matchround::query()->create([
             'matchround_league_id' => (int) $league->league_id,
@@ -617,7 +615,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'Archiv-Liga',
-                'symbol_url' => '/images/ffb/symbols/missing.webp',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -635,14 +633,13 @@ class AdminLeagueDashboardTest extends TestCase
     public function league_section_fails_options_check_when_options_row_missing(): void
     {
         $this->createSchema();
-        file_put_contents($this->symbolsDir.DIRECTORY_SEPARATOR.'logo.webp', 'x');
 
         $league = League::query()->create([
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => 'logo.webp',
         ]);
+        file_put_contents($this->leaguesDir.DIRECTORY_SEPARATOR.$league->league_id.'.webp', 'x');
         Matchround::query()->create([
             'matchround_league_id' => (int) $league->league_id,
             'matchround_title' => 'R1',
@@ -659,7 +656,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/logo.webp',
+                'symbol_url' => '/images/ffb/leagues/'.$league->league_id.'.webp',
             ],
         ]);
 
@@ -676,14 +673,13 @@ class AdminLeagueDashboardTest extends TestCase
     public function league_section_lists_inconsistent_options(): void
     {
         $this->createSchema();
-        file_put_contents($this->symbolsDir.DIRECTORY_SEPARATOR.'logo.webp', 'x');
 
         $league = League::query()->create([
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => 'logo.webp',
         ]);
+        file_put_contents($this->leaguesDir.DIRECTORY_SEPARATOR.$league->league_id.'.webp', 'x');
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
             'options_league_rankmode' => 'lc',
@@ -724,7 +720,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/logo.webp',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -760,7 +756,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
 
         $current = Matchround::query()->create([
@@ -830,7 +825,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -860,7 +855,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -922,7 +916,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -946,7 +940,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -995,7 +988,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -1030,7 +1023,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         Matchround::query()->create([
             'matchround_league_id' => (int) $league->league_id,
@@ -1048,7 +1040,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -1071,7 +1063,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         $round = Matchround::query()->create([
             'matchround_league_id' => (int) $league->league_id,
@@ -1103,7 +1094,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -1130,7 +1121,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         $round = Matchround::query()->create([
             'matchround_league_id' => (int) $league->league_id,
@@ -1155,7 +1145,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -1176,7 +1166,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         $home = Team::query()->create(['team_name' => 'Alpha']);
         $guest = Team::query()->create(['team_name' => 'Beta']);
@@ -1205,7 +1194,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -1235,7 +1224,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         $home = Team::query()->create(['team_name' => 'Alpha']);
         $guest = Team::query()->create(['team_name' => 'Beta']);
@@ -1265,7 +1253,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -1294,7 +1282,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         $home = Team::query()->create(['team_name' => 'Alpha']);
         $guest = Team::query()->create(['team_name' => 'Beta']);
@@ -1323,7 +1310,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -1345,7 +1332,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         $home = Team::query()->create(['team_name' => 'Alpha']);
         $guest = Team::query()->create(['team_name' => 'Beta']);
@@ -1374,7 +1360,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -1399,7 +1385,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         $home = Team::query()->create([
             'team_name' => 'Bayern',
@@ -1444,7 +1429,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -1472,7 +1457,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         $home = Team::query()->create([
             'team_name' => 'Ghosts',
@@ -1510,7 +1494,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -1538,7 +1522,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         $home = Team::query()->create(['team_name' => 'Alpha', 'team_status' => 1]);
         $guest = Team::query()->create(['team_name' => 'Beta', 'team_status' => 1]);
@@ -1567,7 +1550,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -1591,7 +1574,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         $home = Team::query()->create(['team_name' => 'Alpha', 'team_status' => 1]);
         $guest = Team::query()->create(['team_name' => 'Beta', 'team_status' => 1]);
@@ -1631,7 +1613,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -1659,7 +1641,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -1709,7 +1690,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -1739,7 +1720,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -1807,7 +1787,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -1835,7 +1815,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -1905,7 +1884,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -1926,7 +1905,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -1991,7 +1969,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -2013,7 +1991,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -2072,7 +2049,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -2092,7 +2069,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -2144,7 +2120,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -2169,7 +2145,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -2248,7 +2223,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -2271,7 +2246,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -2322,7 +2296,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -2350,7 +2324,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -2391,7 +2364,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -2415,7 +2388,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -2454,7 +2426,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -2480,7 +2452,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -2567,7 +2538,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -2591,7 +2562,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -2653,7 +2623,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -2680,7 +2650,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -2696,7 +2665,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -2718,7 +2687,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -2769,7 +2737,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -2793,7 +2761,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -2891,7 +2858,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -2916,7 +2883,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -2969,7 +2935,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -2991,7 +2957,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         $pastRound = Matchround::query()->create([
             'matchround_league_id' => (int) $league->league_id,
@@ -3015,7 +2980,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -3077,7 +3042,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -3205,7 +3169,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -3230,7 +3194,6 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
@@ -3302,7 +3265,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                'symbol_url' => '/images/ffb/leagues/na.png',
             ],
         ]);
 
@@ -3428,7 +3391,6 @@ class AdminLeagueDashboardTest extends TestCase
             $table->string('league_title')->default('');
             $table->tinyInteger('league_visible')->default(1);
             $table->tinyInteger('league_archive')->default(0);
-            $table->string('league_symbol')->default('');
         });
 
         Schema::create('ffb_league_options', function (Blueprint $table) {

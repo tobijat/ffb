@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\League;
 use App\Models\UserDetails;
 use App\Models\WebUser;
+use App\Support\LeagueSymbol;
 
 class AdminCenterService
 {
@@ -250,8 +251,7 @@ class AdminCenterService
                 return [
                     'league_id' => (int) $league->league_id,
                     'league_title' => (string) $league->league_title,
-                    'league_symbol' => (string) ($league->league_symbol ?: 'symbol_game_na.png'),
-                    'symbol_url' => '/images/ffb/symbols/'.($league->league_symbol ?: 'symbol_game_na.png'),
+                    'symbol_url' => LeagueSymbol::url((int) $league->league_id),
                     'league_archive' => $archive,
                     'league_visible' => $visible,
                     'league_test' => $isTest,

@@ -17,7 +17,6 @@ trait CreatesLegacyFfbSchema
             $table->tinyInteger('league_visible')->default(1);
             $table->tinyInteger('league_archive')->default(0);
             $table->tinyInteger('league_test')->default(0);
-            $table->string('league_symbol')->default('');
         });
 
         Schema::create('ffb_league_options', function (Blueprint $table) {

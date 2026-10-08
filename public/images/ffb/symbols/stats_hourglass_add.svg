@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <defs>
+    <linearGradient id="wood" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#dcae80"/><stop offset=".3" stop-color="#ecd3a1"/><stop offset="1" stop-color="#9e6621"/></linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#c4dbf4"/><stop offset=".4" stop-color="#fafcfe"/><stop offset="1" stop-color="#a6c3e6"/></linearGradient>
+    <linearGradient id="badge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c4e2a6"/><stop offset="1" stop-color="#4f8a26"/></linearGradient>
+  </defs>
+  <path d="M1.5 3.6 H12.6 L8.7 7.4 V9.3 L12.4 12.6 H1.4 L5.3 9.3 V7.4 Z" fill="url(#glass)" stroke="#96b8e0" stroke-width=".6" stroke-linejoin="round"/>
+  <rect x=".4" y=".4" width="13.4" height="3.2" rx="1.4" fill="url(#wood)" stroke="#b37b3f" stroke-width=".6"/>
+  <rect x=".4" y="12.4" width="13.4" height="3.2" rx="1.4" fill="url(#wood)" stroke="#b37b3f" stroke-width=".6"/>
+  <circle cx="12.4" cy="12.4" r="3.3" fill="url(#badge)" stroke="#376b19" stroke-width=".7"/>
+  <rect x="10.3" y="11.65" width="4.2" height="1.5" rx=".2" fill="#ffffff"/>
+  <rect x="11.65" y="10.3" width="1.5" height="4.2" rx=".2" fill="#ffffff"/>
+</svg>

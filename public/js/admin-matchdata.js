@@ -14,7 +14,7 @@
     const csrf = root.dataset.csrf || '';
     const imagesBase = root.dataset.imagesBase || '/images/ffb/';
     const symbols = imagesBase + 'symbols/';
-    const undoIcon = symbols + 'change.png';
+    const undoIcon = symbols + 'change.svg';
 
     const roundSelect = document.getElementById('admin-mp-round');
     const matchSelect = document.getElementById('admin-mp-match');
@@ -278,7 +278,7 @@
             const checked = cards === v ? ' checked' : '';
             const img = v === 'n'
                 ? '<span class="admin-mp-card-none" aria-hidden="true">–</span>'
-                : `<img src="${symbols}stats_card_${v}.gif" width="14" height="16" alt="">`;
+                : `<img src="${symbols}stats_card_${v}.svg" width="14" height="16" alt="">`;
             return `<label class="admin-mp-card-opt" title="${titles[v]}">${img}<input type="radio" name="cards-${side}-${index}" value="${v}" class="admin-mp-card" data-side="${side}" data-index="${index}"${checked} aria-label="${titles[v]}"></label>`;
         }).join('');
     }
@@ -332,18 +332,18 @@
             </div>
             <div class="admin-mp-player-fields" id="admin-mp-fields-${id}">
                 <span class="admin-mp-field-group admin-mp-time-fields" title="Spielzeit">
-                    <label title="Minute rein"><img src="${symbols}stats_hourglass_add.png" width="14" height="14" alt=""> <input type="text" class="admin-mp-input" data-field="minute_in" value="${escapeHtml(p.playerstats_minute_in)}" aria-label="Minute rein"></label>
-                    <label title="Minute raus"><img src="${symbols}stats_hourglass_delete.png" width="14" height="14" alt=""> <input type="text" class="admin-mp-input" data-field="minute_out" value="${escapeHtml(p.playerstats_minute_out)}" aria-label="Minute raus"></label>
-                    <label title="Minuten gespielt (automatisch)"><img src="${symbols}stats_time.png" width="14" height="14" alt=""> <input type="text" class="admin-mp-input admin-mp-input-readonly" data-field="minutes" maxlength="3" value="${escapeHtml(p.playerstats_minutes)}" readonly tabindex="-1" aria-label="Minuten gespielt"></label>
+                    <label title="Minute rein"><img src="${symbols}stats_hourglass_add.svg" width="14" height="14" alt=""> <input type="text" class="admin-mp-input" data-field="minute_in" value="${escapeHtml(p.playerstats_minute_in)}" aria-label="Minute rein"></label>
+                    <label title="Minute raus"><img src="${symbols}stats_hourglass_delete.svg" width="14" height="14" alt=""> <input type="text" class="admin-mp-input" data-field="minute_out" value="${escapeHtml(p.playerstats_minute_out)}" aria-label="Minute raus"></label>
+                    <label title="Minuten gespielt (automatisch)"><img src="${symbols}stats_time.svg" width="14" height="14" alt=""> <input type="text" class="admin-mp-input admin-mp-input-readonly" data-field="minutes" maxlength="3" value="${escapeHtml(p.playerstats_minutes)}" readonly tabindex="-1" aria-label="Minuten gespielt"></label>
                 </span>
                 <span class="admin-mp-field-group admin-mp-cards" title="Karten">${cardRadios(side, index, p.playerstats_cards || 'n')}<input type="hidden" data-field="cards" value="${escapeHtml(p.playerstats_cards || 'n')}"></span>
                 <span class="admin-mp-field-group admin-mp-score-fields">
                     <span class="admin-mp-field-group-title">Tore während Spielzeit</span>
-                    <label><img src="${symbols}stats_goal.gif" width="14" height="14" alt=""> Tor <input type="text" class="admin-mp-input admin-mp-input-wide" data-field="goals" value="${escapeHtml(p.playerstats_goals)}" aria-label="Tor"></label>
-                    <label><img src="${symbols}stats_assist.gif" width="14" height="14" alt=""> Assist <input type="text" class="admin-mp-input" data-field="assists" maxlength="2" value="${escapeHtml(p.playerstats_assists)}" aria-label="Assist"></label>
-                    <label><img src="${symbols}stats_owngoal.gif" width="14" height="14" alt=""> Eigentor <input type="text" class="admin-mp-input admin-mp-input-wide" data-field="owngoals" value="${escapeHtml(p.playerstats_owngoals)}" aria-label="Eigentor"></label>
-                    <label><img src="${symbols}stats_penaltylost.png" width="14" height="14" alt=""> Elfmeter verschossen <input type="text" class="admin-mp-input" data-field="penaltieslost" value="${escapeHtml(p.playerstats_penaltieslost)}" aria-label="Elfmeter verschossen"></label>
-                    <label><img src="${symbols}stats_penaltysaved.png" width="14" height="14" alt=""> Elfmeter gehalten <input type="text" class="admin-mp-input" data-field="penaltiessaved" value="${escapeHtml(p.playerstats_penaltiessaved)}" aria-label="Elfmeter gehalten"></label>
+                    <label><img src="${symbols}stats_goal.svg" width="14" height="14" alt=""> Tor <input type="text" class="admin-mp-input admin-mp-input-wide" data-field="goals" value="${escapeHtml(p.playerstats_goals)}" aria-label="Tor"></label>
+                    <label><img src="${symbols}stats_assist.svg" width="14" height="14" alt=""> Assist <input type="text" class="admin-mp-input" data-field="assists" maxlength="2" value="${escapeHtml(p.playerstats_assists)}" aria-label="Assist"></label>
+                    <label><img src="${symbols}stats_owngoal.svg" width="14" height="14" alt=""> Eigentor <input type="text" class="admin-mp-input admin-mp-input-wide" data-field="owngoals" value="${escapeHtml(p.playerstats_owngoals)}" aria-label="Eigentor"></label>
+                    <label><img src="${symbols}stats_penaltylost.svg" width="14" height="14" alt=""> Elfmeter verschossen <input type="text" class="admin-mp-input" data-field="penaltieslost" value="${escapeHtml(p.playerstats_penaltieslost)}" aria-label="Elfmeter verschossen"></label>
+                    <label><img src="${symbols}stats_penaltysaved.svg" width="14" height="14" alt=""> Elfmeter gehalten <input type="text" class="admin-mp-input" data-field="penaltiessaved" value="${escapeHtml(p.playerstats_penaltiessaved)}" aria-label="Elfmeter gehalten"></label>
                 </span>
                 <span class="admin-mp-field-group admin-mp-ps-fields"${psHidden}>
                     <span class="admin-mp-field-group-title">Elfmeterschießen</span>
@@ -1271,13 +1271,13 @@
                     .then(() => {
                         initials[side][index] = Object.assign({}, payload);
                         if (status) {
-                            status.innerHTML = `<img src="${imagesBase}symbols/status_pos.png" width="14" height="14" alt="ok">`;
+                            status.innerHTML = `<img src="${imagesBase}symbols/status_pos.svg" width="14" height="14" alt="ok">`;
                         }
                         syncPlayerRow(side, index);
                     })
                     .catch((err) => {
                         if (status) {
-                            status.innerHTML = `<img src="${imagesBase}symbols/status_neg.png" width="14" height="14" alt="err">`;
+                            status.innerHTML = `<img src="${imagesBase}symbols/status_neg.svg" width="14" height="14" alt="err">`;
                         }
                         alert(`${side} #${index + 1}: ${err.message}`);
                     });

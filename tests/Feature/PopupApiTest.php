@@ -62,7 +62,7 @@ class PopupApiTest extends TestCase
                 [
                     'league_id' => 26,
                     'league_title' => 'Testliga',
-                    'league_symbol' => 'x.png',
+                    'league_symbol_url' => '/images/ffb/leagues/26.png',
                     'league_archive' => false,
                     'score_rm' => 'lc',
                     'score_lc' => 10,

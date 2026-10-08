@@ -23,7 +23,6 @@ class MatchPopupLeagueRelationTest extends TestCase
             'league_title' => 'Bundesliga Test',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
 
         DB::table('ffb_matchround')->insert([
@@ -137,7 +136,6 @@ class MatchPopupLeagueRelationTest extends TestCase
             'league_visible' => 1,
             'league_archive' => 0,
             'league_test' => 1,
-            'league_symbol' => '',
         ]);
         DB::table('ffb_matchround')->insert([
             'matchround_id' => 4,

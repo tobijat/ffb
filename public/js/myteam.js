@@ -272,16 +272,16 @@
         html += '<div class="stats-heading">-- Spielrunden Statistik --</div>';
 
         html += '<div class="stats-subheading"><u>Statistik</u></div>';
-        html += statsRow('symbol_user.png', 'Teilnehmer:', Number(stats.num_users) + ' Mitspieler');
-        html += statsRow('stats_point.png', 'Anzahl Spiele:', Number(stats.num_matches) + ' Spiele');
-        html += statsRow('stats_goal.gif', 'gefallene Tore:', Number(stats.goals) + ' Tore');
-        html += statsRow('stats_owngoal.gif', 'gefallene Eigentore:', Number(stats.owngoals) + ' Tore');
+        html += statsRow('symbol_user.svg', 'Teilnehmer:', Number(stats.num_users) + ' Mitspieler');
+        html += statsRow('stats_point.svg', 'Anzahl Spiele:', Number(stats.num_matches) + ' Spiele');
+        html += statsRow('stats_goal.svg', 'gefallene Tore:', Number(stats.goals) + ' Tore');
+        html += statsRow('stats_owngoal.svg', 'gefallene Eigentore:', Number(stats.owngoals) + ' Tore');
         html += statsRow(
-            'stats_card_yr.gif',
+            'stats_card_yr.svg',
             'Karten (G/GR/R):',
             Number(stats.cards_y) + '/' + Number(stats.cards_yr) + '/' + Number(stats.cards_r)
         );
-        html += statsRow('stats_point.png', 'Punkte pro Spieler:', Number(stats.score_per_player) + ' Punkte');
+        html += statsRow('stats_point.svg', 'Punkte pro Spieler:', Number(stats.score_per_player) + ' Punkte');
         html += '</div>';
         return html;
     }
@@ -292,23 +292,23 @@
         }
         let html = '<div class="stats-block">';
         html += '<div class="stats-heading">-- Benutzer Statistik --</div>';
-        html += statsRow('stats_lineup.png', 'Spielsystem:', escapeHtml(stats.system));
-        html += statsRow('stats_goal.gif', 'erzielte Tore:', Number(stats.goals) + ' Tore');
-        html += statsRow('stats_owngoal.gif', 'erzielte Eigentore:', Number(stats.owngoals) + ' Tore');
+        html += statsRow('stats_lineup.svg', 'Spielsystem:', escapeHtml(stats.system));
+        html += statsRow('stats_goal.svg', 'erzielte Tore:', Number(stats.goals) + ' Tore');
+        html += statsRow('stats_owngoal.svg', 'erzielte Eigentore:', Number(stats.owngoals) + ' Tore');
         html += statsRow(
-            'stats_card_yr.gif',
+            'stats_card_yr.svg',
             'Karten (G/GR/R):',
             Number(stats.cards_y) + '/' + Number(stats.cards_yr) + '/' + Number(stats.cards_r)
         );
         html += statsRow(
-            'stats_point.png',
+            'stats_point.svg',
             'Punkte Abwehr:',
             Number(stats.score_g) + Number(stats.score_d) + ' Punkte'
         );
-        html += statsRow('stats_point.png', 'Punkte Mittelfeld:', Number(stats.score_m) + ' Punkte');
-        html += statsRow('stats_point.png', 'Punkte Angriff:', Number(stats.score_s) + ' Punkte');
-        html += statsRow('stats_point.png', 'Punkte pro Spieler:', Number(stats.score_per_player) + ' Punkte');
-        html += statsRow('symbol_credits.png', 'Credits pro Punkt:', Number(stats.credits_per_point) + ' Credits');
+        html += statsRow('stats_point.svg', 'Punkte Mittelfeld:', Number(stats.score_m) + ' Punkte');
+        html += statsRow('stats_point.svg', 'Punkte Angriff:', Number(stats.score_s) + ' Punkte');
+        html += statsRow('stats_point.svg', 'Punkte pro Spieler:', Number(stats.score_per_player) + ' Punkte');
+        html += statsRow('symbol_credits.svg', 'Credits pro Punkt:', Number(stats.credits_per_point) + ' Credits');
         html += '</div>';
         return html;
     }
@@ -416,7 +416,7 @@
             change.type === 'in'
                 ? 'Eingewechselt für ' + related
                 : 'Ersetzt durch ' + related;
-        const icon = change.type === 'in' ? 'stats_change_in.gif' : 'stats_change_out.gif';
+        const icon = change.type === 'in' ? 'stats_change_in.svg' : 'stats_change_out.svg';
 
         return (
             '<img src="' +

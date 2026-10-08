@@ -380,10 +380,10 @@
                 '</div>' +
                 '<div class="admin-player-row-tools">' +
                     '<button type="button" class="admin-icon-btn admin-player-undo-btn" title="Rückgängig"' + (dirty || pendingDelete ? '' : ' hidden') + '>' +
-                        '<img src="' + escapeHtml(legacyBase) + 'images/ffb/symbols/change.png" alt="Rückgängig" width="16" height="16">' +
+                        '<img src="' + escapeHtml(legacyBase) + 'images/ffb/symbols/change.svg" alt="Rückgängig" width="16" height="16">' +
                     '</button>' +
                     '<button type="button" class="admin-icon-btn admin-player-delete-btn" title="Zum Löschen vormerken"' + (pendingDelete ? ' hidden' : '') + '>' +
-                        '<img src="' + escapeHtml(legacyBase) + 'images/ffb/symbols/delete.png" alt="Löschen" width="16" height="16">' +
+                        '<img src="' + escapeHtml(legacyBase) + 'images/ffb/symbols/delete.svg" alt="Löschen" width="16" height="16">' +
                     '</button>' +
                 '</div>' +
             '</article>'

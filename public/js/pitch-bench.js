@@ -199,7 +199,7 @@
             change.type === 'in'
                 ? 'Eingewechselt für ' + related
                 : 'Ersetzt durch ' + related;
-        const icon = change.type === 'in' ? 'stats_change_in.gif' : 'stats_change_out.gif';
+        const icon = change.type === 'in' ? 'stats_change_in.svg' : 'stats_change_out.svg';
 
         return (
             '<img src="' +

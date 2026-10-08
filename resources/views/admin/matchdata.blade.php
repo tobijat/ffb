@@ -184,10 +184,10 @@
         </div>
 
         <div class="admin-mp-legend" id="admin-mp-legend" hidden>
-            <img src="{{ $legacyBase }}images/ffb/symbols/stats_hourglass_add.png" width="16" height="16" alt=""> rein
-            <img src="{{ $legacyBase }}images/ffb/symbols/stats_hourglass_delete.png" width="16" height="16" alt=""> raus
-            <img src="{{ $legacyBase }}images/ffb/symbols/stats_time.png" width="15" height="15" alt=""> Min (auto)
-            <img src="{{ $legacyBase }}images/ffb/symbols/stats_card_y.gif" width="15" height="18" alt=""> Karten
+            <img src="{{ $legacyBase }}images/ffb/symbols/stats_hourglass_add.svg" width="16" height="16" alt=""> rein
+            <img src="{{ $legacyBase }}images/ffb/symbols/stats_hourglass_delete.svg" width="16" height="16" alt=""> raus
+            <img src="{{ $legacyBase }}images/ffb/symbols/stats_time.svg" width="15" height="15" alt=""> Min (auto)
+            <img src="{{ $legacyBase }}images/ffb/symbols/stats_card_y.svg" width="15" height="18" alt=""> Karten
             · Tore während Spielzeit / Elfmeterschießen
         </div>
 

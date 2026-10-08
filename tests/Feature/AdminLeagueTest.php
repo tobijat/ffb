@@ -57,7 +57,7 @@ class AdminLeagueTest extends TestCase
                         'league_visible' => 1,
                         'league_archive' => 0,
                         'league_test' => 0,
-                        'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                        'symbol_url' => '/images/ffb/leagues/na.png',
                     ],
                 ],
                 'form' => array_merge([
@@ -66,9 +66,8 @@ class AdminLeagueTest extends TestCase
                     'league_visible' => 1,
                     'league_archive' => 0,
                     'league_test' => 0,
-                    'league_symbol' => 'symbol_game_na.png',
                     'league_uefa_competition_identifier' => '',
-                    'symbol_url' => '/images/ffb/symbols/symbol_game_na.png',
+                    'symbol_url' => '/images/ffb/leagues/na.png',
                 ], $this->defaultOptions()),
                 'mode' => 'create',
             ]);

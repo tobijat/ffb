@@ -26,7 +26,6 @@ class AdminMatchroundLineupDefaultsTest extends TestCase
             'league_title' => 'Liga',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
         ]);
 
         DB::table('ffb_league_options')->insert([

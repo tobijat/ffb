@@ -137,7 +137,7 @@
     function addOkMessage(answer) {
         messagesEl.className = 'lineup-messages is-ok';
         messagesEl.innerHTML =
-            '<img src="' + symbolUrl('ok.png') + '" height="11" alt=""> <b>' + escapeHtml(answer) + '</b>';
+            '<img src="' + symbolUrl('ok.svg') + '" height="11" alt=""> <b>' + escapeHtml(answer) + '</b>';
     }
 
     function setPitchMessage(text) {
@@ -510,7 +510,7 @@
             escapeHtml(formatTeamPrice(match.match_hometeam_price)) +
             '</span>' +
             '<img class="lineup-credits-icon" src="' +
-            symbolUrl('symbol_credits.png') +
+            symbolUrl('symbol_credits.svg') +
             '" width="16" height="16" alt="Credits">' +
             '<span class="lineup-match-price away">' +
             escapeHtml(formatTeamPrice(match.match_guestteam_price)) +
@@ -1306,7 +1306,7 @@
         const neededBench = Math.max(0, minBenchRequired() - benchlist.length);
         let html =
             '<div class="pitch-stats-row"><img src="' +
-            symbolUrl('symbol_credits.png') +
+            symbolUrl('symbol_credits.svg') +
             '" alt=""><span>' +
             rounded +
             '</span></div>';
@@ -1492,7 +1492,7 @@
     function gameOverUi() {
         clearPitch();
         lines.m.innerHTML =
-            '<img src="' + symbolUrl('gameover.png') + '" width="320" alt="Game Over" style="max-width:100%;">';
+            '<img src="' + symbolUrl('gameover.svg') + '" width="320" alt="Game Over" style="max-width:100%;">';
         creditsEl.hidden = true;
         expandedTeamId = 0;
         expandedMatchId = 0;

@@ -146,7 +146,7 @@
                                                         title="Zeile verwerfen"
                                                         aria-label="Zeile verwerfen"
                                                     >
-                                                        <img src="{{ $legacyBase }}images/ffb/symbols/delete.png" alt="" width="16" height="16">
+                                                        <img src="{{ $legacyBase }}images/ffb/symbols/delete.svg" alt="" width="16" height="16">
                                                     </button>
                                                 </td>
                                             </tr>
@@ -271,7 +271,7 @@
                                                             title="Zeile verwerfen"
                                                             aria-label="Zeile verwerfen"
                                                         >
-                                                            <img src="{{ $legacyBase }}images/ffb/symbols/delete.png" alt="" width="16" height="16">
+                                                            <img src="{{ $legacyBase }}images/ffb/symbols/delete.svg" alt="" width="16" height="16">
                                                         </button>
                                                     </td>
                                                 </tr>

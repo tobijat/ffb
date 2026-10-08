@@ -19,14 +19,13 @@ use App\Models\Userscore;
 use App\Models\Userteam;
 use App\Support\FfbDateTime;
 use App\Support\Flag;
+use App\Support\LeagueSymbol;
 use App\Support\TeamShirt;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 class AdminLeagueDashboardService
 {
-    private const DEFAULT_SYMBOL = 'symbol_game_na.png';
-
     private const AVERAGE_LINEUP_BUDGET_RATIO = 0.9;
 
     private const AVERAGE_LINEUP_WITH_BENCH_BUDGET_RATIO = 1.0;
@@ -2730,14 +2729,7 @@ class AdminLeagueDashboardService
 
     private function leagueHasLogoFile(League $league): bool
     {
-        $symbol = trim((string) ($league->league_symbol ?: ''));
-        if ($symbol === '' || $symbol === self::DEFAULT_SYMBOL) {
-            return false;
-        }
-
-        $path = $this->symbolsDir().DIRECTORY_SEPARATOR.$symbol;
-
-        return is_file($path);
+        return LeagueSymbol::exists((int) $league->league_id);
     }
 
     private function leagueScheduleMatchesArchiveState(League $league): bool
@@ -3174,12 +3166,5 @@ class AdminLeagueDashboardService
             'old' => 'alt',
             default => $mode !== '' ? $mode : '—',
         };
-    }
-
-    private function symbolsDir(): string
-    {
-        $base = rtrim((string) config('ffb.legacy_images_path'), DIRECTORY_SEPARATOR.'\\/');
-
-        return $base.DIRECTORY_SEPARATOR.'symbols';
     }
 }

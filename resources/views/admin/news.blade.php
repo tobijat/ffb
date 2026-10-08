@@ -67,7 +67,7 @@
 
             <div class="admin-field">
                 <label for="news_symbol">Symbol</label>
-                <input id="news_symbol" type="text" name="news_symbol" value="{{ $form['news_symbol'] }}" maxlength="255" placeholder="z. B. news.png">
+                <input id="news_symbol" type="text" name="news_symbol" value="{{ $form['news_symbol'] }}" maxlength="255" placeholder="z. B. info.svg">
             </div>
 
             <div class="admin-field">
@@ -106,13 +106,13 @@
                 </div>
                 <div class="admin-list-actions">
                     <a class="admin-icon-btn" href="{{ route('admin.news.edit', ['news' => $item['news_id']]) }}" title="Bearbeiten">
-                        <img src="{{ $legacyBase }}images/ffb/symbols/edit.png" alt="Bearbeiten" width="16" height="16">
+                        <img src="{{ $legacyBase }}images/ffb/symbols/edit.svg" alt="Bearbeiten" width="16" height="16">
                     </a>
                     <form method="post" action="{{ route('admin.news.destroy', ['news' => $item['news_id']]) }}" onsubmit="return confirm('Diesen Newseintrag wirklich löschen?');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="admin-icon-btn" title="Löschen">
-                            <img src="{{ $legacyBase }}images/ffb/symbols/delete.png" alt="Löschen" width="16" height="16">
+                            <img src="{{ $legacyBase }}images/ffb/symbols/delete.svg" alt="Löschen" width="16" height="16">
                         </button>
                     </form>
                 </div>

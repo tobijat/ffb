@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <radialGradient id="sea" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#7fd3f5"/><stop offset=".45" stop-color="#2a8fd0"/><stop offset="1" stop-color="#0b3f86"/></radialGradient>
+    <linearGradient id="land" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd84a"/><stop offset="1" stop-color="#e48a12"/></linearGradient>
+    <radialGradient id="shine" cx=".35" cy=".25" r=".45"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="shadow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".35"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+    <clipPath id="c"><circle cx="16" cy="15" r="13.5"/></clipPath>
+  </defs>
+  <ellipse cx="16.5" cy="29.6" rx="11" ry="1.8" fill="url(#shadow)"/>
+  <circle cx="16" cy="15" r="13.5" fill="url(#sea)"/>
+  <g clip-path="url(#c)" fill="url(#land)" stroke="#b86a10" stroke-width=".5" stroke-linejoin="round">
+    <path d="M4.5 7 C6.5 4 10 3 12.5 3.6 L13.6 5.4 L11.4 7 L12.6 8.6 L10.6 10.6 L8.8 10.2 L8.2 12.6 L10 14.2 L8.6 16.4 L6.6 15.4 L5.2 12.4 L3 11.4 Z"/>
+    <path d="M9.6 17.2 L12.8 17.6 L14.4 20 L13.4 23.4 L11.8 26.6 L10.4 26.2 L10.6 22.6 L9 20 Z"/>
+    <path d="M16.6 4.4 L20.4 3.6 L24.4 4.6 L27.4 7.2 L29.2 10.6 L27.2 11.4 L25.4 10 L23.8 11.6 L21.4 10.8 L19.4 12 L17.4 10.6 L18.6 8.4 L16.4 7.4 Z"/>
+    <path d="M17 12.8 L20.6 12.4 L23 14.4 L22.6 17.4 L20.4 20.6 L19 24 L17.4 23.2 L17.6 19.4 L15.8 16.6 Z"/>
+    <path d="M24.6 18.4 L27.8 17.6 L28.6 20.6 L26.6 22.4 L24.4 21.4 Z"/>
+  </g>
+  <circle cx="16" cy="15" r="13.5" fill="url(#shine)"/>
+  <circle cx="16" cy="15" r="13.3" fill="none" stroke="#0b3f86" stroke-width=".5" stroke-opacity=".6"/>
+</svg>

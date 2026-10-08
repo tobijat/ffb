@@ -39,7 +39,7 @@
                     <div class="pitch-stats" id="team-score-tile">
                         <div class="pitch-stats-row">
                             <img
-                                src="{{ $legacyBase }}images/ffb/symbols/symbol_score.png"
+                                src="{{ $legacyBase }}images/ffb/symbols/symbol_score.svg"
                                 alt=""
                                 width="28"
                                 height="28"
@@ -50,7 +50,7 @@
                     <div class="pitch-stats" id="team-credits">
                         <div class="pitch-stats-row">
                             <img
-                                src="{{ $legacyBase }}images/ffb/symbols/symbol_credits.png"
+                                src="{{ $legacyBase }}images/ffb/symbols/symbol_credits.svg"
                                 alt=""
                                 width="28"
                                 height="28"

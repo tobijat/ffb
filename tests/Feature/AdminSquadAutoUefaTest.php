@@ -485,7 +485,6 @@ class AdminSquadAutoUefaTest extends TestCase
             'league_title' => 'Nations League',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
             'league_uefa_competition_identifier' => $identifier,
         ]);
 
@@ -601,7 +600,6 @@ class AdminSquadAutoUefaTest extends TestCase
             $table->string('league_title')->default('');
             $table->tinyInteger('league_visible')->default(1);
             $table->tinyInteger('league_archive')->default(0);
-            $table->string('league_symbol')->default('');
             $table->string('league_uefa_competition_identifier')->default('');
         });
 

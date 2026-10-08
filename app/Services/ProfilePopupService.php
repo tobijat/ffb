@@ -9,6 +9,7 @@ use App\Models\UserDetails;
 use App\Models\UserPermissions;
 use App\Models\Userscore;
 use App\Models\WebUser;
+use App\Support\LeagueSymbol;
 
 class ProfilePopupService
 {
@@ -140,7 +141,7 @@ class ProfilePopupService
             $out[] = [
                 'league_id' => $leagueId,
                 'league_title' => $title,
-                'league_symbol' => $league->league_symbol ?: null,
+                'league_symbol_url' => LeagueSymbol::url($leagueId),
                 'league_archive' => $archive,
                 'league_visible' => $visible,
                 'score_rm' => $rankMode,

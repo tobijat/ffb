@@ -415,7 +415,6 @@ class AdminMatchAutoFifaTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
-            'league_symbol' => '',
             'league_uefa_competition_identifier' => '',
             'league_fifa_competition_identifier' => 'idCompetition=17&idSeason=285023',
         ]);
@@ -490,7 +489,6 @@ class AdminMatchAutoFifaTest extends TestCase
             $table->string('league_title')->default('');
             $table->tinyInteger('league_visible')->default(1);
             $table->tinyInteger('league_archive')->default(0);
-            $table->string('league_symbol')->default('');
             $table->string('league_uefa_competition_identifier')->default('');
             $table->string('league_fifa_competition_identifier')->default('');
         });

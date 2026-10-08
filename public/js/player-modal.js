@@ -62,7 +62,7 @@
         return (
             '<button type="button" class="ffb-modal-close" data-ffb-modal-close title="Schließen" aria-label="Schließen">' +
             '<img src="' +
-            symbolUrl('delete.png') +
+            symbolUrl('delete.svg') +
             '" alt=""></button>'
         );
     }
@@ -156,13 +156,13 @@
 
     function cardCell(card) {
         if (card === 'y') {
-            return '<img src="' + symbolUrl('stats_card_y.gif') + '" width="16" height="16" alt="Gelb">';
+            return '<img src="' + symbolUrl('stats_card_y.svg') + '" width="16" height="16" alt="Gelb">';
         }
         if (card === 'yr') {
-            return '<img src="' + symbolUrl('stats_card_yr.gif') + '" width="16" height="16" alt="Gelb-Rot">';
+            return '<img src="' + symbolUrl('stats_card_yr.svg') + '" width="16" height="16" alt="Gelb-Rot">';
         }
         if (card === 'r') {
-            return '<img src="' + symbolUrl('stats_card_r.gif') + '" width="16" height="16" alt="Rot">';
+            return '<img src="' + symbolUrl('stats_card_r.svg') + '" width="16" height="16" alt="Rot">';
         }
         return '-';
     }
@@ -175,22 +175,22 @@
             '<table class="ffb-profile-table ffb-player-rounds"><thead><tr>' +
             '<th><b>Runde</b></th><th><b>Ergebnis</b></th>' +
             '<th><img src="' +
-            symbolUrl('stats_lineup.png') +
+            symbolUrl('stats_lineup.svg') +
             '" width="16" height="16" title="Anzahl Aufstellungen" alt=""></th>' +
             '<th><img src="' +
-            symbolUrl('stats_time.png') +
+            symbolUrl('stats_time.svg') +
             '" width="16" height="16" title="Einsatz" alt=""></th>' +
             '<th><img src="' +
-            symbolUrl('stats_goal.gif') +
+            symbolUrl('stats_goal.svg') +
             '" width="16" height="16" title="Tore" alt=""></th>' +
             '<th><img src="' +
-            symbolUrl('stats_assist.gif') +
+            symbolUrl('stats_assist.svg') +
             '" width="16" height="16" title="Assists" alt=""></th>' +
             '<th><img src="' +
-            symbolUrl('stats_card_yr.gif') +
+            symbolUrl('stats_card_yr.svg') +
             '" width="16" height="16" title="Karten" alt=""></th>' +
             '<th><img src="' +
-            symbolUrl('stats_point.png') +
+            symbolUrl('stats_point.svg') +
             '" width="16" height="16" title="Punkte" alt=""></th>' +
             '</tr></thead><tbody>';
 
@@ -274,24 +274,24 @@
             s.sum_minutes > 0 ? Math.round((s.sum_score / s.sum_minutes) * 10000) / 100 : '-';
 
         let rows = '';
-        rows += profileRow('stats_lineup.png', 'Aufstellungen gesamt:', escapeHtml(s.num_lineups) + 'x');
+        rows += profileRow('stats_lineup.svg', 'Aufstellungen gesamt:', escapeHtml(s.num_lineups) + 'x');
         rows += profileRow(
-            'stats_point.png',
+            'stats_point.svg',
             'Punkte gesamt/Ø:',
             escapeHtml(s.sum_score) + '/' + escapeHtml(s.av_score) + ' Punkte'
         );
         rows += profileRow(
-            'stats_goal.gif',
+            'stats_goal.svg',
             'Tore gesamt/Ø:',
             escapeHtml(s.sum_goals) + '/' + escapeHtml(s.av_goals) + ' Tore'
         );
         rows += profileRow(
-            'stats_assist.gif',
+            'stats_assist.svg',
             'Assists gesamt/Ø:',
             escapeHtml(s.sum_assists) + '/' + escapeHtml(s.av_assists) + ' Assists'
         );
         rows += profileRow(
-            'stats_card_yr.gif',
+            'stats_card_yr.svg',
             'Karten (G/GR/R):',
             escapeHtml(s.sum_cards_y) +
                 '/' +
@@ -301,11 +301,11 @@
                 ' Karten'
         );
         rows += profileRow(
-            'stats_time.png',
+            'stats_time.svg',
             'Einsatz gesamt/Ø:',
             escapeHtml(s.sum_minutes) + '/' + escapeHtml(s.av_minutes) + ' Minuten'
         );
-        rows += profileRow('symbol_effectivity.png', 'Effektivität:', escapeHtml(efficiency) + ' Punkte');
+        rows += profileRow('symbol_effectivity.svg', 'Effektivität:', escapeHtml(efficiency) + ' Punkte');
 
         let tables = renderRoundsTable(data.matchrounds, player.playerteam_id, showAll, true);
         if (data.pastmatches && data.pastmatches.length) {
@@ -343,10 +343,10 @@
                 '<div><span class="cap-points"></span><span class="cap-yellow"></span><span class="cap-red"></span> FFB Punkte &amp; gelbe/rote Karte</div>' +
                 '<div><span class="cap-curve"></span> Spielminuten</div>' +
                 '<div><img src="' +
-                symbolUrl('stats_goal.gif') +
+                symbolUrl('stats_goal.svg') +
                 '" width="14" alt=""> Tore</div>' +
                 '<div><img src="' +
-                symbolUrl('stats_assist.gif') +
+                symbolUrl('stats_assist.svg') +
                 '" width="14" alt=""> Assists</div>' +
                 '<div><span class="cap-gray"></span> nicht gespielt</div></div>';
         }
@@ -403,7 +403,7 @@
             black: '#000000',
         };
 
-        Promise.all([loadSymbol('stats_goal.gif'), loadSymbol('stats_assist.gif')]).then(
+        Promise.all([loadSymbol('stats_goal.svg'), loadSymbol('stats_assist.svg')]).then(
             function (imgs) {
                 const goalImg = imgs[0];
                 const assistImg = imgs[1];
@@ -812,19 +812,19 @@
         if (s.playerstats_minute_in > 0 && s.playerstats_minute_out > 0) {
             timeLabel +=
                 '<img src="' +
-                symbolUrl('stats_change_in.gif') +
+                symbolUrl('stats_change_in.svg') +
                 '" width="16" height="11" alt=""> ' +
                 s.playerstats_minute_in +
                 '. ' +
                 '<img src="' +
-                symbolUrl('stats_change_out.gif') +
+                symbolUrl('stats_change_out.svg') +
                 '" width="16" height="11" alt=""> ' +
                 s.playerstats_minute_out +
                 '.';
         }
         timeLabel += ':&nbsp;';
         lines += statsLine(
-            'stats_time.png',
+            'stats_time.svg',
             timeLabel,
             s.playerstats_minutes + ' Min',
             '+' + s.playerstats_score_minutes + ' Punkte'
@@ -832,7 +832,7 @@
 
         if (s.playerstats_goals > 0) {
             lines += statsLine(
-                'stats_goal.gif',
+                'stats_goal.svg',
                 'Tore:&nbsp;',
                 s.playerstats_goals,
                 '+' + s.playerstats_score_goals + ' Punkte'
@@ -840,7 +840,7 @@
         }
         if (s.playerstats_assists > 0) {
             lines += statsLine(
-                'stats_assist.gif',
+                'stats_assist.svg',
                 'Assists:&nbsp;',
                 s.playerstats_assists,
                 '+' + s.playerstats_score_assists + ' Punkte'
@@ -848,7 +848,7 @@
         }
         if (s.playerstats_penaltiessaved > 0) {
             lines += statsLine(
-                'stats_penaltysaved.png',
+                'stats_penaltysaved.svg',
                 'Elfer gehalten:&nbsp;',
                 s.playerstats_penaltiessaved,
                 '+' + s.playerstats_score_penaltiessaved + ' Punkte'
@@ -856,7 +856,7 @@
         }
         if (s.playerstats_penaltyshootout_save > 0) {
             lines += statsLine(
-                'stats_ps_hit.png',
+                'stats_ps_hit.svg',
                 'Elfmeterschießen:&nbsp;',
                 s.playerstats_penaltyshootout_save,
                 '+' + s.playerstats_score_penaltyshootout_save + ' Punkte',
@@ -865,7 +865,7 @@
         }
         if (s.playerstats_penaltyshootout_hit > 0) {
             lines += statsLine(
-                'stats_ps_hit.png',
+                'stats_ps_hit.svg',
                 'Elfmeterschießen:&nbsp;',
                 s.playerstats_penaltyshootout_hit,
                 '+' + s.playerstats_score_penaltyshootout_hit + ' Punkte',
@@ -874,7 +874,7 @@
         }
         if (Number(s.playerstats_score_nooppgoals) !== 0) {
             lines += statsLine(
-                'stats_oppgoal.gif',
+                'stats_oppgoal.svg',
                 'Gegentore:&nbsp;',
                 s.playerstats_oppgoals,
                 '+' + s.playerstats_score_nooppgoals + ' Punkte'
@@ -885,7 +885,7 @@
                 ? 'Minuten: ' + s.playerstats_player_oppgoals_string
                 : '';
             lines += statsLine(
-                'stats_oppgoal.gif',
+                'stats_oppgoal.svg',
                 'Gegentore:&nbsp;',
                 s.playerstats_player_oppgoals,
                 s.playerstats_score_oppgoals + ' Punkte',
@@ -894,19 +894,19 @@
         }
         if (s.playerstats_cards && s.playerstats_cards !== 'n') {
             let cardLabel = 'GELB';
-            let cardSym = 'stats_card_y.gif';
+            let cardSym = 'stats_card_y.svg';
             if (s.playerstats_cards === 'r') {
                 cardLabel = 'ROT';
-                cardSym = 'stats_card_r.gif';
+                cardSym = 'stats_card_r.svg';
             } else if (s.playerstats_cards === 'yr') {
                 cardLabel = 'GELB-ROT';
-                cardSym = 'stats_card_yr.gif';
+                cardSym = 'stats_card_yr.svg';
             }
             lines += statsLine(cardSym, 'Karten:&nbsp;', cardLabel, s.playerstats_score_cards + ' Punkte');
         }
         if (s.playerstats_owngoals > 0) {
             lines += statsLine(
-                'stats_owngoal.gif',
+                'stats_owngoal.svg',
                 'Eigentore:&nbsp;',
                 s.playerstats_owngoals,
                 s.playerstats_score_owngoals + ' Punkte'
@@ -914,7 +914,7 @@
         }
         if (s.playerstats_penaltieslost > 0) {
             lines += statsLine(
-                'stats_penaltylost.png',
+                'stats_penaltylost.svg',
                 'Elfer verschossen:&nbsp;',
                 s.playerstats_penaltieslost,
                 s.playerstats_score_penaltieslost + ' Punkte'
@@ -922,7 +922,7 @@
         }
         if (s.playerstats_penaltyshootout_lost > 0) {
             lines += statsLine(
-                'stats_ps_fail.png',
+                'stats_ps_fail.svg',
                 'Elfmeterschießen:&nbsp;',
                 s.playerstats_penaltyshootout_lost,
                 s.playerstats_score_penaltyshootout_lost + ' Punkte',

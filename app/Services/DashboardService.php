@@ -9,6 +9,7 @@ use App\Models\PollAnswer;
 use App\Models\PollResult;
 use App\Models\UserDetails;
 use App\Models\WebUser;
+use App\Support\LeagueSymbol;
 use Illuminate\Support\Facades\DB;
 
 class DashboardService
@@ -231,13 +232,12 @@ class DashboardService
                 return [
                     'league_id' => (int) $league->league_id,
                     'league_title' => (string) $league->league_title,
-                    'league_symbol' => (string) ($league->league_symbol ?: 'symbol_game_na.png'),
                     'league_archive' => (int) (bool) $league->league_archive,
                     'league_visible' => $visible,
                     'league_test' => $isTest,
                     'has_matchrounds' => $hasMatchrounds,
                     'is_faded' => $isAdmin && (! $visible || ! $hasMatchrounds),
-                    'symbol_url' => '/images/ffb/symbols/'.($league->league_symbol ?: 'symbol_game_na.png'),
+                    'symbol_url' => LeagueSymbol::url((int) $league->league_id),
                 ];
             })
             ->values()
