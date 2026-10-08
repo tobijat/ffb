@@ -431,8 +431,8 @@
     vertical-align: middle;
 }
 
-.ffb-match-info img {
-    vertical-align: middle;
+.ffb-match-pos {
+    font-weight: 700;
 }
 
 .ffb-match-section {

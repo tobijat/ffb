@@ -75,12 +75,18 @@ class MatchPopupService
      */
     private function playersForTeam(int $matchId, int $teamId): array
     {
+        $positionOrder = ['g' => 0, 'd' => 1, 'm' => 2, 's' => 3];
+
         $stats = Playerstats::query()
             ->with(['playerteam.player'])
             ->where('playerstats_match_id', $matchId)
             ->whereHas('playerteam', fn ($q) => $q->where('playerteam_team_id', $teamId))
             ->get()
-            ->sortBy(fn (Playerstats $s) => (string) ($s->playerteam?->playerteam_player_position ?? 'z'))
+            ->sortBy(function (Playerstats $s) use ($positionOrder) {
+                $pos = strtolower((string) ($s->playerteam?->playerteam_player_position ?? ''));
+
+                return $positionOrder[$pos] ?? 99;
+            })
             ->values();
 
         return $stats->map(function (Playerstats $item) {

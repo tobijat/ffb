@@ -385,18 +385,34 @@
         );
     }
 
-    function playerInfoIcon(playerteamId) {
-        return (
-            '<a class="nolink ffb-match-info" href="#" data-modal="player" data-id="' +
-            escapeHtml(playerteamId) +
-            '" title="Klicken für Spielerinfos">' +
-            '<img src="' + symbolUrl('info.svg') + '" alt="" height="12"></a>'
-        );
+    function positionLetter(position) {
+        const map = { g: 'T', d: 'V', m: 'M', s: 'S' };
+        return map[String(position || '').toLowerCase()] || '';
+    }
+
+    function playerPositionBadge(player) {
+        const letter = positionLetter(player.player_playerteam_position);
+        if (!letter) {
+            return '';
+        }
+        return '<b class="ffb-match-pos">(' + letter + ')</b>';
+    }
+
+    function sortPlayersByPosition(players) {
+        const order = { g: 0, d: 1, m: 2, s: 3 };
+        return (players || []).slice().sort(function (a, b) {
+            const ia = order[String(a.player_playerteam_position || '').toLowerCase()];
+            const ib = order[String(b.player_playerteam_position || '').toLowerCase()];
+            return (ia === undefined ? 99 : ia) - (ib === undefined ? 99 : ib);
+        });
     }
 
     function repeatIcon(src, count, title) {
         let html = '';
         for (let i = 0; i < count; i++) {
+            if (i > 0) {
+                html += '&nbsp;';
+            }
             html += '<img src="' + src + '" alt="" height="12" title="' + escapeHtml(title) + '">';
         }
         return html;
@@ -471,7 +487,7 @@
             'Elfmeterschießen - nicht getroffen'
         );
         const psSaveHtml = repeatIcon(
-            symbolUrl('stats_ps_hit.svg'),
+            symbolUrl('stats_ps_save.svg'),
             psSave,
             'Elfmeterschießen - gehalten'
         );
@@ -514,13 +530,13 @@
     }
 
     function renderHomePlayers(players, matchMinutes) {
-        return (players || [])
+        return sortPlayersByPosition(players)
             .map(function (p) {
+                const pos = playerPositionBadge(p);
                 return (
                     '<div class="ffb-match-player ffb-match-player-home">' +
-                    playerInfoIcon(p.player_playerteam_id) +
-                    '&nbsp;' +
-                    escapeHtml(p.player_name) +
+                    (pos ? pos + '&nbsp;' : '') +
+                    playerLink(p.player_playerteam_id, p.player_name) +
                     playerEventIcons(p, matchMinutes, 'home') +
                     '</div>'
                 );
@@ -529,14 +545,14 @@
     }
 
     function renderGuestPlayers(players, matchMinutes) {
-        return (players || [])
+        return sortPlayersByPosition(players)
             .map(function (p) {
+                const pos = playerPositionBadge(p);
                 return (
                     '<div class="ffb-match-player ffb-match-player-guest">' +
                     playerEventIcons(p, matchMinutes, 'guest') +
-                    escapeHtml(p.player_name) +
-                    '&nbsp;' +
-                    playerInfoIcon(p.player_playerteam_id) +
+                    playerLink(p.player_playerteam_id, p.player_name) +
+                    (pos ? '&nbsp;' + pos : '') +
                     '</div>'
                 );
             })

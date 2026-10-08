@@ -881,7 +881,7 @@
         }
         if (s.playerstats_penaltyshootout_save > 0) {
             lines += statsLine(
-                'stats_ps_hit.svg',
+                'stats_ps_save.svg',
                 'Elfmeterschießen:&nbsp;',
                 s.playerstats_penaltyshootout_save,
                 '+' + s.playerstats_score_penaltyshootout_save + ' Punkte',
@@ -899,7 +899,7 @@
         }
         if (Number(s.playerstats_score_nooppgoals) !== 0) {
             lines += statsLine(
-                'stats_oppgoal.svg',
+                'stats_no_oppgoal.svg',
                 'Gegentore:&nbsp;',
                 s.playerstats_oppgoals,
                 '+' + s.playerstats_score_nooppgoals + ' Punkte'

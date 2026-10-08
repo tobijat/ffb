@@ -6,7 +6,7 @@
     <title>Aufstellung — SoccerSportsfan</title>
     <link rel="stylesheet" href="css/start.css?v=23">
     <link rel="stylesheet" href="css/dashboard.css?v=12">
-    <link rel="stylesheet" href="css/modal.css?v=30">
+    <link rel="stylesheet" href="css/modal.css?v=32">
     <link rel="stylesheet" href="css/myteam.css?v=32">
     <link rel="stylesheet" href="css/lineup.css?v=32">
 </head>
@@ -97,8 +97,8 @@
             selectedLeagueId: @json($data['selected_league_id'] ?? 0),
         };
     </script>
-    <script src="js/modal.js?v=23" defer></script>
-    <script src="js/player-modal.js?v=23" defer></script>
+    <script src="js/modal.js?v=27" defer></script>
+    <script src="js/player-modal.js?v=25" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
     <script src="js/pitch-bench.js?v=22" defer></script>
     <script src="js/lineup.js?v=39" defer></script>

@@ -228,4 +228,33 @@ class MatchPopupLeagueRelationTest extends TestCase
         $this->assertSame(1, $player['player_playerstats_penaltyshootout_lost']);
         $this->assertSame(1, $player['player_playerstats_penaltyshootout_save']);
     }
+
+    #[Test]
+    public function match_popup_players_are_sorted_goalkeeper_defence_midfield_forward(): void
+    {
+        DB::table('ffb_player')->insert([
+            ['player_id' => 11, 'player_fname' => 'Anna', 'player_lname' => 'Sturm', 'player_nationality' => 'aut', 'player_status' => 1],
+            ['player_id' => 12, 'player_fname' => 'Ben', 'player_lname' => 'Tor', 'player_nationality' => 'aut', 'player_status' => 1],
+            ['player_id' => 13, 'player_fname' => 'Cara', 'player_lname' => 'Mitte', 'player_nationality' => 'aut', 'player_status' => 1],
+            ['player_id' => 14, 'player_fname' => 'Dan', 'player_lname' => 'Abwehr', 'player_nationality' => 'aut', 'player_status' => 1],
+        ]);
+        DB::table('ffb_playerteam')->insert([
+            ['playerteam_id' => 111, 'playerteam_player_id' => 11, 'playerteam_team_id' => 1, 'playerteam_league_id' => 9, 'playerteam_player_position' => 's', 'playerteam_status' => 1],
+            ['playerteam_id' => 112, 'playerteam_player_id' => 12, 'playerteam_team_id' => 1, 'playerteam_league_id' => 9, 'playerteam_player_position' => 'g', 'playerteam_status' => 1],
+            ['playerteam_id' => 113, 'playerteam_player_id' => 13, 'playerteam_team_id' => 1, 'playerteam_league_id' => 9, 'playerteam_player_position' => 'm', 'playerteam_status' => 1],
+            ['playerteam_id' => 114, 'playerteam_player_id' => 14, 'playerteam_team_id' => 1, 'playerteam_league_id' => 9, 'playerteam_player_position' => 'd', 'playerteam_status' => 1],
+        ]);
+        DB::table('ffb_playerstats')->insert([
+            ['playerstats_id' => 811, 'playerstats_playerteam_id' => 111, 'playerstats_matchround_id' => 3, 'playerstats_match_id' => 50, 'playerstats_minutes' => 90, 'playerstats_cards' => 'n', 'playerstats_score' => 0],
+            ['playerstats_id' => 812, 'playerstats_playerteam_id' => 112, 'playerstats_matchround_id' => 3, 'playerstats_match_id' => 50, 'playerstats_minutes' => 90, 'playerstats_cards' => 'n', 'playerstats_score' => 0],
+            ['playerstats_id' => 813, 'playerstats_playerteam_id' => 113, 'playerstats_matchround_id' => 3, 'playerstats_match_id' => 50, 'playerstats_minutes' => 90, 'playerstats_cards' => 'n', 'playerstats_score' => 0],
+            ['playerstats_id' => 814, 'playerstats_playerteam_id' => 114, 'playerstats_matchround_id' => 3, 'playerstats_match_id' => 50, 'playerstats_minutes' => 90, 'playerstats_cards' => 'n', 'playerstats_score' => 0],
+        ]);
+
+        $result = app(MatchPopupService::class)->forMatch(50);
+
+        $this->assertTrue($result['ok']);
+        $positions = array_column($result['data']['hometeam_players'], 'player_playerteam_position');
+        $this->assertSame(['g', 'd', 'm', 's'], $positions);
+    }
 }
