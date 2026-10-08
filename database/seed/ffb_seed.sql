@@ -26688,9 +26688,9 @@ CREATE TABLE `web_user` (
 ) ENGINE=MyISAM AUTO_INCREMENT=548 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `web_user` (`user_id`, `user_nickname`, `user_date_laction`, `user_date_llogin`, `user_lip`, `user_password`, `user_email`, `user_fname`, `user_lname`, `user_gender`, `user_status`, `user_admin`, `user_nationality`, `user_date_birth`, `user_ip`, `user_date_register`, `user_activation_code`, `user_mailservice`) VALUES
-(1, 'tobijat', '2026-10-08 12:11:51', '2026-10-08 12:11:51', '127.0.0.1', '$2y$12$3KjHHKw2CHDclnF2LfCJFeZLAiiaCMFaAHB9KnIiSCL.A02y9gtpG', 'tobijat@example.test', 'Tobijat', 'Test', 'male', 'active', 1, 'AUT', '1981-12-19 00:00:00', '127.0.0.1', '2008-06-03 16:33:54', '', '403d370096c1e203686048ce53291418'),
-(546, 'Haaland', '2026-10-05 16:46:59', '2026-10-05 16:46:59', '127.0.0.1', '$2y$12$3KjHHKw2CHDclnF2LfCJFeZLAiiaCMFaAHB9KnIiSCL.A02y9gtpG', 'haaland@example.test', 'Haaland', 'Test', '', 'active', 0, '', NULL, '127.0.0.1', '2026-10-04 13:43:38', '', ''),
-(547, 'Ronaldo', '2026-10-04 13:52:17', '2026-10-04 13:52:17', '127.0.0.1', '$2y$12$3KjHHKw2CHDclnF2LfCJFeZLAiiaCMFaAHB9KnIiSCL.A02y9gtpG', 'ronaldo@example.test', 'Ronaldo', 'Test', '', 'active', 0, '', NULL, '127.0.0.1', '2026-10-04 13:46:47', '', '');
+(1, 'AdminUser', '2026-10-08 12:11:51', '2026-10-08 12:11:51', '127.0.0.1', '$2y$12$tk/EpJdVbTuiZJHEGHvGAeYRwxPijo./QgnMTuWGLX6qvzCW28H8m', 'adminuser@example.test', 'AdminUser', 'Test', 'male', 'active', 1, 'AUT', NULL, '127.0.0.1', '2008-06-03 16:33:54', '', '403d370096c1e203686048ce53291418'),
+(546, 'Haaland', '2026-10-05 16:46:59', '2026-10-05 16:46:59', '127.0.0.1', '$2y$12$tk/EpJdVbTuiZJHEGHvGAeYRwxPijo./QgnMTuWGLX6qvzCW28H8m', 'haaland@example.test', 'Haaland', 'Test', '', 'active', 0, '', NULL, '127.0.0.1', '2026-10-04 13:43:38', '', ''),
+(547, 'Ronaldo', '2026-10-04 13:52:17', '2026-10-04 13:52:17', '127.0.0.1', '$2y$12$tk/EpJdVbTuiZJHEGHvGAeYRwxPijo./QgnMTuWGLX6qvzCW28H8m', 'ronaldo@example.test', 'Ronaldo', 'Test', '', 'active', 0, '', NULL, '127.0.0.1', '2026-10-04 13:46:47', '', '');
 
 DROP TABLE IF EXISTS `web_user_details`;
 CREATE TABLE `web_user_details` (

@@ -60,7 +60,7 @@ class BuildSeedDbCommand extends Command
         $this->newLine();
         $this->info('Seed dump ready: '.$result['dump']);
         $this->info('Size: '.$this->formatBytes((int) filesize($result['dump'])));
-        $this->line('Logins: tobijat / Ronaldo / Haaland — password: '.(string) $this->option('password'));
+        $this->line('Logins: AdminUser / Ronaldo / Haaland — password: '.(string) $this->option('password'));
         $this->line('League IDs preserved: '.implode(', ', $result['league_ids']));
 
         return self::SUCCESS;

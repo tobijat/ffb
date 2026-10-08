@@ -290,15 +290,19 @@ class SeedDbBuilder
             return;
         }
         foreach ($this->rowsByTable['web_user'] as &$row) {
-            $nick = strtolower((string) ($row['user_nickname'] ?? ''));
-            $row['user_email'] = $nick.'@example.test';
+            $sourceNick = strtolower((string) ($row['user_nickname'] ?? ''));
+            // Rename the admin source account for the public seed dump.
+            $nick = $sourceNick === 'tobijat' ? 'AdminUser' : (string) ($row['user_nickname'] ?? '');
+            $row['user_nickname'] = $nick;
+            $row['user_email'] = strtolower($nick).'@example.test';
             $row['user_password'] = $hash;
             $row['user_activation_code'] = '';
             $row['user_ip'] = '127.0.0.1';
             $row['user_lip'] = '127.0.0.1';
-            $row['user_fname'] = ucfirst($nick);
+            $row['user_fname'] = $nick;
             $row['user_lname'] = 'Test';
             $row['user_status'] = 'active';
+            $row['user_date_birth'] = null;
         }
         unset($row);
 

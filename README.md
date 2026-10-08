@@ -45,7 +45,7 @@ Do **not** run `php artisan migrate` — the dump is the schema source of truth.
 
 | Nickname | Password | Notes |
 |----------|----------|--------|
-| `tobijat` | `password` | Admin |
+| `AdminUser` | `password` | Admin |
 | `Ronaldo` | `password` | |
 | `Haaland` | `password` | |
 
