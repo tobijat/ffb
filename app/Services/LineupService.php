@@ -57,6 +57,7 @@ class LineupService
                     'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
                 ],
                 'selected_league_id' => $leagueId,
+                'selected_league_asset_key' => (string) ($league?->asset_key ?? ''),
                 'game_over' => $league ? (int) ($league->league_archive ?? 0) !== 0 : false,
                 'navigation' => app(DashboardService::class)->navigation($userId),
             ],
@@ -216,6 +217,7 @@ class LineupService
                         ];
                         $row = [
                             'team_id' => $teamId,
+                            'team_asset_key' => (string) ($t->asset_key ?? ''),
                             'team_name' => (string) $t->team_name,
                             'team_nationality' => (string) $t->team_nationality,
                             'team_status' => (int) ($t->team_status ?? 0),
@@ -340,6 +342,8 @@ class LineupService
                 'player_status_description' => (string) ($pt->player->player_status_description ?: '0'),
                 'playerteam_id' => $ptId,
                 'playerteam_team_id' => (int) $pt->playerteam_team_id,
+                'playerteam_team_asset_key' => (string) ($pt->team->asset_key ?? ''),
+                'player_asset_key' => (string) ($pt->player->asset_key ?? ''),
                 'playerteam_team' => (string) $pt->team->team_name,
                 'playerteam_team_nationality' => (string) $pt->team->team_nationality,
                 'playerteam_player_position' => (string) $pt->playerteam_player_position,
@@ -770,6 +774,8 @@ class LineupService
             'player_status_description' => (string) ($pt->player->player_status_description ?: ''),
             'playerteam_id' => (int) $pt->playerteam_id,
             'playerteam_team_id' => (int) $pt->playerteam_team_id,
+            'playerteam_team_asset_key' => (string) ($pt->team->asset_key ?? ''),
+            'player_asset_key' => (string) ($pt->player->asset_key ?? ''),
             'playerteam_team' => (string) $pt->team->team_name,
             'playerteam_team_nationality' => (string) $pt->team->team_nationality,
             'playerteam_player_position' => (string) $pt->playerteam_player_position,

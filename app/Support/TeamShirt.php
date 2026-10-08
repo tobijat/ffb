@@ -6,10 +6,10 @@ namespace App\Support;
  * Team shirt paths: per team folder, nationality default + optional league override.
  *
  * Prefers SVG over PNG (same order as public/js/ffb-shirts.js):
- *   shirts/{team_id}/{nationality}-{league_id}.svg
- *   shirts/{team_id}/{nationality}.svg
- *   shirts/{team_id}/{nationality}-{league_id}.png
- *   shirts/{team_id}/{nationality}.png
+ *   shirts/{team_key}/{nationality}-{league_key}.svg
+ *   shirts/{team_key}/{nationality}.svg
+ *   shirts/{team_key}/{nationality}-{league_key}.png
+ *   shirts/{team_key}/{nationality}.png
  */
 final class TeamShirt
 {
@@ -28,9 +28,9 @@ final class TeamShirt
     /**
      * Public URL for a team shirt, preferring a league override when present.
      */
-    public static function url(int $teamId, ?string $nationality, ?int $leagueId = null): ?string
+    public static function url(?string $teamKey, ?string $nationality, ?string $leagueKey = null): ?string
     {
-        $relative = self::relativePath($teamId, $nationality, $leagueId);
+        $relative = self::relativePath($teamKey, $nationality, $leagueKey);
         if ($relative === null) {
             return null;
         }
@@ -41,24 +41,23 @@ final class TeamShirt
     /**
      * Relative path under images/ffb, or null when no file exists.
      */
-    public static function relativePath(int $teamId, ?string $nationality, ?int $leagueId = null): ?string
+    public static function relativePath(?string $teamKey, ?string $nationality, ?string $leagueKey = null): ?string
     {
         $nat = self::normalizeNationality($nationality);
-        if ($teamId <= 0 || $nat === '') {
+        if (! AssetKey::isValid($teamKey) || $nat === '') {
             return null;
         }
 
-        $stem = 'shirts/'.$teamId.'/'.$nat;
-        $hasLeague = $leagueId !== null && $leagueId > 0;
+        $stem = 'shirts/'.$teamKey.'/'.$nat;
+        $hasLeague = AssetKey::isValid($leagueKey);
 
-        // Same order as public/js/ffb-shirts.js candidates().
         $candidates = [];
         if ($hasLeague) {
-            $candidates[] = $stem.'-'.$leagueId.'.svg';
+            $candidates[] = $stem.'-'.$leagueKey.'.svg';
         }
         $candidates[] = $stem.'.svg';
         if ($hasLeague) {
-            $candidates[] = $stem.'-'.$leagueId.'.png';
+            $candidates[] = $stem.'-'.$leagueKey.'.png';
         }
         $candidates[] = $stem.'.png';
 
@@ -75,12 +74,12 @@ final class TeamShirt
      * Absolute filesystem path for the default (non-league) shirt file.
      * Upload target remains PNG; existence checks use relativePath().
      */
-    public static function defaultStoragePath(int $teamId, ?string $nationality): string
+    public static function defaultStoragePath(string $teamKey, ?string $nationality): string
     {
         $nat = self::normalizeNationality($nationality);
 
         return self::shirtsDir()
-            .DIRECTORY_SEPARATOR.$teamId
+            .DIRECTORY_SEPARATOR.$teamKey
             .DIRECTORY_SEPARATOR.$nat.'.png';
     }
 
@@ -88,33 +87,33 @@ final class TeamShirt
      * Absolute filesystem path for a league-specific shirt file.
      * Upload target remains PNG; existence checks use relativePath().
      */
-    public static function leagueStoragePath(int $teamId, ?string $nationality, int $leagueId): string
+    public static function leagueStoragePath(string $teamKey, ?string $nationality, string $leagueKey): string
     {
         $nat = self::normalizeNationality($nationality);
 
         return self::shirtsDir()
-            .DIRECTORY_SEPARATOR.$teamId
-            .DIRECTORY_SEPARATOR.$nat.'-'.$leagueId.'.png';
+            .DIRECTORY_SEPARATOR.$teamKey
+            .DIRECTORY_SEPARATOR.$nat.'-'.$leagueKey.'.png';
     }
 
     /**
      * Public URL path for the default shirt (may not exist on disk yet).
      */
-    public static function defaultPublicPath(int $teamId, ?string $nationality): string
+    public static function defaultPublicPath(string $teamKey, ?string $nationality): string
     {
         $nat = self::normalizeNationality($nationality);
 
-        return '/images/ffb/shirts/'.$teamId.'/'.$nat.'.png';
+        return '/images/ffb/shirts/'.$teamKey.'/'.$nat.'.png';
     }
 
     /**
      * Public URL path for a league shirt (may not exist on disk yet).
      */
-    public static function leaguePublicPath(int $teamId, ?string $nationality, int $leagueId): string
+    public static function leaguePublicPath(string $teamKey, ?string $nationality, string $leagueKey): string
     {
         $nat = self::normalizeNationality($nationality);
 
-        return '/images/ffb/shirts/'.$teamId.'/'.$nat.'-'.$leagueId.'.png';
+        return '/images/ffb/shirts/'.$teamKey.'/'.$nat.'-'.$leagueKey.'.png';
     }
 
     public static function blankUrl(bool $red = false): string

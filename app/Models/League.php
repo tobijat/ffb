@@ -16,6 +16,7 @@ class League extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'asset_key',
         'league_title',
         'league_visible',
         'league_archive',

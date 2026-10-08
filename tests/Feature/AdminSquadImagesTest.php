@@ -24,9 +24,12 @@ class AdminSquadImagesTest extends TestCase
 {
     private string $imagesRoot;
 
+    private int $playerAssetKeySeq = 0;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->playerAssetKeySeq = 0;
         $this->imagesRoot = sys_get_temp_dir().DIRECTORY_SEPARATOR.'ffb-squad-img-'.uniqid('', true);
         mkdir($this->imagesRoot.DIRECTORY_SEPARATOR.'players', 0775, true);
         config(['ffb.legacy_images_path' => $this->imagesRoot]);
@@ -104,7 +107,10 @@ class AdminSquadImagesTest extends TestCase
             'player_id' => (int) $needsImage->player_id,
             'player_commons_image' => '',
         ]);
-        $this->assertFileDoesNotExist(PlayerPicture::storagePath($teamId, (int) $needsImage->player_id));
+        $this->assertFileDoesNotExist(PlayerPicture::storagePath(
+            'team-test-a1b2',
+            (string) $needsImage->asset_key,
+        ));
     }
 
     #[Test]
@@ -134,7 +140,10 @@ class AdminSquadImagesTest extends TestCase
             'player_id' => (int) $needsImage->player_id,
             'player_commons_image' => 'Matej_Kovar.jpg',
         ]);
-        $this->assertFileExists(PlayerPicture::storagePath($teamId, (int) $needsImage->player_id));
+        $this->assertFileExists(PlayerPicture::storagePath(
+            'team-test-a1b2',
+            (string) $needsImage->asset_key,
+        ));
         Http::assertNotSent(fn ($request): bool => str_contains($request->url(), 'commons.wikimedia.org'));
         Http::assertNotSent(fn ($request): bool => str_contains($request->url(), 'query.wikidata.org'));
     }
@@ -241,6 +250,7 @@ class AdminSquadImagesTest extends TestCase
         bool $withPicture,
         int $status = 1,
     ): Player {
+        $playerKey = $this->nextPlayerAssetKey();
         $player = Player::query()->create([
             'player_foreign_id' => '',
             'player_fname' => $fname,
@@ -249,14 +259,16 @@ class AdminSquadImagesTest extends TestCase
             'player_status' => 1,
             'player_status_description' => '',
             'player_commons_image' => '',
+            'asset_key' => $playerKey,
         ]);
 
+        $teamKey = (string) Team::query()->whereKey($teamId)->value('asset_key');
         $picture = '';
         if ($withPicture) {
-            $path = PlayerPicture::storagePath($teamId, (int) $player->player_id);
+            $path = PlayerPicture::storagePath($teamKey, $playerKey);
             mkdir(dirname($path), 0775, true);
             file_put_contents($path, $this->tinyJpegBytes());
-            $picture = $teamId.'-'.$player->player_id.'.jpg';
+            $picture = $playerKey.'.jpg';
         }
 
         Playerteam::query()->create([
@@ -281,6 +293,7 @@ class AdminSquadImagesTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
+            'asset_key' => 'league-test-a1b2',
         ]);
 
         $team = Team::query()->create([
@@ -289,6 +302,7 @@ class AdminSquadImagesTest extends TestCase
             'team_nationality' => $nationality,
             'team_num_players' => 0,
             'team_status' => 1,
+            'asset_key' => 'team-test-a1b2',
         ]);
 
         return [(int) $team->team_id, (int) $league->league_id];
@@ -304,6 +318,13 @@ class AdminSquadImagesTest extends TestCase
         return (string) ob_get_clean();
     }
 
+    private function nextPlayerAssetKey(): string
+    {
+        $this->playerAssetKeySeq++;
+
+        return 'player-test-'.dechex($this->playerAssetKeySeq);
+    }
+
     private function createSchema(): void
     {
         Schema::dropIfExists('ffb_playerteam');
@@ -316,6 +337,7 @@ class AdminSquadImagesTest extends TestCase
             $table->string('league_title')->default('');
             $table->tinyInteger('league_visible')->default(1);
             $table->tinyInteger('league_archive')->default(0);
+            $table->string('asset_key')->default('');
         });
 
         Schema::create('ffb_team', function (Blueprint $table) {
@@ -325,6 +347,7 @@ class AdminSquadImagesTest extends TestCase
             $table->string('team_nationality')->default('');
             $table->integer('team_num_players')->default(0);
             $table->tinyInteger('team_status')->default(1);
+            $table->string('asset_key')->default('');
         });
 
         Schema::create('ffb_player', function (Blueprint $table) {
@@ -336,6 +359,7 @@ class AdminSquadImagesTest extends TestCase
             $table->tinyInteger('player_status')->default(1);
             $table->string('player_status_description')->default('');
             $table->string('player_commons_image')->default('');
+            $table->string('asset_key')->default('');
         });
 
         Schema::create('ffb_playerteam', function (Blueprint $table) {

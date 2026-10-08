@@ -5,7 +5,7 @@ namespace App\Support;
 use Illuminate\Http\UploadedFile;
 
 /**
- * League logos live at images/ffb/leagues/<league_id>.<ext>.
+ * League logos live at images/ffb/leagues/<asset_key>.<ext>.
  */
 final class LeagueSymbol
 {
@@ -17,9 +17,9 @@ final class LeagueSymbol
     /**
      * Public URL for a league logo (falls back to na.png).
      */
-    public static function url(int $leagueId): string
+    public static function url(?string $leagueKey): string
     {
-        $relative = self::relativePath($leagueId);
+        $relative = self::relativePath($leagueKey);
         if ($relative !== null) {
             return '/images/ffb/'.$relative;
         }
@@ -30,17 +30,17 @@ final class LeagueSymbol
     /**
      * Whether a custom (non-default) logo file exists for the league.
      */
-    public static function exists(int $leagueId): bool
+    public static function exists(?string $leagueKey): bool
     {
-        return self::relativePath($leagueId) !== null;
+        return self::relativePath($leagueKey) !== null;
     }
 
     /**
      * Absolute path of the current logo file for a league, if any.
      */
-    public static function path(int $leagueId): ?string
+    public static function path(?string $leagueKey): ?string
     {
-        $relative = self::relativePath($leagueId);
+        $relative = self::relativePath($leagueKey);
         if ($relative === null) {
             return null;
         }
@@ -49,11 +49,11 @@ final class LeagueSymbol
     }
 
     /**
-     * Store an uploaded logo as leagues/<league_id>.<ext>, replacing any prior extension.
+     * Store an uploaded logo as leagues/<asset_key>.<ext>, replacing any prior extension.
      */
-    public static function store(int $leagueId, UploadedFile $file): bool
+    public static function store(?string $leagueKey, UploadedFile $file): bool
     {
-        if ($leagueId <= 0) {
+        if (! AssetKey::isValid($leagueKey)) {
             return false;
         }
 
@@ -70,23 +70,23 @@ final class LeagueSymbol
             $ext = 'png';
         }
 
-        self::deleteForLeague($leagueId);
+        self::deleteForLeague($leagueKey);
 
         try {
-            $file->move($dir, $leagueId.'.'.$ext);
+            $file->move($dir, $leagueKey.'.'.$ext);
         } catch (\Throwable) {
             return false;
         }
 
-        return is_file($dir.DIRECTORY_SEPARATOR.$leagueId.'.'.$ext);
+        return is_file($dir.DIRECTORY_SEPARATOR.$leagueKey.'.'.$ext);
     }
 
     /**
-     * Delete all leagues/<league_id>.* logo variants.
+     * Delete all leagues/<asset_key>.* logo variants.
      */
-    public static function deleteForLeague(int $leagueId): void
+    public static function deleteForLeague(?string $leagueKey): void
     {
-        if ($leagueId <= 0) {
+        if (! AssetKey::isValid($leagueKey)) {
             return;
         }
 
@@ -96,7 +96,7 @@ final class LeagueSymbol
         }
 
         foreach (self::EXTENSIONS as $ext) {
-            $path = $dir.DIRECTORY_SEPARATOR.$leagueId.'.'.$ext;
+            $path = $dir.DIRECTORY_SEPARATOR.$leagueKey.'.'.$ext;
             if (is_file($path)) {
                 @unlink($path);
             }
@@ -110,14 +110,14 @@ final class LeagueSymbol
         return $base.DIRECTORY_SEPARATOR.'leagues';
     }
 
-    private static function relativePath(int $leagueId): ?string
+    private static function relativePath(?string $leagueKey): ?string
     {
-        if ($leagueId <= 0) {
+        if (! AssetKey::isValid($leagueKey)) {
             return null;
         }
 
         foreach (self::EXTENSIONS as $ext) {
-            $relative = 'leagues/'.$leagueId.'.'.$ext;
+            $relative = 'leagues/'.$leagueKey.'.'.$ext;
             if (self::fileExists($relative)) {
                 return $relative;
             }

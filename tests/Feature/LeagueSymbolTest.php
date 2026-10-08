@@ -39,26 +39,28 @@ class LeagueSymbolTest extends TestCase
     }
 
     #[Test]
-    public function url_uses_league_id_filename_when_file_exists(): void
+    public function url_uses_asset_key_filename_when_file_exists(): void
     {
-        file_put_contents($this->leaguesDir.DIRECTORY_SEPARATOR.'12.webp', 'x');
+        file_put_contents($this->leaguesDir.DIRECTORY_SEPARATOR.'nations-league-a1b2.webp', 'x');
 
-        $this->assertSame('/images/ffb/leagues/12.webp', LeagueSymbol::url(12));
-        $this->assertTrue(LeagueSymbol::exists(12));
+        $this->assertSame('/images/ffb/leagues/nations-league-a1b2.webp', LeagueSymbol::url('nations-league-a1b2'));
+        $this->assertTrue(LeagueSymbol::exists('nations-league-a1b2'));
     }
 
     #[Test]
     public function url_defaults_to_na_when_missing(): void
     {
-        $this->assertSame('/images/ffb/leagues/na.png', LeagueSymbol::url(99));
-        $this->assertFalse(LeagueSymbol::exists(99));
-        $this->assertSame('/images/ffb/leagues/na.png', LeagueSymbol::url(0));
+        $this->assertSame('/images/ffb/leagues/na.png', LeagueSymbol::url('missing-zzzz'));
+        $this->assertFalse(LeagueSymbol::exists('missing-zzzz'));
+        $this->assertSame('/images/ffb/leagues/na.png', LeagueSymbol::url(null));
+        $this->assertSame('/images/ffb/leagues/na.png', LeagueSymbol::url(''));
     }
 
     #[Test]
-    public function store_writes_id_based_filename_and_replaces_prior_extension(): void
+    public function store_writes_key_based_filename_and_replaces_prior_extension(): void
     {
-        file_put_contents($this->leaguesDir.DIRECTORY_SEPARATOR.'5.png', 'old');
+        $key = 'wm-2026-x9k2';
+        file_put_contents($this->leaguesDir.DIRECTORY_SEPARATOR.$key.'.png', 'old');
 
         $tmp = tempnam(sys_get_temp_dir(), 'ffb-logo-');
         $this->assertNotFalse($tmp);
@@ -72,9 +74,9 @@ class LeagueSymbolTest extends TestCase
             true,
         );
 
-        $this->assertTrue(LeagueSymbol::store(5, $upload));
-        $this->assertFileDoesNotExist($this->leaguesDir.DIRECTORY_SEPARATOR.'5.png');
-        $this->assertFileExists($this->leaguesDir.DIRECTORY_SEPARATOR.'5.webp');
-        $this->assertSame('/images/ffb/leagues/5.webp', LeagueSymbol::url(5));
+        $this->assertTrue(LeagueSymbol::store($key, $upload));
+        $this->assertFileDoesNotExist($this->leaguesDir.DIRECTORY_SEPARATOR.$key.'.png');
+        $this->assertFileExists($this->leaguesDir.DIRECTORY_SEPARATOR.$key.'.webp');
+        $this->assertSame('/images/ffb/leagues/'.$key.'.webp', LeagueSymbol::url($key));
     }
 }

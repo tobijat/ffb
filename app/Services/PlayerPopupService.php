@@ -166,8 +166,8 @@ class PlayerPopupService
                     'player_team_nationality' => (string) ($playerteam->team->team_nationality ?: ''),
                     'player_team_id' => $teamId,
                     'player_picture_url' => PlayerPicture::url(
-                        $teamId,
-                        (int) $playerteam->playerteam_player_id,
+                        $playerteam->team->asset_key !== null ? (string) $playerteam->team->asset_key : null,
+                        $playerteam->player->asset_key !== null ? (string) $playerteam->player->asset_key : null,
                     ),
                 ],
                 'warning' => $matchroundId > 0
@@ -279,8 +279,8 @@ class PlayerPopupService
                 'player_team_name' => (string) $playerteam->team->team_name,
                 'player_team_nationality' => (string) ($playerteam->team->team_nationality ?: ''),
                 'player_picture_url' => PlayerPicture::url(
-                    $teamId,
-                    (int) $playerteam->playerteam_player_id,
+                    $playerteam->team->asset_key !== null ? (string) $playerteam->team->asset_key : null,
+                    $playerteam->player->asset_key !== null ? (string) $playerteam->player->asset_key : null,
                 ),
             ],
         ];
@@ -1068,8 +1068,8 @@ class PlayerPopupService
             'player_team_name' => (string) $playerteam->team->team_name,
             'player_team_nationality' => (string) ($playerteam->team->team_nationality ?: ''),
             'player_picture_url' => PlayerPicture::url(
-                $teamId,
-                (int) $playerteam->playerteam_player_id,
+                $playerteam->team->asset_key !== null ? (string) $playerteam->team->asset_key : null,
+                $playerteam->player->asset_key !== null ? (string) $playerteam->player->asset_key : null,
             ),
         ];
     }

@@ -128,17 +128,19 @@
             userId: @json($user['user_id']),
             isAdmin: @json((bool) $user['is_admin']),
             selectedLeagueId: @json($data['selected_league_id'] ?? 0),
+            selectedLeagueAssetKey: @json($data['selected_league_asset_key'] ?? ''),
         };
         window.FFB_MODAL = {
             apiBase: 'api',
             legacyBase: @json($legacyBase),
             selectedLeagueId: @json($data['selected_league_id'] ?? 0),
+            selectedLeagueAssetKey: @json($data['selected_league_asset_key'] ?? ''),
         };
     </script>
     <script src="js/modal.js?v=29" defer></script>
     <script src="js/player-modal.js?v=29" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
-    <script src="js/pitch-bench.js?v=20" defer></script>
-    <script src="js/myteam.js?v=17" defer></script>
+    <script src="js/pitch-bench.js?v=23" defer></script>
+    <script src="js/myteam.js?v=18" defer></script>
 </body>
 </html>

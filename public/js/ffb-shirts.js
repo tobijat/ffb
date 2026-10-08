@@ -2,6 +2,10 @@
  * Team shirt URLs: prefer SVG when present, fall back to PNG, then shirt_MISSING.
  * Missing files advance via onerror (data-shirt-fallbacks).
  * Empty lineup/bench placeholders use blankCandidates (shirt_BLANK / shirt_bench_BLANK).
+ *
+ * Paths use immutable asset keys (not numeric DB ids):
+ *   shirts/{team_key}/{nat}-{league_key}.svg|png
+ *   shirts/{team_key}/{nat}.svg|png
  */
 (function (global) {
     function normalizeBase(base) {
@@ -14,6 +18,15 @@
             .trim()
             .replace(/[ .]/g, '_')
             .replace(/[^a-z0-9_-]+/g, '');
+    }
+
+    function normalizeKey(key) {
+        const value = String(key == null ? '' : key).trim();
+        if (!value || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(value)) {
+            return '';
+        }
+
+        return value.toLowerCase();
     }
 
     function withSvgPreferred(pathWithoutExt) {
@@ -54,34 +67,28 @@
     }
 
     /**
-     * Order when league id is known:
-     *   {teamcode}-{league_id}.svg → {teamcode}.svg → same stems as .png → shirt_MISSING
-     * Without league id: {teamcode}.svg → {teamcode}.png → shirt_MISSING
-     *
      * @param {string} legacyBase
-     * @param {number|string} teamId
+     * @param {string} teamKey
      * @param {string} nationality
-     * @param {number|string} [gameId]
+     * @param {string} [leagueKey]
      * @returns {string[]}
      */
-    function candidates(legacyBase, teamId, nationality, gameId) {
+    function candidates(legacyBase, teamKey, nationality, leagueKey) {
         const base = normalizeBase(legacyBase);
-        const tid = Number(teamId) || 0;
+        const tid = normalizeKey(teamKey);
         const nat = normalizeNat(nationality);
-        const gid = Number(gameId) || 0;
+        const lid = normalizeKey(leagueKey);
         const urls = [];
 
-        if (tid > 0 && nat) {
+        if (tid && nat) {
             const stem = base + 'images/ffb/shirts/' + tid + '/' + nat;
-            const leagueStem = gid > 0 ? stem + '-' + gid : null;
+            const leagueStem = lid ? stem + '-' + lid : null;
 
-            // SVGs first: league-specific, then plain teamcode.
             if (leagueStem) {
                 urls.push(leagueStem + '.svg');
             }
             urls.push(stem + '.svg');
 
-            // Legacy PNGs after SVGs.
             if (leagueStem) {
                 urls.push(leagueStem + '.png');
             }
@@ -91,10 +98,6 @@
         urls.push.apply(urls, missingCandidates(legacyBase));
 
         return unique(urls);
-    }
-
-    function encodeFallbacks(urls) {
-        return encodeURIComponent(JSON.stringify(urls));
     }
 
     function advance(img) {
@@ -131,6 +134,10 @@
         img.src = next;
     }
 
+    function encodeFallbacks(urls) {
+        return encodeURIComponent(JSON.stringify(urls));
+    }
+
     function imgFromCandidates(urls, attrs) {
         const list = unique(urls || []);
         if (!list.length) {
@@ -158,13 +165,13 @@
 
     /**
      * @param {string} legacyBase
-     * @param {number|string} teamId
+     * @param {string} teamKey
      * @param {string} nationality
      * @param {string} [attrs]
-     * @param {number|string} [gameId]
+     * @param {string} [leagueKey]
      */
-    function imgTag(legacyBase, teamId, nationality, attrs, gameId) {
-        return imgFromCandidates(candidates(legacyBase, teamId, nationality, gameId), attrs);
+    function imgTag(legacyBase, teamKey, nationality, attrs, leagueKey) {
+        return imgFromCandidates(candidates(legacyBase, teamKey, nationality, leagueKey), attrs);
     }
 
     /**
@@ -183,8 +190,8 @@
     }
 
     /** Primary URL only (first candidate) — prefer SVG. */
-    function url(legacyBase, teamId, nationality, gameId) {
-        return candidates(legacyBase, teamId, nationality, gameId)[0] || '';
+    function url(legacyBase, teamKey, nationality, leagueKey) {
+        return candidates(legacyBase, teamKey, nationality, leagueKey)[0] || '';
     }
 
     function blankUrl(legacyBase, red, variant) {
@@ -201,5 +208,6 @@
         blankUrl: blankUrl,
         advance: advance,
         normalizeNat: normalizeNat,
+        normalizeKey: normalizeKey,
     };
 })(window);

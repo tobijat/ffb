@@ -18,7 +18,6 @@ class TeamShirtTest extends TestCase
         $this->shirtsDir = storage_path('framework/testing/shirts-'.uniqid('', true));
         File::ensureDirectoryExists($this->shirtsDir);
         config(['ffb.legacy_images_path' => dirname($this->shirtsDir)]);
-        // TeamShirt looks for {legacy}/shirts — rename so dir is .../ffb/shirts
         $base = $this->shirtsDir;
         File::deleteDirectory($base);
         $this->shirtsDir = storage_path('framework/testing/ffb-'.uniqid('', true).DIRECTORY_SEPARATOR.'shirts');
@@ -39,27 +38,31 @@ class TeamShirtTest extends TestCase
     #[Test]
     public function url_prefers_league_override_then_default(): void
     {
-        File::ensureDirectoryExists($this->shirtsDir.DIRECTORY_SEPARATOR.'76');
-        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.'76'.DIRECTORY_SEPARATOR.'arg.png', 'default');
-        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.'76'.DIRECTORY_SEPARATOR.'arg-20.png', 'league');
+        $teamKey = 'argentina-a1b2';
+        $leagueKey = 'copa-america-c3d4';
+        File::ensureDirectoryExists($this->shirtsDir.DIRECTORY_SEPARATOR.$teamKey);
+        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.$teamKey.DIRECTORY_SEPARATOR.'arg.png', 'default');
+        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.$teamKey.DIRECTORY_SEPARATOR.'arg-'.$leagueKey.'.png', 'league');
 
-        $this->assertSame('/images/ffb/shirts/76/arg-20.png', TeamShirt::url(76, 'ARG', 20));
-        $this->assertSame('/images/ffb/shirts/76/arg.png', TeamShirt::url(76, 'arg', 99));
-        $this->assertSame('/images/ffb/shirts/76/arg.png', TeamShirt::url(76, 'arg'));
-        $this->assertNull(TeamShirt::url(99, 'arg', 20));
+        $this->assertSame('/images/ffb/shirts/'.$teamKey.'/arg-'.$leagueKey.'.png', TeamShirt::url($teamKey, 'ARG', $leagueKey));
+        $this->assertSame('/images/ffb/shirts/'.$teamKey.'/arg.png', TeamShirt::url($teamKey, 'arg', 'other-league-zzzz'));
+        $this->assertSame('/images/ffb/shirts/'.$teamKey.'/arg.png', TeamShirt::url($teamKey, 'arg'));
+        $this->assertNull(TeamShirt::url('missing-team-zzzz', 'arg', $leagueKey));
     }
 
     #[Test]
     public function url_prefers_svg_over_png_and_accepts_svg_only_shirts(): void
     {
-        File::ensureDirectoryExists($this->shirtsDir.DIRECTORY_SEPARATOR.'163');
-        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.'163'.DIRECTORY_SEPARATOR.'kos.svg', 'default-svg');
-        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.'163'.DIRECTORY_SEPARATOR.'kos-38.svg', 'league-svg');
-        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.'163'.DIRECTORY_SEPARATOR.'kos.png', 'default-png');
+        $teamKey = 'kosovo-k1k2';
+        $leagueKey = 'nations-league-n1n2';
+        File::ensureDirectoryExists($this->shirtsDir.DIRECTORY_SEPARATOR.$teamKey);
+        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.$teamKey.DIRECTORY_SEPARATOR.'kos.svg', 'default-svg');
+        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.$teamKey.DIRECTORY_SEPARATOR.'kos-'.$leagueKey.'.svg', 'league-svg');
+        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.$teamKey.DIRECTORY_SEPARATOR.'kos.png', 'default-png');
 
-        $this->assertSame('/images/ffb/shirts/163/kos-38.svg', TeamShirt::url(163, 'kos', 38));
-        $this->assertSame('/images/ffb/shirts/163/kos.svg', TeamShirt::url(163, 'kos', 99));
-        $this->assertSame('shirts/163/kos-38.svg', TeamShirt::relativePath(163, 'kos', 38));
+        $this->assertSame('/images/ffb/shirts/'.$teamKey.'/kos-'.$leagueKey.'.svg', TeamShirt::url($teamKey, 'kos', $leagueKey));
+        $this->assertSame('/images/ffb/shirts/'.$teamKey.'/kos.svg', TeamShirt::url($teamKey, 'kos', 'other-league-zzzz'));
+        $this->assertSame('shirts/'.$teamKey.'/kos-'.$leagueKey.'.svg', TeamShirt::relativePath($teamKey, 'kos', $leagueKey));
     }
 
     #[Test]

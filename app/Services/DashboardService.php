@@ -237,7 +237,7 @@ class DashboardService
                     'league_test' => $isTest,
                     'has_matchrounds' => $hasMatchrounds,
                     'is_faded' => $isAdmin && (! $visible || ! $hasMatchrounds),
-                    'symbol_url' => LeagueSymbol::url((int) $league->league_id),
+                    'symbol_url' => LeagueSymbol::url($league->asset_key !== null ? (string) $league->asset_key : null),
                 ];
             })
             ->values()

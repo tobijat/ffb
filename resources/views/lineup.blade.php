@@ -89,18 +89,20 @@
             legacyBase: @json($legacyBase),
             userId: @json($user['user_id']),
             selectedLeagueId: @json($data['selected_league_id'] ?? 0),
+            selectedLeagueAssetKey: @json($data['selected_league_asset_key'] ?? ''),
             gameOver: @json((bool) ($data['game_over'] ?? false)),
         };
         window.FFB_MODAL = {
             apiBase: 'api',
             legacyBase: @json($legacyBase),
             selectedLeagueId: @json($data['selected_league_id'] ?? 0),
+            selectedLeagueAssetKey: @json($data['selected_league_asset_key'] ?? ''),
         };
     </script>
     <script src="js/modal.js?v=29" defer></script>
     <script src="js/player-modal.js?v=29" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
-    <script src="js/pitch-bench.js?v=22" defer></script>
-    <script src="js/lineup.js?v=39" defer></script>
+    <script src="js/pitch-bench.js?v=23" defer></script>
+    <script src="js/lineup.js?v=41" defer></script>
 </body>
 </html>

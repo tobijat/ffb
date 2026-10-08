@@ -689,7 +689,7 @@
                     <div class="admin-field admin-field-stack">
                         <label for="team_shirt_file">Trikot hochladen</label>
                         <input id="team_shirt_file" type="file" name="team_shirt_file" accept="image/png,image/jpeg,image/gif,image/webp">
-                        <p class="hint">PNG/JPEG/GIF/WebP, max. 2 MB. Wird als <code>{{ $selectedSymbol['shirt_path_hint'] ?? ('shirts/<team_id>/'.($selectedIcon ?: 'key').'.png') }}</code> gespeichert.</p>
+                        <p class="hint">PNG/JPEG/GIF/WebP, max. 2 MB. Wird als <code>{{ $selectedSymbol['shirt_path_hint'] ?? ('shirts/<team_key>/'.($selectedIcon ?: 'key').'.png') }}</code> gespeichert.</p>
                     </div>
                 </div>
 
@@ -861,15 +861,16 @@
     const shirtUpload = document.getElementById('team-shirt-upload');
     const shirtHint = shirtUpload ? shirtUpload.querySelector('.hint') : null;
     const teamId = @json((string) ($form['team_id'] ?? ''));
+    const teamAssetKey = @json((string) ($form['asset_key'] ?? ''));
     const existingTeamShirtUrl = @json($selectedSymbol['shirt_url'] ?? '');
     if (!picker || !chooser || !toggle || !flagHtml) return;
 
     function shirtPathHint(key) {
         const nat = key || 'key';
-        if (teamId) {
-            return 'shirts/' + teamId + '/' + nat + '.png';
+        if (teamAssetKey) {
+            return 'shirts/' + teamAssetKey + '/' + nat + '.png';
         }
-        return 'shirts/<team_id>/' + nat + '.png';
+        return 'shirts/<team_key>/' + nat + '.png';
     }
 
     function setPreview(option) {

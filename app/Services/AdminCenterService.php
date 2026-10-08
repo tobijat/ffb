@@ -251,7 +251,7 @@ class AdminCenterService
                 return [
                     'league_id' => (int) $league->league_id,
                     'league_title' => (string) $league->league_title,
-                    'symbol_url' => LeagueSymbol::url((int) $league->league_id),
+                    'symbol_url' => LeagueSymbol::url($league->asset_key !== null ? (string) $league->asset_key : null),
                     'league_archive' => $archive,
                     'league_visible' => $visible,
                     'league_test' => $isTest,

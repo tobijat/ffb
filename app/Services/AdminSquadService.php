@@ -13,6 +13,7 @@ use App\Models\Playerteam;
 use App\Models\Psgoal;
 use App\Models\Team;
 use App\Models\Userteam;
+use App\Support\AssetKey;
 use App\Support\Flag;
 use App\Support\PlayerPicture;
 use Illuminate\Http\UploadedFile;
@@ -359,6 +360,20 @@ class AdminSquadService
             return $guard;
         }
 
+        $teamKey = $this->teamAssetKey($teamId);
+        $rowPlayerIds = [];
+        foreach ($rows as $row) {
+            if (is_array($row) && (int) ($row['player_id'] ?? 0) > 0) {
+                $rowPlayerIds[] = (int) $row['player_id'];
+            }
+        }
+        $playerKeys = $rowPlayerIds === []
+            ? []
+            : Player::query()
+                ->whereIn('player_id', array_values(array_unique($rowPlayerIds)))
+                ->pluck('asset_key', 'player_id')
+                ->all();
+
         $toAssign = [];
         foreach ($rows as $row) {
             if (! is_array($row)) {
@@ -369,7 +384,7 @@ class AdminSquadService
             if ($playerId <= 0 || $commonsFile === '') {
                 continue;
             }
-            if (PlayerPicture::exists($teamId, $playerId)) {
+            if (PlayerPicture::exists($teamKey, isset($playerKeys[$playerId]) ? (string) $playerKeys[$playerId] : null)) {
                 continue;
             }
             $toAssign[] = [
@@ -1942,10 +1957,15 @@ class AdminSquadService
         $item->playerteam_player_note = (string) $form['playerteam_player_note'];
 
         if ($pictureFile !== null) {
-            if (! $this->storePicture($pictureFile, $teamId, (int) $item->playerteam_player_id)) {
+            $teamKey = $this->teamAssetKey($teamId);
+            $playerKey = $this->playerAssetKey((int) $item->playerteam_player_id);
+            if ($teamKey === null || $playerKey === null) {
                 return false;
             }
-            $item->playerteam_player_picture = $teamId.'-'.(int) $item->playerteam_player_id.'.jpg';
+            if (! $this->storePicture($pictureFile, $teamKey, $playerKey)) {
+                return false;
+            }
+            $item->playerteam_player_picture = $playerKey.'.jpg';
         }
 
         $item->save();
@@ -2031,6 +2051,8 @@ class AdminSquadService
         $playerteamId = (int) $item->playerteam_id;
         $pictureName = (string) ($item->playerteam_player_picture ?? '');
         $playerId = (int) $item->playerteam_player_id;
+        $teamKey = $this->teamAssetKey($teamId);
+        $playerKey = $this->playerAssetKey($playerId);
 
         DB::transaction(function () use ($item, $playerteamId) {
             Playerprice::query()->where('playerprice_playerteam_id', $playerteamId)->delete();
@@ -2044,8 +2066,8 @@ class AdminSquadService
                 ->where('playerteam_team_id', $teamId)
                 ->where('playerteam_player_id', $playerId)
                 ->exists();
-            if (! $stillUsed) {
-                $this->deletePictureFile($teamId, $playerId);
+            if (! $stillUsed && $teamKey !== null && $playerKey !== null) {
+                $this->deletePictureFile($teamKey, $playerKey);
             }
         }
     }
@@ -2277,6 +2299,8 @@ class AdminSquadService
      */
     private function rosterItems(int $teamId, int $leagueId): array
     {
+        $teamKey = $this->teamAssetKey($teamId);
+
         return Playerteam::query()
             ->with('player')
             ->where('playerteam_team_id', $teamId)
@@ -2296,11 +2320,11 @@ class AdminSquadService
                 return strcasecmp((string) ($a->player?->player_fname ?? ''), (string) ($b->player?->player_fname ?? ''));
             })
             ->values()
-            ->map(function (Playerteam $item) use ($teamId) {
+            ->map(function (Playerteam $item) use ($teamKey) {
                 $player = $item->player;
                 $nat = strtoupper(trim((string) ($player?->player_nationality ?? '')));
                 $playerId = (int) $item->playerteam_player_id;
-                $pictureUrl = PlayerPicture::url($teamId, $playerId);
+                $pictureUrl = PlayerPicture::url($teamKey, $player?->asset_key !== null ? (string) $player->asset_key : null);
                 $hasPicture = ! str_ends_with($pictureUrl, 'image_na.gif');
 
                 return [
@@ -2371,14 +2395,34 @@ class AdminSquadService
         return $errors;
     }
 
-    private function storePicture(UploadedFile $file, int $teamId, int $playerId): bool
+    private function teamAssetKey(int $teamId): ?string
     {
-        $dir = $this->playersDir($teamId);
+        if ($teamId <= 0) {
+            return null;
+        }
+        $key = Team::query()->whereKey($teamId)->value('asset_key');
+
+        return is_string($key) && AssetKey::isValid($key) ? $key : null;
+    }
+
+    private function playerAssetKey(int $playerId): ?string
+    {
+        if ($playerId <= 0) {
+            return null;
+        }
+        $key = Player::query()->whereKey($playerId)->value('asset_key');
+
+        return is_string($key) && AssetKey::isValid($key) ? $key : null;
+    }
+
+    private function storePicture(UploadedFile $file, string $teamKey, string $playerKey): bool
+    {
+        $dir = $this->playersDir($teamKey);
         if (! is_dir($dir) && ! @mkdir($dir, 0775, true) && ! is_dir($dir)) {
             return false;
         }
 
-        $filename = $teamId.'-'.$playerId.'.jpg';
+        $filename = $playerKey.'.jpg';
         $target = $dir.DIRECTORY_SEPARATOR.$filename;
         $mime = (string) $file->getMimeType();
 
@@ -2421,19 +2465,19 @@ class AdminSquadService
         return (bool) $ok;
     }
 
-    private function deletePictureFile(int $teamId, int $playerId): void
+    private function deletePictureFile(string $teamKey, string $playerKey): void
     {
-        $path = PlayerPicture::storagePath($teamId, $playerId);
+        $path = PlayerPicture::storagePath($teamKey, $playerKey);
         if (is_file($path)) {
             @unlink($path);
         }
     }
 
-    private function playersDir(int $teamId): string
+    private function playersDir(string $teamKey): string
     {
         $base = rtrim((string) config('ffb.legacy_images_path'), DIRECTORY_SEPARATOR.'\\/');
 
-        return $base.DIRECTORY_SEPARATOR.'players'.DIRECTORY_SEPARATOR.$teamId;
+        return $base.DIRECTORY_SEPARATOR.'players'.DIRECTORY_SEPARATOR.$teamKey;
     }
 
     /**

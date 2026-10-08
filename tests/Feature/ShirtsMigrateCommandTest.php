@@ -25,6 +25,7 @@ class ShirtsMigrateCommandTest extends TestCase
         Schema::dropIfExists('ffb_team');
         Schema::create('ffb_team', function (Blueprint $table) {
             $table->integer('team_id')->primary();
+            $table->string('asset_key')->default('');
             $table->string('team_name')->default('');
             $table->string('team_nationality')->default('');
             $table->string('team_foreign_id')->default('');
@@ -54,6 +55,7 @@ class ShirtsMigrateCommandTest extends TestCase
         File::put($this->shirtsDir.DIRECTORY_SEPARATOR.'shirt_AUT.png', 'png');
         DB::table('ffb_team')->insert([
             'team_id' => 3,
+            'asset_key' => 'rapid-a1b2',
             'team_name' => 'Rapid',
             'team_nationality' => 'aut',
             'team_foreign_id' => '',
@@ -65,7 +67,7 @@ class ShirtsMigrateCommandTest extends TestCase
             ->assertSuccessful()
             ->expectsOutputToContain('would_copy');
 
-        $this->assertFileDoesNotExist(TeamShirt::defaultStoragePath(3, 'aut'));
+        $this->assertFileDoesNotExist(TeamShirt::defaultStoragePath('rapid-a1b2', 'aut'));
         $this->assertFileExists($this->shirtsDir.DIRECTORY_SEPARATOR.'shirt_AUT.png');
     }
 
@@ -77,6 +79,7 @@ class ShirtsMigrateCommandTest extends TestCase
         DB::table('ffb_team')->insert([
             [
                 'team_id' => 3,
+                'asset_key' => 'rapid-a1b2',
                 'team_name' => 'Rapid',
                 'team_nationality' => 'aut',
                 'team_foreign_id' => '',
@@ -85,6 +88,7 @@ class ShirtsMigrateCommandTest extends TestCase
             ],
             [
                 'team_id' => 4,
+                'asset_key' => 'austria-c3d4',
                 'team_name' => 'Austria',
                 'team_nationality' => 'aut',
                 'team_foreign_id' => '',
@@ -95,9 +99,9 @@ class ShirtsMigrateCommandTest extends TestCase
 
         $this->artisan('ffb:shirts-migrate', ['--execute' => true])->assertSuccessful();
 
-        $this->assertFileExists(TeamShirt::defaultStoragePath(3, 'aut'));
-        $this->assertFileExists(TeamShirt::defaultStoragePath(4, 'aut'));
-        $this->assertSame('png-bytes', File::get(TeamShirt::defaultStoragePath(3, 'aut')));
+        $this->assertFileExists(TeamShirt::defaultStoragePath('rapid-a1b2', 'aut'));
+        $this->assertFileExists(TeamShirt::defaultStoragePath('austria-c3d4', 'aut'));
+        $this->assertSame('png-bytes', File::get(TeamShirt::defaultStoragePath('rapid-a1b2', 'aut')));
         $this->assertFileExists($this->shirtsDir.DIRECTORY_SEPARATOR.'shirt_BLANK.png');
         $this->assertFileExists($this->shirtsDir.DIRECTORY_SEPARATOR.'shirt_AUT.png');
     }

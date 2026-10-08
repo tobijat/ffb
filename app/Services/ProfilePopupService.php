@@ -141,7 +141,7 @@ class ProfilePopupService
             $out[] = [
                 'league_id' => $leagueId,
                 'league_title' => $title,
-                'league_symbol_url' => LeagueSymbol::url($leagueId),
+                'league_symbol_url' => LeagueSymbol::url($league->asset_key !== null ? (string) $league->asset_key : null),
                 'league_archive' => $archive,
                 'league_visible' => $visible,
                 'score_rm' => $rankMode,

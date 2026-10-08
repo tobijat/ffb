@@ -7,6 +7,7 @@ use App\Models\Playerteam;
 use App\Models\Team;
 use App\Models\Teamfid;
 use App\Models\Userteam;
+use App\Support\AssetKey;
 use App\Support\Flag;
 use App\Support\TeamShirt;
 use Illuminate\Http\UploadedFile;
@@ -74,7 +75,7 @@ class AdminTeamService
             'uefa_competition_identifier' => $uefaIdentifier,
             'fifa_competition_identifier' => $fifaIdentifier,
             'icons' => $this->iconOptions($selectedKey),
-            'selected_symbol' => $this->selectedSymbol($selectedKey, $teamId),
+            'selected_symbol' => $this->selectedSymbol($selectedKey, $this->teamAssetKey($teamId)),
             'uses_icon_picker' => ! $this->isMappedNation($selectedKey),
             'items' => $this->listItems(),
             'team_options' => in_array($resolvedTab, ['auto-uefa', 'auto-fifa'], true)
@@ -146,6 +147,7 @@ class AdminTeamService
     {
         return [
             'team_id' => '',
+            'asset_key' => '',
             'team_name' => '',
             'team_nationality' => '',
             'team_icon_key' => '',
@@ -175,6 +177,7 @@ class AdminTeamService
 
         return [
             'team_id' => (int) $item->team_id,
+            'asset_key' => (string) ($item->asset_key ?? ''),
             'team_name' => (string) $item->team_name,
             'team_nationality' => $icon,
             'team_icon_key' => '',
@@ -216,8 +219,11 @@ class AdminTeamService
         }
 
         $createdTeamId = 0;
-        DB::transaction(function () use ($form, &$createdTeamId) {
+        $createdTeamKey = '';
+        DB::transaction(function () use ($form, &$createdTeamId, &$createdTeamKey) {
+            $createdTeamKey = AssetKey::generate('ffb_team', (string) $form['team_name']);
             $team = Team::query()->create([
+                'asset_key' => $createdTeamKey,
                 'team_foreign_id' => '',
                 'team_name' => $form['team_name'],
                 'team_nationality' => $form['team_nationality'],
@@ -233,7 +239,7 @@ class AdminTeamService
         });
 
         if ($shirtFile !== null && $createdTeamId > 0) {
-            if (! $this->storeShirtFile($shirtFile, $createdTeamId, $form['team_nationality'])) {
+            if (! $this->storeShirtFile($shirtFile, $createdTeamKey, $form['team_nationality'])) {
                 return [
                     'ok' => false,
                     'errors' => ['Team wurde angelegt, aber das Trikot konnte nicht gespeichert werden.'],
@@ -293,7 +299,7 @@ class AdminTeamService
         });
 
         if ($shirtFile !== null) {
-            if (! $this->storeShirtFile($shirtFile, $teamId, $form['team_nationality'])) {
+            if (! $this->storeShirtFile($shirtFile, (string) ($item->asset_key ?? ''), $form['team_nationality'])) {
                 return [
                     'ok' => false,
                     'errors' => ['Team wurde aktualisiert, aber das Trikot konnte nicht gespeichert werden.'],
@@ -628,6 +634,7 @@ class AdminTeamService
                 /** @var array<string, mixed> $form */
                 $form = $row['_form'];
                 $team = Team::query()->create([
+                    'asset_key' => AssetKey::generate('ffb_team', (string) $form['team_name']),
                     'team_foreign_id' => '',
                     'team_name' => $form['team_name'],
                     'team_nationality' => $form['team_nationality'],
@@ -880,6 +887,7 @@ class AdminTeamService
                 foreach ($normalized as $row) {
                     if ((int) $row['create_new'] === 1) {
                         Team::query()->create([
+                            'asset_key' => AssetKey::generate('ffb_team', (string) $row['team_name']),
                             'team_foreign_id' => '',
                             'team_name' => $row['team_name'],
                             'team_nationality' => $row['team_nationality'],
@@ -1171,6 +1179,7 @@ class AdminTeamService
                 foreach ($normalized as $row) {
                     if ((int) $row['create_new'] === 1) {
                         Team::query()->create([
+                            'asset_key' => AssetKey::generate('ffb_team', (string) $row['team_name']),
                             'team_foreign_id' => '',
                             'team_name' => $row['team_name'],
                             'team_nationality' => $row['team_nationality'],
@@ -1465,7 +1474,7 @@ class AdminTeamService
     /**
      * @return array{key: string, url: string|null, html: string, label: string, shirt_url: string|null, has_shirt: bool, shirt_path_hint: string}|null
      */
-    private function selectedSymbol(string $selectedKey, int $teamId = 0): ?array
+    private function selectedSymbol(string $selectedKey, ?string $teamKey = null): ?array
     {
         $selectedKey = $this->normalizeIconKey($selectedKey);
         if ($selectedKey === '') {
@@ -1474,10 +1483,11 @@ class AdminTeamService
 
         $countries = $this->countryLabels();
         $upper = strtoupper($selectedKey);
-        $shirtUrl = $teamId > 0 ? TeamShirt::url($teamId, $selectedKey) : null;
-        $pathHint = $teamId > 0
-            ? 'shirts/'.$teamId.'/'.$selectedKey.'.png'
-            : 'shirts/<team_id>/'.$selectedKey.'.png';
+        $hasTeamKey = AssetKey::isValid($teamKey);
+        $shirtUrl = $hasTeamKey ? TeamShirt::url($teamKey, $selectedKey) : null;
+        $pathHint = $hasTeamKey
+            ? 'shirts/'.$teamKey.'/'.$selectedKey.'.png'
+            : 'shirts/<team_key>/'.$selectedKey.'.png';
 
         return [
             'key' => $selectedKey,
@@ -1741,14 +1751,25 @@ class AdminTeamService
         return $this->convertAndStoreImage($file, $mime, $target, 'gif');
     }
 
-    private function storeShirtFile(UploadedFile $file, int $teamId, string $nationality): bool
+    private function teamAssetKey(int $teamId): ?string
+    {
+        if ($teamId <= 0) {
+            return null;
+        }
+
+        $key = Team::query()->whereKey($teamId)->value('asset_key');
+
+        return is_string($key) && $key !== '' ? $key : null;
+    }
+
+    private function storeShirtFile(UploadedFile $file, string $teamKey, string $nationality): bool
     {
         $nat = TeamShirt::normalizeNationality($nationality);
-        if ($teamId <= 0 || $nat === '') {
+        if (! AssetKey::isValid($teamKey) || $nat === '') {
             return false;
         }
 
-        $target = TeamShirt::defaultStoragePath($teamId, $nat);
+        $target = TeamShirt::defaultStoragePath($teamKey, $nat);
         $dir = dirname($target);
         File::ensureDirectoryExists($dir);
 

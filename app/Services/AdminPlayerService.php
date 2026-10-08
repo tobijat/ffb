@@ -6,6 +6,7 @@ use App\Models\Extremeteam;
 use App\Models\Player;
 use App\Models\Playerteam;
 use App\Models\Userteam;
+use App\Support\AssetKey;
 use App\Support\Flag;
 use App\Support\PlayerPicture;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -127,6 +128,10 @@ class AdminPlayerService
         }
 
         $player = Player::query()->create([
+            'asset_key' => AssetKey::generate(
+                'ffb_player',
+                AssetKey::playerSourceName((string) $form['player_fname'], (string) $form['player_lname'])
+            ),
             'player_foreign_id' => $form['player_foreign_id'],
             'player_uefa_id' => $form['player_uefa_id'],
             'player_fifa_id' => $form['player_fifa_id'],
@@ -426,6 +431,7 @@ class AdminPlayerService
 
                 return [
                     'player_id' => (int) $item->player_id,
+                    'player_asset_key' => (string) ($item->asset_key ?? ''),
                     'player_fname' => (string) $item->player_fname,
                     'player_lname' => (string) $item->player_lname,
                     'player_nationality' => $nat,
@@ -456,10 +462,21 @@ class AdminPlayerService
             $items
         )));
 
+        $playerKeys = [];
+        foreach ($items as $item) {
+            $playerKeys[(int) $item['player_id']] = (string) ($item['player_asset_key'] ?? '');
+        }
+
         $pictures = Playerteam::query()
-            ->whereIn('playerteam_player_id', $playerIds)
-            ->orderByDesc('playerteam_id')
-            ->get(['playerteam_player_id', 'playerteam_team_id', 'playerteam_id']);
+            ->join('ffb_team', 'ffb_team.team_id', '=', 'ffb_playerteam.playerteam_team_id')
+            ->whereIn('ffb_playerteam.playerteam_player_id', $playerIds)
+            ->orderByDesc('ffb_playerteam.playerteam_id')
+            ->get([
+                'ffb_playerteam.playerteam_player_id',
+                'ffb_playerteam.playerteam_team_id',
+                'ffb_playerteam.playerteam_id',
+                'ffb_team.asset_key as team_asset_key',
+            ]);
 
         $byPlayer = [];
         foreach ($pictures as $row) {
@@ -467,7 +484,10 @@ class AdminPlayerService
             if (isset($byPlayer[$playerId])) {
                 continue;
             }
-            $url = PlayerPicture::url((int) $row->playerteam_team_id, $playerId);
+            $url = PlayerPicture::url(
+                (string) ($row->team_asset_key ?? ''),
+                $playerKeys[$playerId] ?? ''
+            );
             if (! str_ends_with($url, 'image_na.gif')) {
                 $byPlayer[$playerId] = $url;
             }

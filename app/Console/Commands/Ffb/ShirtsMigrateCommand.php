@@ -3,6 +3,7 @@
 namespace App\Console\Commands\Ffb;
 
 use App\Models\Team;
+use App\Support\AssetKey;
 use App\Support\TeamShirt;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -10,7 +11,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
 #[Signature('ffb:shirts-migrate {--execute : Copy legacy shirt_NAT.png into team folders (default dry-run)}')]
-#[Description('Migrate flat shirts/shirt_NAT.png files into shirts/{team_id}/{nat}.png')]
+#[Description('Migrate flat shirts/shirt_NAT.png files into shirts/{team_asset_key}/{nat}.png')]
 class ShirtsMigrateCommand extends Command
 {
     public function handle(): int
@@ -24,16 +25,16 @@ class ShirtsMigrateCommand extends Command
 
         $teams = Team::query()
             ->orderBy('team_id')
-            ->get(['team_id', 'team_nationality']);
+            ->get(['team_id', 'team_nationality', 'asset_key']);
 
         foreach ($teams as $team) {
-            $teamId = (int) $team->team_id;
+            $teamKey = (string) ($team->asset_key ?? '');
             $nat = TeamShirt::normalizeNationality((string) ($team->team_nationality ?? ''));
-            if ($teamId <= 0 || $nat === '') {
+            if (! AssetKey::isValid($teamKey) || $nat === '') {
                 continue;
             }
 
-            $target = TeamShirt::defaultStoragePath($teamId, $nat);
+            $target = TeamShirt::defaultStoragePath($teamKey, $nat);
             if (is_file($target)) {
                 $skipped++;
 

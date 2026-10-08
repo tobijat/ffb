@@ -189,6 +189,7 @@ class WikimediaPlayerImageServiceTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
+            'asset_key' => 'league-test-a1b2',
         ]);
         $team = Team::query()->create([
             'team_foreign_id' => '',
@@ -196,6 +197,7 @@ class WikimediaPlayerImageServiceTest extends TestCase
             'team_nationality' => 'esp',
             'team_num_players' => 0,
             'team_status' => 1,
+            'asset_key' => 'team-test-a1b2',
         ]);
         $player = Player::query()->create([
             'player_foreign_id' => '',
@@ -205,6 +207,7 @@ class WikimediaPlayerImageServiceTest extends TestCase
             'player_status' => 1,
             'player_status_description' => '',
             'player_commons_image' => '',
+            'asset_key' => 'player-test-c3d4',
         ]);
         Playerteam::query()->create([
             'playerteam_player_id' => (int) $player->player_id,
@@ -274,6 +277,7 @@ class WikimediaPlayerImageServiceTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
+            'asset_key' => 'league-test-a1b2',
         ]);
         $team = Team::query()->create([
             'team_foreign_id' => '',
@@ -281,6 +285,7 @@ class WikimediaPlayerImageServiceTest extends TestCase
             'team_nationality' => 'esp',
             'team_num_players' => 0,
             'team_status' => 1,
+            'asset_key' => 'team-test-a1b2',
         ]);
         $player = Player::query()->create([
             'player_foreign_id' => '',
@@ -290,6 +295,7 @@ class WikimediaPlayerImageServiceTest extends TestCase
             'player_status' => 1,
             'player_status_description' => '',
             'player_commons_image' => '',
+            'asset_key' => 'player-test-c3d4',
         ]);
         Playerteam::query()->create([
             'playerteam_player_id' => (int) $player->player_id,
@@ -316,9 +322,9 @@ class WikimediaPlayerImageServiceTest extends TestCase
         ]);
         $this->assertDatabaseHas('ffb_playerteam', [
             'playerteam_player_id' => (int) $player->player_id,
-            'playerteam_player_picture' => $team->team_id.'-'.$player->player_id.'.jpg',
+            'playerteam_player_picture' => 'player-test-c3d4.jpg',
         ]);
-        $this->assertFileExists(PlayerPicture::storagePath((int) $team->team_id, (int) $player->player_id));
+        $this->assertFileExists(PlayerPicture::storagePath('team-test-a1b2', 'player-test-c3d4'));
     }
 
     #[Test]
@@ -369,6 +375,7 @@ class WikimediaPlayerImageServiceTest extends TestCase
             $table->string('league_title')->default('');
             $table->tinyInteger('league_visible')->default(1);
             $table->tinyInteger('league_archive')->default(0);
+            $table->string('asset_key')->default('');
         });
 
         Schema::create('ffb_team', function (Blueprint $table) {
@@ -378,6 +385,7 @@ class WikimediaPlayerImageServiceTest extends TestCase
             $table->string('team_nationality')->default('');
             $table->integer('team_num_players')->default(0);
             $table->tinyInteger('team_status')->default(1);
+            $table->string('asset_key')->default('');
         });
 
         Schema::create('ffb_player', function (Blueprint $table) {
@@ -389,6 +397,7 @@ class WikimediaPlayerImageServiceTest extends TestCase
             $table->tinyInteger('player_status')->default(1);
             $table->string('player_status_description')->default('');
             $table->string('player_commons_image')->default('');
+            $table->string('asset_key')->default('');
         });
 
         Schema::create('ffb_playerteam', function (Blueprint $table) {

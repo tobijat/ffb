@@ -15,6 +15,7 @@ class Team extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'asset_key',
         'team_foreign_id',
         'team_name',
         'team_nationality',

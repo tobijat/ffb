@@ -46,40 +46,20 @@
     }
 
     const selectedLeagueId = Number(config.selectedLeagueId || 0) || 0;
+    const selectedLeagueAssetKey = String(config.selectedLeagueAssetKey || '');
 
-    function shirtImgTag(teamId, nationality, attrs) {
+    function shirtImgTag(teamKey, nationality, attrs) {
         if (window.FfbShirts && typeof window.FfbShirts.imgTag === 'function') {
             return window.FfbShirts.imgTag(
                 legacyBase,
-                teamId,
+                teamKey,
                 nationality,
                 attrs || '',
-                selectedLeagueId
+                selectedLeagueAssetKey
             );
         }
-        const tid = Number(teamId) || 0;
-        const nat = String(nationality || 'aut')
-            .toLowerCase()
-            .trim()
-            .replace(/[ .]/g, '_')
-            .replace(/[^a-z0-9_-]+/g, '');
         const blank = legacyBase + 'images/ffb/shirts/shirt_MISSING.svg';
-        if (tid <= 0 || !nat) {
-            return '<img class="shirt" src="' + blank + '" ' + (attrs || '') + '>';
-        }
-        const src =
-            selectedLeagueId > 0
-                ? legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '-' + selectedLeagueId + '.png'
-                : legacyBase + 'images/ffb/shirts/' + tid + '/' + nat + '.png';
-        return (
-            '<img class="shirt" src="' +
-            src +
-            '" ' +
-            (attrs || '') +
-            ' onerror="this.onerror=null;this.src=\'' +
-            blank +
-            '\'">'
-        );
+        return '<img class="shirt" src="' + blank + '" ' + (attrs || '') + '>';
     }
 
     function apiUrl(path) {
@@ -1017,13 +997,13 @@
 
     function playerCard(player) {
         const nat = player.playerteam_team_nationality || 'AUT';
-        const teamId = player.playerteam_team_id;
+        const teamKey = player.playerteam_team_asset_key || '';
         return (
             '<div class="pitch-player">' +
             '<a href="#" data-remove="' +
             player.playerteam_id +
             '" title="Klicken um Spieler zu entfernen">' +
-            shirtImgTag(teamId, nat, 'width="55" height="50" alt=""') +
+            shirtImgTag(teamKey, nat, 'width="55" height="50" alt=""') +
             '</a>' +
             '<a class="name" href="#" data-remove="' +
             player.playerteam_id +
@@ -1285,6 +1265,8 @@
                     : player.player_price
             ),
             playerteam_team_id: player.playerteam_team_id,
+            playerteam_team_asset_key: player.playerteam_team_asset_key || '',
+            player_asset_key: player.player_asset_key || '',
             playerteam_team: player.playerteam_team,
             playerteam_team_nationality: player.playerteam_team_nationality,
             playerteam_id: player.playerteam_id,

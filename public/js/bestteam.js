@@ -69,15 +69,16 @@
     }
 
     const selectedLeagueId = Number(config.selectedLeagueId || 0) || 0;
+    const selectedLeagueAssetKey = String(config.selectedLeagueAssetKey || '');
 
-    function shirtImgTag(teamId, nationality, attrs) {
+    function shirtImgTag(teamKey, nationality, attrs) {
         if (window.FfbShirts && typeof window.FfbShirts.imgTag === 'function') {
             return window.FfbShirts.imgTag(
                 legacyBase,
-                teamId,
+                teamKey,
                 nationality,
                 attrs || '',
-                selectedLeagueId
+                selectedLeagueAssetKey
             );
         }
         const blank = legacyBase + 'images/ffb/shirts/shirt_MISSING.svg';
@@ -285,14 +286,14 @@
         const fname = escapeHtml(player.player_fname || '');
         const lname = escapeHtml(player.player_lname || '');
         const nat = player.playerteam_team_nationality || 'AUT';
-        const teamId = player.playerteam_team_id;
+        const teamKey = player.playerteam_team_asset_key || '';
         const price = formatPlayerPrice(player.playerteam_player_price);
         return (
             '<div class="pitch-player">' +
             '<a href="#" data-modal="player" data-id="' +
             player.playerteam_id +
             '">' +
-            shirtImgTag(teamId, nat, 'alt="" width="55" height="50"') +
+            shirtImgTag(teamKey, nat, 'alt="" width="55" height="50"') +
             '</a>' +
             '<span class="name">' +
             fname +

@@ -418,6 +418,8 @@ class AdminLeagueDashboardService
         }
 
         $teamIds = $this->leagueMatchTeamIds($leagueId);
+        $leagueKey = League::query()->whereKey($leagueId)->value('asset_key');
+        $leagueKey = is_string($leagueKey) && $leagueKey !== '' ? $leagueKey : null;
 
         $teams = $teamIds === []
             ? collect()
@@ -425,7 +427,7 @@ class AdminLeagueDashboardService
                 ->whereIn('team_id', $teamIds)
                 ->orderBy('team_name')
                 ->orderBy('team_id')
-                ->get(['team_id', 'team_name', 'team_nationality', 'team_status']);
+                ->get(['team_id', 'team_name', 'team_nationality', 'team_status', 'asset_key']);
 
         $inactive = [];
         $missingFlag = [];
@@ -454,7 +456,7 @@ class AdminLeagueDashboardService
                 ];
             }
 
-            if (! $this->teamHasJersey((int) $team->team_id, $nationality, $leagueId)) {
+            if (! $this->teamHasJersey($team->asset_key !== null ? (string) $team->asset_key : null, $nationality, $leagueKey)) {
                 $missingJersey[] = [
                     'team_id' => (int) $team->team_id,
                     'label' => $label,
@@ -2613,9 +2615,9 @@ class AdminLeagueDashboardService
         return is_file($this->flagsDir().DIRECTORY_SEPARATOR.$nationality.'.gif');
     }
 
-    private function teamHasJersey(int $teamId, string $nationality, int $leagueId): bool
+    private function teamHasJersey(?string $teamKey, string $nationality, ?string $leagueKey): bool
     {
-        return TeamShirt::relativePath($teamId, $nationality, $leagueId) !== null;
+        return TeamShirt::relativePath($teamKey, $nationality, $leagueKey) !== null;
     }
 
     private function flagsDir(): string
@@ -2729,7 +2731,7 @@ class AdminLeagueDashboardService
 
     private function leagueHasLogoFile(League $league): bool
     {
-        return LeagueSymbol::exists((int) $league->league_id);
+        return LeagueSymbol::exists($league->asset_key !== null ? (string) $league->asset_key : null);
     }
 
     private function leagueScheduleMatchesArchiveState(League $league): bool

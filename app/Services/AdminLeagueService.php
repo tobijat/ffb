@@ -7,6 +7,7 @@ use App\Models\LeagueOptions;
 use App\Models\Matchround;
 use App\Models\News;
 use App\Models\Userscore;
+use App\Support\AssetKey;
 use App\Support\LeagueSymbol;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -49,7 +50,7 @@ class AdminLeagueService
                 'league_test' => 0,
                 'league_uefa_competition_identifier' => '',
                 'league_fifa_competition_identifier' => '',
-                'symbol_url' => LeagueSymbol::url(0),
+                'symbol_url' => LeagueSymbol::url(null),
             ],
             $this->defaultOptionsForm(),
         );
@@ -79,7 +80,7 @@ class AdminLeagueService
                 'league_test' => (int) (bool) $league->league_test,
                 'league_uefa_competition_identifier' => (string) ($league->league_uefa_competition_identifier ?? ''),
                 'league_fifa_competition_identifier' => (string) ($league->league_fifa_competition_identifier ?? ''),
-                'symbol_url' => LeagueSymbol::url((int) $league->league_id),
+                'symbol_url' => LeagueSymbol::url($this->leagueKey($league)),
             ],
             $optionForm,
         );
@@ -98,8 +99,11 @@ class AdminLeagueService
         }
 
         $createdId = 0;
-        DB::transaction(function () use ($form, &$createdId): void {
+        $createdKey = '';
+        DB::transaction(function () use ($form, &$createdId, &$createdKey): void {
+            $createdKey = AssetKey::generate('ffb_league', (string) $form['league_title']);
             $league = League::query()->create([
+                'asset_key' => $createdKey,
                 'league_title' => $form['league_title'],
                 'league_visible' => (int) $form['league_visible'],
                 'league_archive' => (int) $form['league_archive'],
@@ -116,7 +120,7 @@ class AdminLeagueService
         });
 
         if ($symbolFile !== null && $createdId > 0) {
-            if (! LeagueSymbol::store($createdId, $symbolFile)) {
+            if (! LeagueSymbol::store($createdKey, $symbolFile)) {
                 return [
                     'ok' => false,
                     'errors' => ['Liga angelegt, aber Symbol-Upload fehlgeschlagen.'],
@@ -146,13 +150,13 @@ class AdminLeagueService
         $form = $this->normalizeInput($input + [
             'league_id' => $leagueId,
         ]);
-        $form['symbol_url'] = LeagueSymbol::url($leagueId);
+        $form['symbol_url'] = LeagueSymbol::url($this->leagueKey($league));
         $errors = $this->validate($form, $symbolFile);
         if ($errors !== []) {
             return ['ok' => false, 'errors' => $errors, 'form' => $form];
         }
 
-        if ($symbolFile !== null && ! LeagueSymbol::store($leagueId, $symbolFile)) {
+        if ($symbolFile !== null && ! LeagueSymbol::store($this->leagueKey($league), $symbolFile)) {
             return [
                 'ok' => false,
                 'errors' => ['Symbol-Upload fehlgeschlagen.'],
@@ -181,7 +185,7 @@ class AdminLeagueService
             }
         });
 
-        $form['symbol_url'] = LeagueSymbol::url($leagueId);
+        $form['symbol_url'] = LeagueSymbol::url($this->leagueKey($league));
 
         return ['ok' => true, 'message' => 'Liga erfolgreich aktualisiert.'];
     }
@@ -208,8 +212,9 @@ class AdminLeagueService
             return ['ok' => false, 'errors' => ['Löschen nicht möglich: Es gibt zugehörige Ranglisten-Daten.']];
         }
 
+        $leagueKey = $this->leagueKey($league);
         $league->delete();
-        LeagueSymbol::deleteForLeague($leagueId);
+        LeagueSymbol::deleteForLeague($leagueKey);
 
         return ['ok' => true, 'message' => 'Liga erfolgreich gelöscht.'];
     }
@@ -232,7 +237,7 @@ class AdminLeagueService
                     'league_visible' => (int) (bool) $league->league_visible,
                     'league_archive' => (int) (bool) $league->league_archive,
                     'league_test' => (int) (bool) $league->league_test,
-                    'symbol_url' => LeagueSymbol::url($leagueId),
+                    'symbol_url' => LeagueSymbol::url($this->leagueKey($league)),
                 ];
             })
             ->values()
@@ -246,6 +251,7 @@ class AdminLeagueService
     private function normalizeInput(array $input): array
     {
         $leagueId = (int) ($input['league_id'] ?? 0);
+        $existingLeague = $leagueId > 0 ? League::query()->find($leagueId) : null;
 
         $form = [
             'league_id' => (string) ($input['league_id'] ?? ''),
@@ -255,7 +261,7 @@ class AdminLeagueService
             'league_test' => (int) ($input['league_test'] ?? 0) === 1 ? 1 : 0,
             'league_uefa_competition_identifier' => trim((string) ($input['league_uefa_competition_identifier'] ?? '')),
             'league_fifa_competition_identifier' => trim((string) ($input['league_fifa_competition_identifier'] ?? '')),
-            'symbol_url' => LeagueSymbol::url($leagueId),
+            'symbol_url' => LeagueSymbol::url($existingLeague ? $this->leagueKey($existingLeague) : null),
         ];
 
         foreach ($this->optionKeys() as $key) {
@@ -284,6 +290,13 @@ class AdminLeagueService
         }
 
         return $form;
+    }
+
+    private function leagueKey(League $league): ?string
+    {
+        $key = (string) ($league->asset_key ?? '');
+
+        return $key !== '' ? $key : null;
     }
 
     /**

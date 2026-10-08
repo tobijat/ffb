@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Player;
 use App\Models\Playerteam;
+use App\Models\Team;
+use App\Support\AssetKey;
 use App\Support\PlayerPicture;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
@@ -389,6 +391,8 @@ class WikimediaPlayerImageService
             }
         }
 
+        $teamKey = (string) Team::query()->whereKey($teamId)->value('asset_key');
+
         $stored = 0;
         foreach ($commonsByPlayerId as $playerId => $commonsFile) {
             $player = Player::query()->find($playerId);
@@ -404,12 +408,17 @@ class WikimediaPlayerImageService
                 continue;
             }
 
-            $path = PlayerPicture::storagePath($teamId, $playerId);
+            $playerKey = (string) ($player->asset_key ?? '');
+            if (! AssetKey::isValid($teamKey) || ! AssetKey::isValid($playerKey)) {
+                continue;
+            }
+
+            $path = PlayerPicture::storagePath($teamKey, $playerKey);
             if (! $this->downloadThumbnailFromUrl($thumbUrl, $path, $commonsFile)) {
                 continue;
             }
 
-            $pictureName = $teamId.'-'.$playerId.'.jpg';
+            $pictureName = $playerKey.'.jpg';
             $query = Playerteam::query()
                 ->where('playerteam_player_id', $playerId)
                 ->where('playerteam_team_id', $teamId);

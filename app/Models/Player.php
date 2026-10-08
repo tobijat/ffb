@@ -14,6 +14,7 @@ class Player extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'asset_key',
         'player_foreign_id',
         'player_uefa_id',
         'player_fifa_id',

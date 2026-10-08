@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\League;
 use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\Playerstats;
@@ -46,6 +47,7 @@ class MyteamService
                     'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
                 ],
                 'selected_league_id' => $leagueId,
+                'selected_league_asset_key' => (string) (League::query()->whereKey($leagueId)->value('asset_key') ?? ''),
                 'navigation' => app(DashboardService::class)->navigation($userId),
             ],
         ];

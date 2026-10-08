@@ -17,13 +17,12 @@
         return benchLimits(options).max > 0;
     }
 
-    function selectedLeagueId() {
-        return (
-            Number(
-                (global.FFB_LINEUP && global.FFB_LINEUP.selectedLeagueId) ||
-                    (global.FFB_MYTEAM && global.FFB_MYTEAM.selectedLeagueId) ||
-                    0
-            ) || 0
+    function selectedLeagueAssetKey() {
+        return String(
+            (global.FFB_LINEUP && global.FFB_LINEUP.selectedLeagueAssetKey) ||
+                (global.FFB_MYTEAM && global.FFB_MYTEAM.selectedLeagueAssetKey) ||
+                (global.FFB_BESTTEAM && global.FFB_BESTTEAM.selectedLeagueAssetKey) ||
+                ''
         );
     }
 
@@ -57,14 +56,14 @@
             .replace(/"/g, '&quot;');
     }
 
-    function shirtImg(legacyBase, teamId, nationality) {
+    function shirtImg(legacyBase, teamKey, nationality) {
         if (global.FfbShirts && typeof global.FfbShirts.imgTag === 'function') {
             return global.FfbShirts.imgTag(
                 legacyBase,
-                teamId,
+                teamKey,
                 nationality,
                 'width="55" height="50" alt=""',
-                selectedLeagueId()
+                selectedLeagueAssetKey()
             );
         }
         const blank = legacyBase + 'images/ffb/shirts/shirt_MISSING.svg';
@@ -214,7 +213,7 @@
 
     function editPlayerCard(player, legacyBase) {
         const nat = player.playerteam_team_nationality || 'AUT';
-        const teamId = player.playerteam_team_id;
+        const teamKey = player.playerteam_team_asset_key || '';
         const price = playerPrice(player);
 
         return (
@@ -222,7 +221,7 @@
             '<a href="#" data-remove-bench="' +
             player.playerteam_id +
             '" title="Klicken um Ersatzspieler zu entfernen">' +
-            shirtImg(legacyBase, teamId, nat) +
+            shirtImg(legacyBase, teamKey, nat) +
             '</a>' +
             '<a class="name" href="#" data-remove-bench="' +
             player.playerteam_id +
@@ -246,7 +245,7 @@
 
     function viewPlayerCard(player, legacyBase, showPrice, matchroundId) {
         const nat = player.playerteam_team_nationality || 'AUT';
-        const teamId = player.playerteam_team_id;
+        const teamKey = player.playerteam_team_asset_key || '';
         const price = playerPrice(player);
         const priceHtml = showPrice
             ? '<span title="Preis: ' + price + ' Credits">' + price + '</span>'
@@ -257,7 +256,7 @@
             '<a href="#" data-modal="player" data-id="' +
             player.playerteam_id +
             '">' +
-            shirtImg(legacyBase, teamId, nat) +
+            shirtImg(legacyBase, teamKey, nat) +
             '</a>' +
             '<span class="name">' +
             escapeHtml(player.player_fname || '') +
