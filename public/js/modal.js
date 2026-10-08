@@ -349,6 +349,32 @@
         return '<img class="ffb-flag ffb-flag-img" src="' + src + '" alt="" width="16" height="11" loading="lazy"' + titleAttr + '>';
     }
 
+    function flagBackgroundUrl(code) {
+        if (window.FfbFlags) {
+            if (typeof window.FfbFlags.svgUrl === 'function') {
+                const svg = window.FfbFlags.svgUrl(code);
+                if (svg) {
+                    return svg;
+                }
+            }
+            if (typeof window.FfbFlags.imageUrl === 'function') {
+                return window.FfbFlags.imageUrl(code);
+            }
+        }
+        const flag = (!code || code === '0' ? 'na' : String(code)).toLowerCase();
+        return legacyBase + 'images/ffb/flags/' + flag + '.gif';
+    }
+
+    function cssUrl(url) {
+        return (
+            "url('" +
+            String(url == null ? '' : url)
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'") +
+            "')"
+        );
+    }
+
     function playerLink(playerteamId, name) {
         return (
             '<a class="nolink" href="#" data-modal="player" data-id="' +
@@ -664,6 +690,26 @@
         return parts.join(' - ');
     }
 
+    function formatMatchHeaderMeta(match) {
+        const parts = [];
+        const league = String(match.match_league_title || '').trim();
+        const round = String(match.match_matchround_name || '').trim();
+        const dateLabel = String(match.match_date || '').trim();
+        let roundLabel = '';
+        if (league !== '' && round !== '') {
+            roundLabel = league + ' - ' + round;
+        } else {
+            roundLabel = league || round;
+        }
+        if (roundLabel !== '') {
+            parts.push(roundLabel);
+        }
+        if (dateLabel !== '') {
+            parts.push(dateLabel);
+        }
+        return parts.join(' - ');
+    }
+
     function renderPrevMatches(prev) {
         if (!prev || !prev.length) {
             return '';
@@ -730,28 +776,32 @@
 
         return (
             '<div class="ffb-match">' +
-            '<div class="ffb-match-header">' +
-            '<div class="home">' +
-            flagHtml(match.match_hometeam_nationality, match.match_hometeam_nationality) +
-            ' ' +
+            '<ul class="match-list ffb-match-header-wrap">' +
+            '<li class="match-list-item ffb-match-header-card" style="--ffb-flag-home:' +
+            cssUrl(flagBackgroundUrl(match.match_hometeam_nationality)) +
+            ';--ffb-flag-away:' +
+            cssUrl(flagBackgroundUrl(match.match_guestteam_nationality)) +
+            '">' +
+            '<div class="ffb-match-prev-meta">' +
+            escapeHtml(formatMatchHeaderMeta(match)) +
+            '</div>' +
+            '<div class="match-list-row ffb-match-header">' +
+            '<span class="home">' +
+            '<span class="match-team-name">' +
             escapeHtml(match.match_hometeam_name) +
-            '</div>' +
-            '<div class="result">' +
+            '</span>' +
+            '</span>' +
+            '<span class="score">' +
             formatMatchResult(match) +
-            '</div>' +
-            '<div class="guest">' +
+            '</span>' +
+            '<span class="away">' +
+            '<span class="match-team-name">' +
             escapeHtml(match.match_guestteam_name) +
-            ' ' +
-            flagHtml(match.match_guestteam_nationality, match.match_guestteam_nationality) +
+            '</span>' +
+            '</span>' +
             '</div>' +
-            '</div>' +
-            '<div class="ffb-match-meta">' +
-            escapeHtml(match.match_league_title) +
-            ' — ' +
-            escapeHtml(match.match_matchround_name) +
-            '<br>' +
-            escapeHtml(match.match_date || '') +
-            '</div>' +
+            '</li>' +
+            '</ul>' +
             '<div class="ffb-match-lineups">' +
             '<div class="home">' +
             renderHomePlayers(data.hometeam_players, minutes) +

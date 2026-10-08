@@ -134,6 +134,7 @@ trait CreatesLegacyFfbSchema
             $table->integer('playerprice_matchround_id');
             $table->double('playerprice_price')->default(0);
             $table->double('playerprice_powers')->default(0);
+            $table->double('playerprice_recent_performance')->nullable();
         });
 
         Schema::create('ffb_goal', function (Blueprint $table) {

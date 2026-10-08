@@ -270,8 +270,6 @@
     function renderPlayerInfoBody(data, showAll) {
         const player = data.player;
         const s = data.stats;
-        const efficiency =
-            s.sum_minutes > 0 ? Math.round((s.sum_score / s.sum_minutes) * 10000) / 100 : '-';
 
         let rows = '';
         rows += profileRow('stats_lineup.svg', 'Aufstellungen gesamt:', escapeHtml(s.num_lineups) + 'x');
@@ -305,7 +303,11 @@
             'Einsatz gesamt/Ø:',
             escapeHtml(s.sum_minutes) + '/' + escapeHtml(s.av_minutes) + ' Minuten'
         );
-        rows += profileRow('symbol_effectivity.svg', 'Effektivität:', escapeHtml(efficiency) + ' Punkte');
+        if (s.recent_performance !== undefined && s.recent_performance !== null && s.recent_performance !== '') {
+            const rp = Math.max(-1, Math.min(1, Number(s.recent_performance)));
+            const pct = Math.round(((rp + 1) / 2) * 100);
+            rows += profileRow('symbol_effectivity.svg', 'Liga-Performance:', escapeHtml(pct) + '%');
+        }
 
         let tables = renderRoundsTable(data.matchrounds, player.playerteam_id, showAll, true);
         if (data.pastmatches && data.pastmatches.length) {

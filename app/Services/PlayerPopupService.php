@@ -188,6 +188,7 @@ class PlayerPopupService
                     'av_goals' => $played > 0 ? round($goals / $played, 2) : 0,
                     'av_assists' => $played > 0 ? round($assists / $played, 2) : 0,
                     'av_minutes' => $played > 0 ? round($minutes / $played, 2) : 0,
+                    'recent_performance' => $this->latestRecentPerformance($leagueId, $ptIds),
                     'match_count_total' => $matchCountTotal,
                     'match_count_played' => $played,
                     'match_count_percent' => $matchCountTotal > 0
@@ -375,6 +376,33 @@ class PlayerPopupService
     }
 
     /**
+     * Newest non-null playerprice_recent_performance (−1…+1) in the selected league.
+     *
+     * @param  list<int>  $ptIds
+     */
+    private function latestRecentPerformance(int $leagueId, array $ptIds): ?float
+    {
+        if ($leagueId <= 0 || $ptIds === []) {
+            return null;
+        }
+
+        $raw = Playerprice::query()
+            ->join('ffb_matchround', 'ffb_matchround.matchround_id', '=', 'ffb_playerprice.playerprice_matchround_id')
+            ->where('ffb_matchround.matchround_league_id', $leagueId)
+            ->whereIn('ffb_playerprice.playerprice_playerteam_id', $ptIds)
+            ->whereNotNull('ffb_playerprice.playerprice_recent_performance')
+            ->orderByDesc('ffb_matchround.matchround_startdate')
+            ->orderByDesc('ffb_playerprice.playerprice_id')
+            ->value('ffb_playerprice.playerprice_recent_performance');
+
+        if ($raw === null) {
+            return null;
+        }
+
+        return max(-1.0, min(1.0, (float) $raw));
+    }
+
+    /**
      * All league-scoped roster rows for the same person at the same club.
      *
      * @return list<int>
@@ -401,9 +429,8 @@ class PlayerPopupService
      */
     private function countLineups(array $ptIds, int $leagueId): int
     {
-        return Userteam::query()
+        return Userteam::queryContainingAnyPlayerteam($ptIds)
             ->whereHas('matchround', fn (Builder $q) => $q->where('matchround_league_id', $leagueId))
-            ->whereHas('slots', fn (Builder $q) => $q->whereIn('userteam_slot_playerteam_id', $ptIds))
             ->count();
     }
 
@@ -446,10 +473,9 @@ class PlayerPopupService
             return [];
         }
 
-        $rows = Userteam::query()
+        $rows = Userteam::queryContainingAnyPlayerteam($ptIds)
             ->selectRaw('userteam_matchround_id, COUNT(*) as cnt')
             ->whereIn('userteam_matchround_id', $roundIds)
-            ->whereHas('slots', fn (Builder $q) => $q->whereIn('userteam_slot_playerteam_id', $ptIds))
             ->groupBy('userteam_matchround_id')
             ->get();
 
@@ -780,9 +806,8 @@ class PlayerPopupService
             return 0;
         }
 
-        return Userteam::query()
+        return Userteam::queryContainingAnyPlayerteam($playerteamIds)
             ->where('userteam_matchround_id', $matchroundId)
-            ->whereHas('slots', fn (Builder $q) => $q->whereIn('userteam_slot_playerteam_id', $playerteamIds))
             ->count();
     }
 

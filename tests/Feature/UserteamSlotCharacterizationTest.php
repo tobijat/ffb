@@ -133,6 +133,52 @@ class UserteamSlotCharacterizationTest extends TestCase
         $this->assertSame(0, $countForRound->invoke($service, [50], 999));
     }
 
+    #[Test]
+    public function popup_lineup_counts_include_substitute_slots(): void
+    {
+        DB::table('ffb_userteam')->insert([
+            ['userteam_id' => 1, 'userteam_user_id' => 1, 'userteam_matchround_id' => 1],
+            ['userteam_id' => 2, 'userteam_user_id' => 2, 'userteam_matchround_id' => 1],
+            ['userteam_id' => 3, 'userteam_user_id' => 3, 'userteam_matchround_id' => 1],
+        ]);
+        DB::table('ffb_userteam_slot')->insert([
+            [
+                'userteam_slot_userteam_id' => 1,
+                'userteam_slot_slot' => 1,
+                'userteam_slot_playerteam_id' => 50,
+            ],
+            [
+                'userteam_slot_userteam_id' => 2,
+                'userteam_slot_slot' => 1,
+                'userteam_slot_playerteam_id' => 99,
+            ],
+        ]);
+        DB::table('ffb_userteam_substitute_slot')->insert([
+            [
+                'substitute_slot_userteam_id' => 2,
+                'substitute_slot_slot' => 1,
+                'substitute_slot_playerteam_id' => 50,
+                'substitute_slot_replaces_playerteam_id' => null,
+            ],
+            [
+                'substitute_slot_userteam_id' => 3,
+                'substitute_slot_slot' => 1,
+                'substitute_slot_playerteam_id' => 50,
+                'substitute_slot_replaces_playerteam_id' => null,
+            ],
+        ]);
+
+        $service = app(PlayerPopupService::class);
+        $countLineups = new \ReflectionMethod($service, 'countLineups');
+        $countForRound = new \ReflectionMethod($service, 'countLineupsForRound');
+        $lineupsByRound = new \ReflectionMethod($service, 'lineupsByRound');
+
+        // Starter in #1, sub in #2, sub-only in #3 → 3 lineups total
+        $this->assertSame(3, $countLineups->invoke($service, [50], 1));
+        $this->assertSame(3, $countForRound->invoke($service, [50], 1));
+        $this->assertSame([1 => 3], $lineupsByRound->invoke($service, [50], [1]));
+    }
+
     private function seedBaseEntities(): void
     {
         DB::table('ffb_league')->insert(['league_id' => 1, 'league_title' => 'Testliga']);

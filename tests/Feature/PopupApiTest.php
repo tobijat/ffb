@@ -280,6 +280,7 @@ class PopupApiTest extends TestCase
                 'av_goals' => 1,
                 'av_assists' => 0.33,
                 'av_minutes' => 90,
+                'recent_performance' => 0.45,
                 'match_count_total' => 5,
                 'match_count_played' => 3,
                 'match_count_percent' => 60,
