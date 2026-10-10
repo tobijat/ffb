@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/start.css?v=23">
     <link rel="stylesheet" href="css/dashboard.css?v=12">
     <link rel="stylesheet" href="css/modal.css?v=32">
-    <link rel="stylesheet" href="css/myteam.css?v=32">
+    <link rel="stylesheet" href="css/myteam.css?v=33">
 </head>
 <body class="dash-body">
     @php
@@ -124,6 +124,6 @@
     <script src="js/modal.js?v=29" defer></script>
     <script src="js/player-modal.js?v=29" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
-    <script src="js/bestteam.js?v=14" defer></script>
+    <script src="js/bestteam.js?v=15" defer></script>
 </body>
 </html>

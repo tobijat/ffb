@@ -72,48 +72,75 @@ final class TeamShirt
 
     /**
      * Absolute filesystem path for the default (non-league) shirt file.
-     * Upload target remains PNG; existence checks use relativePath().
+     *
+     * @param  'svg'|'png'  $extension
      */
-    public static function defaultStoragePath(string $teamKey, ?string $nationality): string
+    public static function defaultStoragePath(string $teamKey, ?string $nationality, string $extension = 'png'): string
     {
         $nat = self::normalizeNationality($nationality);
+        $ext = self::normalizeExtension($extension);
 
         return self::shirtsDir()
             .DIRECTORY_SEPARATOR.$teamKey
-            .DIRECTORY_SEPARATOR.$nat.'.png';
+            .DIRECTORY_SEPARATOR.$nat.'.'.$ext;
     }
 
     /**
      * Absolute filesystem path for a league-specific shirt file.
-     * Upload target remains PNG; existence checks use relativePath().
+     *
+     * @param  'svg'|'png'  $extension
      */
-    public static function leagueStoragePath(string $teamKey, ?string $nationality, string $leagueKey): string
-    {
+    public static function leagueStoragePath(
+        string $teamKey,
+        ?string $nationality,
+        string $leagueKey,
+        string $extension = 'png',
+    ): string {
         $nat = self::normalizeNationality($nationality);
+        $ext = self::normalizeExtension($extension);
 
         return self::shirtsDir()
             .DIRECTORY_SEPARATOR.$teamKey
-            .DIRECTORY_SEPARATOR.$nat.'-'.$leagueKey.'.png';
+            .DIRECTORY_SEPARATOR.$nat.'-'.$leagueKey.'.'.$ext;
     }
 
     /**
      * Public URL path for the default shirt (may not exist on disk yet).
+     *
+     * @param  'svg'|'png'  $extension
      */
-    public static function defaultPublicPath(string $teamKey, ?string $nationality): string
+    public static function defaultPublicPath(string $teamKey, ?string $nationality, string $extension = 'png'): string
     {
         $nat = self::normalizeNationality($nationality);
+        $ext = self::normalizeExtension($extension);
 
-        return '/images/ffb/shirts/'.$teamKey.'/'.$nat.'.png';
+        return '/images/ffb/shirts/'.$teamKey.'/'.$nat.'.'.$ext;
     }
 
     /**
      * Public URL path for a league shirt (may not exist on disk yet).
+     *
+     * @param  'svg'|'png'  $extension
      */
-    public static function leaguePublicPath(string $teamKey, ?string $nationality, string $leagueKey): string
-    {
+    public static function leaguePublicPath(
+        string $teamKey,
+        ?string $nationality,
+        string $leagueKey,
+        string $extension = 'png',
+    ): string {
         $nat = self::normalizeNationality($nationality);
+        $ext = self::normalizeExtension($extension);
 
-        return '/images/ffb/shirts/'.$teamKey.'/'.$nat.'-'.$leagueKey.'.png';
+        return '/images/ffb/shirts/'.$teamKey.'/'.$nat.'-'.$leagueKey.'.'.$ext;
+    }
+
+    /**
+     * @param  string  $extension
+     * @return 'svg'|'png'
+     */
+    private static function normalizeExtension(string $extension): string
+    {
+        return strtolower(trim($extension)) === 'svg' ? 'svg' : 'png';
     }
 
     public static function blankUrl(bool $red = false): string

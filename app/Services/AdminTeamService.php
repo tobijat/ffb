@@ -1485,9 +1485,11 @@ class AdminTeamService
         $upper = strtoupper($selectedKey);
         $hasTeamKey = AssetKey::isValid($teamKey);
         $shirtUrl = $hasTeamKey ? TeamShirt::url($teamKey, $selectedKey) : null;
-        $pathHint = $hasTeamKey
-            ? 'shirts/'.$teamKey.'/'.$selectedKey.'.png'
-            : 'shirts/<team_key>/'.$selectedKey.'.png';
+        $existingRelative = $hasTeamKey ? TeamShirt::relativePath($teamKey, $selectedKey) : null;
+        $pathHint = $existingRelative
+            ?? ($hasTeamKey
+                ? 'shirts/'.$teamKey.'/'.$selectedKey.'.svg|.png'
+                : 'shirts/<team_key>/'.$selectedKey.'.svg|.png');
 
         return [
             'key' => $selectedKey,
@@ -1717,9 +1719,15 @@ class AdminTeamService
             return $errors;
         }
 
-        $mime = (string) $shirtFile->getMimeType();
-        if (! in_array($mime, ['image/png', 'image/jpeg', 'image/gif', 'image/webp'], true)) {
-            $errors[] = 'Trikot muss ein Bild sein (PNG, JPEG, GIF oder WebP).';
+        $mime = strtolower((string) $shirtFile->getMimeType());
+        $ext = strtolower((string) $shirtFile->getClientOriginalExtension());
+        $allowedMimes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml', 'image/svg'];
+        $isSvg = in_array($mime, ['image/svg+xml', 'image/svg'], true) || $ext === 'svg';
+        if (! in_array($mime, $allowedMimes, true) && ! $isSvg) {
+            $errors[] = 'Trikot muss ein Bild sein (PNG, JPEG, GIF, WebP oder SVG).';
+        }
+        if ($isSvg && ! $this->looksLikeSvg($shirtFile)) {
+            $errors[] = 'Die SVG-Datei scheint ungültig zu sein.';
         }
         if ($shirtFile->getSize() > 2 * 1024 * 1024) {
             $errors[] = 'Trikot darf maximal 2 MB groß sein.';
@@ -1769,24 +1777,84 @@ class AdminTeamService
             return false;
         }
 
-        $target = TeamShirt::defaultStoragePath($teamKey, $nat);
-        $dir = dirname($target);
-        File::ensureDirectoryExists($dir);
+        $mime = strtolower((string) $file->getMimeType());
+        $ext = strtolower((string) $file->getClientOriginalExtension());
+        $isSvg = in_array($mime, ['image/svg+xml', 'image/svg'], true) || $ext === 'svg';
 
-        $mime = (string) $file->getMimeType();
-        $filename = basename($target);
+        if ($isSvg) {
+            if (! $this->looksLikeSvg($file)) {
+                return false;
+            }
 
-        if ($mime === 'image/png') {
+            $target = TeamShirt::defaultStoragePath($teamKey, $nat, 'svg');
+            $dir = dirname($target);
+            File::ensureDirectoryExists($dir);
+
             try {
-                $file->move($dir, $filename);
+                $file->move($dir, basename($target));
             } catch (Throwable) {
                 return false;
             }
 
-            return is_file($target);
+            if (! is_file($target)) {
+                return false;
+            }
+
+            // Prefer the newly uploaded SVG over a leftover PNG at the same stem.
+            $pngSibling = TeamShirt::defaultStoragePath($teamKey, $nat, 'png');
+            if (is_file($pngSibling)) {
+                @unlink($pngSibling);
+            }
+
+            return true;
         }
 
-        return $this->convertAndStoreImage($file, $mime, $target, 'png');
+        $target = TeamShirt::defaultStoragePath($teamKey, $nat, 'png');
+        $dir = dirname($target);
+        File::ensureDirectoryExists($dir);
+        $filename = basename($target);
+
+        $stored = $mime === 'image/png'
+            ? $this->moveUploadedShirt($file, $dir, $filename, $target)
+            : $this->convertAndStoreImage($file, $mime, $target, 'png');
+
+        if (! $stored) {
+            return false;
+        }
+
+        // Prefer the newly uploaded PNG over a leftover SVG at the same stem.
+        $svgSibling = TeamShirt::defaultStoragePath($teamKey, $nat, 'svg');
+        if (is_file($svgSibling)) {
+            @unlink($svgSibling);
+        }
+
+        return true;
+    }
+
+    private function moveUploadedShirt(UploadedFile $file, string $dir, string $filename, string $target): bool
+    {
+        try {
+            $file->move($dir, $filename);
+        } catch (Throwable) {
+            return false;
+        }
+
+        return is_file($target);
+    }
+
+    private function looksLikeSvg(UploadedFile $file): bool
+    {
+        $path = $file->getRealPath();
+        if ($path === false || ! is_file($path)) {
+            return false;
+        }
+
+        $head = @file_get_contents($path, false, null, 0, 4096);
+        if ($head === false || trim($head) === '') {
+            return false;
+        }
+
+        return (bool) preg_match('/<svg\b/i', $head);
     }
 
     private function convertAndStoreImage(UploadedFile $file, string $mime, string $target, string $format): bool

@@ -101,7 +101,7 @@
                 <div class="admin-field">
                     <label for="matchrounds_json">Spielplan-JSON</label>
                     <select id="matchrounds_json" name="matchrounds_json" required @disabled($matchplanFiles === [])>
-                        <option value="">� JSON-Datei w�hlen �</option>
+                        <option value="">— JSON-Datei wählen —</option>
                         @foreach ($matchplanFiles as $file)
                             <option value="{{ $file['name'] }}">{{ $file['label'] }}</option>
                         @endforeach
@@ -131,7 +131,7 @@
 }</pre>
                 </div>
                 <div class="admin-actions">
-                    <button type="submit" class="admin-submit" @disabled($matchplanFiles === [])>Teams pr�fen</button>
+                    <button type="submit" class="admin-submit" @disabled($matchplanFiles === [])>Teams prüfen</button>
                 </div>
             </form>
 
@@ -247,18 +247,18 @@
             @endphp
 
             <p class="hint">
-                Nutzt den UEFA-Competition-Identifier der ausgew�hlten Liga
+                Nutzt den UEFA-Competition-Identifier der ausgewählten Liga
                 @if ($selectedLeagueTitle !== '')
                     (<strong>{{ $selectedLeagueTitle }}</strong>)
                 @endif.
-                Format: <code>competitionId=�&amp;seasonYear=�&amp;competitionPhase=TOURNAMENT</code>
+                Format: <code>competitionId=…&amp;seasonYear=…&amp;competitionPhase=TOURNAMENT</code>
             </p>
 
             @if ($selectedLeagueId <= 0)
-                <p class="hint">Bitte zuerst unter <a href="{{ url('/admin') }}">Ligen</a> eine Liga ausw�hlen.</p>
+                <p class="hint">Bitte zuerst unter <a href="{{ url('/admin') }}">Ligen</a> eine Liga auswählen.</p>
             @elseif ($uefaIdentifier === '')
                 <p class="hint">
-                    F�r diese Liga ist kein Identifier hinterlegt.
+                    Für diese Liga ist kein Identifier hinterlegt.
                     Bitte unter <a href="{{ route('admin.leagues') }}">Ligen</a> setzen.
                 </p>
             @else
@@ -273,7 +273,7 @@
                     @csrf
                     <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
                     <div class="admin-actions">
-                        <button type="submit" class="admin-submit">Teams pr�fen</button>
+                        <button type="submit" class="admin-submit">Teams prüfen</button>
                     </div>
                 </form>
             @endif
@@ -337,7 +337,7 @@
                                                     class="admin-auto-uefa-team-id"
                                                     aria-label="FFB-Team {{ $index + 1 }}"
                                                 >
-                                                    <option value="">� zuordnen �</option>
+                                                    <option value="">— zuordnen —</option>
                                                     <option value="0" data-create-new="1" @selected($createNew)>Neu anlegen</option>
                                                     @foreach ($teamOptions as $option)
                                                         <option
@@ -371,9 +371,9 @@
                                                     value="{{ $row['team_nationality'] ?? '' }}"
                                                     maxlength="32"
                                                     class="admin-auto-uefa-nat"
-                                                    aria-label="Nationalit�t {{ $index + 1 }}"
+                                                    aria-label="Nationalität {{ $index + 1 }}"
                                                     readonly
-                                                    title="Nur zur Anzeige � wird bei Zuordnung bestehender Teams nicht gespeichert"
+                                                    title="Nur zur Anzeige — wird bei Zuordnung bestehender Teams nicht gespeichert"
                                                 >
                                             </td>
                                             <td><code>{{ $row['uefa_team_code'] ?? '' }}</code></td>
@@ -407,7 +407,7 @@
                             <button type="submit" class="admin-submit" id="admin-auto-uefa-save" disabled>
                                 Speichern
                             </button>
-                            <span class="muted" id="admin-auto-uefa-save-hint">Alle Teams m�ssen zugeordnet oder als neu markiert sein.</span>
+                            <span class="muted" id="admin-auto-uefa-save-hint">Alle Teams müssen zugeordnet oder als neu markiert sein.</span>
                         </div>
                     </form>
                 </div>
@@ -420,18 +420,18 @@
             @endphp
 
             <p class="hint">
-                Nutzt den FIFA-Competition-Identifier der ausgew�hlten Liga
+                Nutzt den FIFA-Competition-Identifier der ausgewählten Liga
                 @if ($selectedLeagueTitle !== '')
                     (<strong>{{ $selectedLeagueTitle }}</strong>)
                 @endif.
-                Format: <code>idCompetition=�&amp;idSeason=�</code>
+                Format: <code>idCompetition=…&amp;idSeason=…</code>
             </p>
 
             @if ($selectedLeagueId <= 0)
-                <p class="hint">Bitte zuerst unter <a href="{{ url('/admin') }}">Ligen</a> eine Liga ausw�hlen.</p>
+                <p class="hint">Bitte zuerst unter <a href="{{ url('/admin') }}">Ligen</a> eine Liga auswählen.</p>
             @elseif ($fifaIdentifier === '')
                 <p class="hint">
-                    F�r diese Liga ist kein Identifier hinterlegt.
+                    Für diese Liga ist kein Identifier hinterlegt.
                     Bitte unter <a href="{{ route('admin.leagues') }}">Ligen</a> setzen.
                 </p>
             @else
@@ -446,7 +446,7 @@
                     @csrf
                     <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
                     <div class="admin-actions">
-                        <button type="submit" class="admin-submit">Teams pr�fen</button>
+                        <button type="submit" class="admin-submit">Teams prüfen</button>
                     </div>
                 </form>
             @endif
@@ -510,7 +510,7 @@
                                                     class="admin-auto-fifa-team-id"
                                                     aria-label="FFB-Team {{ $index + 1 }}"
                                                 >
-                                                    <option value="">� zuordnen �</option>
+                                                    <option value="">— zuordnen —</option>
                                                     <option value="0" data-create-new="1" @selected($createNew)>Neu anlegen</option>
                                                     @foreach ($teamOptions as $option)
                                                         <option
@@ -544,9 +544,9 @@
                                                     value="{{ $row['team_nationality'] ?? '' }}"
                                                     maxlength="32"
                                                     class="admin-auto-fifa-nat"
-                                                    aria-label="Nationalit�t {{ $index + 1 }}"
+                                                    aria-label="Nationalität {{ $index + 1 }}"
                                                     readonly
-                                                    title="Nur zur Anzeige � wird bei Zuordnung bestehender Teams nicht gespeichert"
+                                                    title="Nur zur Anzeige — wird bei Zuordnung bestehender Teams nicht gespeichert"
                                                 >
                                             </td>
                                             <td><code>{{ $row['fifa_team_code'] ?? '' }}</code></td>
@@ -580,7 +580,7 @@
                             <button type="submit" class="admin-submit" id="admin-auto-fifa-save" disabled>
                                 Speichern
                             </button>
-                            <span class="muted" id="admin-auto-fifa-save-hint">Alle Teams m�ssen zugeordnet oder als neu markiert sein.</span>
+                            <span class="muted" id="admin-auto-fifa-save-hint">Alle Teams müssen zugeordnet oder als neu markiert sein.</span>
                         </div>
                     </form>
                 </div>
@@ -663,20 +663,20 @@
                                 @if ($selectedSymbol)
                                     Kein Trikot vorhanden
                                 @else
-                                    �
+                                    —
                                 @endif
                             </span>
                         </div>
                     </div>
                     <div class="admin-symbol-current-meta">
-                        <strong id="team-symbol-key">{{ $selectedSymbol['key'] ?? 'Kein Symbol gew�hlt' }}</strong>
+                        <strong id="team-symbol-key">{{ $selectedSymbol['key'] ?? 'Kein Symbol gewählt' }}</strong>
                         <span id="team-symbol-label" class="muted">{{ $selectedSymbol['label'] ?? '' }}</span>
                         @if ($usesIconPicker)
                             <button type="button" class="admin-cancel" id="team-icon-toggle">
-                                {{ $selectedIcon !== '' ? 'Symbol �ndern' : 'Symbol w�hlen' }}
+                                {{ $selectedIcon !== '' ? 'Symbol ändern' : 'Symbol wählen' }}
                             </button>
                         @else
-                            <span class="muted">Flagge wird automatisch aus dem L�ndercode abgeleitet.</span>
+                            <span class="muted">Flagge wird automatisch aus dem Ländercode abgeleitet.</span>
                         @endif
                     </div>
                 </div>
@@ -688,8 +688,8 @@
                 >
                     <div class="admin-field admin-field-stack">
                         <label for="team_shirt_file">Trikot hochladen</label>
-                        <input id="team_shirt_file" type="file" name="team_shirt_file" accept="image/png,image/jpeg,image/gif,image/webp">
-                        <p class="hint">PNG/JPEG/GIF/WebP, max. 2 MB. Wird als <code>{{ $selectedSymbol['shirt_path_hint'] ?? ('shirts/<team_key>/'.($selectedIcon ?: 'key').'.png') }}</code> gespeichert.</p>
+                        <input id="team_shirt_file" type="file" name="team_shirt_file" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,.svg">
+                        <p class="hint">PNG/JPEG/GIF/WebP/SVG, max. 2 MB. SVG bleibt SVG, sonst PNG. Ziel: <code>{{ $selectedSymbol['shirt_path_hint'] ?? ('shirts/<team_key>/'.($selectedIcon ?: 'key').'.svg|.png') }}</code></p>
                     </div>
                 </div>
 
@@ -728,13 +728,13 @@
                 @if ($usesIconPicker)
                     <div class="admin-symbol-row admin-icon-upload">
                         <div class="admin-field admin-field-stack">
-                            <label for="team_icon_key">Neues Symbol � Dateiname</label>
+                            <label for="team_icon_key">Neues Symbol — Dateiname</label>
                             <input id="team_icon_key" type="text" name="team_icon_key" value="{{ $form['team_icon_key'] }}" maxlength="64" placeholder="z. B. sturm-graz">
                         </div>
                         <div class="admin-field admin-field-stack">
                             <label for="team_icon_file">Bild hochladen</label>
                             <input id="team_icon_file" type="file" name="team_icon_file" accept="image/png,image/jpeg,image/gif,image/webp">
-                            <p class="hint">PNG/JPEG/GIF/WebP, max. 2 MB. Wird als <code>{name}.gif</code> gespeichert und ausgew�hlt.</p>
+                            <p class="hint">PNG/JPEG/GIF/WebP, max. 2 MB. Wird als <code>{name}.gif</code> gespeichert und ausgewählt.</p>
                         </div>
                     </div>
                 @endif
@@ -759,7 +759,7 @@
                 </div>
 
                 <div class="admin-field">
-                    <label for="teamfid_url_foe">�FB / FOE (vereine.oefb.at)</label>
+                    <label for="teamfid_url_foe">ÖFB / FOE (vereine.oefb.at)</label>
                     <input id="teamfid_url_foe" type="text" name="teamfid_url_foe" value="{{ $form['teamfid_url_foe'] }}" maxlength="255" placeholder="ID oder volle URL">
                 </div>
             </fieldset>
@@ -769,7 +769,7 @@
                     <button type="submit" class="admin-submit">Speichern</button>
                     <a class="admin-cancel" href="{{ route('admin.teams') }}">Abbrechen</a>
                 @else
-                    <button type="submit" class="admin-submit">Hinzuf�gen</button>
+                    <button type="submit" class="admin-submit">Hinzufügen</button>
                 @endif
             </div>
         </form>
@@ -820,7 +820,7 @@
                             @endif
                         @endif
                         @if ($item['teamfid_url_foe'] !== '')
-                            <a href="{{ $item['teamfid_url_foe'] }}" target="_blank" rel="noopener noreferrer">�FB</a>
+                            <a href="{{ $item['teamfid_url_foe'] }}" target="_blank" rel="noopener noreferrer">ÖFB</a>
                         @endif
                     </p>
                 </div>
@@ -828,11 +828,11 @@
                     <a class="admin-icon-btn" href="{{ route('admin.teams.edit', ['team' => $item['team_id']]) }}" title="Bearbeiten">
                         <img src="{{ $legacyBase }}images/ffb/symbols/edit.svg" alt="Bearbeiten" width="16" height="16">
                     </a>
-                    <form method="post" action="{{ route('admin.teams.destroy', ['team' => $item['team_id']]) }}" onsubmit="return confirm('Dieses Team wirklich l�schen?');">
+                    <form method="post" action="{{ route('admin.teams.destroy', ['team' => $item['team_id']]) }}" onsubmit="return confirm('Dieses Team wirklich löschen?');">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="admin-icon-btn" title="L�schen">
-                            <img src="{{ $legacyBase }}images/ffb/symbols/delete.svg" alt="L�schen" width="16" height="16">
+                        <button type="submit" class="admin-icon-btn" title="Löschen">
+                            <img src="{{ $legacyBase }}images/ffb/symbols/delete.svg" alt="Löschen" width="16" height="16">
                         </button>
                     </form>
                 </div>
@@ -868,9 +868,9 @@
     function shirtPathHint(key) {
         const nat = key || 'key';
         if (teamAssetKey) {
-            return 'shirts/' + teamAssetKey + '/' + nat + '.png';
+            return 'shirts/' + teamAssetKey + '/' + nat + '.svg|.png';
         }
-        return 'shirts/<team_key>/' + nat + '.png';
+        return 'shirts/<team_key>/' + nat + '.svg|.png';
     }
 
     function setPreview(option) {
@@ -886,14 +886,14 @@
             flagEmpty.hidden = true;
             keyEl.textContent = key;
             labelEl.textContent = label && label !== key ? label : '';
-            toggle.textContent = 'Symbol �ndern';
+            toggle.textContent = 'Symbol ändern';
         } else {
             flagHtml.innerHTML = '';
             flagHtml.hidden = true;
             flagEmpty.hidden = false;
-            keyEl.textContent = 'Kein Symbol gew�hlt';
+            keyEl.textContent = 'Kein Symbol gewählt';
             labelEl.textContent = '';
-            toggle.textContent = 'Symbol w�hlen';
+            toggle.textContent = 'Symbol wählen';
         }
 
         if (hasShirt && shirtUrl) {
@@ -904,7 +904,7 @@
             shirtImg.removeAttribute('src');
             shirtImg.hidden = true;
             shirtEmpty.hidden = false;
-            shirtEmpty.textContent = key ? 'Kein Trikot vorhanden' : '�';
+            shirtEmpty.textContent = key ? 'Kein Trikot vorhanden' : '—';
         }
 
         if (shirtUpload) {
@@ -912,9 +912,9 @@
                 shirtUpload.hidden = false;
                 if (shirtHint) {
                     shirtHint.innerHTML =
-                        'PNG/JPEG/GIF/WebP, max. 2 MB. Wird als <code>' +
+                        'PNG/JPEG/GIF/WebP/SVG, max. 2 MB. SVG bleibt SVG, sonst PNG. Ziel: <code>' +
                         shirtPathHint(key) +
-                        '</code> gespeichert.';
+                        '</code>';
                 }
             } else {
                 shirtUpload.hidden = true;

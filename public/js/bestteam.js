@@ -293,7 +293,7 @@
             '<a href="#" data-modal="player" data-id="' +
             player.playerteam_id +
             '">' +
-            shirtImgTag(teamKey, nat, 'alt="" width="55" height="50"') +
+            shirtImgTag(teamKey, nat, 'alt="" width="64" height="64"') +
             '</a>' +
             '<span class="name">' +
             fname +

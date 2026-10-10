@@ -947,12 +947,12 @@
     function blankSlot(red, label) {
         const shirt =
             window.FfbShirts && typeof window.FfbShirts.blankImg === 'function'
-                ? window.FfbShirts.blankImg(legacyBase, red, 'width="55" height="50" alt=""')
+                ? window.FfbShirts.blankImg(legacyBase, red, 'width="64" height="64" alt=""')
                 : '<img class="shirt" src="' +
                   legacyBase +
                   'images/ffb/shirts/' +
                   (red ? 'shirt_BLANK_RED.png' : 'shirt_BLANK.svg') +
-                  '" width="55" height="50" alt="">';
+                  '" width="64" height="64" alt="">';
         return (
             '<div class="pitch-player pitch-slot">' +
             shirt +
@@ -970,7 +970,7 @@
             '<a href="#" data-remove="' +
             player.playerteam_id +
             '" title="Klicken um Spieler zu entfernen">' +
-            shirtImgTag(teamKey, nat, 'width="55" height="50" alt=""') +
+            shirtImgTag(teamKey, nat, 'width="64" height="64" alt=""') +
             '</a>' +
             '<a class="name" href="#" data-remove="' +
             player.playerteam_id +

@@ -186,7 +186,8 @@ class AdminTeamTest extends TestCase
             ->assertDontSee('id="team-icon-picker"', false)
             ->assertDontSee('name="team_icon_file"', false)
             ->assertSee('id="team-shirt-upload"', false)
-            ->assertSee('shirts/7/aut.png', false);
+            ->assertSee('shirts/7/aut.png', false)
+            ->assertSee('image/svg+xml', false);
     }
 
     public function test_teams_store_redirects_on_success(): void

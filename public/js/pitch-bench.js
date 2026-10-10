@@ -32,14 +32,14 @@
                 ? global.FfbShirts.blankImg(
                       legacyBase,
                       red,
-                      'width="55" height="50" alt=""',
+                      'width="64" height="64" alt=""',
                       'bench'
                   )
                 : '<img class="shirt" src="' +
                   legacyBase +
                   'images/ffb/shirts/' +
                   (red ? 'shirt_bench_BLANK_RED.svg' : 'shirt_bench_BLANK.svg') +
-                  '" width="55" height="50" alt="">';
+                  '" width="64" height="64" alt="">';
         return (
             '<div class="pitch-player pitch-slot pitch-bench-slot">' +
             shirt +
@@ -62,7 +62,7 @@
                 legacyBase,
                 teamKey,
                 nationality,
-                'width="55" height="50" alt=""',
+                'width="64" height="64" alt=""',
                 selectedLeagueAssetKey()
             );
         }
@@ -70,7 +70,7 @@
         return (
             '<img class="shirt" src="' +
             blank +
-            '" width="55" height="50" alt="">'
+            '" width="64" height="64" alt="">'
         );
     }
 
