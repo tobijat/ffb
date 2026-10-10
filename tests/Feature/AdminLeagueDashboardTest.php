@@ -305,6 +305,20 @@ class AdminLeagueDashboardTest extends TestCase
                                         'detail' => 'Trikot fehlt (ger)',
                                     ],
                                 ],
+                                'info_list_summary' => 'Trikot-Formate',
+                                'info_list' => [
+                                    [
+                                        'label' => '1 mit SVG (Liga-Trikot oder SVG-Fallback)',
+                                        'detail' => '',
+                                    ],
+                                    [
+                                        'label' => '1 mit Raster-Fallback (kein SVG)',
+                                        'detail' => '',
+                                        'lineup' => [
+                                            ['label' => 'Alpha', 'detail' => ''],
+                                        ],
+                                    ],
+                                ],
                             ],
                         ],
                     ],
@@ -483,6 +497,9 @@ class AdminLeagueDashboardTest extends TestCase
             ->assertSee('Alle Teams aktiv', false)
             ->assertSee('Inaktive Teams', false)
             ->assertSee('Teams ohne Trikot', false)
+            ->assertSee('Trikot-Formate', false)
+            ->assertSee('1 mit SVG (Liga-Trikot oder SVG-Fallback)', false)
+            ->assertSee('1 mit Raster-Fallback (kein SVG)', false)
             ->assertSee('Kader: 24 aktive Spieler in 2', false)
             ->assertSee('Mannschaften mit zu wenigen aktiven Spielern', false)
             ->assertSee('Mannschaften ohne Teampreis', false)
@@ -1390,18 +1407,20 @@ class AdminLeagueDashboardTest extends TestCase
             'team_name' => 'Bayern',
             'team_nationality' => 'fcb',
             'team_status' => 1,
+            'asset_key' => 'bayern-a1b2',
         ]);
         $guest = Team::query()->create([
             'team_name' => 'Germany',
             'team_nationality' => 'ger',
             'team_status' => 1,
+            'asset_key' => 'germany-c3d4',
         ]);
 
-        $shirtsHome = $this->imagesRoot.DIRECTORY_SEPARATOR.'shirts'.DIRECTORY_SEPARATOR.$home->team_id;
-        $shirtsGuest = $this->imagesRoot.DIRECTORY_SEPARATOR.'shirts'.DIRECTORY_SEPARATOR.$guest->team_id;
+        $shirtsHome = $this->imagesRoot.DIRECTORY_SEPARATOR.'shirts'.DIRECTORY_SEPARATOR.'bayern-a1b2';
+        $shirtsGuest = $this->imagesRoot.DIRECTORY_SEPARATOR.'shirts'.DIRECTORY_SEPARATOR.'germany-c3d4';
         mkdir($shirtsHome, 0775, true);
         mkdir($shirtsGuest, 0775, true);
-        file_put_contents($shirtsHome.DIRECTORY_SEPARATOR.'fcb.png', 'x');
+        file_put_contents($shirtsHome.DIRECTORY_SEPARATOR.'fcb.svg', '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
         file_put_contents($shirtsGuest.DIRECTORY_SEPARATOR.'ger.png', 'x');
 
         $round = Matchround::query()->create([
@@ -1437,7 +1456,7 @@ class AdminLeagueDashboardTest extends TestCase
         $section = $payload['sections'][3];
 
         $this->assertSame('teams', $section['key']);
-        $this->assertSame('2 Teams', $section['title']);
+        $this->assertSame('2 Mannschaften', $section['title']);
         $this->assertTrue($section['ok']);
         $this->assertTrue($section['checklist'][0]['ok']);
         $this->assertTrue($section['checklist'][1]['ok']);
@@ -1445,6 +1464,13 @@ class AdminLeagueDashboardTest extends TestCase
         $this->assertSame([], $section['checklist'][0]['match_list']);
         $this->assertSame([], $section['checklist'][1]['match_list']);
         $this->assertSame([], $section['checklist'][2]['match_list']);
+        $this->assertSame('Trikot-Formate', $section['checklist'][2]['info_list_summary']);
+        $this->assertSame('1 mit SVG (Liga-Trikot oder SVG-Fallback)', $section['checklist'][2]['info_list'][0]['label']);
+        $this->assertSame('1 mit Raster-Fallback (kein SVG)', $section['checklist'][2]['info_list'][1]['label']);
+        $this->assertSame(
+            [['label' => 'Germany', 'detail' => '']],
+            $section['checklist'][2]['info_list'][1]['lineup'],
+        );
     }
 
     #[Test]
@@ -1501,7 +1527,7 @@ class AdminLeagueDashboardTest extends TestCase
         $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][3];
 
-        $this->assertSame('2 Teams', $section['title']);
+        $this->assertSame('2 Mannschaften', $section['title']);
         $this->assertFalse($section['ok']);
         $this->assertFalse($section['checklist'][0]['ok']);
         $this->assertSame('Ghosts', $section['checklist'][0]['match_list'][0]['label']);
@@ -1511,6 +1537,9 @@ class AdminLeagueDashboardTest extends TestCase
         $labels = array_column($section['checklist'][2]['match_list'], 'label');
         $this->assertContains('Ghosts', $labels);
         $this->assertContains('Germany', $labels);
+        $this->assertSame('0 mit SVG (Liga-Trikot oder SVG-Fallback)', $section['checklist'][2]['info_list'][0]['label']);
+        $this->assertSame('0 mit Raster-Fallback (kein SVG)', $section['checklist'][2]['info_list'][1]['label']);
+        $this->assertSame([], $section['checklist'][2]['info_list'][1]['lineup']);
     }
 
     #[Test]
@@ -3484,6 +3513,7 @@ class AdminLeagueDashboardTest extends TestCase
 
         Schema::create('ffb_team', function (Blueprint $table) {
             $table->increments('team_id');
+            $table->string('asset_key')->default('');
             $table->string('team_name')->default('');
             $table->string('team_nationality')->default('');
             $table->tinyInteger('team_status')->default(1);

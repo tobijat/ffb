@@ -432,6 +432,8 @@ class AdminLeagueDashboardService
         $inactive = [];
         $missingFlag = [];
         $missingJersey = [];
+        $jerseySvgCount = 0;
+        $jerseyRasterTeams = [];
 
         foreach ($teams as $team) {
             $name = trim((string) $team->team_name);
@@ -456,7 +458,12 @@ class AdminLeagueDashboardService
                 ];
             }
 
-            if (! $this->teamHasJersey($team->asset_key !== null ? (string) $team->asset_key : null, $nationality, $leagueKey)) {
+            $jerseyPath = TeamShirt::relativePath(
+                $team->asset_key !== null ? (string) $team->asset_key : null,
+                $nationality,
+                $leagueKey,
+            );
+            if ($jerseyPath === null) {
                 $missingJersey[] = [
                     'team_id' => (int) $team->team_id,
                     'label' => $label,
@@ -464,8 +471,17 @@ class AdminLeagueDashboardService
                         ? 'Trikot fehlt ('.$nationality.')'
                         : 'keine Nationalität für Trikot',
                 ];
+            } elseif (str_ends_with(strtolower($jerseyPath), '.svg')) {
+                $jerseySvgCount++;
+            } else {
+                $jerseyRasterTeams[] = [
+                    'label' => $label,
+                    'detail' => '',
+                ];
             }
         }
+
+        $jerseyRasterCount = count($jerseyRasterTeams);
 
         $allActive = $inactive === [];
         $allHaveFlag = $missingFlag === [];
@@ -496,6 +512,18 @@ class AdminLeagueDashboardService
                     'ok' => $allHaveJersey,
                     'match_list' => $missingJersey,
                     'match_list_summary' => 'Mannschaften ohne Trikot',
+                    'info_list' => [
+                        [
+                            'label' => $jerseySvgCount.' mit SVG (Liga-Trikot oder SVG-Fallback)',
+                            'detail' => '',
+                        ],
+                        [
+                            'label' => $jerseyRasterCount.' mit Raster-Fallback (kein SVG)',
+                            'detail' => '',
+                            'lineup' => $jerseyRasterTeams,
+                        ],
+                    ],
+                    'info_list_summary' => 'Trikot-Formate',
                 ],
             ],
         ];
@@ -2613,11 +2641,6 @@ class AdminLeagueDashboardService
         }
 
         return is_file($this->flagsDir().DIRECTORY_SEPARATOR.$nationality.'.gif');
-    }
-
-    private function teamHasJersey(?string $teamKey, string $nationality, ?string $leagueKey): bool
-    {
-        return TeamShirt::relativePath($teamKey, $nationality, $leagueKey) !== null;
     }
 
     private function flagsDir(): string
