@@ -145,8 +145,10 @@
             try {
                 const result = await postForgotPassword();
                 if (result.data && Number(result.data.status) === 200) {
-                    showFeedback(result.data.message || 'E-Mail wurde gesendet.', 'ok');
+                    const message = result.data.message || 'E-Mail wurde gesendet.';
+                    // setMode hides feedback — show success after switching back to login.
                     setMode('login');
+                    showFeedback(message, 'ok');
                     return;
                 }
                 showFeedback('<strong>Es sind Fehler aufgetreten:</strong><br>' + collectErrors(result.data, result.status).join('<br>'), 'error');

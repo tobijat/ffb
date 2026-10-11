@@ -58,7 +58,10 @@
                     <h2 id="login-title">Anmelden</h2>
                     <div id="login-feedback" class="feedback" hidden></div>
                     @if (!empty($accountMessage))
-                        <div class="feedback feedback-ok" role="status">{!! $accountMessage !!}</div>
+                        @php
+                            $accountFeedbackKind = str_contains((string) $accountMessage, 'Fehler') ? 'error' : 'ok';
+                        @endphp
+                        <div class="feedback feedback-{{ $accountFeedbackKind }}" role="status">{!! $accountMessage !!}</div>
                     @endif
 
                     <label id="field-nickname">
@@ -103,6 +106,6 @@
             passwordUrl: new URL('registration/password', window.location.href).pathname,
         };
     </script>
-    <script src="js/start.js?v=6" defer></script>
+    <script src="js/start.js?v=7" defer></script>
 </body>
 </html>

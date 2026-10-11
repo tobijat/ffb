@@ -129,4 +129,23 @@ class RegistrationPageTest extends TestCase
                 'status' => 200,
             ]);
     }
+
+    public function test_invalid_password_reset_signature_redirects_to_start_with_message(): void
+    {
+        $this->get('/password/reset/1?expires=1&signature=invalid')
+            ->assertRedirect(route('start'))
+            ->assertSessionHas(
+                'account_message',
+                '<strong>Es sind Fehler aufgetreten:</strong><br>Der Link ist ungültig oder abgelaufen.'
+            );
+    }
+
+    public function test_password_reset_mail_keeps_plain_ampersands_in_url(): void
+    {
+        $resetUrl = 'http://example.com/password/reset/1?expires=1791825974&signature=abc123';
+        $body = (new \App\Mail\PasswordResetMail('tester', $resetUrl, 'example.com'))->render();
+
+        $this->assertStringContainsString($resetUrl, $body);
+        $this->assertStringNotContainsString('&amp;', $body);
+    }
 }
