@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Services\FfbAuth;
 use App\Services\RegistrationService;
+use App\Services\StartPageService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -164,6 +165,20 @@ class RegistrationPageTest extends TestCase
             'user_password' => 'hash',
         ]);
 
+        $this->mock(StartPageService::class, function ($mock) {
+            $mock->shouldReceive('payload')->andReturn([
+                'stats' => [
+                    'users_total' => 1,
+                    'users_today' => 0,
+                    'lineups' => 0,
+                    'matchrounds_played' => 0,
+                    'score_avg' => 0.0,
+                ],
+                'leagues' => [],
+                'results' => [],
+            ]);
+        });
+
         $signedUrl = URL::temporarySignedRoute(
             'password.reset',
             now()->addDay(),
@@ -176,8 +191,11 @@ class RegistrationPageTest extends TestCase
         $this->get(route('password.reset', ['user' => 7]))
             ->assertOk()
             ->assertSee('Passwort zurücksetzen', false)
+            ->assertSee('Stell dein Team auf.', false)
+            ->assertSee('Community', false)
             ->assertSee('resetter', false)
-            ->assertSee(route('password.reset.update', ['user' => 7]), false);
+            ->assertSee(route('password.reset.update', ['user' => 7]), false)
+            ->assertDontSee('id="login"', false);
 
         Schema::dropIfExists('web_user');
     }

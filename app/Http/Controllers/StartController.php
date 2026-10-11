@@ -42,6 +42,7 @@ class StartController extends Controller
             'legacyBase' => '/',
             'destination' => (string) $request->query('destination', ''),
             'accountMessage' => $request->session()->pull('account_message'),
+            'passwordReset' => null,
         ]);
     }
 

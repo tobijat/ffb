@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Services\FfbAuth;
-use App\Services\HelpService;
 use App\Services\RegistrationService;
+use App\Services\StartPageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +15,7 @@ class RegistrationPageController extends Controller
     public function __construct(
         private readonly RegistrationService $registration,
         private readonly FfbAuth $auth,
+        private readonly StartPageService $startPage,
     ) {
     }
 
@@ -120,15 +121,11 @@ class RegistrationPageController extends Controller
             return $this->invalidPasswordResetRedirect();
         }
 
-        return view('password-reset', [
-            'nickname' => (string) $webUser->user_nickname,
-            'formAction' => route('password.reset.update', ['user' => $user]),
-            'errors' => [],
-            'legacyBase' => '/',
-            'data' => [
-                'navigation' => HelpService::guestNavigation(),
-            ],
-        ]);
+        return $this->passwordResetView(
+            (string) $webUser->user_nickname,
+            route('password.reset.update', ['user' => $user]),
+            [],
+        );
     }
 
     public function updatePasswordReset(Request $request, int $user): View|RedirectResponse
@@ -150,13 +147,31 @@ class RegistrationPageController extends Controller
             return redirect()->route('start')->with('account_message', $result['message']);
         }
 
-        return view('password-reset', [
-            'nickname' => (string) $webUser->user_nickname,
-            'formAction' => route('password.reset.update', ['user' => $user]),
-            'errors' => $result['errors'] ?? [],
+        return $this->passwordResetView(
+            (string) $webUser->user_nickname,
+            route('password.reset.update', ['user' => $user]),
+            $result['errors'] ?? [],
+        );
+    }
+
+    /**
+     * @param  list<string>  $errors
+     */
+    private function passwordResetView(string $nickname, string $formAction, array $errors): View
+    {
+        $data = $this->startPage->payload();
+
+        return view('start', [
+            'stats' => $data['stats'],
+            'leagues' => $data['leagues'],
+            'results' => $data['results'],
             'legacyBase' => '/',
-            'data' => [
-                'navigation' => HelpService::guestNavigation(),
+            'destination' => '',
+            'accountMessage' => null,
+            'passwordReset' => [
+                'nickname' => $nickname,
+                'formAction' => $formAction,
+                'errors' => $errors,
             ],
         ]);
     }
