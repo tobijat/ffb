@@ -45,10 +45,8 @@ Route::get('/registration/activate-email', [RegistrationPageController::class, '
 Route::post('/registration/password', [RegistrationPageController::class, 'requestPasswordReset'])->name('registration.password');
 
 Route::get('/password/reset/{user}', [RegistrationPageController::class, 'showPasswordReset'])
-    ->middleware('signed')
     ->name('password.reset');
 Route::post('/password/reset/{user}', [RegistrationPageController::class, 'updatePasswordReset'])
-    ->middleware('signed')
     ->name('password.reset.update');
 
 Route::get('/mailservice/cancel', [MailUnsubscribeController::class, 'cancel'])->name('mailservice.cancel');

@@ -4,6 +4,10 @@ namespace Tests\Feature;
 
 use App\Services\FfbAuth;
 use App\Services\RegistrationService;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class RegistrationPageTest extends TestCase
@@ -138,6 +142,51 @@ class RegistrationPageTest extends TestCase
                 'account_message',
                 '<strong>Es sind Fehler aufgetreten:</strong><br>Der Link ist ungültig oder abgelaufen.'
             );
+    }
+
+    public function test_password_reset_link_redirects_to_clean_url(): void
+    {
+        if (! extension_loaded('pdo_sqlite')) {
+            $this->markTestSkipped('pdo_sqlite is required.');
+        }
+
+        Schema::dropIfExists('web_user');
+        Schema::create('web_user', function (Blueprint $table) {
+            $table->increments('user_id');
+            $table->string('user_nickname')->default('');
+            $table->string('user_email')->default('');
+            $table->string('user_password')->default('');
+        });
+        DB::table('web_user')->insert([
+            'user_id' => 7,
+            'user_nickname' => 'resetter',
+            'user_email' => 'resetter@example.com',
+            'user_password' => 'hash',
+        ]);
+
+        $signedUrl = URL::temporarySignedRoute(
+            'password.reset',
+            now()->addDay(),
+            ['user' => 7],
+        );
+
+        $this->get($signedUrl)
+            ->assertRedirect(route('password.reset', ['user' => 7]));
+
+        $this->get(route('password.reset', ['user' => 7]))
+            ->assertOk()
+            ->assertSee('Passwort zurücksetzen', false)
+            ->assertSee('resetter', false)
+            ->assertSee(route('password.reset.update', ['user' => 7]), false);
+
+        Schema::dropIfExists('web_user');
+    }
+
+    public function test_password_reset_clean_url_without_session_is_rejected(): void
+    {
+        $this->get(route('password.reset', ['user' => 1]))
+            ->assertRedirect(route('start'))
+            ->assertSessionHas('account_message');
     }
 
     public function test_password_reset_mail_keeps_plain_ampersands_in_url(): void
