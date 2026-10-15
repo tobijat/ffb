@@ -7,6 +7,7 @@ use App\Models\MatchGame;
 use App\Models\Matchround;
 use App\Models\Userteam;
 use App\Models\WebUser;
+use App\Support\Flag;
 
 class StartPageService
 {
@@ -71,16 +72,33 @@ class StartPageService
     }
 
     /**
+     * Finished matches from the most recent matchround that has results.
+     *
      * @return list<array<string, mixed>>
      */
     private function lastResults(): array
     {
+        $latestFinished = MatchGame::query()
+            ->where('match_homescore', '>', -1)
+            ->where('match_guestscore', '>', -1)
+            ->where('match_round', '>', 0)
+            ->orderByDesc('match_date')
+            ->orderByDesc('match_id')
+            ->first(['match_round']);
+
+        if (! $latestFinished) {
+            return [];
+        }
+
+        $roundId = (int) $latestFinished->match_round;
+
         $matches = MatchGame::query()
             ->with(['homeTeam', 'guestTeam'])
+            ->where('match_round', $roundId)
             ->where('match_homescore', '>', -1)
             ->where('match_guestscore', '>', -1)
             ->orderByDesc('match_date')
-            ->limit(10)
+            ->orderByDesc('match_id')
             ->get();
 
         $results = [];
@@ -89,19 +107,31 @@ class StartPageService
                 continue;
             }
 
+            $homeFlag = (string) $match->homeTeam->team_nationality;
+            $guestFlag = (string) $match->guestTeam->team_nationality;
+
             $results[] = [
                 'home_team' => (string) $match->homeTeam->team_name,
                 'home_score' => (string) $match->match_homescore,
-                'home_flag' => strtolower((string) $match->homeTeam->team_nationality),
+                'home_flag' => strtolower($homeFlag),
+                'home_flag_css' => $this->flagCssBackground($homeFlag),
                 'guest_team' => (string) $match->guestTeam->team_name,
                 'guest_score' => (string) $match->match_guestscore,
-                'guest_flag' => strtolower((string) $match->guestTeam->team_nationality),
+                'guest_flag' => strtolower($guestFlag),
+                'guest_flag_css' => $this->flagCssBackground($guestFlag),
                 'score_html' => $this->formatMatchScore($match),
                 'date' => date('d.m.Y', strtotime((string) $match->match_date)),
             ];
         }
 
         return $results;
+    }
+
+    private function flagCssBackground(?string $code): string
+    {
+        $url = Flag::svgUrl($code) ?? Flag::imageUrl($code);
+
+        return "url('".e($url)."')";
     }
 
     private function formatMatchScore(MatchGame $match): string
@@ -128,7 +158,12 @@ class StartPageService
         }
 
         if ($home !== null && $guest !== null) {
-            return e((string) $home).':'.e((string) $guest);
+            $html = e((string) $home).':'.e((string) $guest);
+            if ((int) ($match->match_minutes ?? 0) === 120) {
+                $html .= ' <span class="score-hint" title="nach Verlängerung">n.V.</span>';
+            }
+
+            return $html;
         }
 
         return '-:-';

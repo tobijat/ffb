@@ -191,8 +191,10 @@ class RegistrationPageTest extends TestCase
         $this->get(route('password.reset', ['user' => 7]))
             ->assertOk()
             ->assertSee('Passwort zurücksetzen', false)
-            ->assertSee('Stell dein Team auf.', false)
-            ->assertSee('Community', false)
+            ->assertSee('Fantasy Football mit echten Ligen', false)
+            ->assertSee('user-card-login', false)
+            ->assertSee('nav_login.png', false)
+            ->assertDontSee('Community', false)
             ->assertSee('resetter', false)
             ->assertSee(route('password.reset.update', ['user' => 7]), false)
             ->assertDontSee('id="login"', false);

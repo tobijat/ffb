@@ -4,8 +4,8 @@
     const feedback = document.getElementById('login-feedback');
     const forgotBtn = document.getElementById('forgot-password');
     const backBtn = document.getElementById('back-to-login');
-    const title = document.getElementById('login-title');
     const submitBtn = document.getElementById('login-submit');
+    const submitLabel = document.getElementById('login-submit-label');
     const nicknameLabel = document.getElementById('label-nickname');
     const nicknameInput = document.getElementById('user_nickname');
     const passwordField = document.getElementById('field-password');
@@ -18,7 +18,21 @@
 
     let mode = 'login';
 
+    function setSubmitLabel(text) {
+        if (submitLabel) {
+            submitLabel.textContent = text;
+        } else if (submitBtn) {
+            submitBtn.textContent = text;
+        }
+        if (submitBtn) {
+            submitBtn.title = text;
+        }
+    }
+
     function showFeedback(html, kind) {
+        if (!feedback) {
+            return;
+        }
         feedback.hidden = false;
         feedback.className = 'feedback feedback-' + kind;
         feedback.innerHTML = html;
@@ -58,20 +72,30 @@
     function setMode(next) {
         mode = next;
         form.setAttribute('data-mode', next);
-        feedback.hidden = true;
+        if (feedback) {
+            feedback.hidden = true;
+        }
 
         if (next === 'forgot') {
-            title.textContent = 'Passwort vergessen';
-            nicknameLabel.textContent = 'Benutzername oder E-Mail';
             nicknameInput.required = true;
             nicknameInput.autocomplete = 'username';
-            passwordField.hidden = true;
+            nicknameInput.placeholder = 'Benutzername oder E-Mail';
+            if (nicknameLabel) {
+                nicknameLabel.textContent = 'Benutzername oder E-Mail';
+            }
+            if (passwordField) {
+                passwordField.hidden = true;
+            }
             passwordInput.required = false;
             passwordInput.disabled = true;
             passwordInput.value = '';
-            submitBtn.textContent = 'Reset-Link senden';
-            forgotBtn.hidden = true;
-            backBtn.hidden = false;
+            setSubmitLabel('Reset-Link senden');
+            if (forgotBtn) {
+                forgotBtn.hidden = true;
+            }
+            if (backBtn) {
+                backBtn.hidden = false;
+            }
             if (registerLink) {
                 registerLink.hidden = true;
             }
@@ -79,15 +103,23 @@
             return;
         }
 
-        title.textContent = 'Anmelden';
-        nicknameLabel.textContent = 'Nickname';
         nicknameInput.autocomplete = 'username';
-        passwordField.hidden = false;
+        nicknameInput.placeholder = 'Nickname';
+        if (nicknameLabel) {
+            nicknameLabel.textContent = 'Nickname';
+        }
+        if (passwordField) {
+            passwordField.hidden = false;
+        }
         passwordInput.disabled = false;
         passwordInput.required = true;
-        submitBtn.textContent = 'Anmelden';
-        forgotBtn.hidden = false;
-        backBtn.hidden = true;
+        setSubmitLabel('Anmelden');
+        if (forgotBtn) {
+            forgotBtn.hidden = false;
+        }
+        if (backBtn) {
+            backBtn.hidden = true;
+        }
         if (registerLink) {
             registerLink.hidden = false;
         }

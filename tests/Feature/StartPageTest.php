@@ -27,9 +27,11 @@ class StartPageTest extends TestCase
                         'home_team' => 'Alpha',
                         'home_score' => '2',
                         'home_flag' => 'aut',
+                        'home_flag_css' => "url('/vendor/flag-icons/flags/4x3/at.svg')",
                         'guest_team' => 'Beta',
                         'guest_score' => '1',
                         'guest_flag' => 'ger',
+                        'guest_flag_css' => "url('/vendor/flag-icons/flags/4x3/de.svg')",
                         'score_html' => '2:1',
                         'date' => '01.01.2026',
                     ],
@@ -41,22 +43,29 @@ class StartPageTest extends TestCase
 
         $response->assertOk()
             ->assertSee('SoccerSportsfan', false)
-            ->assertSee('class="brand"', false)
+            ->assertSee('brand brand-stacked', false)
             ->assertSee('nav_start.png', false)
+            ->assertSee('nav_login.png', false)
             ->assertSee('class="dash-top"', false)
-            ->assertSee('css/start.css?v=20', false)
-            ->assertSee('ffb-flag-svg', false)
+            ->assertSee('user-card-login', false)
+            ->assertSee('css/start.css?v=27', false)
+            ->assertSee('brand-tagline', false)
+            ->assertSee('result-card', false)
+            ->assertSee('--ffb-flag-home', false)
             ->assertSee('vendor/flag-icons/flags/4x3/at.svg', false)
-            ->assertSee('Stell dein Team auf.', false)
-            ->assertSee('Kostenlos registrieren', false)
-            ->assertDontSee('>Registrieren</span>', false)
-            ->assertDontSee('>Anmelden</span>', false)
-            ->assertSee('Testliga', false)
+            ->assertSee('Fantasy Football mit echten Ligen', false)
+            ->assertDontSee('Stell dein Team auf.', false)
+            ->assertDontSee('brand-mark', false)
+            ->assertSee('Registrieren', false)
+            ->assertSee('Passwort vergessen?', false)
+            ->assertDontSee('Kostenlos registrieren', false)
+            ->assertDontSee('Community', false)
+            ->assertDontSee('<time>', false)
             ->assertSee('Alpha', false)
             ->assertSee('action="login"', false)
-            ->assertDontSee('id="register-link"', false)
+            ->assertSee('id="register-link"', false)
             ->assertDontSee('btn-block', false)
-            ->assertSee('js/start.js?v=6', false);
+            ->assertSee('js/start.js?v=9', false);
     }
 
     public function test_start_api_returns_payload(): void

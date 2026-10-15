@@ -144,8 +144,12 @@
     color: var(--ink);
     text-decoration: none;
     font-size: 8pt;
+    font-family: inherit;
+    line-height: 1.15;
     background: transparent;
+    border: 0;
     border-radius: var(--radius-sm);
+    cursor: pointer;
 }
 
 .user-card-logout img {
@@ -158,6 +162,93 @@
     color: var(--link-hover);
     background: var(--link-hover-bg);
     text-decoration: none;
+}
+
+.user-card-login {
+    max-width: 28rem;
+    align-items: flex-start;
+}
+
+.user-card-login .user-card-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.user-card-login .hello {
+    margin: 0;
+}
+
+.user-card-login label {
+    display: block;
+    margin: 0;
+    font-size: 9pt;
+}
+
+.user-card-login label[hidden] {
+    display: none !important;
+}
+
+.user-card-login .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.user-card-login input[type="text"],
+.user-card-login input[type="password"] {
+    display: block;
+    width: 100%;
+    min-width: 10rem;
+    max-width: 14rem;
+    padding: 3px 6px;
+    border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 10pt;
+    background: var(--panel-light, #ccffcc);
+    color: var(--ink);
+    box-sizing: border-box;
+}
+
+.user-card-login input::placeholder {
+    color: var(--muted, #333);
+    opacity: 0.75;
+}
+
+.user-card-login input:focus {
+    outline: none;
+    border-color: #008000;
+    background: #bbffbb;
+    box-shadow: 0 0 0 1px #008000;
+}
+
+.user-card-login .feedback {
+    width: auto;
+    margin: 0 0 2px;
+    padding: 4px 5px;
+    font-size: 9pt;
+}
+
+.user-card-login .login-links {
+    margin: 2px 0 0;
+    justify-content: flex-start;
+}
+
+.user-card-login .user-card-logout {
+    align-self: center;
+    margin-top: 2px;
+}
+
+.user-card-login-submit img {
+    width: 40px;
+    height: 40px;
 }
 
 .user-photo {
