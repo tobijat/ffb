@@ -103,7 +103,10 @@ class RegistrationPageTest extends TestCase
             'user_email' => 'neu@example.com',
         ])
             ->assertOk()
-            ->assertSee('Du musst die Bedingungen gelesen und akzeptiert haben!', false);
+            ->assertSee('FFB_REGISTRATION_ERRORS', false)
+            ->assertSee('Du musst die Bedingungen gelesen und akzeptiert haben!', false)
+            ->assertSee('registration-form', false)
+            ->assertDontSee('account-flash-error', false);
     }
 
     public function test_activation_redirects_to_start_with_message(): void

@@ -1,4 +1,4 @@
-/* Registration reuses account layout; small tweaks only. */
+/* Registration reuses account form field styles from account.css. */
 
 .account-field-check a {
     color: inherit;

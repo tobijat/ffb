@@ -35,14 +35,41 @@
 .account-field input[type="text"],
 .account-field input[type="email"],
 .account-field input[type="password"],
+.account-field input[type="file"],
 .account-field select {
     width: 100%;
-    border: 1px solid #666;
-    background: #fff;
+    border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
+    background: var(--panel-light, #ccffcc);
     color: var(--ink);
-    padding: 4px 6px;
+    padding: 3px 6px;
     font-family: var(--font-body);
     font-size: 10pt;
+    box-sizing: border-box;
+}
+
+.account-field input:focus,
+.account-field select:focus {
+    outline: none;
+    border-color: #008000;
+    background: #bbffbb;
+    box-shadow: 0 0 0 1px #008000;
+}
+
+.account-field input.is-error,
+.account-field input.is-error:focus,
+.account-field select.is-error,
+.account-field select.is-error:focus {
+    border-color: #c00;
+    background: #ffe8e8;
+    box-shadow: 0 0 0 1px #c00;
+}
+
+.account-field-check.is-error {
+    outline: 1px solid #c00;
+    border-radius: var(--radius-sm);
+    background: #ffe8e8;
+    padding: 4px 6px;
 }
 
 .account-field input[readonly] {

@@ -4,9 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Profil — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css?v=20">
-    <link rel="stylesheet" href="css/dashboard.css?v=12">
-    <link rel="stylesheet" href="css/account.css?v=6">
+    @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
+    <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=32">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=17">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=7">
 </head>
 <body class="dash-body">
     @php
@@ -52,17 +53,6 @@
                     aria-selected="{{ $activeTab === 'account' ? 'true' : 'false' }}"
                 >Accountdaten</a>
             </div>
-
-            @if (!empty($errors))
-                <div class="account-flash account-flash-error" role="alert">
-                    <strong>Es sind Fehler aufgetreten:</strong>
-                    <ul>
-                        @foreach ($errors as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
 
             @if ($answer)
                 <div class="account-flash account-flash-ok" role="status">
@@ -231,12 +221,12 @@
 
                     <div class="account-field">
                         <label for="user_password_chg">Passwort ändern</label>
-                        <input id="user_password_chg" type="password" name="user_password_chg" maxlength="32" data-help="user_password_chg" autocomplete="new-password">
+                        <input id="user_password_chg" type="password" name="user_password_chg" minlength="5" maxlength="32" data-help="user_password_chg" autocomplete="new-password" data-too-short-msg="Passwortänderung: min. Länge ist 5, max. Länge ist 32!" data-too-long-msg="Passwortänderung: min. Länge ist 5, max. Länge ist 32!">
                     </div>
 
                     <div class="account-field">
                         <label for="user_password_val_chg">Passwortänderung wiederholen</label>
-                        <input id="user_password_val_chg" type="password" name="user_password_val_chg" maxlength="32" data-help="user_password_val_chg" autocomplete="new-password">
+                        <input id="user_password_val_chg" type="password" name="user_password_val_chg" minlength="5" maxlength="32" data-help="user_password_val_chg" autocomplete="new-password" data-too-short-msg="Passwortänderung: min. Länge ist 5, max. Länge ist 32!" data-too-long-msg="Passwortänderung: min. Länge ist 5, max. Länge ist 32!">
                     </div>
 
                     <div class="account-field">
@@ -256,7 +246,7 @@
 
                     <div class="account-field account-field-check">
                         <label for="user_tos">
-                            <input id="user_tos" type="checkbox" name="user_tos" value="user_tos_yes" data-help="user_tos">
+                            <input id="user_tos" type="checkbox" name="user_tos" value="user_tos_yes" data-help="user_tos" data-required-msg="Du musst die Bedingungen gelesen und akzeptiert haben!">
                             Ich habe die <a href="{{ config('ffb.registration_tos_url') }}" target="_blank" rel="noopener">Bedingungen</a> akzeptiert
                         </label>
                     </div>
@@ -286,6 +276,11 @@
 
     @include('partials.footer')
 
-    <script src="js/account.js?v=2" defer></script>
+    @if (!empty($errors))
+        <script>
+            window.FFB_ACCOUNT_ERRORS = @json(array_values($errors));
+        </script>
+    @endif
+    <script src="{{ $assetBase }}/js/account.js?v=3" defer></script>
 </body>
 </html>

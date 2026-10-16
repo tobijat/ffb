@@ -132,7 +132,9 @@ class AccountPageTest extends TestCase
             ])
             ->assertOk()
             ->assertSee('Accountdaten', false)
-            ->assertSee('Es sind Fehler aufgetreten', false)
+            ->assertSee('FFB_ACCOUNT_ERRORS', false)
+            ->assertSee('Du musst die Bedingungen gelesen und akzeptiert haben!', false)
+            ->assertDontSee('account-flash-error', false)
             ->assertSee('Bedingungen gelesen', false);
     }
 

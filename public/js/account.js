@@ -49,20 +49,133 @@
     };
 
     const target = document.getElementById('account-helptext');
-    if (!target) {
-        return;
-    }
 
     function showHelp(key) {
-        if (!key || !help[key]) {
+        if (!target || !key || !help[key]) {
             return;
         }
         target.innerHTML = help[key];
     }
 
-    document.querySelectorAll('[data-help]').forEach((el) => {
+    document.querySelectorAll('[data-help]').forEach(function (el) {
         const key = el.getAttribute('data-help');
-        el.addEventListener('focus', () => showHelp(key));
-        el.addEventListener('mouseover', () => showHelp(key));
+        el.addEventListener('focus', function () {
+            showHelp(key);
+        });
+        el.addEventListener('mouseover', function () {
+            showHelp(key);
+        });
     });
+
+    function markError(el) {
+        if (!el) {
+            return;
+        }
+        el.classList.add('is-error');
+        const checkWrap = el.closest('.account-field-check');
+        if (checkWrap) {
+            checkWrap.classList.add('is-error');
+        }
+    }
+
+    function clearError(el) {
+        if (!el) {
+            return;
+        }
+        el.classList.remove('is-error');
+        el.setCustomValidity('');
+        const checkWrap = el.closest('.account-field-check');
+        if (checkWrap) {
+            checkWrap.classList.remove('is-error');
+        }
+    }
+
+    function fieldInForms(name) {
+        const forms = document.querySelectorAll('form.account-form');
+        for (let i = 0; i < forms.length; i++) {
+            const el = forms[i].elements.namedItem(name);
+            if (el) {
+                return el;
+            }
+        }
+        return null;
+    }
+
+    function targetForServerError(message) {
+        const lower = String(message || '').toLowerCase();
+        if (lower.includes('bedingungen')) {
+            return fieldInForms('user_tos');
+        }
+        if (lower.includes('passwort')) {
+            return lower.includes('überein') || lower.includes('ueberein')
+                ? fieldInForms('user_password_val_chg')
+                : fieldInForms('user_password_chg');
+        }
+        if (lower.includes('e-mail') || lower.includes('email')) {
+            return lower.includes('überein') || lower.includes('ueberein')
+                ? fieldInForms('user_email_val_chg')
+                : fieldInForms('user_email_chg');
+        }
+        if (lower.includes('geburt')) {
+            return fieldInForms('user_birth_day');
+        }
+        if (lower.includes('profilfoto')) {
+            return fieldInForms('user_details_photo');
+        }
+        if (lower.includes('avatar')) {
+            return fieldInForms('user_details_avatar');
+        }
+        return (
+            fieldInForms('user_password_chg') ||
+            fieldInForms('user_details_city') ||
+            document.querySelector('form.account-form input, form.account-form select')
+        );
+    }
+
+    document.querySelectorAll('form.account-form').forEach(function (form) {
+        form.querySelectorAll('input, select').forEach(function (input) {
+            input.addEventListener('invalid', function () {
+                if (input.validity.valueMissing) {
+                    input.setCustomValidity(
+                        input.getAttribute('data-required-msg') || 'Bitte fülle dieses Feld aus.'
+                    );
+                } else if (input.validity.typeMismatch && input.type === 'email') {
+                    input.setCustomValidity('Bitte eine gültige E-Mail-Adresse eingeben.');
+                } else if (input.validity.tooShort) {
+                    input.setCustomValidity(
+                        input.getAttribute('data-too-short-msg') || 'Eingabe ist zu kurz.'
+                    );
+                } else if (input.validity.tooLong) {
+                    input.setCustomValidity(
+                        input.getAttribute('data-too-long-msg') || 'Eingabe ist zu lang.'
+                    );
+                }
+                if (!input.validity.valid) {
+                    markError(input);
+                }
+            });
+            input.addEventListener('input', function () {
+                clearError(input);
+            });
+            input.addEventListener('change', function () {
+                clearError(input);
+            });
+        });
+    });
+
+    const serverErrors = Array.isArray(window.FFB_ACCOUNT_ERRORS) ? window.FFB_ACCOUNT_ERRORS : [];
+    if (serverErrors.length) {
+        const message = String(serverErrors[0] || '').trim();
+        if (message) {
+            const el = targetForServerError(message);
+            if (el) {
+                el.setCustomValidity(message);
+                markError(el);
+                requestAnimationFrame(function () {
+                    el.focus({ preventScroll: true });
+                    el.reportValidity();
+                });
+            }
+        }
+    }
 })();
