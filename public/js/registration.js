@@ -88,6 +88,7 @@
         if (
             lower.includes('benutzername') ||
             lower.includes('leerzeichen') ||
+            lower.includes('sonderzeichen') ||
             lower.includes('existiert bereits')
         ) {
             return fieldByName('user_nickname');
@@ -106,8 +107,42 @@
         return fieldByName('user_nickname') || form.querySelector('[required]');
     }
 
+    const nicknameDoubleSpecialMsg =
+        'Sonderzeichen dürfen im Benutzernamen nicht zweimal hintereinander stehen!';
+
+    function nicknameHasConsecutiveSpecials(value) {
+        try {
+            return /[^\p{L}\p{N}]{2,}/u.test(String(value || ''));
+        } catch (err) {
+            return /[^0-9A-Za-z\u00C0-\u024F\u0400-\u04FF]{2,}/.test(String(value || ''));
+        }
+    }
+
+    function refreshNicknameValidity(input) {
+        if (!input || input.name !== 'user_nickname') {
+            return;
+        }
+        const value = String(input.value || '');
+        if (value !== value.trim()) {
+            input.setCustomValidity("Benutzernamen bitte ohne Leerzeichen ' ' am Beginn und Ende!");
+            return;
+        }
+        if (nicknameHasConsecutiveSpecials(value)) {
+            input.setCustomValidity(nicknameDoubleSpecialMsg);
+            return;
+        }
+        if (input.validity.valueMissing || input.validity.tooShort || input.validity.tooLong) {
+            input.setCustomValidity('');
+            return;
+        }
+        input.setCustomValidity('');
+    }
+
     form.querySelectorAll('input, select').forEach(function (input) {
         input.addEventListener('invalid', function () {
+            if (input.name === 'user_nickname') {
+                refreshNicknameValidity(input);
+            }
             if (input.validity.valueMissing) {
                 input.setCustomValidity(
                     input.getAttribute('data-required-msg') || 'Bitte fülle dieses Feld aus.'
@@ -129,9 +164,11 @@
         });
         input.addEventListener('input', function () {
             clearError(input);
+            refreshNicknameValidity(input);
         });
         input.addEventListener('change', function () {
             clearError(input);
+            refreshNicknameValidity(input);
         });
     });
 

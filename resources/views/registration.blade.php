@@ -136,7 +136,7 @@
             window.FFB_REGISTRATION_ERRORS = @json(array_values($errors));
         </script>
     @endif
-    <script src="{{ $assetBase }}/js/registration.js?v=2" defer></script>
+    <script src="{{ $assetBase }}/js/registration.js?v=3" defer></script>
     @include('partials.footer')
     @include('partials.guest-login-scripts')
 </body>

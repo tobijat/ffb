@@ -282,13 +282,20 @@ class RegistrationService
             return $errors;
         }
 
-        if (strlen($nickname) !== strlen(trim($nickname))) {
+        if ($nickname !== trim($nickname)) {
             $errors[] = "Benutzernamen bitte ohne Leerzeichen ' ' am Beginn und Ende!";
         }
 
         $nickname = trim($nickname);
-        if (strlen($nickname) < 3 || strlen($nickname) > 16) {
+        $nicknameLength = mb_strlen($nickname, 'UTF-8');
+        if ($nicknameLength < 3 || $nicknameLength > 16) {
             $errors[] = 'Benutzername: min. Länge ist 3, max. Länge ist 16!';
+        }
+
+        // Special chars (anything that is not a Unicode letter or number) may not repeat in a row.
+        // Letters in any script (e.g. Japanese) are allowed; existing nicknames are not re-validated on login.
+        if ($nickname !== '' && preg_match('/[^\p{L}\p{N}]{2,}/u', $nickname) === 1) {
+            $errors[] = 'Sonderzeichen dürfen im Benutzernamen nicht zweimal hintereinander stehen!';
         }
 
         if (strlen($password) < 5 || strlen($password) > 32) {
