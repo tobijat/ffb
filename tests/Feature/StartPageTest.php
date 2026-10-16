@@ -53,7 +53,7 @@ class StartPageTest extends TestCase
             ->assertSee('nav_login.png', false)
             ->assertSee('class="dash-top"', false)
             ->assertSee('user-card-login', false)
-            ->assertSee('css/start.css?v=30', false)
+            ->assertSee('css/start.css?v=31', false)
             ->assertSee('Aktuelle Ligen', false)
             ->assertSee('start-leagues', false)
             ->assertSee('Testliga', false)

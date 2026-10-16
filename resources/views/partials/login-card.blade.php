@@ -7,8 +7,7 @@
     <form class="user-card user-card-login" method="post" action="{{ $passwordReset['formAction'] }}" autocomplete="off">
         @csrf
         <div class="user-card-text">
-            <p class="hello">Passwort zurücksetzen</p>
-            <p class="muted">Account: <strong>{{ $passwordReset['nickname'] }}</strong></p>
+            <p class="hello">Passwort zurücksetzen: <strong>{{ $passwordReset['nickname'] }}</strong></p>
 
             @if (! empty($passwordReset['errors']))
                 <div class="feedback feedback-error" role="alert">
@@ -18,12 +17,12 @@
             @endif
 
             <label>
-                <span>Neues Passwort</span>
-                <input type="password" name="user_password" id="user_password" maxlength="32" required autocomplete="new-password" autofocus>
+                <span class="visually-hidden">Neues Passwort</span>
+                <input type="password" name="user_password" id="user_password" maxlength="32" placeholder="Neues Passwort" required autocomplete="new-password" autofocus>
             </label>
             <label>
-                <span>Passwort wiederholen</span>
-                <input type="password" name="user_password_val" id="user_password_val" maxlength="32" required autocomplete="new-password">
+                <span class="visually-hidden">Passwort wiederholen</span>
+                <input type="password" name="user_password_val" id="user_password_val" maxlength="32" placeholder="Passwort wiederholen" required autocomplete="new-password">
             </label>
 
             <p class="login-links">

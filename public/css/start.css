@@ -722,11 +722,14 @@ main {
 }
 
 .below h2,
-.results h2,
 .stats h2 {
     margin: 0 0 8px;
     font-size: 12pt;
     font-family: var(--font-body);
+}
+
+.start-page .results .section-head {
+    margin-bottom: 8px;
 }
 
 .results,
