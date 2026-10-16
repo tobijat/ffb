@@ -116,7 +116,7 @@ class UserscoreApiTest extends TestCase
     public function test_userscore_page_redirects_guests(): void
     {
         $this->get('/userscore')
-            ->assertRedirect(route('start', ['destination' => '/userscore']));
+            ->assertRedirect(route('start', ['destination' => 'userscore']));
     }
 
     public function test_userscore_page_renders_for_logged_in_user(): void

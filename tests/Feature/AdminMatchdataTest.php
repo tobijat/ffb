@@ -14,7 +14,7 @@ class AdminMatchdataTest extends TestCase
     public function test_matchdata_redirects_guests(): void
     {
         $this->get('/admin/matchdata')
-            ->assertRedirect(route('start', ['destination' => '/admin/matchdata']));
+            ->assertRedirect(route('start', ['destination' => 'admin/matchdata']));
     }
 
     public function test_matchdata_redirects_non_admins(): void

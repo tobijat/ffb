@@ -85,7 +85,7 @@ class AccountPageTest extends TestCase
     public function test_account_page_redirects_guests(): void
     {
         $this->get('/account')
-            ->assertRedirect(route('start', ['destination' => '/profile?tab=account']));
+            ->assertRedirect(route('start', ['destination' => 'profile?tab=account']));
     }
 
     public function test_account_page_redirects_to_profile_tab(): void
@@ -99,7 +99,7 @@ class AccountPageTest extends TestCase
     {
         $this->post('/account', [
             'user_tos' => 'user_tos_yes',
-        ])->assertRedirect(route('start', ['destination' => '/profile?tab=account']));
+        ])->assertRedirect(route('start', ['destination' => 'profile?tab=account']));
     }
 
     public function test_account_update_shows_validation_errors(): void
@@ -193,7 +193,7 @@ class AccountPageTest extends TestCase
     public function test_profile_page_redirects_guests(): void
     {
         $this->get('/profile')
-            ->assertRedirect(route('start', ['destination' => '/profile']));
+            ->assertRedirect(route('start', ['destination' => 'profile']));
     }
 
     public function test_profile_page_renders_for_logged_in_user(): void

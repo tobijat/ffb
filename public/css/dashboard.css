@@ -166,13 +166,19 @@
 
 .user-card-login {
     max-width: 28rem;
-    align-items: flex-start;
+    align-items: stretch;
 }
 
 .user-card-login .user-card-text {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    /* Keep room for two fields so forgot-mode can sit the input at the bottom. */
+    min-height: 4.75rem;
+}
+
+.user-card-login[data-mode="forgot"] .user-card-text {
+    justify-content: flex-end;
 }
 
 .user-card-login .hello {
@@ -227,6 +233,13 @@
     border-color: #008000;
     background: #bbffbb;
     box-shadow: 0 0 0 1px #008000;
+}
+
+.user-card-login input.is-error,
+.user-card-login input.is-error:focus {
+    border-color: #c00;
+    background: #ffe8e8;
+    box-shadow: 0 0 0 1px #c00;
 }
 
 .user-card-login .feedback {

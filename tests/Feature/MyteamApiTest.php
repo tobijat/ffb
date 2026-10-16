@@ -154,7 +154,7 @@ class MyteamApiTest extends TestCase
     public function test_myteam_page_redirects_guests(): void
     {
         $this->get('/myteam')
-            ->assertRedirect(route('start', ['destination' => '/myteam']));
+            ->assertRedirect(route('start', ['destination' => 'myteam']));
     }
 
     public function test_myteam_page_renders_for_logged_in_user(): void

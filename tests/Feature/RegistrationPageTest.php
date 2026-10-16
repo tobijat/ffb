@@ -44,7 +44,10 @@ class RegistrationPageTest extends TestCase
             ->assertOk()
             ->assertSee('Account anlegen', false)
             ->assertSee('Benutzername', false)
-            ->assertSee('js/registration.js', false);
+            ->assertSee('js/registration.js', false)
+            ->assertSee('user-card-login', false)
+            ->assertSee('Fantasy Football mit echten Ligen', false)
+            ->assertSee('js/start.js', false);
     }
 
     public function test_registration_page_redirects_logged_in_users(): void

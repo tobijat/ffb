@@ -144,7 +144,7 @@ class BestteamApiTest extends TestCase
     public function test_page_redirects_guests(): void
     {
         $this->get('/bestteam')
-            ->assertRedirect(route('start', ['destination' => '/bestteam']));
+            ->assertRedirect(route('start', ['destination' => 'bestteam']));
     }
 
     public function test_page_renders_for_logged_in_user(): void

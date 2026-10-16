@@ -20,7 +20,7 @@ class AdminCenterTest extends TestCase
     public function test_admin_center_redirects_guests(): void
     {
         $this->get('/admin')
-            ->assertRedirect(route('start', ['destination' => '/admin']));
+            ->assertRedirect(route('start', ['destination' => 'admin']));
     }
 
     public function test_admin_center_redirects_non_admins(): void

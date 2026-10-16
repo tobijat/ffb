@@ -17,7 +17,7 @@ class AdminPlayerpriceTest extends TestCase
     public function test_playerprice_redirects_guests(): void
     {
         $this->get('/admin/playerprice')
-            ->assertRedirect(route('start', ['destination' => '/admin/playerprice']));
+            ->assertRedirect(route('start', ['destination' => 'admin/playerprice']));
     }
 
     public function test_playerprice_redirects_non_admins(): void

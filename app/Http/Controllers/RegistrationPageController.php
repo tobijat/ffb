@@ -32,6 +32,9 @@ class RegistrationPageController extends Controller
             'legacyBase' => '/',
             'errors' => [],
             'answer' => null,
+            'destination' => (string) $request->query('destination', ''),
+            'accountMessage' => $request->session()->pull('account_message'),
+            'passwordReset' => null,
         ]);
     }
 
@@ -49,6 +52,9 @@ class RegistrationPageController extends Controller
             'legacyBase' => '/',
             'errors' => $result['ok'] ? [] : ($result['errors'] ?? []),
             'answer' => $result['ok'] ? ($result['message'] ?? null) : null,
+            'destination' => (string) $request->query('destination', ''),
+            'accountMessage' => $request->session()->pull('account_message'),
+            'passwordReset' => null,
         ]);
     }
 

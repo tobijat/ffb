@@ -51,9 +51,9 @@ class StartPageTest extends TestCase
             ->assertSee('brand brand-stacked', false)
             ->assertSee('nav_start.png', false)
             ->assertSee('nav_login.png', false)
-            ->assertSee('class="dash-top"', false)
+            ->assertSee('class="dash-top dash-top-guest"', false)
             ->assertSee('user-card-login', false)
-            ->assertSee('css/start.css?v=31', false)
+            ->assertSee('css/start.css', false)
             ->assertSee('Aktuelle Ligen', false)
             ->assertSee('start-leagues', false)
             ->assertSee('Testliga', false)
@@ -75,7 +75,9 @@ class StartPageTest extends TestCase
             ->assertSee('action="login"', false)
             ->assertSee('id="register-link"', false)
             ->assertDontSee('btn-block', false)
-            ->assertSee('js/start.js?v=9', false);
+            ->assertSee('js/start.js', false)
+            ->assertSee('data-required-msg', false)
+            ->assertDontSee('novalidate', false);
     }
 
     public function test_start_api_returns_payload(): void

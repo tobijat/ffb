@@ -27,7 +27,10 @@ class LoginServiceTest extends TestCase
 
     public function test_resolve_destination_allows_safe_paths(): void
     {
-        $this->assertSame('/ffb/lineup', $this->service()->resolveDestination('/ffb/lineup'));
+        $service = $this->service();
+        $this->assertSame('/ffb/lineup', $service->resolveDestination('/ffb/lineup'));
+        $this->assertSame('/myteam', $service->resolveDestination('myteam'));
+        $this->assertSame('/profile?tab=account', $service->resolveDestination('profile?tab=account'));
     }
 
     public function test_resolve_destination_rejects_open_redirects(): void
@@ -37,6 +40,6 @@ class LoginServiceTest extends TestCase
 
         $this->assertSame($home, $service->resolveDestination('https://evil.example/'));
         $this->assertSame($home, $service->resolveDestination('//evil.example/'));
-        $this->assertSame($home, $service->resolveDestination('ffb/lineup'));
+        $this->assertSame($home, $service->resolveDestination('javascript:alert(1)'));
     }
 }

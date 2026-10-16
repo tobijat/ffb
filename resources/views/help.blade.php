@@ -4,9 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Regeln — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css?v=20">
-    <link rel="stylesheet" href="css/dashboard.css?v=12">
-    <link rel="stylesheet" href="css/help.css?v=4">
+    @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
+    <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=32">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=17">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/help.css?v=4">
 </head>
 <body class="dash-body">
     @php
@@ -20,18 +21,7 @@
         $lcRest = $lc[$lcBestCount] ?? 1;
     @endphp
 
-    <header class="dash-top">
-        <div class="dash-top-main">
-            @include('partials.brand')
-            <nav class="dash-nav" aria-label="Hauptnavigation">
-                @include('partials.dash-nav')
-            </nav>
-        </div>
-
-        @if ($user)
-            @include('partials.user-card')
-        @endif
-    </header>
+    @include('partials.dash-top')
 
     <main class="dash-main help-layout">
         <aside class="help-toc panel" aria-label="Kapitelauswahl">
@@ -352,5 +342,6 @@
 
 
     @include('partials.footer')
+    @include('partials.guest-login-scripts')
 </body>
 </html>

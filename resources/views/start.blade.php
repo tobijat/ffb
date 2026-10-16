@@ -6,19 +6,13 @@
     <title>{{ !empty($passwordReset) ? 'Passwort zurücksetzen — SoccerSportsfan' : 'SoccerSportsfan — Fantasy Football' }}</title>
     <meta name="description" content="Fantasy Football Manager bei SoccerSportsfan. Kostenlos mitspielen.">
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
-    <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=31">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=15">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=32">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=17">
 </head>
 <body class="start-page dash-body">
-    <header class="dash-top">
-        <div class="dash-top-main">
-            @include('partials.brand', [
-                'brandSubtitle' => 'Fantasy Football mit echten Ligen — aufstellen, punkten, gewinnen.',
-            ])
-        </div>
-
-        @include('partials.login-card')
-    </header>
+    @include('partials.dash-top', [
+        'brandSubtitle' => 'Fantasy Football mit echten Ligen — aufstellen, punkten, gewinnen.',
+    ])
 
     <main>
         <div class="start-layout start-layout-solo">
@@ -73,14 +67,6 @@
 
     @include('partials.footer')
 
-    @if (empty($passwordReset))
-        <script>
-            window.FFB_START = {
-                loginUrl: new URL('login', window.location.href).pathname,
-                passwordUrl: new URL('registration/password', window.location.href).pathname,
-            };
-        </script>
-        <script src="{{ $assetBase }}/js/start.js?v=9" defer></script>
-    @endif
+    @include('partials.guest-login-scripts')
 </body>
 </html>

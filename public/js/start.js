@@ -51,6 +51,59 @@
         return ['Unbekannter Fehler. (HTTP ' + httpStatus + ')'];
     }
 
+    function plainErrorText(errors) {
+        return errors
+            .map(function (msg) {
+                return String(msg || '')
+                    .replace(/<br\s*\/?>/gi, ' ')
+                    .replace(/<[^>]+>/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            })
+            .filter(Boolean)
+            .join(' ');
+    }
+
+    function clearFieldError(input) {
+        if (!input) {
+            return;
+        }
+        input.setCustomValidity('');
+        input.classList.remove('is-error');
+    }
+
+    function clearServerValidity() {
+        clearFieldError(nicknameInput);
+        clearFieldError(passwordInput);
+    }
+
+    function errorTarget(message) {
+        if (mode === 'forgot' || !passwordInput || passwordInput.disabled) {
+            return nicknameInput;
+        }
+        const lower = String(message || '').toLowerCase();
+        if (lower.includes('passwort') && !lower.includes('nickname und passwort')) {
+            return passwordInput;
+        }
+        return nicknameInput;
+    }
+
+    function showErrorBubble(errors) {
+        const message = plainErrorText(errors);
+        if (!message) {
+            return;
+        }
+        clearServerValidity();
+        const target = errorTarget(message);
+        target.classList.add('is-error');
+        target.focus({ preventScroll: true });
+        target.setCustomValidity(message);
+        // Defer so focus settles; invalid-handler must not clear customError.
+        requestAnimationFrame(function () {
+            target.reportValidity();
+        });
+    }
+
     function xsrfToken() {
         const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
         return match ? decodeURIComponent(match[1]) : '';
@@ -80,6 +133,8 @@
             nicknameInput.required = true;
             nicknameInput.autocomplete = 'username';
             nicknameInput.placeholder = 'Benutzername oder E-Mail';
+            nicknameInput.setAttribute('data-required-msg', 'Bitte Benutzername oder E-Mail eingeben.');
+            clearFieldError(nicknameInput);
             if (nicknameLabel) {
                 nicknameLabel.textContent = 'Benutzername oder E-Mail';
             }
@@ -89,6 +144,7 @@
             passwordInput.required = false;
             passwordInput.disabled = true;
             passwordInput.value = '';
+            clearFieldError(passwordInput);
             setSubmitLabel('Reset-Link senden');
             if (forgotBtn) {
                 forgotBtn.hidden = true;
@@ -104,15 +160,18 @@
         }
 
         nicknameInput.autocomplete = 'username';
-        nicknameInput.placeholder = 'Nickname';
+        nicknameInput.placeholder = 'Benutzername';
+        nicknameInput.setAttribute('data-required-msg', 'Bitte Benutzername eingeben.');
+        clearFieldError(nicknameInput);
         if (nicknameLabel) {
-            nicknameLabel.textContent = 'Nickname';
+            nicknameLabel.textContent = 'Benutzername';
         }
         if (passwordField) {
             passwordField.hidden = false;
         }
         passwordInput.disabled = false;
         passwordInput.required = true;
+        clearFieldError(passwordInput);
         setSubmitLabel('Anmelden');
         if (forgotBtn) {
             forgotBtn.hidden = false;
@@ -165,15 +224,18 @@
     }
 
     form.addEventListener('submit', async function (event) {
+        // Native required bubbles (German via setCustomValidity); only AJAX when valid.
+        if (!form.checkValidity()) {
+            return;
+        }
+
         event.preventDefault();
-        feedback.hidden = true;
+        clearServerValidity();
+        if (feedback) {
+            feedback.hidden = true;
+        }
 
         if (mode === 'forgot') {
-            if (!nicknameInput.value.trim()) {
-                showFeedback('Bitte Benutzername oder E-Mail eingeben.', 'error');
-                nicknameInput.focus();
-                return;
-            }
             try {
                 const result = await postForgotPassword();
                 if (result.data && Number(result.data.status) === 200) {
@@ -183,9 +245,9 @@
                     showFeedback(message, 'ok');
                     return;
                 }
-                showFeedback('<strong>Es sind Fehler aufgetreten:</strong><br>' + collectErrors(result.data, result.status).join('<br>'), 'error');
+                showErrorBubble(collectErrors(result.data, result.status));
             } catch (err) {
-                showFeedback('Anfrage fehlgeschlagen. Bitte später erneut versuchen.', 'error');
+                showErrorBubble(['Anfrage fehlgeschlagen. Bitte später erneut versuchen.']);
             }
             return;
         }
@@ -196,9 +258,9 @@
                 window.location.href = result.data.destination || '/';
                 return;
             }
-            showFeedback('<strong>Es sind Fehler aufgetreten:</strong><br>' + collectErrors(result.data, result.status).join('<br>'), 'error');
+            showErrorBubble(collectErrors(result.data, result.status));
         } catch (err) {
-            showFeedback('Login derzeit nicht erreichbar. Bitte später erneut versuchen.', 'error');
+            showErrorBubble(['Login derzeit nicht erreichbar. Bitte später erneut versuchen.']);
         }
     });
 

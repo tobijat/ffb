@@ -22,9 +22,7 @@ class EnsureFfbAdmin
 
         if ($userId <= 0) {
             $path = trim($request->path(), '/');
-            $destination = $path === ''
-                ? '/admin'
-                : '/'.$path;
+            $destination = $path === '' ? 'admin' : $path;
 
             return redirect()->route('start', [
                 'destination' => $destination,

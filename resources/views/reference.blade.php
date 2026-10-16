@@ -4,9 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Impressum — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css?v=20">
-    <link rel="stylesheet" href="css/dashboard.css?v=12">
-    <link rel="stylesheet" href="css/help.css?v=4">
+    @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
+    <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=32">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=17">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/help.css?v=4">
 </head>
 <body class="dash-body">
     @php
@@ -14,18 +15,7 @@
         $nav = $data['navigation'];
     @endphp
 
-    <header class="dash-top">
-        <div class="dash-top-main">
-            @include('partials.brand')
-            <nav class="dash-nav" aria-label="Hauptnavigation">
-                @include('partials.dash-nav')
-            </nav>
-        </div>
-
-        @if ($user)
-            @include('partials.user-card')
-        @endif
-    </header>
+    @include('partials.dash-top')
 
     <main class="dash-main">
         <article class="panel help-content reference-page" id="top">
@@ -74,5 +64,6 @@
     </main>
 
     @include('partials.footer')
+    @include('partials.guest-login-scripts')
 </body>
 </html>

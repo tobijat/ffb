@@ -231,7 +231,7 @@ class LineupApiTest extends TestCase
     public function test_page_redirects_guests(): void
     {
         $this->get('/lineup')
-            ->assertRedirect(route('start', ['destination' => '/lineup']));
+            ->assertRedirect(route('start', ['destination' => 'lineup']));
     }
 
     public function test_page_renders_for_logged_in_user(): void

@@ -12,7 +12,7 @@ class AdminNewsTest extends TestCase
     public function test_news_admin_redirects_guests(): void
     {
         $this->get('/admin/news')
-            ->assertRedirect(route('start', ['destination' => '/admin/news']));
+            ->assertRedirect(route('start', ['destination' => 'admin/news']));
     }
 
     public function test_news_admin_redirects_non_admins(): void

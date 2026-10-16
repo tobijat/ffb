@@ -72,7 +72,10 @@ class HelpPageTest extends TestCase
             ->assertSee('Kapitelauswahl', false)
             ->assertSee('Spieler-Punkte', false)
             ->assertSee('css/help.css', false)
-            ->assertSee('Standard-Einstellung', false);
+            ->assertSee('Standard-Einstellung', false)
+            ->assertSee('user-card-login', false)
+            ->assertSee('Fantasy Football mit echten Ligen', false)
+            ->assertSee('js/start.js', false);
     }
 
     public function test_help_page_renders_for_logged_in_user(): void

@@ -23,6 +23,9 @@ class HelpPageController extends Controller
         return view('help', [
             'data' => $result['data'],
             'legacyBase' => '/',
+            'destination' => (string) $request->query('destination', ''),
+            'accountMessage' => $request->session()->pull('account_message'),
+            'passwordReset' => null,
         ]);
     }
 }

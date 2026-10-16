@@ -13,7 +13,7 @@ class AdminSquadTest extends TestCase
     public function test_squad_admin_redirects_guests(): void
     {
         $this->get('/admin/squad')
-            ->assertRedirect(route('start', ['destination' => '/admin/squad']));
+            ->assertRedirect(route('start', ['destination' => 'admin/squad']));
     }
 
     public function test_squad_admin_redirects_non_admins(): void

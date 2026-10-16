@@ -42,6 +42,9 @@ class ReferencePageController extends Controller
                     : HelpService::guestNavigation(),
             ],
             'legacyBase' => '/',
+            'destination' => (string) $request->query('destination', ''),
+            'accountMessage' => $request->session()->pull('account_message'),
+            'passwordReset' => null,
         ]);
     }
 }

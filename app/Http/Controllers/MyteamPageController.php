@@ -21,7 +21,7 @@ class MyteamPageController extends Controller
         $userId = $this->auth->userId($request);
         if ($userId <= 0) {
             return redirect()->route('start', [
-                'destination' => '/myteam',
+                'destination' => 'myteam',
             ]);
         }
 

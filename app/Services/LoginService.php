@@ -111,6 +111,7 @@ class LoginService
 
     /**
      * Allow only same-site relative paths (no protocol-relative or absolute URLs).
+     * Query values may omit the leading slash (e.g. destination=myteam); it is added here.
      */
     private function safePath(string $destination): ?string
     {
@@ -119,12 +120,8 @@ class LoginService
             return null;
         }
 
-        // Legacy login sometimes sent a path; reject anything that looks absolute.
+        // Reject absolute / protocol-relative URLs.
         if (preg_match('#^(?:[a-z][a-z0-9+.-]*:)?//#i', $destination)) {
-            return null;
-        }
-
-        if (! str_starts_with($destination, '/')) {
             return null;
         }
 
@@ -134,6 +131,15 @@ class LoginService
 
         if (str_contains($destination, "\n") || str_contains($destination, "\r")) {
             return null;
+        }
+
+        // Reject scheme-like values (e.g. javascript:...).
+        if (preg_match('#^[a-z][a-z0-9+.-]*:#i', $destination)) {
+            return null;
+        }
+
+        if (! str_starts_with($destination, '/')) {
+            $destination = '/'.$destination;
         }
 
         return $destination;

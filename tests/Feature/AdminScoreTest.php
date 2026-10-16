@@ -13,7 +13,7 @@ class AdminScoreTest extends TestCase
     public function test_score_redirects_guests(): void
     {
         $this->get('/admin/score')
-            ->assertRedirect(route('start', ['destination' => '/admin/score']));
+            ->assertRedirect(route('start', ['destination' => 'admin/score']));
     }
 
     public function test_score_redirects_non_admins(): void

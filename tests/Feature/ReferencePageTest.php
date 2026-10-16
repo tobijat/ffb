@@ -12,6 +12,9 @@ class ReferencePageTest extends TestCase
             ->assertOk()
             ->assertSee('Impressum', false)
             ->assertSee('Tobias Gritschacher', false)
-            ->assertSee('/reference', false);
+            ->assertSee('/reference', false)
+            ->assertSee('user-card-login', false)
+            ->assertSee('Fantasy Football mit echten Ligen', false)
+            ->assertSee('js/start.js', false);
     }
 }

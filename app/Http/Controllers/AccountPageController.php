@@ -21,7 +21,7 @@ class AccountPageController extends Controller
         $userId = $this->auth->userId($request);
         if ($userId <= 0) {
             return redirect()->route('start', [
-                'destination' => '/profile?tab=account',
+                'destination' => 'profile?tab=account',
             ]);
         }
 
@@ -33,7 +33,7 @@ class AccountPageController extends Controller
         $userId = $this->auth->userId($request);
         if ($userId <= 0) {
             return redirect()->route('start', [
-                'destination' => '/profile?tab=account',
+                'destination' => 'profile?tab=account',
             ]);
         }
 
@@ -58,7 +58,7 @@ class AccountPageController extends Controller
         $userId = $this->auth->userId($request);
         if ($userId <= 0) {
             return redirect()->route('start', [
-                'destination' => '/profile',
+                'destination' => 'profile',
             ]);
         }
 
@@ -72,7 +72,7 @@ class AccountPageController extends Controller
         $userId = $this->auth->userId($request);
         if ($userId <= 0) {
             return redirect()->route('start', [
-                'destination' => '/profile',
+                'destination' => 'profile',
             ]);
         }
 

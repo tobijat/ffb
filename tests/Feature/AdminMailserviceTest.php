@@ -12,7 +12,7 @@ class AdminMailserviceTest extends TestCase
     public function test_mailservice_redirects_guests(): void
     {
         $this->get('/admin/mailservice')
-            ->assertRedirect(route('start', ['destination' => '/admin/mailservice']));
+            ->assertRedirect(route('start', ['destination' => 'admin/mailservice']));
     }
 
     public function test_mailservice_redirects_non_admins(): void

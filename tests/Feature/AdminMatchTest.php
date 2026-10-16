@@ -12,7 +12,7 @@ class AdminMatchTest extends TestCase
     public function test_matches_admin_redirects_guests(): void
     {
         $this->get('/admin/matches')
-            ->assertRedirect(route('start', ['destination' => '/admin/matches']));
+            ->assertRedirect(route('start', ['destination' => 'admin/matches']));
     }
 
     public function test_matches_admin_redirects_non_admins(): void

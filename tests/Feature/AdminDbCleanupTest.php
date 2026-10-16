@@ -43,7 +43,7 @@ class AdminDbCleanupTest extends TestCase
     public function test_db_cleanup_redirects_guests(): void
     {
         $this->get('/admin/db-cleanup')
-            ->assertRedirect(route('start', ['destination' => '/admin/db-cleanup']));
+            ->assertRedirect(route('start', ['destination' => 'admin/db-cleanup']));
     }
 
     public function test_db_cleanup_redirects_non_admins(): void

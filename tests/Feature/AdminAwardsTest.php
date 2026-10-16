@@ -12,7 +12,7 @@ class AdminAwardsTest extends TestCase
     public function test_awards_redirects_guests(): void
     {
         $this->get('/admin/awards')
-            ->assertRedirect(route('start', ['destination' => '/admin/awards']));
+            ->assertRedirect(route('start', ['destination' => 'admin/awards']));
     }
 
     public function test_awards_redirects_non_admins(): void

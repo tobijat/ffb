@@ -12,7 +12,7 @@ class AdminPlayerTest extends TestCase
     public function test_players_admin_redirects_guests(): void
     {
         $this->get('/admin/players')
-            ->assertRedirect(route('start', ['destination' => '/admin/players']));
+            ->assertRedirect(route('start', ['destination' => 'admin/players']));
     }
 
     public function test_players_admin_redirects_non_admins(): void

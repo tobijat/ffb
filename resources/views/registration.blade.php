@@ -4,10 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Registrieren — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css?v=20">
-    <link rel="stylesheet" href="css/dashboard.css?v=12">
-    <link rel="stylesheet" href="css/account.css?v=6">
-    <link rel="stylesheet" href="css/registration.css?v=1">
+    @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
+    <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=32">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=17">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=6">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/registration.css?v=1">
 </head>
 <body class="dash-body">
     @php
@@ -19,14 +20,7 @@
         $tosUrl = $data['tos_url'];
     @endphp
 
-    <header class="dash-top">
-        <div class="dash-top-main">
-            @include('partials.brand')
-            <nav class="dash-nav" aria-label="Hauptnavigation">
-                @include('partials.dash-nav')
-            </nav>
-        </div>
-    </header>
+    @include('partials.dash-top')
 
     <main class="dash-main account-layout">
         <section class="panel account-main" aria-labelledby="reg-title">
@@ -148,7 +142,8 @@
         </aside>
     </main>
 
-    <script src="js/registration.js?v=1" defer></script>
+    <script src="{{ $assetBase }}/js/registration.js?v=1" defer></script>
     @include('partials.footer')
+    @include('partials.guest-login-scripts')
 </body>
 </html>

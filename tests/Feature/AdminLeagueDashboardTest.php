@@ -107,7 +107,7 @@ class AdminLeagueDashboardTest extends TestCase
     public function test_league_dashboard_redirects_guests(): void
     {
         $this->get('/admin/league-dashboard')
-            ->assertRedirect(route('start', ['destination' => '/admin/league-dashboard']));
+            ->assertRedirect(route('start', ['destination' => 'admin/league-dashboard']));
     }
 
     public function test_league_dashboard_redirects_non_admins(): void
