@@ -66,6 +66,36 @@ class TeamShirtTest extends TestCase
     }
 
     #[Test]
+    public function svg_url_ignores_png_only_shirts(): void
+    {
+        $teamKey = 'panama-p1p2';
+        $leagueKey = 'copa-america-c3d4';
+        File::ensureDirectoryExists($this->shirtsDir.DIRECTORY_SEPARATOR.$teamKey);
+        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.$teamKey.DIRECTORY_SEPARATOR.'pan.png', 'default-png');
+        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.$teamKey.DIRECTORY_SEPARATOR.'pan-'.$leagueKey.'.png', 'league-png');
+
+        $this->assertNull(TeamShirt::svgUrl($teamKey, 'pan', $leagueKey));
+        $this->assertNull(TeamShirt::svgRelativePath($teamKey, 'pan', $leagueKey));
+        $this->assertSame('/images/ffb/shirts/'.$teamKey.'/pan-'.$leagueKey.'.png', TeamShirt::url($teamKey, 'pan', $leagueKey));
+    }
+
+    #[Test]
+    public function svg_url_falls_back_from_league_to_default_svg(): void
+    {
+        $teamKey = 'uruguay-u1u2';
+        $leagueKey = 'copa-america-c3d4';
+        File::ensureDirectoryExists($this->shirtsDir.DIRECTORY_SEPARATOR.$teamKey);
+        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.$teamKey.DIRECTORY_SEPARATOR.'uru.svg', 'default-svg');
+        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.$teamKey.DIRECTORY_SEPARATOR.'uru-'.$leagueKey.'.png', 'league-png');
+
+        $this->assertSame('/images/ffb/shirts/'.$teamKey.'/uru.svg', TeamShirt::svgUrl($teamKey, 'uru', $leagueKey));
+        $this->assertSame('/images/ffb/shirts/'.$teamKey.'/uru.svg', TeamShirt::url($teamKey, 'uru', $leagueKey));
+        $this->assertSame('/images/ffb/shirts/'.$teamKey.'/uru.svg', TeamShirt::svgUrl($teamKey, 'uru', 'other-league-zzzz'));
+        File::put($this->shirtsDir.DIRECTORY_SEPARATOR.$teamKey.DIRECTORY_SEPARATOR.'uru-'.$leagueKey.'.svg', 'league-svg');
+        $this->assertSame('/images/ffb/shirts/'.$teamKey.'/uru-'.$leagueKey.'.svg', TeamShirt::svgUrl($teamKey, 'uru', $leagueKey));
+    }
+
+    #[Test]
     public function blank_urls_prefer_existing_svg(): void
     {
         File::put($this->shirtsDir.DIRECTORY_SEPARATOR.'shirt_BLANK.svg', 'blank');

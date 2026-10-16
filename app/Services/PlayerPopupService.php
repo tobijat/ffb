@@ -15,6 +15,7 @@ use App\Models\Userteam;
 use App\Support\FfbDateTime;
 use App\Support\PlayerCardWarning;
 use App\Support\PlayerPicture;
+use App\Support\TeamShirt;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
@@ -65,7 +66,9 @@ class PlayerPopupService
             ->whereHas('matchround', fn (Builder $q) => $q->where('matchround_league_id', $leagueId))
             ->count();
 
-        $leagueTitle = (string) (League::query()->where('league_id', $leagueId)->value('league_title') ?? '');
+        $league = League::query()->where('league_id', $leagueId)->first(['league_title', 'asset_key']);
+        $leagueTitle = (string) ($league?->league_title ?? '');
+        $leagueKey = $league?->asset_key !== null ? (string) $league->asset_key : null;
 
         $rounds = Matchround::query()
             ->where('matchround_league_id', $leagueId)
@@ -165,11 +168,18 @@ class PlayerPopupService
                     'player_team_name' => (string) $playerteam->team->team_name,
                     'player_team_nationality' => (string) ($playerteam->team->team_nationality ?: ''),
                     'player_team_id' => $teamId,
+                    'league_title' => $leagueTitle,
                     'player_picture_url' => PlayerPicture::url(
                         $playerteam->team->asset_key !== null ? (string) $playerteam->team->asset_key : null,
                         $playerteam->player->asset_key !== null ? (string) $playerteam->player->asset_key : null,
                     ),
+                    'player_shirt_svg_url' => TeamShirt::svgUrl(
+                        $playerteam->team->asset_key !== null ? (string) $playerteam->team->asset_key : null,
+                        (string) ($playerteam->team->team_nationality ?: ''),
+                        $leagueKey,
+                    ),
                 ],
+                'opened_matchround_id' => $matchroundId > 0 ? $matchroundId : null,
                 'warning' => $matchroundId > 0
                     ? $this->selectionWarning($playerteam, $leagueId, $matchroundId)
                     : null,
@@ -266,6 +276,10 @@ class PlayerPopupService
         $teamId = (int) $playerteam->playerteam_team_id;
         $sameTeamPtIds = $this->sameTeamPlayerteamIds($playerteam);
 
+        $roundLeagueTitle = $roundLeagueId > 0
+            ? (string) (League::query()->where('league_id', $roundLeagueId)->value('league_title') ?? '')
+            : '';
+
         $base = [
             'playerteam_id' => $playerteamId,
             'matchround_id' => $matchroundId,
@@ -278,6 +292,7 @@ class PlayerPopupService
                 'player_nationality' => (string) ($playerteam->player->player_nationality ?: ''),
                 'player_team_name' => (string) $playerteam->team->team_name,
                 'player_team_nationality' => (string) ($playerteam->team->team_nationality ?: ''),
+                'league_title' => $roundLeagueTitle,
                 'player_picture_url' => PlayerPicture::url(
                     $playerteam->team->asset_key !== null ? (string) $playerteam->team->asset_key : null,
                     $playerteam->player->asset_key !== null ? (string) $playerteam->player->asset_key : null,

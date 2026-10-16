@@ -251,10 +251,14 @@
             ? '<span title="Preis: ' + price + ' Credits">' + price + '</span>'
             : '';
 
+        const roundId = Number(matchroundId || 0);
+        const roundAttr = roundId > 0 ? '" data-matchround-id="' + roundId : '';
+
         return (
             '<div class="pitch-player pitch-bench-slot">' +
             '<a href="#" data-modal="player" data-id="' +
             player.playerteam_id +
+            roundAttr +
             '">' +
             shirtImg(legacyBase, teamKey, nat) +
             '</a>' +
@@ -266,7 +270,7 @@
             '<a class="score" href="#" data-modal="player-points" data-id="' +
             player.playerteam_id +
             '" data-matchround-id="' +
-            Number(matchroundId || 0) +
+            roundId +
             '">' +
             Number(player.playerstats_score || 0) +
             ' Punkte</a>' +

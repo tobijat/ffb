@@ -479,10 +479,13 @@
         const nat = player.playerteam_team_nationality || 'AUT';
         const teamKey = player.playerteam_team_asset_key || '';
         const price = formatPlayerPrice(player.playerteam_player_price);
+        const roundId = currentRound() ? Number(currentRound().matchround_id) || 0 : 0;
+        const roundAttr = roundId > 0 ? '" data-matchround-id="' + roundId : '';
         return (
             '<div class="pitch-player">' +
             '<a href="#" data-modal="player" data-id="' +
             player.playerteam_id +
+            roundAttr +
             '">' +
             shirtImgTag(teamKey, nat, 'alt="" width="64" height="64"') +
             '</a>' +
@@ -494,7 +497,7 @@
             '<a class="score" href="#" data-modal="player-points" data-id="' +
             player.playerteam_id +
             '" data-matchround-id="' +
-            (currentRound() ? currentRound().matchround_id : 0) +
+            roundId +
             '">' +
             Number(player.playerstats_score || 0) +
             ' Punkte</a>' +

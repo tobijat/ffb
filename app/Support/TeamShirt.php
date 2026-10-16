@@ -39,10 +39,43 @@ final class TeamShirt
     }
 
     /**
+     * Public URL for an SVG team shirt only (league override, then default).
+     */
+    public static function svgUrl(?string $teamKey, ?string $nationality, ?string $leagueKey = null): ?string
+    {
+        $relative = self::svgRelativePath($teamKey, $nationality, $leagueKey);
+        if ($relative === null) {
+            return null;
+        }
+
+        return '/images/ffb/'.$relative;
+    }
+
+    /**
      * Relative path under images/ffb, or null when no file exists.
      */
     public static function relativePath(?string $teamKey, ?string $nationality, ?string $leagueKey = null): ?string
     {
+        return self::firstExistingPath($teamKey, $nationality, $leagueKey, self::EXTENSIONS);
+    }
+
+    /**
+     * Relative SVG path under images/ffb, or null when no SVG exists.
+     */
+    public static function svgRelativePath(?string $teamKey, ?string $nationality, ?string $leagueKey = null): ?string
+    {
+        return self::firstExistingPath($teamKey, $nationality, $leagueKey, ['svg']);
+    }
+
+    /**
+     * @param  list<string>  $extensions
+     */
+    private static function firstExistingPath(
+        ?string $teamKey,
+        ?string $nationality,
+        ?string $leagueKey,
+        array $extensions,
+    ): ?string {
         $nat = self::normalizeNationality($nationality);
         if (! AssetKey::isValid($teamKey) || $nat === '') {
             return null;
@@ -52,14 +85,12 @@ final class TeamShirt
         $hasLeague = AssetKey::isValid($leagueKey);
 
         $candidates = [];
-        if ($hasLeague) {
-            $candidates[] = $stem.'-'.$leagueKey.'.svg';
+        foreach ($extensions as $ext) {
+            if ($hasLeague) {
+                $candidates[] = $stem.'-'.$leagueKey.'.'.$ext;
+            }
+            $candidates[] = $stem.'.'.$ext;
         }
-        $candidates[] = $stem.'.svg';
-        if ($hasLeague) {
-            $candidates[] = $stem.'-'.$leagueKey.'.png';
-        }
-        $candidates[] = $stem.'.png';
 
         foreach ($candidates as $relative) {
             if (self::fileExists($relative)) {

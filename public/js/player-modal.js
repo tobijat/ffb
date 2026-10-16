@@ -26,6 +26,31 @@
         return '<img class="ffb-flag ffb-flag-img" src="' + src + '" alt="" width="16" height="11" loading="lazy"' + titleAttr + '>';
     }
 
+    function flagBackgroundUrl(code) {
+        if (window.FfbFlags) {
+            if (typeof window.FfbFlags.svgUrl === 'function') {
+                const svg = window.FfbFlags.svgUrl(code);
+                if (svg) {
+                    return svg;
+                }
+            }
+            if (typeof window.FfbFlags.imageUrl === 'function') {
+                return window.FfbFlags.imageUrl(code);
+            }
+        }
+        return legacyBase + 'images/ffb/flags/' + (code || 'na').toLowerCase() + '.gif';
+    }
+
+    function cssUrl(url) {
+        return (
+            "url('" +
+            String(url == null ? '' : url)
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'") +
+            "')"
+        );
+    }
+
     function imgUrl(path) {
         if (!path) {
             return '';
@@ -83,14 +108,22 @@
     }
 
     function renderPlayerHead(player) {
+        const league = String(player.league_title || '').trim();
         return (
-            flagHtml(player.player_team_nationality, player.player_team_nationality) +
+            '<div class="ffb-player-modal-head" style="--ffb-flag-team:' +
+            cssUrl(flagBackgroundUrl(player.player_team_nationality)) +
+            '">' +
             '<div class="ffb-modal-head-title">' +
             escapeHtml(player.player_name) +
             ' — <em>' +
             escapeHtml(player.player_team_name) +
-            '</em></div>' +
-            defaultCloseBtn()
+            '</em>' +
+            (league
+                ? '<div class="ffb-modal-head-subtitle">' + escapeHtml(league) + '</div>'
+                : '') +
+            '</div>' +
+            defaultCloseBtn() +
+            '</div>'
         );
     }
 
@@ -190,10 +223,11 @@
         return '-';
     }
 
-    function renderRoundsTable(rows, playerteamId, showAll, limitable) {
+    function renderRoundsTable(rows, playerteamId, showAll, limitable, openedMatchroundId) {
         if (!rows || !rows.length) {
             return '';
         }
+        const openedId = Number(openedMatchroundId) || 0;
         let html =
             '<table class="ffb-profile-table ffb-player-rounds"><thead><tr>' +
             '<th><b>Runde</b></th><th><b>Ergebnis</b></th>' +
@@ -222,8 +256,12 @@
             const r = rows[i];
             const title = 'Datum: ' + (r.match_date || '–');
             const roundCls = Number(r.matchround_running) === 1 ? ' style="color:#c00;"' : '';
+            const rowCls =
+                openedId > 0 && Number(r.matchround_id) === openedId ? ' class="is-opened-round"' : '';
             html +=
-                '<tr><td class="round-cell"' +
+                '<tr' +
+                rowCls +
+                '><td class="round-cell"' +
                 roundCls +
                 ' title="' +
                 escapeHtml(title) +
@@ -258,9 +296,12 @@
         }
         html += '</tbody></table>';
         if (limitable && !showAll && rows.length > MAX_ROUNDS) {
+            const openedAttr =
+                openedId > 0 ? '" data-matchround-id="' + escapeHtml(openedId) : '';
             html +=
                 '<p class="ffb-player-more"><a href="#" data-modal="player" data-id="' +
                 escapeHtml(playerteamId) +
+                openedAttr +
                 '" data-tab="info" data-show-all="1">alle Runden anzeigen</a></p>';
         }
         return html;
@@ -332,15 +373,40 @@
             rows += profileRow('symbol_effectivity.svg', 'Liga-Performance:', escapeHtml(pct) + '%');
         }
 
-        let tables = renderRoundsTable(data.matchrounds, player.playerteam_id, showAll, true);
+        const openedMatchroundId =
+            data.opened_matchround_id || data.openedMatchroundId || 0;
+        let tables = renderRoundsTable(
+            data.matchrounds,
+            player.playerteam_id,
+            showAll,
+            true,
+            openedMatchroundId
+        );
         if (data.pastmatches && data.pastmatches.length) {
             tables +=
                 '<div class="ffb-match-section"><h3>Weitere Spiele</h3>' +
-                renderRoundsTable(data.pastmatches, player.playerteam_id, true, false) +
+                renderRoundsTable(
+                    data.pastmatches,
+                    player.playerteam_id,
+                    true,
+                    false,
+                    openedMatchroundId
+                ) +
                 '</div>';
         }
 
+        const shirtSvg = String(player.player_shirt_svg_url || '').trim();
+        const shirtStyle = shirtSvg
+            ? ' style="--ffb-shirt-svg:' + cssUrl(imgUrl(shirtSvg)) + '"'
+            : '';
+        const shirtCls = shirtSvg ? ' has-shirt' : '';
+
         return (
+            '<div class="ffb-player-info-hero' +
+            shirtCls +
+            '"' +
+            shirtStyle +
+            '>' +
             '<div class="ffb-profile ffb-player">' +
             '<div><img class="ffb-profile-photo" src="' +
             escapeHtml(imgUrl(player.player_picture_url)) +
@@ -351,7 +417,7 @@
             renderPlayerWarning(data.warning) +
             '<div class="ffb-player-tables">' +
             tables +
-            '</div>'
+            '</div></div>'
         );
     }
 
@@ -995,14 +1061,14 @@
     }
 
     function resolveMatchroundId(opts) {
-        if (!isLineupContext()) {
-            return 0;
-        }
         const fromOpts = Number(
             (opts && (opts.matchroundId || opts.matchround_id || opts['matchround-id'])) || 0
         );
         if (fromOpts > 0) {
             return fromOpts;
+        }
+        if (!isLineupContext()) {
+            return 0;
         }
         const fromLineup = Number(window.FFB_LINEUP.matchroundId || 0);
         return fromLineup > 0 ? fromLineup : 0;

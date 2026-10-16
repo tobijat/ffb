@@ -100,6 +100,38 @@
 
 /* Profile content */
 
+.ffb-player-info-hero {
+    position: relative;
+    isolation: isolate;
+    /* Bleed into .ffb-modal-body padding so the shirt reaches the panel top */
+    margin: -0.5rem -0.6rem -0.75rem;
+    padding: 0.5rem 0.6rem 0.75rem;
+    overflow: hidden;
+}
+
+.ffb-player-info-hero.has-shirt::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background-image: var(--ffb-shirt-svg);
+    background-repeat: no-repeat;
+    background-position: center top;
+    background-size: contain;
+    opacity: 0.14;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.ffb-player-info-hero > .ffb-profile,
+.ffb-player-info-hero > .ffb-player-warning,
+.ffb-player-info-hero > .ffb-player-tables {
+    position: relative;
+    z-index: 1;
+}
+
 .ffb-profile {
     display: grid;
     grid-template-columns: 120px 1fr;
@@ -559,6 +591,69 @@
     margin-right: 0.15rem;
 }
 
+.ffb-modal-head:has(.ffb-player-modal-head) {
+    padding: 0;
+    overflow: hidden;
+}
+
+.ffb-player-modal-head {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.35rem 0.5rem;
+    box-sizing: border-box;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.ffb-player-modal-head::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 50%;
+    background-image: var(--ffb-flag-team);
+    background-repeat: no-repeat;
+    background-size: auto 100%;
+    background-position: left center;
+    pointer-events: none;
+    z-index: 0;
+    -webkit-mask-image: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.45) 0%,
+        rgba(0, 0, 0, 0.28) 40%,
+        rgba(0, 0, 0, 0) 100%
+    );
+    mask-image: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.45) 0%,
+        rgba(0, 0, 0, 0.28) 40%,
+        rgba(0, 0, 0, 0) 100%
+    );
+}
+
+.ffb-player-modal-head > * {
+    position: relative;
+    z-index: 1;
+}
+
+.ffb-modal-head-subtitle {
+    margin-top: 0.12rem;
+    font-size: 8pt;
+    font-weight: normal;
+    line-height: 1.2;
+    opacity: 0.9;
+}
+
+.ffb-player-rounds tr.is-opened-round > td {
+    background: #e5e5e5;
+}
+
 .ffb-player-warning {
     display: flex;
     align-items: flex-start;
@@ -731,6 +826,10 @@
 }
 
 @media (max-width: 560px) {
+    .ffb-player-info-hero.has-shirt::after {
+        opacity: 0.1;
+    }
+
     .ffb-profile {
         grid-template-columns: 1fr;
         justify-items: center;
