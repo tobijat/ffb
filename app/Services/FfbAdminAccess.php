@@ -17,6 +17,7 @@ class FfbAdminAccess
         return WebAdmin::query()
             ->where('admin_user_id', $userId)
             ->where('admin_section', self::SECTION)
+            ->where('admin_status', 'active')
             ->exists();
     }
 }
