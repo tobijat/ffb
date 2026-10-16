@@ -10,6 +10,7 @@ use App\Models\UserPermissions;
 use App\Models\Userscore;
 use App\Models\WebUser;
 use App\Support\LeagueSymbol;
+use App\Support\UserAvatar;
 
 class ProfilePopupService
 {
@@ -64,7 +65,7 @@ class ProfilePopupService
                     'user_date_register' => $user->user_date_register
                         ? date('d.m.Y', strtotime((string) $user->user_date_register))
                         : null,
-                    'avatar_url' => '/images/ffb/profiles/avatar/'.$avatar,
+                    'avatar_url' => UserAvatar::publicUrl($avatar),
                     'photo_url' => $photoUrl,
                     'user_details_city' => $details->user_details_city ?: null,
                     'user_details_website' => $details->user_details_website ?: null,

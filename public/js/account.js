@@ -34,10 +34,8 @@
             '<b>Lieblingsteam</b><br>Wenn du möchtest, kannst du hier dein Lieblingsteam aus allen im Fantasy-Football verfügbaren Teams auswählen.',
         user_details_photo:
             '<b>Profilfoto</b><br>Wenn du möchtest, kannst du hier ein Profilfoto von dir hochladen. Das Bild darf höchstens 1024 Pixel breit bzw. hoch sein und darf maximal 500 Kilobyte groß sein.',
-        user_details_avatar:
-            '<b>Avatarbild</b><br>Wenn du möchtest, kannst du hier ein Avatarbild für dein Profil hochladen. Das Bild darf höchstens 90 Pixel breit bzw. hoch sein und darf maximal 100 Kilobyte groß sein.',
-        user_details_avatar_delete:
-            '<b>Avatarbild zurücksetzen</b><br>Wenn du JA auswählst, wird dein Avatarbild auf das Standard-Bild zurückgesetzt.',
+        user_details_avatar_shirt:
+            '<b>Avatar</b><br>Wähle ein Trikot aus der Liste. Es wird als dein Avatarbild verwendet. Solange du nichts auswählst, bleibt dein bisheriges Avatar unverändert.',
         user_details_photo_delete:
             '<b>Profilfoto zurücksetzen</b><br>Wenn du JA auswählst, wird dein Profilfoto auf das Standard-Bild zurückgesetzt.',
         user_permissions_ffb_mailservice_info:
@@ -122,8 +120,8 @@
         if (lower.includes('profilfoto')) {
             return fieldInForms('user_details_photo');
         }
-        if (lower.includes('avatar')) {
-            return fieldInForms('user_details_avatar');
+        if (lower.includes('avatar') || lower.includes('trikot')) {
+            return document.querySelector('input[name="user_details_avatar_shirt"]');
         }
         return (
             fieldInForms('user_password_chg') ||
@@ -160,6 +158,19 @@
             input.addEventListener('change', function () {
                 clearError(input);
             });
+        });
+    });
+
+    const avatarPreview = document.getElementById('account-avatar-preview');
+    document.querySelectorAll('input[name="user_details_avatar_shirt"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            if (!avatarPreview || !radio.checked) {
+                return;
+            }
+            const url = radio.getAttribute('data-preview-url');
+            if (url) {
+                avatarPreview.src = url;
+            }
         });
     });
 

@@ -75,6 +75,14 @@ class AccountPageTest extends TestCase
                 'teams' => [
                     ['team_id' => 3, 'team_name' => 'Rapid', 'team_nationality' => 'AUT'],
                 ],
+                'avatar_shirts' => [
+                    [
+                        'team_id' => 3,
+                        'team_name' => 'Rapid',
+                        'path' => 'shirts/rapid-abcd/aut.svg',
+                        'url' => '/images/ffb/shirts/rapid-abcd/aut.svg',
+                    ],
+                ],
                 'navigation' => [
                     ['symbol' => 'nav_help.png', 'name' => 'Regeln', 'link' => '/help', 'style' => 'big'],
                 ],
@@ -212,6 +220,8 @@ class AccountPageTest extends TestCase
             ->assertSee('Accountdaten', false)
             ->assertSee('Wien', false)
             ->assertSee('Rapid', false)
+            ->assertSee('user_details_avatar_shirt', false)
+            ->assertDontSee('type="file" name="user_details_avatar"', false)
             ->assertSee('Ausloggen', false)
             ->assertDontSee('>Account</span>', false)
             ->assertDontSee('>Profil</span>', false)

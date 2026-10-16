@@ -6,6 +6,8 @@ use App\Mail\EmailChangeMail;
 use App\Models\Team;
 use App\Models\UserPermissions;
 use App\Models\WebUser;
+use App\Support\TeamShirt;
+use App\Support\UserAvatar;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
@@ -164,6 +166,7 @@ class AccountService
                 ],
                 'form' => $formOverride ?? $this->profileFormFromUser($user),
                 'teams' => $this->teams(),
+                'avatar_shirts' => $this->avatarShirtOptions(),
                 'navigation' => app(DashboardService::class)->navigation($userId),
             ],
         ];
@@ -211,23 +214,15 @@ class AccountService
 
         $website = $this->normalizeWebsite((string) ($input['user_details_website'] ?? ''));
         $oldPhoto = (string) ($details->user_details_photo ?: 'profile_na.png');
-        $oldAvatar = (string) ($details->user_details_avatar ?: 'avatar_na.png');
+        $shirtAvatar = trim((string) ($input['user_details_avatar_shirt'] ?? ''));
 
         $photoFile = $request->file('user_details_photo');
-        $avatarFile = $request->file('user_details_avatar');
         $deletePhoto = (int) ($input['user_details_photo_delete'] ?? 0) === 1;
-        $deleteAvatar = (int) ($input['user_details_avatar_delete'] ?? 0) === 1;
 
         if (! $photoFile && $deletePhoto && $oldPhoto !== 'profile_na.png') {
             $this->deleteProfileImage('photo', $oldPhoto);
             $details->user_details_photo = 'profile_na.png';
             $oldPhoto = 'profile_na.png';
-        }
-
-        if (! $avatarFile && $deleteAvatar && $oldAvatar !== 'avatar_na.png') {
-            $this->deleteProfileImage('avatar', $oldAvatar);
-            $details->user_details_avatar = 'avatar_na.png';
-            $oldAvatar = 'avatar_na.png';
         }
 
         if ($photoFile instanceof UploadedFile) {
@@ -246,20 +241,9 @@ class AccountService
             $details->user_details_photo = $stored;
         }
 
-        if ($avatarFile instanceof UploadedFile) {
-            $stored = $this->storeProfileImage($avatarFile, 'avatar');
-            if ($stored === null) {
-                return [
-                    'ok' => false,
-                    'status' => 422,
-                    'errors' => ['Problem beim Speichern des Avatarbildes. Probier ein anderes.'],
-                    'form' => $form,
-                ];
-            }
-            if ($oldAvatar !== 'avatar_na.png') {
-                $this->deleteProfileImage('avatar', $oldAvatar);
-            }
-            $details->user_details_avatar = $stored;
+        // Shirt selection replaces any previous avatar value; legacy custom files are left on disk.
+        if ($shirtAvatar !== '') {
+            $details->user_details_avatar = $shirtAvatar;
         }
 
         $details->user_details_zip = trim((string) ($input['user_details_zip'] ?? ''));
@@ -496,7 +480,7 @@ class AccountService
             'user_details_photo' => $photo,
             'user_details_avatar' => $avatar,
             'user_details_photo_url' => '/images/ffb/profiles/photo/'.$photo,
-            'user_details_avatar_url' => '/images/ffb/profiles/avatar/'.$avatar,
+            'user_details_avatar_url' => UserAvatar::publicUrl($avatar),
             'user_permissions_ffb_mailservice_reminder' => $this->mailPermissionEnabled(
                 $permissions?->user_permissions_ffb_mailservice_reminder
             ) ? 1 : 0,
@@ -514,7 +498,10 @@ class AccountService
     private function profileFormFromInput(array $input): array
     {
         $photo = (string) ($input['user_details_photo_name'] ?? 'profile_na.png');
-        $avatar = (string) ($input['user_details_avatar_name'] ?? 'avatar_na.png');
+        $shirt = trim((string) ($input['user_details_avatar_shirt'] ?? ''));
+        $avatar = $shirt !== ''
+            ? $shirt
+            : (string) ($input['user_details_avatar_name'] ?? 'avatar_na.png');
 
         return [
             'user_details_city' => (string) ($input['user_details_city'] ?? ''),
@@ -526,7 +513,7 @@ class AccountService
             'user_details_photo' => $photo,
             'user_details_avatar' => $avatar,
             'user_details_photo_url' => '/images/ffb/profiles/photo/'.$photo,
-            'user_details_avatar_url' => '/images/ffb/profiles/avatar/'.$avatar,
+            'user_details_avatar_url' => UserAvatar::publicUrl($avatar),
             'user_permissions_ffb_mailservice_reminder' => (int) ($input['user_permissions_ffb_mailservice_reminder'] ?? 0) === 1 ? 1 : 0,
             'user_permissions_ffb_mailservice_info' => (int) ($input['user_permissions_ffb_mailservice_info'] ?? 0) === 1 ? 1 : 0,
             'user_permissions_ffb_visible_profile' => (int) ($input['user_permissions_ffb_visible_profile'] ?? 0) === 1 ? 1 : 0,
@@ -540,8 +527,9 @@ class AccountService
     private function mergeProfileForm(WebUser $user, array $input): array
     {
         $base = $this->profileFormFromUser($user);
+        $shirt = trim((string) ($input['user_details_avatar_shirt'] ?? ''));
 
-        return array_merge($base, [
+        $merged = array_merge($base, [
             'user_details_city' => (string) ($input['user_details_city'] ?? $base['user_details_city']),
             'user_details_zip' => (string) ($input['user_details_zip'] ?? $base['user_details_zip']),
             'user_details_street' => (string) ($input['user_details_street'] ?? $base['user_details_street']),
@@ -552,6 +540,13 @@ class AccountService
             'user_permissions_ffb_mailservice_info' => (int) ($input['user_permissions_ffb_mailservice_info'] ?? $base['user_permissions_ffb_mailservice_info']) === 1 ? 1 : 0,
             'user_permissions_ffb_visible_profile' => (int) ($input['user_permissions_ffb_visible_profile'] ?? $base['user_permissions_ffb_visible_profile']) === 1 ? 1 : 0,
         ]);
+
+        if ($shirt !== '') {
+            $merged['user_details_avatar'] = $shirt;
+            $merged['user_details_avatar_url'] = UserAvatar::publicUrl($shirt);
+        }
+
+        return $merged;
     }
 
     /**
@@ -576,19 +571,9 @@ class AccountService
             }
         }
 
-        $avatar = $request->file('user_details_avatar');
-        if ($avatar instanceof UploadedFile && $avatar->isValid()) {
-            $image = @getimagesize($avatar->getRealPath() ?: '');
-            if ($image === false) {
-                $errors[] = 'Problem beim Lesen des Avatarbildes. Probier ein anderes.';
-            } else {
-                if ($image[0] > 90 || $image[1] > 90) {
-                    $errors[] = 'Das Avatarbild darf maximal 90x90 Pixel groß sein.';
-                }
-                if ($avatar->getSize() > 102400) {
-                    $errors[] = 'Das Avatarbild darf maximal 100 Kilobyte groß sein.';
-                }
-            }
+        $shirt = trim((string) $request->input('user_details_avatar_shirt', ''));
+        if ($shirt !== '' && (! UserAvatar::isShirtPath($shirt) || ! TeamShirt::relativeExists($shirt))) {
+            $errors[] = 'Bitte wähle ein gültiges Trikot als Avatar.';
         }
 
         return $errors;
@@ -639,6 +624,43 @@ class AccountService
                 'team_nationality' => (string) $team->team_nationality,
             ])
             ->all();
+    }
+
+    /**
+     * Teams that have a default SVG shirt available for the avatar picker.
+     *
+     * @return list<array{team_id: int, team_name: string, path: string, url: string}>
+     */
+    private function avatarShirtOptions(): array
+    {
+        $options = [];
+
+        $teams = Team::query()
+            ->where('team_status', 1)
+            ->whereNotNull('asset_key')
+            ->where('asset_key', '!=', '')
+            ->where('team_nationality', '!=', '')
+            ->orderBy('team_name')
+            ->get(['team_id', 'team_name', 'team_nationality', 'asset_key']);
+
+        foreach ($teams as $team) {
+            $path = TeamShirt::svgRelativePath(
+                (string) $team->asset_key,
+                (string) $team->team_nationality,
+            );
+            if ($path === null) {
+                continue;
+            }
+
+            $options[] = [
+                'team_id' => (int) $team->team_id,
+                'team_name' => (string) $team->team_name,
+                'path' => $path,
+                'url' => '/images/ffb/'.$path,
+            ];
+        }
+
+        return $options;
     }
 
     private function storeProfileImage(UploadedFile $file, string $kind): ?string

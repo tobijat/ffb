@@ -229,6 +229,19 @@ final class TeamShirt
         return $base.DIRECTORY_SEPARATOR.'shirts';
     }
 
+    /**
+     * Whether a relative path under images/ffb exists on disk.
+     */
+    public static function relativeExists(string $relativeUnderFfb): bool
+    {
+        $relative = str_replace('\\', '/', trim($relativeUnderFfb));
+        if ($relative === '' || str_contains($relative, '..') || str_starts_with($relative, '/')) {
+            return false;
+        }
+
+        return self::fileExists($relative);
+    }
+
     private static function fileExists(string $relativeUnderFfb): bool
     {
         $base = rtrim((string) config('ffb.legacy_images_path'), DIRECTORY_SEPARATOR.'\\/');

@@ -7,7 +7,7 @@
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
     <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=32">
     <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=17">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=7">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=8">
 </head>
 <body class="dash-body">
     @php
@@ -15,11 +15,13 @@
         $nav = $data['navigation'];
         $profileForm = $data['form'];
         $teams = $data['teams'];
+        $avatarShirts = $data['avatar_shirts'] ?? [];
         $accountForm = $accountData['form'];
         $countries = $accountData['countries'];
         $birthYears = $accountData['birth_years'];
         $months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
         $activeTab = ($tab ?? 'profile') === 'account' ? 'account' : 'profile';
+        $currentAvatar = (string) ($profileForm['user_details_avatar'] ?? 'avatar_na.png');
     @endphp
 
     <header class="dash-top">
@@ -119,19 +121,37 @@
                     </div>
 
                     <div class="account-field account-field-media">
-                        <label for="user_details_avatar">Avatarbild</label>
-                        <div class="account-media">
-                            <input id="user_details_avatar" type="file" name="user_details_avatar" accept="image/*" data-help="user_details_avatar">
-                            <img class="account-preview" src="{{ $profileForm['user_details_avatar_url'] }}" alt="Aktueller Avatar" width="55" height="55">
+                        <span class="account-label" id="avatar-shirt-label">Avatar</span>
+                        <div class="account-media account-avatar-picker" data-help="user_details_avatar_shirt">
+                            <img
+                                id="account-avatar-preview"
+                                class="account-preview account-preview-avatar"
+                                src="{{ $profileForm['user_details_avatar_url'] }}"
+                                alt="Aktueller Avatar"
+                                width="55"
+                                height="55"
+                            >
+                            <div
+                                class="avatar-shirt-grid"
+                                role="radiogroup"
+                                aria-labelledby="avatar-shirt-label"
+                            >
+                                @foreach ($avatarShirts as $shirt)
+                                    <label class="avatar-shirt-option">
+                                        <input
+                                            type="radio"
+                                            name="user_details_avatar_shirt"
+                                            value="{{ $shirt['path'] }}"
+                                            @checked($currentAvatar === $shirt['path'])
+                                            data-help="user_details_avatar_shirt"
+                                            data-preview-url="{{ $shirt['url'] }}"
+                                        >
+                                        <img src="{{ $shirt['url'] }}" alt="" width="40" height="40">
+                                        <span class="avatar-shirt-name">{{ $shirt['team_name'] }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="account-field">
-                        <label for="user_details_avatar_delete">Avatarbild zurücksetzen</label>
-                        <select id="user_details_avatar_delete" name="user_details_avatar_delete" data-help="user_details_avatar_delete">
-                            <option value="0" selected>Nein</option>
-                            <option value="1">Ja</option>
-                        </select>
                     </div>
 
                     <hr class="account-sep">
@@ -281,6 +301,6 @@
             window.FFB_ACCOUNT_ERRORS = @json(array_values($errors));
         </script>
     @endif
-    <script src="{{ $assetBase }}/js/account.js?v=3" defer></script>
+    <script src="{{ $assetBase }}/js/account.js?v=4" defer></script>
 </body>
 </html>
