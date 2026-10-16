@@ -20,7 +20,11 @@ class StartPageTest extends TestCase
                     'matchrounds_played' => 3,
                 ],
                 'leagues' => [
-                    ['league_id' => 1, 'league_title' => 'Testliga'],
+                    [
+                        'league_id' => 1,
+                        'league_title' => 'Testliga',
+                        'symbol_url' => '/images/ffb/leagues/testliga.png',
+                    ],
                 ],
                 'results' => [
                     [
@@ -33,6 +37,7 @@ class StartPageTest extends TestCase
                         'guest_flag' => 'ger',
                         'guest_flag_css' => "url('/vendor/flag-icons/flags/4x3/de.svg')",
                         'score_html' => '2:1',
+                        'round_label' => 'Testliga - Spieltag 1',
                         'date' => '01.01.2026',
                     ],
                 ],
@@ -48,7 +53,12 @@ class StartPageTest extends TestCase
             ->assertSee('nav_login.png', false)
             ->assertSee('class="dash-top"', false)
             ->assertSee('user-card-login', false)
-            ->assertSee('css/start.css?v=27', false)
+            ->assertSee('css/start.css?v=30', false)
+            ->assertSee('Aktuelle Ligen', false)
+            ->assertSee('start-leagues', false)
+            ->assertSee('Testliga', false)
+            ->assertSee('Testliga - Spieltag 1', false)
+            ->assertSee('result-meta', false)
             ->assertSee('brand-tagline', false)
             ->assertSee('result-card', false)
             ->assertSee('--ffb-flag-home', false)

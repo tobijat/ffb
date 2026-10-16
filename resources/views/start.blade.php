@@ -6,7 +6,7 @@
     <title>{{ !empty($passwordReset) ? 'Passwort zurücksetzen — SoccerSportsfan' : 'SoccerSportsfan — Fantasy Football' }}</title>
     <meta name="description" content="Fantasy Football Manager bei SoccerSportsfan. Kostenlos mitspielen.">
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
-    <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=27">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=30">
     <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=15">
 </head>
 <body class="start-page dash-body">
@@ -22,6 +22,22 @@
 
     <main>
         <div class="start-layout start-layout-solo">
+            <section class="games-section start-leagues" aria-labelledby="start-leagues-title">
+                <div class="section-head">
+                    <h2 id="start-leagues-title">Aktuelle Ligen</h2>
+                </div>
+                <div class="game-grid">
+                    @forelse ($leagues as $league)
+                        <div class="game-tile start-league-tile">
+                            <img src="{{ $league['symbol_url'] }}" alt="" width="56" height="56" loading="lazy">
+                            <span>{{ $league['league_title'] }}</span>
+                        </div>
+                    @empty
+                        <p class="muted">Keine aktiven Ligen.</p>
+                    @endforelse
+                </div>
+            </section>
+
             <section class="results" aria-label="Letzte Ergebnisse">
                 <h2>Letzte Ergebnisse</h2>
                 @if (count($results) === 0)
@@ -37,11 +53,14 @@
                                     <span class="home">
                                         <span class="match-team-name">{{ $result['home_team'] }}</span>
                                     </span>
-                                    <strong class="score">{!! $result['score_html'] ?? (e($result['home_score']).':'.e($result['guest_score'])) !!}</strong>
+                                    <span class="score">{!! $result['score_html'] ?? (e($result['home_score']).':'.e($result['guest_score'])) !!}</span>
                                     <span class="away">
                                         <span class="match-team-name">{{ $result['guest_team'] }}</span>
                                     </span>
                                 </div>
+                                @if (!empty($result['round_label']))
+                                    <div class="result-meta">{{ $result['round_label'] }}</div>
+                                @endif
                             </li>
                         @endforeach
                     </ul>

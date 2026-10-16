@@ -174,7 +174,13 @@ class RegistrationPageTest extends TestCase
                     'matchrounds_played' => 0,
                     'score_avg' => 0.0,
                 ],
-                'leagues' => [],
+                'leagues' => [
+                    [
+                        'league_id' => 1,
+                        'league_title' => 'Demo Liga',
+                        'symbol_url' => '/images/ffb/leagues/demo.png',
+                    ],
+                ],
                 'results' => [],
             ]);
         });

@@ -8,6 +8,8 @@ use App\Models\Matchround;
 use App\Models\Userteam;
 use App\Models\WebUser;
 use App\Support\Flag;
+use App\Support\LeagueSymbol;
+use Illuminate\Support\Facades\DB;
 
 class StartPageService
 {
@@ -53,30 +55,87 @@ class StartPageService
     }
 
     /**
-     * @return list<array{league_id: int, league_title: string}>
+     * Active leagues, ordered by most recent / upcoming match first.
+     *
+     * @return list<array{league_id: int, league_title: string, symbol_url: string}>
      */
     private function leagues(): array
     {
+        $latestMatchDate = MatchGame::query()
+            ->select(DB::raw('MAX(ffb_match.match_date)'))
+            ->join('ffb_matchround', 'ffb_matchround.matchround_id', '=', 'ffb_match.match_round')
+            ->whereColumn('ffb_matchround.matchround_league_id', 'ffb_league.league_id');
+
         return League::query()
             ->forPlayerApp()
             ->where('league_visible', 1)
             ->where('league_archive', 0)
-            ->orderBy('league_title')
-            ->get(['league_id', 'league_title'])
+            ->select([
+                'ffb_league.league_id',
+                'ffb_league.league_title',
+                'ffb_league.asset_key',
+            ])
+            ->selectSub($latestMatchDate, 'latest_match_date')
+            ->orderByRaw('latest_match_date is null')
+            ->orderByDesc('latest_match_date')
+            ->orderBy('ffb_league.league_title')
+            ->get()
             ->map(fn (League $league) => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => (string) $league->league_title,
+                'symbol_url' => LeagueSymbol::url(
+                    $league->asset_key !== null ? (string) $league->asset_key : null
+                ),
             ])
             ->values()
             ->all();
     }
 
+    private const COMBINED_RESULTS_LIMIT = 26;
+
     /**
-     * Finished matches from the most recent matchround that has results.
+     * Finished matches for the start page: current round first (most recent at top-left),
+     * and if that round is only partly finished, continue with the previous round.
+     * Combined lists are capped; a single complete round is shown in full.
      *
      * @return list<array<string, mixed>>
      */
     private function lastResults(): array
+    {
+        $currentRoundId = $this->mostRecentFinishedRoundId();
+        if ($currentRoundId === null) {
+            return [];
+        }
+
+        $currentFinished = $this->finishedMatchesForRound($currentRoundId);
+        $roundHasUnfinished = MatchGame::query()
+            ->where('match_round', $currentRoundId)
+            ->where(function ($query): void {
+                $query->where('match_homescore', '<=', -1)
+                    ->orWhere('match_guestscore', '<=', -1);
+            })
+            ->exists();
+
+        if (! $roundHasUnfinished) {
+            return $this->mapMatchesToResults($currentFinished);
+        }
+
+        $previousRoundId = $this->previousFinishedRoundId($currentRoundId);
+        if ($previousRoundId === null) {
+            return $this->mapMatchesToResults($currentFinished);
+        }
+
+        $previousFinished = $this->finishedMatchesForRound($previousRoundId);
+        $combined = $currentFinished->concat($previousFinished)->values();
+
+        if ($combined->count() > self::COMBINED_RESULTS_LIMIT) {
+            $combined = $combined->take(self::COMBINED_RESULTS_LIMIT)->values();
+        }
+
+        return $this->mapMatchesToResults($combined);
+    }
+
+    private function mostRecentFinishedRoundId(): ?int
     {
         $latestFinished = MatchGame::query()
             ->where('match_homescore', '>', -1)
@@ -87,20 +146,51 @@ class StartPageService
             ->first(['match_round']);
 
         if (! $latestFinished) {
-            return [];
+            return null;
         }
 
-        $roundId = (int) $latestFinished->match_round;
+        return (int) $latestFinished->match_round;
+    }
 
-        $matches = MatchGame::query()
-            ->with(['homeTeam', 'guestTeam'])
+    private function previousFinishedRoundId(int $currentRoundId): ?int
+    {
+        $previous = MatchGame::query()
+            ->where('match_homescore', '>', -1)
+            ->where('match_guestscore', '>', -1)
+            ->where('match_round', '>', 0)
+            ->where('match_round', '!=', $currentRoundId)
+            ->orderByDesc('match_date')
+            ->orderByDesc('match_id')
+            ->first(['match_round']);
+
+        if (! $previous) {
+            return null;
+        }
+
+        return (int) $previous->match_round;
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, MatchGame>
+     */
+    private function finishedMatchesForRound(int $roundId)
+    {
+        return MatchGame::query()
+            ->with(['homeTeam', 'guestTeam', 'matchround.league'])
             ->where('match_round', $roundId)
             ->where('match_homescore', '>', -1)
             ->where('match_guestscore', '>', -1)
             ->orderByDesc('match_date')
             ->orderByDesc('match_id')
             ->get();
+    }
 
+    /**
+     * @param  iterable<int, MatchGame>  $matches
+     * @return list<array<string, mixed>>
+     */
+    private function mapMatchesToResults(iterable $matches): array
+    {
         $results = [];
         foreach ($matches as $match) {
             if (! $match->homeTeam || ! $match->guestTeam) {
@@ -109,6 +199,14 @@ class StartPageService
 
             $homeFlag = (string) $match->homeTeam->team_nationality;
             $guestFlag = (string) $match->guestTeam->team_nationality;
+            $leagueTitle = trim((string) ($match->matchround?->league?->league_title ?? ''));
+            $roundTitle = trim((string) ($match->matchround?->matchround_title ?? ''));
+            $roundLabel = match (true) {
+                $leagueTitle !== '' && $roundTitle !== '' => $leagueTitle.' - '.$roundTitle,
+                $leagueTitle !== '' => $leagueTitle,
+                $roundTitle !== '' => $roundTitle,
+                default => '',
+            };
 
             $results[] = [
                 'home_team' => (string) $match->homeTeam->team_name,
@@ -120,6 +218,7 @@ class StartPageService
                 'guest_flag' => strtolower($guestFlag),
                 'guest_flag_css' => $this->flagCssBackground($guestFlag),
                 'score_html' => $this->formatMatchScore($match),
+                'round_label' => $roundLabel,
                 'date' => date('d.m.Y', strtotime((string) $match->match_date)),
             ];
         }
