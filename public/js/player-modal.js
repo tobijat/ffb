@@ -26,12 +26,75 @@
             '" alt="" width="100">';
         if (source) {
             html +=
-                '<a class="ffb-player-photo-source" href="' +
+                '<button type="button" class="ffb-player-photo-source" data-ffb-attribution="' +
                 escapeHtml(source) +
-                '" target="_blank" rel="noopener noreferrer">Quelle</a>';
+                '">Quelle</button>';
         }
         html += '</div>';
         return html;
+    }
+
+    function attributionHead() {
+        return (
+            '<div class="ffb-modal-head-title ffb-modal-head-title--start">Bildquelle</div>' +
+            defaultCloseBtn()
+        );
+    }
+
+    function renderAttributionBody(contentHtml) {
+        return (
+            '<div class="ffb-attribution-wrap">' +
+            '<p class="ffb-attribution-intro">Dieses Bild stammt von:</p>' +
+            contentHtml +
+            '</div>'
+        );
+    }
+
+    function renderAttributionFallback(commonsUrl) {
+        return (
+            '<p class="ffb-attribution-fallback">' +
+            '<a href="' +
+            escapeHtml(commonsUrl) +
+            '" target="_blank" rel="noopener noreferrer">' +
+            escapeHtml(commonsUrl) +
+            '</a></p>'
+        );
+    }
+
+    async function openAttribution(commonsUrl) {
+        const url = String(commonsUrl || '').trim();
+        if (!url) {
+            throw new Error('image url is required');
+        }
+
+        setModal(attributionHead(), '', '<p class="ffb-modal-loading">Wird geladen…</p>');
+
+        try {
+            const json = await fetchJson(
+                apiBase + '/popups/attribution?image=' + encodeURIComponent(url)
+            );
+            const data = json.data || {};
+            const html = String(data.attribution_html || '').trim();
+            if (data.generated && html) {
+                setModal(
+                    attributionHead(),
+                    '',
+                    renderAttributionBody('<div class="ffb-attribution">' + html + '</div>')
+                );
+                return;
+            }
+            setModal(
+                attributionHead(),
+                '',
+                renderAttributionBody(renderAttributionFallback(data.commons_url || url))
+            );
+        } catch (err) {
+            setModal(
+                attributionHead(),
+                '',
+                renderAttributionBody(renderAttributionFallback(url))
+            );
+        }
     }
 
     function flagHtml(code, title) {
@@ -1188,7 +1251,21 @@
         return openPlayerPoints(id, opts || {});
     });
 
+    window.FfbModal.register('attribution', function (id) {
+        return openAttribution(id);
+    });
+
     document.addEventListener('click', function (e) {
+        const attributionBtn = e.target.closest('[data-ffb-attribution]');
+        if (attributionBtn) {
+            e.preventDefault();
+            window.FfbModal.open({
+                type: 'attribution',
+                id: attributionBtn.getAttribute('data-ffb-attribution'),
+            });
+            return;
+        }
+
         const tabBtn = e.target.closest('[data-ffb-player-tab]');
         if (tabBtn) {
             e.preventDefault();

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\AttributionService;
 use App\Services\AwardsPopupService;
 use App\Services\MatchPopupService;
 use App\Services\PlayerPopupService;
@@ -17,6 +18,7 @@ class PopupController extends Controller
         private readonly MatchPopupService $matches,
         private readonly PlayerPopupService $players,
         private readonly AwardsPopupService $awards,
+        private readonly AttributionService $attributions,
     ) {}
 
     public function user(Request $request, int $userId): JsonResponse
@@ -70,6 +72,14 @@ class PopupController extends Controller
     {
         $leagueId = (int) $request->query('league_id', 0);
         $result = $this->players->prices($playerteamId, $leagueId);
+
+        return $this->respond($result);
+    }
+
+    public function attribution(Request $request): JsonResponse
+    {
+        $imageUrl = (string) $request->query('image', '');
+        $result = $this->attributions->forCommonsUrl($imageUrl);
 
         return $this->respond($result);
     }

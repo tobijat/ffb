@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\WebUser;
+use App\Services\AttributionService;
 use App\Services\AwardsPopupService;
 use App\Services\FfbAuth;
 use App\Services\FfbUserResolver;
@@ -453,5 +454,63 @@ class PopupApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.points.0.price', 4.5)
             ->assertJsonPath('data.points.0.round_performance', 0.5);
+    }
+
+    public function test_attribution_popup_requires_auth(): void
+    {
+        $this->getJson('/api/popups/attribution?image='.urlencode(
+            'https://commons.wikimedia.org/wiki/File:Example.jpg'
+        ))->assertStatus(401);
+    }
+
+    public function test_attribution_popup_returns_generated_html(): void
+    {
+        $this->actingAsFfbUser();
+
+        $url = 'https://commons.wikimedia.org/wiki/File:Example.jpg';
+        $html = '<a href="https://commons.wikimedia.org/wiki/User:Foo" target="_blank">Foo</a>';
+
+        $this->mock(AttributionService::class, function ($mock) use ($url, $html) {
+            $mock->shouldReceive('forCommonsUrl')->once()->with($url)->andReturn([
+                'ok' => true,
+                'data' => [
+                    'commons_url' => $url,
+                    'attribution_html' => $html,
+                    'generated' => true,
+                ],
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->getJson('/api/popups/attribution?image='.urlencode($url))
+            ->assertOk()
+            ->assertJsonPath('data.generated', true)
+            ->assertJsonPath('data.attribution_html', $html)
+            ->assertJsonPath('data.commons_url', $url);
+    }
+
+    public function test_attribution_popup_returns_fallback_when_not_generated(): void
+    {
+        $this->actingAsFfbUser();
+
+        $url = 'https://commons.wikimedia.org/wiki/File:Example.jpg';
+
+        $this->mock(AttributionService::class, function ($mock) use ($url) {
+            $mock->shouldReceive('forCommonsUrl')->once()->with($url)->andReturn([
+                'ok' => true,
+                'data' => [
+                    'commons_url' => $url,
+                    'attribution_html' => null,
+                    'generated' => false,
+                ],
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->getJson('/api/popups/attribution?image='.urlencode($url))
+            ->assertOk()
+            ->assertJsonPath('data.generated', false)
+            ->assertJsonPath('data.attribution_html', null)
+            ->assertJsonPath('data.commons_url', $url);
     }
 }

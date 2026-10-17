@@ -51,6 +51,7 @@ Route::middleware([ResolveFfbUser::class])->group(function () {
         ->whereNumber('playerteamId');
     Route::get('/popups/player/{playerteamId}/prices', [PopupController::class, 'playerPrices'])
         ->whereNumber('playerteamId');
+    Route::get('/popups/attribution', [PopupController::class, 'attribution']);
     Route::get('/popups/player/{playerteamId}/rounds/{matchroundId}', [PopupController::class, 'playerRound'])
         ->whereNumber('playerteamId')
         ->whereNumber('matchroundId');
