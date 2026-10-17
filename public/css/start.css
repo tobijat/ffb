@@ -372,7 +372,7 @@ main {
 }
 
 .start-page main {
-    padding-top: 16px;
+    padding-top: 10px;
 }
 
 .start-layout {
@@ -381,6 +381,10 @@ main {
     gap: 10px;
     align-items: start;
     margin-top: 8px;
+}
+
+.start-page .start-layout {
+    margin-top: 0;
 }
 
 .start-layout-solo {

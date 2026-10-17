@@ -6,7 +6,7 @@
     <title>{{ !empty($passwordReset) ? 'Passwort zurücksetzen — SoccerSportsfan' : 'SoccerSportsfan — Fantasy Football' }}</title>
     <meta name="description" content="Fantasy Football Manager bei SoccerSportsfan. Kostenlos mitspielen.">
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
-    <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=32">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=33">
     <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=17">
 </head>
 <body class="start-page dash-body">
