@@ -54,10 +54,11 @@
             <section class="help-chapter" id="links">
                 <h2 class="help-chapter-title">Links</h2>
                 <ul>
-                    <li>Tobias Gritschacher: <a href="http://www.tobijat.at" target="_blank" rel="noopener">tobijat.at</a></li>
-                    <li>Gerald Musser: <a href="http://www.gemura.com" target="_blank" rel="noopener">gemura.com</a></li>
-                    <li>SV Lind: <a href="http://website.svlind.at" target="_blank" rel="noopener">svlind.at</a></li>
-                    <li>Webhosting: <a href="http://www.all-inkl.com/index.php?partner=189340" target="_blank" rel="noopener">all-inkl.com</a></li>
+                    <li>Tobias Gritschacher: <a href="https://www.tobijat.at" target="_blank" rel="noopener">tobijat.at</a></li>
+                    <li>Gerald Musser: <a href="https://www.gemura.com" target="_blank" rel="noopener">gemura.com</a></li>
+                    <li>Webhosting: <a href="https://all-inkl.com/PA9494CB73B7D0" target="_blank" rel="noopener">all-inkl.com</a></li>
+                    <li>Code: <a href="https://github.com/tobijat/ffb" target="_blank" rel="noopener">GitHub.com</a></li>
+                    <li>Spieler-Fotos: <a href="https://commons.wikimedia.org/wiki/Main_Page" target="_blank" rel="noopener">commons.wikimedia.org</a></li>
                 </ul>
             </section>
         </article>

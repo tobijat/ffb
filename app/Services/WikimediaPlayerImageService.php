@@ -240,6 +240,29 @@ class WikimediaPlayerImageService
     }
 
     /**
+     * Public Commons file page URL for a stored commons filename, or null if empty/invalid.
+     */
+    public function filePageUrl(?string $commonsFile): ?string
+    {
+        $file = $this->normalizeCommonsFilename($commonsFile);
+        if ($file === null) {
+            return null;
+        }
+
+        // Keep Commons-style readable characters (spaces already normalized to _).
+        $encoded = strtr(rawurlencode($file), [
+            '%21' => '!',
+            '%27' => "'",
+            '%28' => '(',
+            '%29' => ')',
+            '%2A' => '*',
+            '%2C' => ',',
+        ]);
+
+        return 'https://commons.wikimedia.org/wiki/File:'.$encoded;
+    }
+
+    /**
      * Extract the Commons file name from a Special:FilePath or File: wiki URL.
      */
     public function commonsFilenameFromUrl(string $url): ?string

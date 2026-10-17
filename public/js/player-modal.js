@@ -17,6 +17,23 @@
         return legacyBase + 'images/ffb/symbols/' + name;
     }
 
+    function renderPlayerPhoto(player) {
+        const source = String(player.player_picture_source_url || '').trim();
+        let html =
+            '<div class="ffb-player-photo-wrap">' +
+            '<img class="ffb-profile-photo" src="' +
+            escapeHtml(imgUrl(player.player_picture_url)) +
+            '" alt="" width="100">';
+        if (source) {
+            html +=
+                '<a class="ffb-player-photo-source" href="' +
+                escapeHtml(source) +
+                '" target="_blank" rel="noopener noreferrer">Quelle</a>';
+        }
+        html += '</div>';
+        return html;
+    }
+
     function flagHtml(code, title) {
         if (window.FfbFlags && typeof window.FfbFlags.html === 'function') {
             return window.FfbFlags.html(code, title ? { title: title } : undefined);
@@ -408,9 +425,7 @@
             shirtStyle +
             '>' +
             '<div class="ffb-profile ffb-player">' +
-            '<div><img class="ffb-profile-photo" src="' +
-            escapeHtml(imgUrl(player.player_picture_url)) +
-            '" alt="" width="100"></div>' +
+            renderPlayerPhoto(player) +
             '<div class="ffb-profile-rows">' +
             rows +
             '</div></div>' +
@@ -890,9 +905,7 @@
         if (!data.played || !data.stats) {
             return (
                 '<div class="ffb-profile ffb-player">' +
-                '<div><img class="ffb-profile-photo" src="' +
-                escapeHtml(imgUrl(player.player_picture_url)) +
-                '" alt="" width="100"></div>' +
+                renderPlayerPhoto(player) +
                 '<div class="ffb-profile-rows"><p>nicht eingesetzt</p></div></div>'
             );
         }
@@ -1026,9 +1039,7 @@
 
         return (
             '<div class="ffb-profile ffb-player">' +
-            '<div><img class="ffb-profile-photo" src="' +
-            escapeHtml(imgUrl(player.player_picture_url)) +
-            '" alt="" width="100"></div>' +
+            renderPlayerPhoto(player) +
             '<div class="ffb-profile-rows ffb-player-round-stats">' +
             lines +
             '</div></div>'

@@ -139,11 +139,29 @@
     align-items: start;
 }
 
+.ffb-player-photo-wrap {
+    display: grid;
+    gap: 4px;
+    justify-items: start;
+}
+
 .ffb-profile-photo {
     width: 100px;
     border: 1px solid #c00;
     border-radius: var(--radius-sm);
     display: block;
+}
+
+.ffb-player-photo-source {
+    font-size: 8pt;
+    font-style: italic;
+    line-height: 1.2;
+    color: #777;
+    text-decoration: underline;
+}
+
+.ffb-player-photo-source:hover {
+    color: #555;
 }
 
 .ffb-profile-rows {

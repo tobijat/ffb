@@ -169,10 +169,7 @@ class PlayerPopupService
                     'player_team_nationality' => (string) ($playerteam->team->team_nationality ?: ''),
                     'player_team_id' => $teamId,
                     'league_title' => $leagueTitle,
-                    'player_picture_url' => PlayerPicture::url(
-                        $playerteam->team->asset_key !== null ? (string) $playerteam->team->asset_key : null,
-                        $playerteam->player->asset_key !== null ? (string) $playerteam->player->asset_key : null,
-                    ),
+                    ...$this->playerPictureFields($playerteam),
                     'player_shirt_svg_url' => TeamShirt::svgUrl(
                         $playerteam->team->asset_key !== null ? (string) $playerteam->team->asset_key : null,
                         (string) ($playerteam->team->team_nationality ?: ''),
@@ -293,10 +290,7 @@ class PlayerPopupService
                 'player_team_name' => (string) $playerteam->team->team_name,
                 'player_team_nationality' => (string) ($playerteam->team->team_nationality ?: ''),
                 'league_title' => $roundLeagueTitle,
-                'player_picture_url' => PlayerPicture::url(
-                    $playerteam->team->asset_key !== null ? (string) $playerteam->team->asset_key : null,
-                    $playerteam->player->asset_key !== null ? (string) $playerteam->player->asset_key : null,
-                ),
+                ...$this->playerPictureFields($playerteam),
             ],
         ];
 
@@ -1082,10 +1076,30 @@ class PlayerPopupService
             'player_nationality' => (string) ($playerteam->player->player_nationality ?: ''),
             'player_team_name' => (string) $playerteam->team->team_name,
             'player_team_nationality' => (string) ($playerteam->team->team_nationality ?: ''),
-            'player_picture_url' => PlayerPicture::url(
-                $playerteam->team->asset_key !== null ? (string) $playerteam->team->asset_key : null,
-                $playerteam->player->asset_key !== null ? (string) $playerteam->player->asset_key : null,
-            ),
+            ...$this->playerPictureFields($playerteam),
+        ];
+    }
+
+    /**
+     * @return array{player_picture_url: string, player_picture_source_url: string|null}
+     */
+    private function playerPictureFields(Playerteam $playerteam): array
+    {
+        $teamKey = $playerteam->team->asset_key !== null ? (string) $playerteam->team->asset_key : null;
+        $playerKey = $playerteam->player->asset_key !== null ? (string) $playerteam->player->asset_key : null;
+        $pictureUrl = PlayerPicture::url($teamKey, $playerKey);
+        $sourceUrl = null;
+
+        if (PlayerPicture::exists($teamKey, $playerKey)) {
+            $commons = (string) ($playerteam->player->player_commons_image ?? '');
+            if ($commons !== '') {
+                $sourceUrl = app(WikimediaPlayerImageService::class)->filePageUrl($commons);
+            }
+        }
+
+        return [
+            'player_picture_url' => $pictureUrl,
+            'player_picture_source_url' => $sourceUrl,
         ];
     }
 
