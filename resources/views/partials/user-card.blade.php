@@ -1,7 +1,19 @@
 @if (!empty($user))
+    @php
+        $avatarUrl = (string) ($user['photo_url'] ?? '');
+        $avatarPath = (string) (parse_url($avatarUrl, PHP_URL_PATH) ?: $avatarUrl);
+        $avatarBackUrl = \App\Support\CustomAvatarSvg::publicBackUrl(basename($avatarPath));
+    @endphp
     <div class="user-card">
-        <a class="user-card-photo" href="/profile?tab=avatar" title="Avatar bearbeiten">
-            <img class="user-photo user-photo-avatar" src="{{ $user['photo_url'] }}" alt="Avatar {{ $user['user_nickname'] }}" width="48" height="48">
+        <a
+            class="user-card-photo user-avatar-shine"
+            href="/profile?tab=avatar"
+            title="Avatar bearbeiten"
+            style="--user-avatar-mask: url('{{ $avatarUrl }}')"
+            data-avatar-front="{{ $avatarUrl }}"
+            @if ($avatarBackUrl) data-avatar-back="{{ $avatarBackUrl }}" @endif
+        >
+            <img class="user-photo user-photo-avatar" src="{{ $avatarUrl }}" alt="Avatar {{ $user['user_nickname'] }}" width="48" height="48">
         </a>
         <div class="user-card-text">
             <p class="hello">Hallo <a class="user-card-nickname" href="/profile" title="Profil bearbeiten"><strong>{{ $user['user_nickname'] }}</strong></a></p>
@@ -24,4 +36,7 @@
             <span>Ausloggen</span>
         </a>
     </div>
+    @once
+        <script src="{{ rtrim($legacyBase ?? '/', '/').'/' }}js/user-card.js?v=4" defer></script>
+    @endonce
 @endif

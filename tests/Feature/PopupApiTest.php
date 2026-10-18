@@ -47,6 +47,7 @@ class PopupApiTest extends TestCase
                 'user_date_llogin' => '01.01.2024',
                 'user_date_register' => '01.01.2020',
                 'avatar_url' => '/images/ffb/profiles/avatar/avatar_na.png',
+                'avatar_back_url' => null,
                 'photo_url' => '/images/ffb/profiles/photo/m_profile_na.png',
                 'user_details_city' => 'Wien',
                 'user_details_website' => null,

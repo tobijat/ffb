@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Top / Flop Teams — SoccerSportsfan</title>
     <link rel="stylesheet" href="css/start.css?v=23">
-    <link rel="stylesheet" href="css/dashboard.css?v=18">
-    <link rel="stylesheet" href="css/modal.css?v=46">
+    <link rel="stylesheet" href="css/dashboard.css?v=25">
+    <link rel="stylesheet" href="css/modal.css?v=48">
     <link rel="stylesheet" href="css/myteam.css?v=33">
 </head>
 <body class="dash-body">
@@ -121,7 +121,7 @@
             selectedLeagueAssetKey: @json($data['selected_league_asset_key'] ?? ''),
         };
     </script>
-    <script src="js/modal.js?v=29" defer></script>
+    <script src="js/modal.js?v=32" defer></script>
     <script src="js/player-modal.js?v=35" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
     <script src="js/bestteam.js?v=16" defer></script>

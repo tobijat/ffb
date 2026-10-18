@@ -103,6 +103,7 @@
 }
 
 .user-card-photo {
+    position: relative;
     flex-shrink: 0;
     line-height: 0;
     background: transparent;
@@ -116,6 +117,78 @@
 .user-card-photo:hover {
     background: transparent;
     border-color: #5a9a5a;
+}
+
+/* Shine sweep clipped to the avatar shape (shirt SVG alpha).
+   Loop period: animation duration below (default 10s). */
+@keyframes user-avatar-shine {
+    0%,
+    2% {
+        opacity: 0;
+        background-position: 120% 0;
+    }
+
+    4% {
+        opacity: 1;
+        background-position: 120% 0;
+    }
+
+    14% {
+        opacity: 1;
+        background-position: -20% 0;
+    }
+
+    16%,
+    100% {
+        opacity: 0;
+        background-position: -20% 0;
+    }
+}
+
+.user-avatar-shine {
+    position: relative;
+}
+
+.user-avatar-shine::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(
+        115deg,
+        transparent 35%,
+        rgba(255, 255, 255, 0.15) 42%,
+        rgba(255, 255, 255, 0.75) 50%,
+        rgba(255, 255, 255, 0.15) 58%,
+        transparent 65%
+    );
+    background-size: 250% 100%;
+    background-position: 120% 0;
+    opacity: 0;
+    -webkit-mask-image: var(--user-avatar-mask);
+    mask-image: var(--user-avatar-mask);
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    mask-mode: alpha;
+    /* linear so JS can flip reliably after the 16% shine window */
+    animation: user-avatar-shine 10s linear infinite;
+}
+
+/* JS briefly toggles this to restart the shine from frame 0 (e.g. on hover). */
+.user-avatar-shine--restart::after {
+    animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .user-avatar-shine::after {
+        display: none;
+        animation: none;
+    }
 }
 
 .user-card-nickname {
@@ -276,6 +349,7 @@
 
 .user-photo-avatar {
     object-fit: contain;
+    background: transparent;
 }
 
 .hello {

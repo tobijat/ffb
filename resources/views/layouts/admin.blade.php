@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Admin Center') — SoccerSportsfan</title>
     <link rel="stylesheet" href="{{ url('css/start.css') }}?v=20">
-    <link rel="stylesheet" href="{{ url('css/dashboard.css') }}?v=11">
+    <link rel="stylesheet" href="{{ url('css/dashboard.css') }}?v=25">
     <link rel="stylesheet" href="{{ url('css/admin.css') }}?v=74">
     @stack('head')
 </head>

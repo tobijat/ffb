@@ -121,10 +121,22 @@
     }
 
     function renderProfileHead(user) {
+        const favouriteNat =
+            user.favourite_team && user.favourite_team.nationality
+                ? user.favourite_team.nationality
+                : '';
+        const flagStyle = favouriteNat
+            ? ' style="--ffb-flag-team:' + cssUrl(flagBackgroundUrl(favouriteNat)) + '"'
+            : '';
         return (
-            '<img class="ffb-modal-head-avatar" src="' + escapeHtml(imgUrl(user.avatar_url)) + '" alt="" width="40" height="40">' +
-            '<div class="ffb-modal-head-title">' + escapeHtml(user.user_nickname) + '</div>' +
-            defaultCloseBtn()
+            '<div class="ffb-player-modal-head"' +
+            flagStyle +
+            '>' +
+            '<div class="ffb-modal-head-title">' +
+            escapeHtml(user.user_nickname) +
+            '</div>' +
+            defaultCloseBtn() +
+            '</div>'
         );
     }
 
@@ -244,11 +256,27 @@
             table += '</tbody></table></div>';
         }
 
+        const avatarFront = imgUrl(user.avatar_url);
+        const avatarBack = user.avatar_back_url ? imgUrl(user.avatar_back_url) : '';
+        const avatarAttrs = avatarBack
+            ? ' data-avatar-front="' +
+              escapeHtml(avatarFront) +
+              '" data-avatar-back="' +
+              escapeHtml(avatarBack) +
+              '"'
+            : '';
+        const avatarStyle = ' style="--user-avatar-mask:url(\'' + escapeHtml(avatarFront) + '\')"';
+
         return (
             '<div class="ffb-profile">' +
-            '<div><img class="ffb-profile-photo" src="' +
-            escapeHtml(imgUrl(user.photo_url)) +
-            '" alt="" width="100"></div>' +
+            '<div class="ffb-profile-avatar-wrap user-avatar-shine"' +
+            avatarStyle +
+            avatarAttrs +
+            '>' +
+            '<img class="ffb-profile-avatar" src="' +
+            escapeHtml(avatarFront) +
+            '" alt="">' +
+            '</div>' +
             '<div class="ffb-profile-rows">' +
             rows +
             '</div></div>' +
@@ -337,6 +365,9 @@
         }
 
         setBody(renderProfileBody(lastProfileData));
+        if (window.FfbAvatarShine && typeof window.FfbAvatarShine.bindAll === 'function') {
+            window.FfbAvatarShine.bindAll(bodyEl);
+        }
     }
 
     function flagHtml(code, title) {

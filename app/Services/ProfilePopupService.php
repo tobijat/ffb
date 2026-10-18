@@ -9,6 +9,7 @@ use App\Models\UserDetails;
 use App\Models\UserPermissions;
 use App\Models\Userscore;
 use App\Models\WebUser;
+use App\Support\CustomAvatarSvg;
 use App\Support\LeagueSymbol;
 use App\Support\UserAvatar;
 
@@ -66,6 +67,7 @@ class ProfilePopupService
                         ? date('d.m.Y', strtotime((string) $user->user_date_register))
                         : null,
                     'avatar_url' => UserAvatar::publicUrl($avatar),
+                    'avatar_back_url' => CustomAvatarSvg::publicBackUrl($avatar),
                     'photo_url' => $photoUrl,
                     'user_details_city' => $details->user_details_city ?: null,
                     'user_details_website' => $details->user_details_website ?: null,
