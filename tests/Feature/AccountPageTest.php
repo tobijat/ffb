@@ -19,7 +19,7 @@ class AccountPageTest extends TestCase
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'tester',
-                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'photo_url' => '/images/ffb/profiles/avatar/avatar_na.png',
                     'update_profile_nag' => false,
                 ],
                 'form' => [
@@ -54,19 +54,23 @@ class AccountPageTest extends TestCase
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'tester',
-                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'photo_url' => '/images/ffb/profiles/avatar/avatar_na.png',
                     'update_profile_nag' => false,
                 ],
                 'form' => [
+                    'user_fname' => 'Max',
+                    'user_lname' => 'Muster',
+                    'user_nationality' => 'AUT',
+                    'user_birth_day' => 1,
+                    'user_birth_month' => 2,
+                    'user_birth_year' => 1990,
                     'user_details_city' => 'Wien',
                     'user_details_zip' => '1010',
                     'user_details_street' => '',
                     'user_details_phone' => '',
                     'user_details_website' => '',
                     'user_details_ffb_favourite_team' => 3,
-                    'user_details_photo' => 'profile_na.png',
                     'user_details_avatar' => 'avatar_na.png',
-                    'user_details_photo_url' => '/images/ffb/profiles/photo/profile_na.png',
                     'user_details_avatar_url' => '/images/ffb/profiles/avatar/avatar_na.png',
                     'user_permissions_ffb_mailservice_reminder' => 1,
                     'user_permissions_ffb_mailservice_info' => 0,
@@ -139,7 +143,7 @@ class AccountPageTest extends TestCase
                 'user_fname' => 'Max',
             ])
             ->assertOk()
-            ->assertSee('Accountdaten', false)
+            ->assertSee('>Account</a>', false)
             ->assertSee('FFB_ACCOUNT_ERRORS', false)
             ->assertSee('Du musst die Bedingungen gelesen und akzeptiert haben!', false)
             ->assertDontSee('account-flash-error', false)
@@ -216,12 +220,15 @@ class AccountPageTest extends TestCase
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->get('/profile')
             ->assertOk()
-            ->assertSee('Profildetails', false)
-            ->assertSee('Accountdaten', false)
+            ->assertSee('>Profil</a>', false)
+            ->assertSee('Avatar', false)
+            ->assertSee('>Account</a>', false)
             ->assertSee('Wien', false)
             ->assertSee('Rapid', false)
-            ->assertSee('user_details_avatar_shirt', false)
+            ->assertSee('profile?tab=avatar', false)
+            ->assertDontSee('user_details_photo', false)
             ->assertDontSee('type="file" name="user_details_avatar"', false)
+            ->assertSee('Speichern', false)
             ->assertSee('Ausloggen', false)
             ->assertDontSee('>Account</span>', false)
             ->assertDontSee('>Profil</span>', false)
@@ -240,6 +247,21 @@ class AccountPageTest extends TestCase
             ->assertOk()
             ->assertSee('Benutzername', false)
             ->assertSee('tester@example.com', false)
+            ->assertSee('account-tab ffb-tab is-active', false);
+    }
+
+    public function test_profile_avatar_tab_renders(): void
+    {
+        $this->mock(AccountService::class, function ($mock) {
+            $mock->shouldReceive('pagePayload')->once()->andReturn($this->accountPayload());
+            $mock->shouldReceive('profilePayload')->once()->andReturn($this->profilePayload());
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->get('/profile?tab=avatar')
+            ->assertOk()
+            ->assertSee('user_details_avatar_shirt', false)
+            ->assertSee('profile_section" value="avatar"', false)
             ->assertSee('account-tab ffb-tab is-active', false);
     }
 

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Rangliste — SoccerSportsfan</title>
     <link rel="stylesheet" href="css/start.css?v=23">
-    <link rel="stylesheet" href="css/dashboard.css?v=12">
+    <link rel="stylesheet" href="css/dashboard.css?v=18">
     <link rel="stylesheet" href="css/userscore.css?v=10">
     <link rel="stylesheet" href="css/modal.css?v=46">
 </head>

@@ -6,7 +6,7 @@
     <title>Regeln — SoccerSportsfan</title>
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
     <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=32">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=17">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=18">
     <link rel="stylesheet" href="{{ $assetBase }}/css/help.css?v=4">
 </head>
 <body class="dash-body">

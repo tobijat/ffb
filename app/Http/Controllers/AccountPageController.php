@@ -77,10 +77,11 @@ class AccountPageController extends Controller
         }
 
         $result = $this->accounts->updateProfile($userId, $request->all(), $request);
+        $tab = $this->resolveTab($request->input('profile_section', $request->query('tab')));
 
         return $this->renderProfileHub(
             $userId,
-            'profile',
+            $tab,
             $result['ok'] ? [] : ($result['errors'] ?? []),
             $result['ok'] ? ($result['message'] ?? null) : null,
             null,
@@ -90,7 +91,11 @@ class AccountPageController extends Controller
 
     private function resolveTab(mixed $tab): string
     {
-        return $tab === 'account' ? 'account' : 'profile';
+        return match ($tab) {
+            'account' => 'account',
+            'avatar' => 'avatar',
+            default => 'profile',
+        };
     }
 
     /**

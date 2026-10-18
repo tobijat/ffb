@@ -6,6 +6,7 @@ use App\Models\League;
 use App\Models\UserDetails;
 use App\Models\WebUser;
 use App\Support\LeagueSymbol;
+use App\Support\UserAvatar;
 
 class AdminCenterService
 {
@@ -28,14 +29,14 @@ class AdminCenterService
     public function shellPayload(int $userId): array
     {
         $webUser = WebUser::query()->with('details')->find($userId);
-        $photo = (string) ($webUser?->details?->user_details_photo ?: 'profile_na.png');
+        $avatar = (string) ($webUser?->details?->user_details_avatar ?: 'avatar_na.png');
         $selectedLeagueId = $this->selectedLeagueId($userId);
 
         return [
             'user' => [
                 'user_id' => $userId,
                 'user_nickname' => (string) ($webUser?->user_nickname ?? ''),
-                'photo_url' => '/images/ffb/profiles/photo/'.$photo,
+                'photo_url' => UserAvatar::publicUrl($avatar),
                 'is_ffb_admin' => $this->admins->isAdmin($userId),
             ],
             'navigation' => $this->navigation(),

@@ -10,6 +10,7 @@ use App\Models\Playerteam;
 use App\Models\Userteam;
 use App\Models\WebUser;
 use App\Support\FfbDateTime;
+use App\Support\UserAvatar;
 
 class MyteamService
 {
@@ -29,7 +30,7 @@ class MyteamService
         }
 
         $details = $user->details;
-        $photo = (string) ($details?->user_details_photo ?: 'profile_na.png');
+        $avatar = (string) ($details?->user_details_avatar ?: 'avatar_na.png');
         $leagueId = (int) ($details?->user_details_ffb_selected_league ?? 0);
 
         if ($leagueId <= 0) {
@@ -42,7 +43,7 @@ class MyteamService
                 'user' => [
                     'user_id' => (int) $user->user_id,
                     'user_nickname' => (string) $user->user_nickname,
-                    'photo_url' => '/images/ffb/profiles/photo/'.$photo,
+                    'photo_url' => UserAvatar::publicUrl($avatar),
                     'is_admin' => (bool) ($user->user_admin ?? false),
                     'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
                 ],

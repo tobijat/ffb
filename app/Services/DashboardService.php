@@ -10,6 +10,7 @@ use App\Models\PollResult;
 use App\Models\UserDetails;
 use App\Models\WebUser;
 use App\Support\LeagueSymbol;
+use App\Support\UserAvatar;
 use Illuminate\Support\Facades\DB;
 
 class DashboardService
@@ -178,8 +179,7 @@ class DashboardService
     {
         $photo = (string) ($details?->user_details_photo ?: 'profile_na.png');
         $avatar = (string) ($details?->user_details_avatar ?: 'avatar_na.png');
-        $emptyProfile = $avatar === 'avatar_na.png'
-            && $photo === 'profile_na.png'
+        $emptyProfile = UserAvatar::isDefault($avatar)
             && ! $details?->user_details_zip
             && ! $details?->user_details_city
             && ! $details?->user_details_street
@@ -194,7 +194,7 @@ class DashboardService
             'user_name' => trim(($user->user_fname ?? '').' '.($user->user_lname ?? '')),
             'user_photo' => $photo,
             'user_avatar' => $avatar,
-            'photo_url' => '/images/ffb/profiles/photo/'.$photo,
+            'photo_url' => UserAvatar::publicUrl($avatar),
             'update_profile_nag' => $emptyProfile,
             'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
         ];

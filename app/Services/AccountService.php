@@ -4,12 +4,12 @@ namespace App\Services;
 
 use App\Mail\EmailChangeMail;
 use App\Models\Team;
+use App\Models\UserDetails;
 use App\Models\UserPermissions;
 use App\Models\WebUser;
 use App\Support\TeamShirt;
 use App\Support\UserAvatar;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -31,7 +31,7 @@ class AccountService
         }
 
         $details = $user->details;
-        $photo = (string) ($details?->user_details_photo ?: 'profile_na.png');
+        $avatar = (string) ($details?->user_details_avatar ?: 'avatar_na.png');
 
         $form = $formOverride ?? $this->formFromUser($user);
 
@@ -41,8 +41,15 @@ class AccountService
                 'user' => [
                     'user_id' => (int) $user->user_id,
                     'user_nickname' => (string) $user->user_nickname,
-                    'photo_url' => '/images/ffb/profiles/photo/'.$photo,
-                    'update_profile_nag' => empty($details?->user_details_photo) || $details?->user_details_photo === 'profile_na.png',
+                    'photo_url' => UserAvatar::publicUrl($avatar),
+                    'update_profile_nag' => UserAvatar::isDefault($avatar)
+                        && ! $details?->user_details_zip
+                        && ! $details?->user_details_city
+                        && ! $details?->user_details_street
+                        && ! $details?->user_details_phone
+                        && ! $details?->user_details_website
+                        && ! $user->user_fname
+                        && ! $user->user_lname,
                     'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
                 ],
                 'form' => $form,
@@ -91,10 +98,6 @@ class AccountService
             ];
         }
 
-        $user->user_fname = trim((string) ($input['user_fname'] ?? ''));
-        $user->user_lname = trim((string) ($input['user_lname'] ?? ''));
-        $user->user_nationality = (string) ($input['user_nationality'] ?? '');
-        $user->user_date_birth = $this->birthDateFromInput($input);
         $user->user_ip = (string) $request->ip();
 
         $password = (string) ($input['user_password_chg'] ?? '');
@@ -152,7 +155,7 @@ class AccountService
         }
 
         $details = $user->details;
-        $photo = (string) ($details?->user_details_photo ?: 'profile_na.png');
+        $avatar = (string) ($details?->user_details_avatar ?: 'avatar_na.png');
 
         return [
             'ok' => true,
@@ -160,8 +163,15 @@ class AccountService
                 'user' => [
                     'user_id' => (int) $user->user_id,
                     'user_nickname' => (string) $user->user_nickname,
-                    'photo_url' => '/images/ffb/profiles/photo/'.$photo,
-                    'update_profile_nag' => empty($details?->user_details_photo) || $details?->user_details_photo === 'profile_na.png',
+                    'photo_url' => UserAvatar::publicUrl($avatar),
+                    'update_profile_nag' => UserAvatar::isDefault($avatar)
+                        && ! $details?->user_details_zip
+                        && ! $details?->user_details_city
+                        && ! $details?->user_details_street
+                        && ! $details?->user_details_phone
+                        && ! $details?->user_details_website
+                        && ! $user->user_fname
+                        && ! $user->user_lname,
                     'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
                 ],
                 'form' => $formOverride ?? $this->profileFormFromUser($user),
@@ -200,6 +210,11 @@ class AccountService
             ];
         }
 
+        $section = (string) ($input['profile_section'] ?? 'profile');
+        if ($section === 'avatar') {
+            return $this->updateAvatarSection($user, $details, $input, $request);
+        }
+
         $form = $this->mergeProfileForm($user, $input);
         $errors = $this->validateProfile($request);
 
@@ -213,38 +228,11 @@ class AccountService
         }
 
         $website = $this->normalizeWebsite((string) ($input['user_details_website'] ?? ''));
-        $oldPhoto = (string) ($details->user_details_photo ?: 'profile_na.png');
-        $shirtAvatar = trim((string) ($input['user_details_avatar_shirt'] ?? ''));
 
-        $photoFile = $request->file('user_details_photo');
-        $deletePhoto = (int) ($input['user_details_photo_delete'] ?? 0) === 1;
-
-        if (! $photoFile && $deletePhoto && $oldPhoto !== 'profile_na.png') {
-            $this->deleteProfileImage('photo', $oldPhoto);
-            $details->user_details_photo = 'profile_na.png';
-            $oldPhoto = 'profile_na.png';
-        }
-
-        if ($photoFile instanceof UploadedFile) {
-            $stored = $this->storeProfileImage($photoFile, 'photo');
-            if ($stored === null) {
-                return [
-                    'ok' => false,
-                    'status' => 422,
-                    'errors' => ['Problem beim Speichern des Profilfotos. Probier ein anderes.'],
-                    'form' => $form,
-                ];
-            }
-            if ($oldPhoto !== 'profile_na.png') {
-                $this->deleteProfileImage('photo', $oldPhoto);
-            }
-            $details->user_details_photo = $stored;
-        }
-
-        // Shirt selection replaces any previous avatar value; legacy custom files are left on disk.
-        if ($shirtAvatar !== '') {
-            $details->user_details_avatar = $shirtAvatar;
-        }
+        $user->user_fname = trim((string) ($input['user_fname'] ?? ''));
+        $user->user_lname = trim((string) ($input['user_lname'] ?? ''));
+        $user->user_nationality = (string) ($input['user_nationality'] ?? '');
+        $user->user_date_birth = $this->birthDateFromInput($input);
 
         $details->user_details_zip = trim((string) ($input['user_details_zip'] ?? ''));
         $details->user_details_city = trim((string) ($input['user_details_city'] ?? ''));
@@ -271,6 +259,53 @@ class AccountService
         $user->save();
         $details->save();
         $permissions->save();
+
+        $fresh = $user->fresh(['details']);
+
+        return [
+            'ok' => true,
+            'message' => '<b>Deine Daten wurden aktualisiert!</b>',
+            'form' => $this->profileFormFromUser($fresh),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array{
+     *   ok: true,
+     *   message: string,
+     *   form: array<string, mixed>
+     * }|array{
+     *   ok: false,
+     *   status: int,
+     *   errors: list<string>,
+     *   form: array<string, mixed>
+     * }
+     */
+    private function updateAvatarSection(WebUser $user, UserDetails $details, array $input, Request $request): array
+    {
+        $form = $this->mergeProfileForm($user, $input);
+        $errors = $this->validateAvatar($request);
+
+        if ($errors !== []) {
+            return [
+                'ok' => false,
+                'status' => 422,
+                'errors' => $errors,
+                'form' => $form,
+            ];
+        }
+
+        $shirtAvatar = trim((string) ($input['user_details_avatar_shirt'] ?? ''));
+        // Shirt selection replaces any previous avatar value; legacy custom files are left on disk.
+        if ($shirtAvatar !== '') {
+            $details->user_details_avatar = $shirtAvatar;
+            $details->user_details_last_update = date('Y-m-d H:i:s');
+            $details->save();
+        }
+
+        $user->user_ip = (string) $request->ip();
+        $user->save();
 
         $fresh = $user->fresh(['details']);
 
@@ -380,15 +415,6 @@ class AccountService
             }
         }
 
-        $day = (int) ($input['user_birth_day'] ?? 0);
-        $month = (int) ($input['user_birth_month'] ?? 0);
-        $year = (int) ($input['user_birth_year'] ?? 0);
-        if ($day > 0 || $month > 0 || $year > 0) {
-            if ($day <= 0 || $month <= 0 || $year <= 0 || ! checkdate($month, $day, $year)) {
-                $errors[] = 'Das Geburtsdatum ist nicht gültig!';
-            }
-        }
-
         if (($input['user_tos'] ?? '') !== 'user_tos_yes') {
             $errors[] = 'Du musst die Bedingungen gelesen und akzeptiert haben!';
         }
@@ -467,19 +493,23 @@ class AccountService
     {
         $details = $user->details;
         $permissions = UserPermissions::query()->find($user->user_id);
-        $photo = (string) ($details?->user_details_photo ?: 'profile_na.png');
         $avatar = (string) ($details?->user_details_avatar ?: 'avatar_na.png');
+        $birth = $this->parseBirth($user->user_date_birth);
 
         return [
+            'user_fname' => (string) ($user->user_fname ?? ''),
+            'user_lname' => (string) ($user->user_lname ?? ''),
+            'user_nationality' => (string) ($user->user_nationality ?? ''),
+            'user_birth_day' => $birth['day'],
+            'user_birth_month' => $birth['month'],
+            'user_birth_year' => $birth['year'],
             'user_details_city' => (string) ($details?->user_details_city ?? ''),
             'user_details_zip' => (string) ($details?->user_details_zip ?? ''),
             'user_details_street' => (string) ($details?->user_details_street ?? ''),
             'user_details_phone' => (string) ($details?->user_details_phone ?? ''),
             'user_details_website' => (string) ($details?->user_details_website ?? ''),
             'user_details_ffb_favourite_team' => (int) ($details?->user_details_ffb_favourite_team ?? 0),
-            'user_details_photo' => $photo,
             'user_details_avatar' => $avatar,
-            'user_details_photo_url' => '/images/ffb/profiles/photo/'.$photo,
             'user_details_avatar_url' => UserAvatar::publicUrl($avatar),
             'user_permissions_ffb_mailservice_reminder' => $this->mailPermissionEnabled(
                 $permissions?->user_permissions_ffb_mailservice_reminder
@@ -497,22 +527,25 @@ class AccountService
      */
     private function profileFormFromInput(array $input): array
     {
-        $photo = (string) ($input['user_details_photo_name'] ?? 'profile_na.png');
         $shirt = trim((string) ($input['user_details_avatar_shirt'] ?? ''));
         $avatar = $shirt !== ''
             ? $shirt
             : (string) ($input['user_details_avatar_name'] ?? 'avatar_na.png');
 
         return [
+            'user_fname' => (string) ($input['user_fname'] ?? ''),
+            'user_lname' => (string) ($input['user_lname'] ?? ''),
+            'user_nationality' => (string) ($input['user_nationality'] ?? ''),
+            'user_birth_day' => (int) ($input['user_birth_day'] ?? 0),
+            'user_birth_month' => (int) ($input['user_birth_month'] ?? 0),
+            'user_birth_year' => (int) ($input['user_birth_year'] ?? 0),
             'user_details_city' => (string) ($input['user_details_city'] ?? ''),
             'user_details_zip' => (string) ($input['user_details_zip'] ?? ''),
             'user_details_street' => (string) ($input['user_details_street'] ?? ''),
             'user_details_phone' => (string) ($input['user_details_phone'] ?? ''),
             'user_details_website' => (string) ($input['user_details_website'] ?? ''),
             'user_details_ffb_favourite_team' => (int) ($input['user_details_ffb_favourite_team'] ?? 0),
-            'user_details_photo' => $photo,
             'user_details_avatar' => $avatar,
-            'user_details_photo_url' => '/images/ffb/profiles/photo/'.$photo,
             'user_details_avatar_url' => UserAvatar::publicUrl($avatar),
             'user_permissions_ffb_mailservice_reminder' => (int) ($input['user_permissions_ffb_mailservice_reminder'] ?? 0) === 1 ? 1 : 0,
             'user_permissions_ffb_mailservice_info' => (int) ($input['user_permissions_ffb_mailservice_info'] ?? 0) === 1 ? 1 : 0,
@@ -530,6 +563,12 @@ class AccountService
         $shirt = trim((string) ($input['user_details_avatar_shirt'] ?? ''));
 
         $merged = array_merge($base, [
+            'user_fname' => (string) ($input['user_fname'] ?? $base['user_fname']),
+            'user_lname' => (string) ($input['user_lname'] ?? $base['user_lname']),
+            'user_nationality' => (string) ($input['user_nationality'] ?? $base['user_nationality']),
+            'user_birth_day' => (int) ($input['user_birth_day'] ?? $base['user_birth_day']),
+            'user_birth_month' => (int) ($input['user_birth_month'] ?? $base['user_birth_month']),
+            'user_birth_year' => (int) ($input['user_birth_year'] ?? $base['user_birth_year']),
             'user_details_city' => (string) ($input['user_details_city'] ?? $base['user_details_city']),
             'user_details_zip' => (string) ($input['user_details_zip'] ?? $base['user_details_zip']),
             'user_details_street' => (string) ($input['user_details_street'] ?? $base['user_details_street']),
@@ -556,21 +595,24 @@ class AccountService
     {
         $errors = [];
 
-        $photo = $request->file('user_details_photo');
-        if ($photo instanceof UploadedFile && $photo->isValid()) {
-            $image = @getimagesize($photo->getRealPath() ?: '');
-            if ($image === false) {
-                $errors[] = 'Problem beim Lesen des Profilfotos. Probier ein anderes.';
-            } else {
-                if ($image[0] > 1024 || $image[1] > 1024) {
-                    $errors[] = 'Das Profilfoto darf maximal 1024x1024 Pixel groß sein.';
-                }
-                if ($photo->getSize() > 512000) {
-                    $errors[] = 'Das Profilfoto darf maximal 500 Kilobyte groß sein.';
-                }
+        $day = (int) $request->input('user_birth_day', 0);
+        $month = (int) $request->input('user_birth_month', 0);
+        $year = (int) $request->input('user_birth_year', 0);
+        if ($day > 0 || $month > 0 || $year > 0) {
+            if ($day <= 0 || $month <= 0 || $year <= 0 || ! checkdate($month, $day, $year)) {
+                $errors[] = 'Das Geburtsdatum ist nicht gültig!';
             }
         }
 
+        return $errors;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function validateAvatar(Request $request): array
+    {
+        $errors = [];
         $shirt = trim((string) $request->input('user_details_avatar_shirt', ''));
         if ($shirt !== '' && (! UserAvatar::isShirtPath($shirt) || ! TeamShirt::relativeExists($shirt))) {
             $errors[] = 'Bitte wähle ein gültiges Trikot als Avatar.';
@@ -661,46 +703,5 @@ class AccountService
         }
 
         return $options;
-    }
-
-    private function storeProfileImage(UploadedFile $file, string $kind): ?string
-    {
-        $dir = $this->profileImageDir($kind);
-        if (! is_dir($dir) && ! mkdir($dir, 0755, true) && ! is_dir($dir)) {
-            return null;
-        }
-
-        $ext = strtolower((string) $file->getClientOriginalExtension());
-        if ($ext === '' || ! preg_match('/^[a-z0-9]{1,5}$/', $ext)) {
-            $ext = 'jpg';
-        }
-
-        $name = md5(uniqid((string) time(), true)).'.'.$ext;
-        try {
-            $file->move($dir, $name);
-        } catch (\Throwable) {
-            return null;
-        }
-
-        return $name;
-    }
-
-    private function deleteProfileImage(string $kind, string $filename): void
-    {
-        if ($filename === '' || str_contains($filename, '/') || str_contains($filename, '\\')) {
-            return;
-        }
-
-        $path = $this->profileImageDir($kind).DIRECTORY_SEPARATOR.$filename;
-        if (is_file($path)) {
-            @unlink($path);
-        }
-    }
-
-    private function profileImageDir(string $kind): string
-    {
-        $base = rtrim((string) config('ffb.legacy_images_path'), DIRECTORY_SEPARATOR.'\\/');
-
-        return $base.DIRECTORY_SEPARATOR.'profiles'.DIRECTORY_SEPARATOR.$kind;
     }
 }

@@ -1,7 +1,7 @@
 @if (!empty($user))
     <div class="user-card">
-        <a class="user-card-photo" href="/profile" title="Profil bearbeiten">
-            <img class="user-photo" src="{{ $user['photo_url'] }}" alt="Foto {{ $user['user_nickname'] }}" width="48" height="48">
+        <a class="user-card-photo" href="/profile?tab=avatar" title="Avatar bearbeiten">
+            <img class="user-photo user-photo-avatar" src="{{ $user['photo_url'] }}" alt="Avatar {{ $user['user_nickname'] }}" width="48" height="48">
         </a>
         <div class="user-card-text">
             <p class="hello">Hallo <a class="user-card-nickname" href="/profile" title="Profil bearbeiten"><strong>{{ $user['user_nickname'] }}</strong></a></p>

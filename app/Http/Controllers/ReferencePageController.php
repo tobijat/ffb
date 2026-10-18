@@ -7,6 +7,7 @@ use App\Services\DashboardService;
 use App\Services\FfbAdminAccess;
 use App\Services\FfbAuth;
 use App\Services\HelpService;
+use App\Support\UserAvatar;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -24,11 +25,11 @@ class ReferencePageController extends Controller
         if ($userId > 0) {
             $webUser = WebUser::query()->with('details')->find($userId);
             if ($webUser) {
-                $photo = (string) ($webUser->details?->user_details_photo ?: 'profile_na.png');
+                $avatar = (string) ($webUser->details?->user_details_avatar ?: 'avatar_na.png');
                 $user = [
                     'user_id' => (int) $webUser->user_id,
                     'user_nickname' => (string) $webUser->user_nickname,
-                    'photo_url' => '/images/ffb/profiles/photo/'.$photo,
+                    'photo_url' => UserAvatar::publicUrl($avatar),
                     'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $webUser->user_id),
                 ];
             }

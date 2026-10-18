@@ -10,6 +10,7 @@ use App\Models\Userscore;
 use App\Models\Userteam;
 use App\Models\WebUser;
 use App\Support\FfbDateTime;
+use App\Support\UserAvatar;
 use Illuminate\Support\Facades\DB;
 
 class UserscoreService
@@ -30,7 +31,7 @@ class UserscoreService
         }
 
         $details = $user->details;
-        $photo = (string) ($details?->user_details_photo ?: 'profile_na.png');
+        $avatar = (string) ($details?->user_details_avatar ?: 'avatar_na.png');
 
         return [
             'ok' => true,
@@ -38,8 +39,15 @@ class UserscoreService
                 'user' => [
                     'user_id' => (int) $user->user_id,
                     'user_nickname' => (string) $user->user_nickname,
-                    'photo_url' => '/images/ffb/profiles/photo/'.$photo,
-                    'update_profile_nag' => empty($details?->user_details_photo) || $details?->user_details_photo === 'profile_na.png',
+                    'photo_url' => UserAvatar::publicUrl($avatar),
+                    'update_profile_nag' => UserAvatar::isDefault($avatar)
+                        && ! $details?->user_details_zip
+                        && ! $details?->user_details_city
+                        && ! $details?->user_details_street
+                        && ! $details?->user_details_phone
+                        && ! $details?->user_details_website
+                        && ! $user->user_fname
+                        && ! $user->user_lname,
                     'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
                 ],
                 'selected_league_id' => $leagueId,

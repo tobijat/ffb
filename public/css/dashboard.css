@@ -274,6 +274,10 @@
     flex-shrink: 0;
 }
 
+.user-photo-avatar {
+    object-fit: contain;
+}
+
 .hello {
     margin: 0 0 2px;
     font-family: var(--font-body);

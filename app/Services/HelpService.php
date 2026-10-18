@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\LeagueOptions;
 use App\Models\WebUser;
+use App\Support\UserAvatar;
 
 class HelpService
 {
@@ -19,12 +20,12 @@ class HelpService
             $webUser = WebUser::query()->with('details')->find($userId);
             if ($webUser) {
                 $details = $webUser->details;
-                $photo = (string) ($details?->user_details_photo ?: 'profile_na.png');
+                $avatar = (string) ($details?->user_details_avatar ?: 'avatar_na.png');
                 $leagueId = (int) ($details?->user_details_ffb_selected_league ?? 0);
                 $user = [
                     'user_id' => (int) $webUser->user_id,
                     'user_nickname' => (string) $webUser->user_nickname,
-                    'photo_url' => '/images/ffb/profiles/photo/'.$photo,
+                    'photo_url' => UserAvatar::publicUrl($avatar),
                     'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $webUser->user_id),
                 ];
             }

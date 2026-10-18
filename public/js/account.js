@@ -32,12 +32,8 @@
             '<b>Homepage</b><br>Wenn du möchtest, kannst du hier deine persönliche Homepage angeben.',
         user_details_ffb_favourite_team:
             '<b>Lieblingsteam</b><br>Wenn du möchtest, kannst du hier dein Lieblingsteam aus allen im Fantasy-Football verfügbaren Teams auswählen.',
-        user_details_photo:
-            '<b>Profilfoto</b><br>Wenn du möchtest, kannst du hier ein Profilfoto von dir hochladen. Das Bild darf höchstens 1024 Pixel breit bzw. hoch sein und darf maximal 500 Kilobyte groß sein.',
         user_details_avatar_shirt:
             '<b>Avatar</b><br>Wähle ein Trikot aus der Liste. Es wird als dein Avatarbild verwendet. Solange du nichts auswählst, bleibt dein bisheriges Avatar unverändert.',
-        user_details_photo_delete:
-            '<b>Profilfoto zurücksetzen</b><br>Wenn du JA auswählst, wird dein Profilfoto auf das Standard-Bild zurückgesetzt.',
         user_permissions_ffb_mailservice_info:
             '<b>Infos per Mail erhalten</b><br>Wenn du JA auswählst, bekommst du wichtige Informationen von Fantasy Football an deine E-Mail Adresse geschickt.',
         user_permissions_ffb_mailservice_reminder:
@@ -116,9 +112,6 @@
         }
         if (lower.includes('geburt')) {
             return fieldInForms('user_birth_day');
-        }
-        if (lower.includes('profilfoto')) {
-            return fieldInForms('user_details_photo');
         }
         if (lower.includes('avatar') || lower.includes('trikot')) {
             return document.querySelector('input[name="user_details_avatar_shirt"]');

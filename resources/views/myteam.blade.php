@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mannschaft — SoccerSportsfan</title>
     <link rel="stylesheet" href="css/start.css?v=23">
-    <link rel="stylesheet" href="css/dashboard.css?v=12">
+    <link rel="stylesheet" href="css/dashboard.css?v=18">
     <link rel="stylesheet" href="css/modal.css?v=46">
     <link rel="stylesheet" href="css/myteam.css?v=33">
 </head>

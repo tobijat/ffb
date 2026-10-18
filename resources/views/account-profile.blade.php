@@ -6,8 +6,8 @@
     <title>Profil — SoccerSportsfan</title>
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
     <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=32">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=17">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=8">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=18">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=9">
 </head>
 <body class="dash-body">
     @php
@@ -20,7 +20,11 @@
         $countries = $accountData['countries'];
         $birthYears = $accountData['birth_years'];
         $months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-        $activeTab = ($tab ?? 'profile') === 'account' ? 'account' : 'profile';
+        $activeTab = match ($tab ?? 'profile') {
+            'account' => 'account',
+            'avatar' => 'avatar',
+            default => 'profile',
+        };
         $currentAvatar = (string) ($profileForm['user_details_avatar'] ?? 'avatar_na.png');
     @endphp
 
@@ -47,13 +51,19 @@
                     href="/profile"
                     role="tab"
                     aria-selected="{{ $activeTab === 'profile' ? 'true' : 'false' }}"
-                >Profildetails</a>
+                >Profil</a>
+                <a
+                    class="account-tab ffb-tab {{ $activeTab === 'avatar' ? 'is-active' : '' }}"
+                    href="/profile?tab=avatar"
+                    role="tab"
+                    aria-selected="{{ $activeTab === 'avatar' ? 'true' : 'false' }}"
+                >Avatar</a>
                 <a
                     class="account-tab ffb-tab {{ $activeTab === 'account' ? 'is-active' : '' }}"
                     href="/profile?tab=account"
                     role="tab"
                     aria-selected="{{ $activeTab === 'account' ? 'true' : 'false' }}"
-                >Accountdaten</a>
+                >Account</a>
             </div>
 
             @if ($answer)
@@ -63,8 +73,55 @@
             @endif
 
             <div class="account-tab-panel" id="tab-profile" role="tabpanel" @if ($activeTab !== 'profile') hidden @endif>
-                <form class="account-form" method="post" action="profile" enctype="multipart/form-data" autocomplete="off">
+                <form class="account-form" method="post" action="profile" autocomplete="off">
                     @csrf
+                    <input type="hidden" name="profile_section" value="profile">
+
+                    <div class="account-field">
+                        <label for="user_fname">Vorname</label>
+                        <input id="user_fname" type="text" name="user_fname" value="{{ $profileForm['user_fname'] ?? '' }}" maxlength="100" data-help="user_fname">
+                    </div>
+
+                    <div class="account-field">
+                        <label for="user_lname">Nachname</label>
+                        <input id="user_lname" type="text" name="user_lname" value="{{ $profileForm['user_lname'] ?? '' }}" maxlength="100" data-help="user_lname">
+                    </div>
+
+                    <div class="account-field">
+                        <span class="account-label" id="birth-label">Geburtsdatum</span>
+                        <div class="account-birth" role="group" aria-labelledby="birth-label">
+                            <select name="user_birth_day" data-help="user_birthday" aria-label="Tag">
+                                <option value=""></option>
+                                @for ($i = 1; $i < 32; $i++)
+                                    <option value="{{ $i }}" @selected((int) ($profileForm['user_birth_day'] ?? 0) === $i)>{{ $i }}</option>
+                                @endfor
+                            </select>
+                            <select name="user_birth_month" data-help="user_birthday" aria-label="Monat">
+                                <option value=""></option>
+                                @foreach ($months as $idx => $monthName)
+                                    <option value="{{ $idx + 1 }}" @selected((int) ($profileForm['user_birth_month'] ?? 0) === $idx + 1)>{{ $monthName }}</option>
+                                @endforeach
+                            </select>
+                            <select name="user_birth_year" data-help="user_birthday" aria-label="Jahr">
+                                <option value=""></option>
+                                @foreach ($birthYears as $year)
+                                    <option value="{{ $year }}" @selected((int) ($profileForm['user_birth_year'] ?? 0) === (int) $year)>{{ $year }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="account-field">
+                        <label for="user_nationality">Nationalität</label>
+                        <select id="user_nationality" name="user_nationality" data-help="user_nationality">
+                            <option value="">Land…</option>
+                            @foreach ($countries as $code => $name)
+                                <option value="{{ $code }}" @selected(($profileForm['user_nationality'] ?? '') === $code)>{{ $name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <hr class="account-sep">
 
                     <div class="account-field">
                         <label for="user_details_city">Wohnort</label>
@@ -104,21 +161,40 @@
 
                     <hr class="account-sep">
 
-                    <div class="account-field account-field-media">
-                        <label for="user_details_photo">Profilfoto</label>
-                        <div class="account-media">
-                            <input id="user_details_photo" type="file" name="user_details_photo" accept="image/*" data-help="user_details_photo">
-                            <img class="account-preview" src="{{ $profileForm['user_details_photo_url'] }}" alt="Aktuelles Profilfoto" width="55" height="55">
-                        </div>
+                    <div class="account-field">
+                        <label for="user_permissions_ffb_mailservice_reminder">Erinnerungen per Mail erhalten</label>
+                        <select id="user_permissions_ffb_mailservice_reminder" name="user_permissions_ffb_mailservice_reminder" data-help="user_permissions_ffb_mailservice_reminder">
+                            <option value="1" @selected((int) $profileForm['user_permissions_ffb_mailservice_reminder'] === 1)>Ja</option>
+                            <option value="0" @selected((int) $profileForm['user_permissions_ffb_mailservice_reminder'] === 0)>Nein</option>
+                        </select>
                     </div>
 
                     <div class="account-field">
-                        <label for="user_details_photo_delete">Profilfoto zurücksetzen</label>
-                        <select id="user_details_photo_delete" name="user_details_photo_delete" data-help="user_details_photo_delete">
-                            <option value="0" selected>Nein</option>
-                            <option value="1">Ja</option>
+                        <label for="user_permissions_ffb_mailservice_info">Infos per Mail erhalten</label>
+                        <select id="user_permissions_ffb_mailservice_info" name="user_permissions_ffb_mailservice_info" data-help="user_permissions_ffb_mailservice_info">
+                            <option value="1" @selected((int) $profileForm['user_permissions_ffb_mailservice_info'] === 1)>Ja</option>
+                            <option value="0" @selected((int) $profileForm['user_permissions_ffb_mailservice_info'] === 0)>Nein</option>
                         </select>
                     </div>
+
+                    <div class="account-field">
+                        <label for="user_permissions_ffb_visible_profile">Gesamtes Profil anzeigen</label>
+                        <select id="user_permissions_ffb_visible_profile" name="user_permissions_ffb_visible_profile" data-help="user_permissions_ffb_visible_profile">
+                            <option value="1" @selected((int) $profileForm['user_permissions_ffb_visible_profile'] === 1)>Ja</option>
+                            <option value="0" @selected((int) $profileForm['user_permissions_ffb_visible_profile'] === 0)>Nein</option>
+                        </select>
+                    </div>
+
+                    <div class="account-actions">
+                        <button type="submit" class="btn" name="users_profile_update" value="1">Speichern</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="account-tab-panel" id="tab-avatar" role="tabpanel" @if ($activeTab !== 'avatar') hidden @endif>
+                <form class="account-form" method="post" action="profile" autocomplete="off">
+                    @csrf
+                    <input type="hidden" name="profile_section" value="avatar">
 
                     <div class="account-field account-field-media">
                         <span class="account-label" id="avatar-shirt-label">Avatar</span>
@@ -154,34 +230,8 @@
                         </div>
                     </div>
 
-                    <hr class="account-sep">
-
-                    <div class="account-field">
-                        <label for="user_permissions_ffb_mailservice_reminder">Erinnerungen per Mail erhalten</label>
-                        <select id="user_permissions_ffb_mailservice_reminder" name="user_permissions_ffb_mailservice_reminder" data-help="user_permissions_ffb_mailservice_reminder">
-                            <option value="1" @selected((int) $profileForm['user_permissions_ffb_mailservice_reminder'] === 1)>Ja</option>
-                            <option value="0" @selected((int) $profileForm['user_permissions_ffb_mailservice_reminder'] === 0)>Nein</option>
-                        </select>
-                    </div>
-
-                    <div class="account-field">
-                        <label for="user_permissions_ffb_mailservice_info">Infos per Mail erhalten</label>
-                        <select id="user_permissions_ffb_mailservice_info" name="user_permissions_ffb_mailservice_info" data-help="user_permissions_ffb_mailservice_info">
-                            <option value="1" @selected((int) $profileForm['user_permissions_ffb_mailservice_info'] === 1)>Ja</option>
-                            <option value="0" @selected((int) $profileForm['user_permissions_ffb_mailservice_info'] === 0)>Nein</option>
-                        </select>
-                    </div>
-
-                    <div class="account-field">
-                        <label for="user_permissions_ffb_visible_profile">Gesamtes Profil anzeigen</label>
-                        <select id="user_permissions_ffb_visible_profile" name="user_permissions_ffb_visible_profile" data-help="user_permissions_ffb_visible_profile">
-                            <option value="1" @selected((int) $profileForm['user_permissions_ffb_visible_profile'] === 1)>Ja</option>
-                            <option value="0" @selected((int) $profileForm['user_permissions_ffb_visible_profile'] === 0)>Nein</option>
-                        </select>
-                    </div>
-
                     <div class="account-actions">
-                        <button type="submit" class="btn" name="users_profile_update" value="1">Änderungen abschicken</button>
+                        <button type="submit" class="btn" name="users_avatar_update" value="1">Speichern</button>
                     </div>
                 </form>
             </div>
@@ -193,50 +243,6 @@
                     <div class="account-field">
                         <label for="user_nickname">Benutzername</label>
                         <input id="user_nickname" type="text" name="user_nickname" value="{{ $accountForm['user_nickname'] }}" readonly data-help="user_nickname">
-                    </div>
-
-                    <div class="account-field">
-                        <label for="user_fname">Vorname</label>
-                        <input id="user_fname" type="text" name="user_fname" value="{{ $accountForm['user_fname'] }}" maxlength="100" data-help="user_fname">
-                    </div>
-
-                    <div class="account-field">
-                        <label for="user_lname">Nachname</label>
-                        <input id="user_lname" type="text" name="user_lname" value="{{ $accountForm['user_lname'] }}" maxlength="100" data-help="user_lname">
-                    </div>
-
-                    <div class="account-field">
-                        <span class="account-label" id="birth-label">Geburtsdatum</span>
-                        <div class="account-birth" role="group" aria-labelledby="birth-label">
-                            <select name="user_birth_day" data-help="user_birthday" aria-label="Tag">
-                                <option value=""></option>
-                                @for ($i = 1; $i < 32; $i++)
-                                    <option value="{{ $i }}" @selected((int) $accountForm['user_birth_day'] === $i)>{{ $i }}</option>
-                                @endfor
-                            </select>
-                            <select name="user_birth_month" data-help="user_birthday" aria-label="Monat">
-                                <option value=""></option>
-                                @foreach ($months as $idx => $monthName)
-                                    <option value="{{ $idx + 1 }}" @selected((int) $accountForm['user_birth_month'] === $idx + 1)>{{ $monthName }}</option>
-                                @endforeach
-                            </select>
-                            <select name="user_birth_year" data-help="user_birthday" aria-label="Jahr">
-                                <option value=""></option>
-                                @foreach ($birthYears as $year)
-                                    <option value="{{ $year }}" @selected((int) $accountForm['user_birth_year'] === (int) $year)>{{ $year }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="account-field">
-                        <label for="user_nationality">Nationalität</label>
-                        <select id="user_nationality" name="user_nationality" data-help="user_nationality">
-                            <option value="">Land…</option>
-                            @foreach ($countries as $code => $name)
-                                <option value="{{ $code }}" @selected($accountForm['user_nationality'] === $code)>{{ $name }}</option>
-                            @endforeach
-                        </select>
                     </div>
 
                     <div class="account-field">
@@ -272,7 +278,7 @@
                     </div>
 
                     <div class="account-actions">
-                        <button type="submit" class="btn" name="users_registration_update" value="1">Änderungen abschicken</button>
+                        <button type="submit" class="btn" name="users_registration_update" value="1">Speichern</button>
                     </div>
                 </form>
             </div>
@@ -284,6 +290,11 @@
                 <p class="hint">Felder mit * sind Pflicht. Klick auf ein Feld, um weitere Hinweise anzuzeigen.</p>
                 <div id="account-helptext" class="account-helptext">
                     Alle Pflichtfelder müssen ausgefüllt werden. Klick auf ein Feld um weitere Hinweise anzuzeigen.
+                </div>
+            @elseif ($activeTab === 'avatar')
+                <p class="hint">Wähle ein Trikot als Avatar. Klick auf ein Feld, um weitere Hinweise anzuzeigen.</p>
+                <div id="account-helptext" class="account-helptext">
+                    Wähle ein Trikot aus der Liste. Es wird als dein Avatarbild verwendet.
                 </div>
             @else
                 <p class="hint">Alle Felder sind optional. Klick auf ein Feld, um weitere Hinweise anzuzeigen.</p>
@@ -301,6 +312,6 @@
             window.FFB_ACCOUNT_ERRORS = @json(array_values($errors));
         </script>
     @endif
-    <script src="{{ $assetBase }}/js/account.js?v=4" defer></script>
+    <script src="{{ $assetBase }}/js/account.js?v=5" defer></script>
 </body>
 </html>
