@@ -267,8 +267,63 @@ class AccountPageTest extends TestCase
             ->assertSee('Neu generieren', false)
             ->assertSee('Als Avatar speichern', false)
             ->assertSee('profile_section" value="avatar_custom"', false)
-            ->assertSee('tobijat.at/kit-kitchen/random.php', false)
+            ->assertSee('avatar-kit-prev', false)
+            ->assertSee('avatar-kit-next', false)
+            ->assertSee('avatar-kit-maker', false)
+            ->assertSee('Adidas', false)
+            ->assertSee('Capelli Sport', false)
+            ->assertSee('avatar-kit-stars', false)
+            ->assertSee('avatar-kit-number', false)
+            ->assertSee('avatar-kit-text', false)
+            ->assertSee('Vorderansicht', false)
+            ->assertSee('Rückansicht', false)
+            ->assertSee('avatar-custom-preview-back', false)
+            ->assertSee('profile/avatar/kit-random', false)
             ->assertSee('account-tab ffb-tab is-active', false);
+    }
+
+    public function test_kit_random_endpoint_returns_seed_and_svg(): void
+    {
+        config(['ffb.kit_kitchen_random_url' => 'https://kit.test/random.php']);
+
+        \Illuminate\Support\Facades\Http::fake([
+            'kit.test/*' => \Illuminate\Support\Facades\Http::response(
+                '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+                200,
+                ['X-Kit-Seed' => '998877']
+            ),
+        ]);
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->getJson('/profile/avatar/kit-random?stars=2&number=07&text=Boss')
+            ->assertOk()
+            ->assertJson([
+                'seed' => '998877',
+                'svg' => '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+                'svg_back' => '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+            ]);
+
+        \Illuminate\Support\Facades\Http::assertSentCount(2);
+        \Illuminate\Support\Facades\Http::assertSent(function ($request) {
+            $url = $request->url();
+
+            return str_contains($url, 'stars=2')
+                && str_contains($url, 'number=07')
+                && ! str_contains($url, 'backside=');
+        });
+        \Illuminate\Support\Facades\Http::assertSent(function ($request) {
+            $url = $request->url();
+
+            return str_contains($url, 'seed=998877')
+                && str_contains($url, 'backside=1')
+                && str_contains($url, 'text=Boss');
+        });
+    }
+
+    public function test_kit_random_endpoint_requires_login(): void
+    {
+        $this->getJson('/profile/avatar/kit-random')
+            ->assertUnauthorized();
     }
 
     public function test_profile_avatar_custom_update_is_forwarded(): void
@@ -293,7 +348,9 @@ class AccountPageTest extends TestCase
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
             ->post('/profile', [
                 'profile_section' => 'avatar_custom',
+                'avatar_seed' => '123456',
                 'avatar_svg' => '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+                'avatar_svg_back' => '<svg xmlns="http://www.w3.org/2000/svg"><circle/></svg>',
             ])
             ->assertOk()
             ->assertSee('Dein Avatar wurde gespeichert', false);

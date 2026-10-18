@@ -68,8 +68,8 @@ return [
     | Kit Kitchen random shirt generator (custom avatar)
     |--------------------------------------------------------------------------
     |
-    | Returns image/svg+xml with Access-Control-Allow-Origin: *.
-    | Fetched client-side when the user clicks „Neu generieren“.
+    | Returns image/svg+xml and X-Kit-Seed. Fetched server-side via
+    | /profile/avatar/kit-random so the seed header is available to the UI.
     |
     */
     'kit_kitchen_random_url' => env(

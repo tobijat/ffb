@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Services\AccountService;
 use App\Services\FfbAuth;
+use App\Support\CustomAvatarSvg;
+use App\Support\KitKitchenClient;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -87,6 +90,56 @@ class AccountPageController extends Controller
             null,
             $result['form'] ?? null,
         );
+    }
+
+    public function randomKitAvatar(Request $request, KitKitchenClient $kits): JsonResponse
+    {
+        $userId = $this->auth->userId($request);
+        if ($userId <= 0) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $stars = $request->query('stars');
+        $starsInt = is_numeric($stars) ? (int) $stars : null;
+        if ($starsInt !== null && ($starsInt < 0 || $starsInt > 9)) {
+            $starsInt = null;
+        }
+
+        $number = trim((string) $request->query('number', ''));
+        if ($number !== '' && ! preg_match('/^\d{2}$/', $number)) {
+            $number = '';
+        }
+
+        $text = (string) $request->query('text', '');
+        $maker = KitKitchenClient::normalizeMaker($request->query('maker'));
+        $seed = CustomAvatarSvg::normalizeSeed($request->query('seed'));
+        $shared = [
+            'seed' => $seed,
+            'stars' => $starsInt,
+            'number' => $number !== '' ? $number : null,
+            'maker' => $maker,
+        ];
+
+        $front = $kits->fetch($shared);
+        if ($front === null) {
+            return response()->json(['error' => 'Kit konnte nicht geladen werden.'], 502);
+        }
+
+        $back = $kits->fetch([
+            ...$shared,
+            'seed' => $front['seed'],
+            'backside' => true,
+            'text' => $text,
+        ]);
+        if ($back === null) {
+            return response()->json(['error' => 'Kit konnte nicht geladen werden.'], 502);
+        }
+
+        return response()->json([
+            'seed' => $front['seed'],
+            'svg' => $front['svg'],
+            'svg_back' => $back['svg'],
+        ]);
     }
 
     private function resolveTab(mixed $tab): string

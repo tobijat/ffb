@@ -7,7 +7,7 @@
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
     <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=32">
     <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=18">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=12">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=17">
 </head>
 <body class="dash-body">
     @php
@@ -28,7 +28,9 @@
         $currentAvatar = (string) ($profileForm['user_details_avatar'] ?? 'avatar_na.png');
         $avatarModeReady = \App\Support\UserAvatar::isShirtPath($currentAvatar)
             || \App\Support\UserAvatar::isDefault($currentAvatar);
-        $kitKitchenUrl = (string) config('ffb.kit_kitchen_random_url');
+        $currentAvatarUrl = (string) ($profileForm['user_details_avatar_url'] ?? \App\Support\UserAvatar::publicUrl($currentAvatar));
+        $currentAvatarBackUrl = \App\Support\CustomAvatarSvg::publicBackUrl($currentAvatar) ?? $currentAvatarUrl;
+        $currentAvatarSeed = \App\Support\CustomAvatarSvg::seedFromFilename($currentAvatar);
     @endphp
 
     <header class="dash-top">
@@ -199,9 +201,11 @@
                 id="tab-avatar"
                 role="tabpanel"
                 @if ($activeTab !== 'avatar') hidden @endif
-                data-kit-kitchen-url="{{ $kitKitchenUrl }}"
+                data-kit-random-url="{{ route('profile.avatar.kitRandom') }}"
                 data-current-avatar="{{ $currentAvatar }}"
-                data-current-avatar-url="{{ $profileForm['user_details_avatar_url'] }}"
+                data-current-avatar-url="{{ $currentAvatarUrl }}"
+                data-current-avatar-back-url="{{ $currentAvatarBackUrl }}"
+                @if ($currentAvatarSeed) data-current-avatar-seed="{{ $currentAvatarSeed }}" @endif
             >
                 <div class="avatar-mode-switch" role="radiogroup" aria-label="Avatar-Quelle">
                     <label class="avatar-mode-option">
@@ -227,47 +231,44 @@
                 </div>
 
                 <div id="avatar-mode-ready" @if (! $avatarModeReady) hidden @endif>
-                    <form class="account-form" id="avatar-ready-form" method="post" action="profile" autocomplete="off">
+                    <form class="account-form account-form-avatar" id="avatar-ready-form" method="post" action="profile" autocomplete="off">
                         @csrf
                         <input type="hidden" name="profile_section" value="avatar">
 
-                        <div class="account-field account-field-media">
-                            <span class="account-label" id="avatar-shirt-label">Avatar</span>
-                            <div class="account-media account-avatar-picker" data-help="user_details_avatar_shirt">
-                                <img
-                                    id="account-avatar-preview"
-                                    class="account-preview account-preview-avatar account-preview-custom"
-                                    src="{{ $profileForm['user_details_avatar_url'] }}"
-                                    alt="Aktueller Avatar"
-                                    width="128"
-                                    height="128"
-                                >
-                                <div
-                                    class="avatar-shirt-grid"
-                                    role="radiogroup"
-                                    aria-labelledby="avatar-shirt-label"
-                                >
-                                    @foreach ($avatarShirts as $shirt)
-                                        <label class="avatar-shirt-option">
-                                            <input
-                                                type="radio"
-                                                name="user_details_avatar_shirt"
-                                                value="{{ $shirt['path'] }}"
-                                                @checked($currentAvatar === $shirt['path'])
-                                                data-help="user_details_avatar_shirt"
-                                                data-preview-url="{{ $shirt['url'] }}"
-                                            >
-                                            <img src="{{ $shirt['url'] }}" alt="" width="40" height="40">
-                                            <span class="avatar-shirt-name">{{ $shirt['team_name'] }}</span>
-                                        </label>
-                                    @endforeach
-                                </div>
+                        <div class="account-media account-avatar-picker" data-help="user_details_avatar_shirt">
+                            <img
+                                id="account-avatar-preview"
+                                class="account-preview account-preview-avatar account-preview-custom"
+                                src="{{ $profileForm['user_details_avatar_url'] }}"
+                                alt="Aktueller Avatar"
+                                width="128"
+                                height="128"
+                            >
+                            <div
+                                class="avatar-shirt-grid"
+                                role="radiogroup"
+                                aria-label="Fertige Trikots"
+                            >
+                                @foreach ($avatarShirts as $shirt)
+                                    <label class="avatar-shirt-option">
+                                        <input
+                                            type="radio"
+                                            name="user_details_avatar_shirt"
+                                            value="{{ $shirt['path'] }}"
+                                            @checked($currentAvatar === $shirt['path'])
+                                            data-help="user_details_avatar_shirt"
+                                            data-preview-url="{{ $shirt['url'] }}"
+                                        >
+                                        <img src="{{ $shirt['url'] }}" alt="" width="40" height="40">
+                                        <span class="avatar-shirt-name">{{ $shirt['team_name'] }}</span>
+                                    </label>
+                                @endforeach
                             </div>
                         </div>
 
                         <div class="account-actions">
                             <button type="submit" class="btn" id="avatar-ready-save" name="users_avatar_update" value="1" disabled>
-                                Als Avatar speichern
+                                Avatar speichern
                             </button>
                         </div>
                     </form>
@@ -275,7 +276,7 @@
 
                 <div id="avatar-mode-custom" @if ($avatarModeReady) hidden @endif>
                     <form
-                        class="account-form"
+                        class="account-form account-form-avatar"
                         id="avatar-custom-form"
                         method="post"
                         action="profile"
@@ -283,28 +284,94 @@
                     >
                         @csrf
                         <input type="hidden" name="profile_section" value="avatar_custom">
+                        <input type="hidden" name="avatar_seed" id="avatar-seed-payload" value="">
                         <textarea name="avatar_svg" id="avatar-svg-payload" hidden></textarea>
+                        <textarea name="avatar_svg_back" id="avatar-svg-back-payload" hidden></textarea>
 
-                        <div class="account-field account-field-media">
-                            <span class="account-label">Eigenes Trikot</span>
-                            <div class="account-media account-avatar-custom" data-help="avatar_mode_custom">
-                                <img
-                                    id="avatar-custom-preview"
-                                    class="account-preview account-preview-avatar account-preview-custom"
-                                    src="{{ $profileForm['user_details_avatar_url'] }}"
-                                    alt="Aktueller Avatar"
-                                    width="128"
-                                    height="128"
-                                >
+                        <div class="account-avatar-custom-layout" data-help="avatar_mode_custom">
+                            <div class="avatar-kit-previews">
+                                <figure class="avatar-kit-preview">
+                                    <img
+                                        id="avatar-custom-preview"
+                                        class="account-preview account-preview-avatar account-preview-custom"
+                                        src="{{ $currentAvatarUrl }}"
+                                        alt="Vorderansicht"
+                                        width="128"
+                                        height="128"
+                                    >
+                                    <figcaption>Vorderansicht</figcaption>
+                                </figure>
+                                <figure class="avatar-kit-preview">
+                                    <img
+                                        id="avatar-custom-preview-back"
+                                        class="account-preview account-preview-avatar account-preview-custom"
+                                        src="{{ $currentAvatarBackUrl }}"
+                                        alt="Rückansicht"
+                                        width="128"
+                                        height="128"
+                                    >
+                                    <figcaption>Rückansicht</figcaption>
+                                </figure>
+                            </div>
+                            <div class="avatar-kit-options" aria-label="Trikot-Optionen">
+                                <div class="avatar-kit-option">
+                                    <label for="avatar-kit-maker">Marke</label>
+                                    <select id="avatar-kit-maker" name="avatar_kit_maker">
+                                        <option value="" selected>Keine</option>
+                                        @foreach (\App\Support\KitKitchenClient::MAKERS as $makerId => $makerLabel)
+                                            <option value="{{ $makerId }}">{{ $makerLabel }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="avatar-kit-option">
+                                    <label for="avatar-kit-stars">Sterne</label>
+                                    <select id="avatar-kit-stars" name="avatar_kit_stars">
+                                        @for ($s = 0; $s <= 9; $s++)
+                                            <option value="{{ $s }}" @selected($s === 0)>{{ $s }}</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                <div class="avatar-kit-option">
+                                    <label for="avatar-kit-number">Nummer</label>
+                                    <input
+                                        id="avatar-kit-number"
+                                        type="text"
+                                        name="avatar_kit_number"
+                                        inputmode="numeric"
+                                        maxlength="2"
+                                        pattern="[0-9]{2}"
+                                        placeholder="z. B. 10"
+                                        autocomplete="off"
+                                    >
+                                </div>
+                                <div class="avatar-kit-option">
+                                    <label for="avatar-kit-text">Rückentext</label>
+                                    <input
+                                        id="avatar-kit-text"
+                                        type="text"
+                                        name="avatar_kit_text"
+                                        maxlength="16"
+                                        placeholder="max. 16 Zeichen"
+                                        autocomplete="off"
+                                    >
+                                </div>
                             </div>
                         </div>
 
-                        <div class="account-actions account-actions-row">
+                        <div class="account-actions account-actions-row avatar-kit-nav">
+                            <button type="button" class="btn btn-secondary" id="avatar-kit-prev" disabled aria-label="Vorheriges Trikot">
+                                ←
+                            </button>
                             <button type="button" class="btn btn-secondary" id="avatar-regenerate" aria-live="polite">
                                 Neu generieren
                             </button>
+                            <button type="button" class="btn btn-secondary" id="avatar-kit-next" disabled aria-label="Nächstes Trikot">
+                                →
+                            </button>
+                        </div>
+                        <div class="account-actions">
                             <button type="submit" class="btn" id="avatar-custom-save" name="users_avatar_custom_update" value="1" disabled>
-                                Als Avatar speichern
+                                Avatar speichern
                             </button>
                         </div>
                     </form>
@@ -369,7 +436,7 @@
             @elseif ($activeTab === 'avatar')
                 <p class="hint">Wähle ein Trikot als Avatar. Klick auf ein Feld, um weitere Hinweise anzuzeigen.</p>
                 <div id="account-helptext" class="account-helptext">
-                    Wähle ein Trikot aus der Liste. Es wird als dein Avatarbild verwendet.
+                    Hier kannst du dir ein passendes Avatarbild wählen.
                 </div>
             @else
                 <p class="hint">Alle Felder sind optional. Klick auf ein Feld, um weitere Hinweise anzuzeigen.</p>
@@ -387,6 +454,6 @@
             window.FFB_ACCOUNT_ERRORS = @json(array_values($errors));
         </script>
     @endif
-    <script src="{{ $assetBase }}/js/account.js?v=8" defer></script>
+    <script src="{{ $assetBase }}/js/account.js?v=15" defer></script>
 </body>
 </html>

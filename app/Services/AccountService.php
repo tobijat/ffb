@@ -301,11 +301,14 @@ class AccountService
         }
 
         $shirtAvatar = trim((string) ($input['user_details_avatar_shirt'] ?? ''));
-        // Shirt selection replaces any previous avatar value; legacy custom files are left on disk.
         if ($shirtAvatar !== '') {
+            $previous = (string) ($details->user_details_avatar ?? '');
             $details->user_details_avatar = $shirtAvatar;
             $details->user_details_last_update = date('Y-m-d H:i:s');
             $details->save();
+            if ($previous !== $shirtAvatar) {
+                CustomAvatarSvg::deleteStored($previous);
+            }
         }
 
         $user->user_ip = (string) $request->ip();
@@ -337,7 +340,9 @@ class AccountService
     {
         $form = $this->mergeProfileForm($user, $input);
         $svg = (string) ($input['avatar_svg'] ?? '');
-        $errors = $this->validateAvatarCustom($svg);
+        $svgBack = (string) ($input['avatar_svg_back'] ?? '');
+        $seed = (string) ($input['avatar_seed'] ?? '');
+        $errors = $this->validateAvatarCustom($svg, $svgBack, $seed);
 
         if ($errors !== []) {
             return [
@@ -348,7 +353,7 @@ class AccountService
             ];
         }
 
-        $stored = CustomAvatarSvg::store($svg);
+        $stored = CustomAvatarSvg::store($svg, $seed, $svgBack);
         if ($stored === null) {
             return [
                 'ok' => false,
@@ -358,9 +363,13 @@ class AccountService
             ];
         }
 
+        $previous = (string) ($details->user_details_avatar ?? '');
         $details->user_details_avatar = $stored;
         $details->user_details_last_update = date('Y-m-d H:i:s');
         $details->save();
+        if ($previous !== $stored) {
+            CustomAvatarSvg::deleteStored($previous);
+        }
 
         $user->user_ip = (string) $request->ip();
         $user->save();
@@ -682,13 +691,17 @@ class AccountService
     /**
      * @return list<string>
      */
-    private function validateAvatarCustom(string $svg): array
+    private function validateAvatarCustom(string $svg, string $svgBack, string $seed): array
     {
-        if (trim($svg) === '') {
+        if (trim($svg) === '' || trim($svgBack) === '') {
             return ['Bitte generiere zuerst ein Trikot.'];
         }
 
-        if (! CustomAvatarSvg::isAcceptable($svg)) {
+        if (! CustomAvatarSvg::isAcceptable($svg) || ! CustomAvatarSvg::isAcceptable($svgBack)) {
+            return ['Das generierte Trikot ist ungültig.'];
+        }
+
+        if (CustomAvatarSvg::normalizeSeed($seed) === null) {
             return ['Das generierte Trikot ist ungültig.'];
         }
 
