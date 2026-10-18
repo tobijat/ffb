@@ -7,7 +7,7 @@
         <a href="http://www.gemura.com" target="_blank" rel="noopener">Gerald Musser</a>
     </div>
     <div class="foot-links">
-        <a href="mailto:frankreich2016@sportsfan.at">Kontakt</a>
+        <a href="mailto:webmaster@sportsfan.at">Kontakt</a>
         <a href="/reference">Impressum</a>
         <a href="/help">Hilfe</a>
     </div>
