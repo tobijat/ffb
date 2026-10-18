@@ -31,6 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Session\Middleware\StartSession::class,
         ]);
 
+        $middleware->web(append: [
+            \App\Http\Middleware\TouchFfbUserLastAction::class,
+        ]);
+
         $middleware->alias([
             'ffb.admin' => \App\Http\Middleware\EnsureFfbAdmin::class,
         ]);
