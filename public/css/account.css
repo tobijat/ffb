@@ -234,6 +234,60 @@
     word-break: break-word;
 }
 
+.avatar-mode-switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    margin: 0 0 12px;
+}
+
+.avatar-mode-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    cursor: pointer;
+    font-size: 10pt;
+}
+
+.account-avatar-custom {
+    display: grid;
+    gap: 8px;
+    justify-items: start;
+}
+
+.account-preview-custom {
+    width: 128px;
+    height: 128px;
+}
+
+.account-actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.btn-secondary {
+    background: #e8efe8;
+    color: #1a3d1a;
+    border-color: #7aaa7a;
+}
+
+.account-main .btn:disabled,
+.account-main .btn[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+    background: #c8c8c8;
+    color: #555;
+    border-color: #999;
+}
+
+.account-main .btn:disabled:hover,
+.account-main .btn[disabled]:hover {
+    background: #c8c8c8;
+    color: #555;
+}
+
 @media (max-width: 860px) {
     .account-layout {
         grid-template-columns: 1fr;

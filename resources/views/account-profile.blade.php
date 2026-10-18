@@ -7,7 +7,7 @@
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
     <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=32">
     <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=18">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=9">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=12">
 </head>
 <body class="dash-body">
     @php
@@ -26,6 +26,9 @@
             default => 'profile',
         };
         $currentAvatar = (string) ($profileForm['user_details_avatar'] ?? 'avatar_na.png');
+        $avatarModeReady = \App\Support\UserAvatar::isShirtPath($currentAvatar)
+            || \App\Support\UserAvatar::isDefault($currentAvatar);
+        $kitKitchenUrl = (string) config('ffb.kit_kitchen_random_url');
     @endphp
 
     <header class="dash-top">
@@ -191,49 +194,121 @@
                 </form>
             </div>
 
-            <div class="account-tab-panel" id="tab-avatar" role="tabpanel" @if ($activeTab !== 'avatar') hidden @endif>
-                <form class="account-form" method="post" action="profile" autocomplete="off">
-                    @csrf
-                    <input type="hidden" name="profile_section" value="avatar">
+            <div
+                class="account-tab-panel"
+                id="tab-avatar"
+                role="tabpanel"
+                @if ($activeTab !== 'avatar') hidden @endif
+                data-kit-kitchen-url="{{ $kitKitchenUrl }}"
+                data-current-avatar="{{ $currentAvatar }}"
+                data-current-avatar-url="{{ $profileForm['user_details_avatar_url'] }}"
+            >
+                <div class="avatar-mode-switch" role="radiogroup" aria-label="Avatar-Quelle">
+                    <label class="avatar-mode-option">
+                        <input
+                            type="radio"
+                            name="avatar_mode"
+                            value="ready"
+                            @checked($avatarModeReady)
+                            data-help="avatar_mode_ready"
+                        >
+                        <span>Fertige Trikots</span>
+                    </label>
+                    <label class="avatar-mode-option">
+                        <input
+                            type="radio"
+                            name="avatar_mode"
+                            value="custom"
+                            @checked(! $avatarModeReady)
+                            data-help="avatar_mode_custom"
+                        >
+                        <span>Eigenes Trikot</span>
+                    </label>
+                </div>
 
-                    <div class="account-field account-field-media">
-                        <span class="account-label" id="avatar-shirt-label">Avatar</span>
-                        <div class="account-media account-avatar-picker" data-help="user_details_avatar_shirt">
-                            <img
-                                id="account-avatar-preview"
-                                class="account-preview account-preview-avatar"
-                                src="{{ $profileForm['user_details_avatar_url'] }}"
-                                alt="Aktueller Avatar"
-                                width="55"
-                                height="55"
-                            >
-                            <div
-                                class="avatar-shirt-grid"
-                                role="radiogroup"
-                                aria-labelledby="avatar-shirt-label"
-                            >
-                                @foreach ($avatarShirts as $shirt)
-                                    <label class="avatar-shirt-option">
-                                        <input
-                                            type="radio"
-                                            name="user_details_avatar_shirt"
-                                            value="{{ $shirt['path'] }}"
-                                            @checked($currentAvatar === $shirt['path'])
-                                            data-help="user_details_avatar_shirt"
-                                            data-preview-url="{{ $shirt['url'] }}"
-                                        >
-                                        <img src="{{ $shirt['url'] }}" alt="" width="40" height="40">
-                                        <span class="avatar-shirt-name">{{ $shirt['team_name'] }}</span>
-                                    </label>
-                                @endforeach
+                <div id="avatar-mode-ready" @if (! $avatarModeReady) hidden @endif>
+                    <form class="account-form" id="avatar-ready-form" method="post" action="profile" autocomplete="off">
+                        @csrf
+                        <input type="hidden" name="profile_section" value="avatar">
+
+                        <div class="account-field account-field-media">
+                            <span class="account-label" id="avatar-shirt-label">Avatar</span>
+                            <div class="account-media account-avatar-picker" data-help="user_details_avatar_shirt">
+                                <img
+                                    id="account-avatar-preview"
+                                    class="account-preview account-preview-avatar account-preview-custom"
+                                    src="{{ $profileForm['user_details_avatar_url'] }}"
+                                    alt="Aktueller Avatar"
+                                    width="128"
+                                    height="128"
+                                >
+                                <div
+                                    class="avatar-shirt-grid"
+                                    role="radiogroup"
+                                    aria-labelledby="avatar-shirt-label"
+                                >
+                                    @foreach ($avatarShirts as $shirt)
+                                        <label class="avatar-shirt-option">
+                                            <input
+                                                type="radio"
+                                                name="user_details_avatar_shirt"
+                                                value="{{ $shirt['path'] }}"
+                                                @checked($currentAvatar === $shirt['path'])
+                                                data-help="user_details_avatar_shirt"
+                                                data-preview-url="{{ $shirt['url'] }}"
+                                            >
+                                            <img src="{{ $shirt['url'] }}" alt="" width="40" height="40">
+                                            <span class="avatar-shirt-name">{{ $shirt['team_name'] }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="account-actions">
-                        <button type="submit" class="btn" name="users_avatar_update" value="1">Speichern</button>
-                    </div>
-                </form>
+                        <div class="account-actions">
+                            <button type="submit" class="btn" id="avatar-ready-save" name="users_avatar_update" value="1" disabled>
+                                Als Avatar speichern
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="avatar-mode-custom" @if ($avatarModeReady) hidden @endif>
+                    <form
+                        class="account-form"
+                        id="avatar-custom-form"
+                        method="post"
+                        action="profile"
+                        autocomplete="off"
+                    >
+                        @csrf
+                        <input type="hidden" name="profile_section" value="avatar_custom">
+                        <textarea name="avatar_svg" id="avatar-svg-payload" hidden></textarea>
+
+                        <div class="account-field account-field-media">
+                            <span class="account-label">Eigenes Trikot</span>
+                            <div class="account-media account-avatar-custom" data-help="avatar_mode_custom">
+                                <img
+                                    id="avatar-custom-preview"
+                                    class="account-preview account-preview-avatar account-preview-custom"
+                                    src="{{ $profileForm['user_details_avatar_url'] }}"
+                                    alt="Aktueller Avatar"
+                                    width="128"
+                                    height="128"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="account-actions account-actions-row">
+                            <button type="button" class="btn btn-secondary" id="avatar-regenerate" aria-live="polite">
+                                Neu generieren
+                            </button>
+                            <button type="submit" class="btn" id="avatar-custom-save" name="users_avatar_custom_update" value="1" disabled>
+                                Als Avatar speichern
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
 
             <div class="account-tab-panel" id="tab-account" role="tabpanel" @if ($activeTab !== 'account') hidden @endif>
@@ -312,6 +387,6 @@
             window.FFB_ACCOUNT_ERRORS = @json(array_values($errors));
         </script>
     @endif
-    <script src="{{ $assetBase }}/js/account.js?v=5" defer></script>
+    <script src="{{ $assetBase }}/js/account.js?v=8" defer></script>
 </body>
 </html>

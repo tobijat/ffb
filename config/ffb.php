@@ -65,6 +65,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Kit Kitchen random shirt generator (custom avatar)
+    |--------------------------------------------------------------------------
+    |
+    | Returns image/svg+xml with Access-Control-Allow-Origin: *.
+    | Fetched client-side when the user clicks „Neu generieren“.
+    |
+    */
+    'kit_kitchen_random_url' => env(
+        'FFB_KIT_KITCHEN_RANDOM_URL',
+        'https://tobijat.at/kit-kitchen/random.php'
+    ),
+
+    /*
+    |--------------------------------------------------------------------------
     | Default game for newly registered users
     |--------------------------------------------------------------------------
     |

@@ -7,6 +7,7 @@ use App\Models\Team;
 use App\Models\UserDetails;
 use App\Models\UserPermissions;
 use App\Models\WebUser;
+use App\Support\CustomAvatarSvg;
 use App\Support\TeamShirt;
 use App\Support\UserAvatar;
 use Illuminate\Http\Request;
@@ -214,6 +215,9 @@ class AccountService
         if ($section === 'avatar') {
             return $this->updateAvatarSection($user, $details, $input, $request);
         }
+        if ($section === 'avatar_custom') {
+            return $this->updateAvatarCustomSection($user, $details, $input, $request);
+        }
 
         $form = $this->mergeProfileForm($user, $input);
         $errors = $this->validateProfile($request);
@@ -312,6 +316,60 @@ class AccountService
         return [
             'ok' => true,
             'message' => '<b>Deine Daten wurden aktualisiert!</b>',
+            'form' => $this->profileFormFromUser($fresh),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array{
+     *   ok: true,
+     *   message: string,
+     *   form: array<string, mixed>
+     * }|array{
+     *   ok: false,
+     *   status: int,
+     *   errors: list<string>,
+     *   form: array<string, mixed>
+     * }
+     */
+    private function updateAvatarCustomSection(WebUser $user, UserDetails $details, array $input, Request $request): array
+    {
+        $form = $this->mergeProfileForm($user, $input);
+        $svg = (string) ($input['avatar_svg'] ?? '');
+        $errors = $this->validateAvatarCustom($svg);
+
+        if ($errors !== []) {
+            return [
+                'ok' => false,
+                'status' => 422,
+                'errors' => $errors,
+                'form' => $form,
+            ];
+        }
+
+        $stored = CustomAvatarSvg::store($svg);
+        if ($stored === null) {
+            return [
+                'ok' => false,
+                'status' => 422,
+                'errors' => ['Das Trikot konnte nicht gespeichert werden.'],
+                'form' => $form,
+            ];
+        }
+
+        $details->user_details_avatar = $stored;
+        $details->user_details_last_update = date('Y-m-d H:i:s');
+        $details->save();
+
+        $user->user_ip = (string) $request->ip();
+        $user->save();
+
+        $fresh = $user->fresh(['details']);
+
+        return [
+            'ok' => true,
+            'message' => '<b>Dein Avatar wurde gespeichert!</b>',
             'form' => $this->profileFormFromUser($fresh),
         ];
     }
@@ -619,6 +677,22 @@ class AccountService
         }
 
         return $errors;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function validateAvatarCustom(string $svg): array
+    {
+        if (trim($svg) === '') {
+            return ['Bitte generiere zuerst ein Trikot.'];
+        }
+
+        if (! CustomAvatarSvg::isAcceptable($svg)) {
+            return ['Das generierte Trikot ist ungültig.'];
+        }
+
+        return [];
     }
 
     private function normalizeWebsite(string $website): string

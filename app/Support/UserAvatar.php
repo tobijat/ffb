@@ -5,7 +5,7 @@ namespace App\Support;
 /**
  * Resolves public URLs for stored user avatar values.
  *
- * Legacy uploads: basename under profiles/avatar/
+ * Legacy uploads / custom kit SVGs: basename under profiles/avatar/
  * Shirt avatars: relative path under images/ffb (shirts/{team_key}/{nat}.svg)
  */
 final class UserAvatar

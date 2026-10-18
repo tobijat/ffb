@@ -34,6 +34,10 @@
             '<b>Lieblingsteam</b><br>Wenn du möchtest, kannst du hier dein Lieblingsteam aus allen im Fantasy-Football verfügbaren Teams auswählen.',
         user_details_avatar_shirt:
             '<b>Avatar</b><br>Wähle ein Trikot aus der Liste. Es wird als dein Avatarbild verwendet. Solange du nichts auswählst, bleibt dein bisheriges Avatar unverändert.',
+        avatar_mode_ready:
+            '<b>Fertige Trikots</b><br>Wähle ein vorhandenes Teamtrikot als Avatar.',
+        avatar_mode_custom:
+            '<b>Eigenes Trikot</b><br>Lass dir ein zufälliges Trikot generieren und speichere es als Avatar. Mit „Neu generieren“ erhältst du ein neues Design.',
         user_permissions_ffb_mailservice_info:
             '<b>Infos per Mail erhalten</b><br>Wenn du JA auswählst, bekommst du wichtige Informationen von Fantasy Football an deine E-Mail Adresse geschickt.',
         user_permissions_ffb_mailservice_reminder:
@@ -154,18 +158,179 @@
         });
     });
 
+    const avatarTab = document.getElementById('tab-avatar');
     const avatarPreview = document.getElementById('account-avatar-preview');
+    const readyForm = document.getElementById('avatar-ready-form');
+    const readySaveBtn = document.getElementById('avatar-ready-save');
+    const modeReady = document.getElementById('avatar-mode-ready');
+    const modeCustom = document.getElementById('avatar-mode-custom');
+    const customPreview = document.getElementById('avatar-custom-preview');
+    const customPayload = document.getElementById('avatar-svg-payload');
+    const customForm = document.getElementById('avatar-custom-form');
+    const regenerateBtn = document.getElementById('avatar-regenerate');
+    const customSaveBtn = document.getElementById('avatar-custom-save');
+    const savedAvatar = avatarTab ? (avatarTab.getAttribute('data-current-avatar') || '').trim() : '';
+    const savedAvatarUrl = avatarTab ? avatarTab.getAttribute('data-current-avatar-url') || '' : '';
+    const regenerateLabel = 'Neu generieren';
+    const regenerateLoadingLabel = 'Trikot wird geladen…';
+    let customSvg = '';
+    let customBlobUrl = '';
+    let customDirty = false;
+    let readyDirty = false;
+
+    function setAvatarMode(mode) {
+        const isCustom = mode === 'custom';
+        if (modeReady) {
+            modeReady.hidden = isCustom;
+        }
+        if (modeCustom) {
+            modeCustom.hidden = !isCustom;
+        }
+    }
+
+    function updateReadySaveState() {
+        if (!readySaveBtn) {
+            return;
+        }
+        const checked = document.querySelector('input[name="user_details_avatar_shirt"]:checked');
+        readyDirty = !!(checked && checked.value !== savedAvatar);
+        readySaveBtn.disabled = !readyDirty;
+    }
+
+    function updateCustomSaveState(busy) {
+        if (regenerateBtn) {
+            regenerateBtn.disabled = !!busy;
+            regenerateBtn.textContent = busy ? regenerateLoadingLabel : regenerateLabel;
+        }
+        if (customSaveBtn) {
+            customSaveBtn.disabled = !!busy || !customDirty || !customSvg;
+        }
+    }
+
+    function showCurrentAvatarInCustomPreview() {
+        if (!customPreview || !savedAvatarUrl) {
+            return;
+        }
+        if (customBlobUrl) {
+            URL.revokeObjectURL(customBlobUrl);
+            customBlobUrl = '';
+        }
+        customPreview.src = savedAvatarUrl;
+        customPreview.alt = 'Aktueller Avatar';
+    }
+
+    function showCustomSvg(svg) {
+        customSvg = svg;
+        customDirty = true;
+        if (customPayload) {
+            customPayload.value = svg;
+        }
+        if (customBlobUrl) {
+            URL.revokeObjectURL(customBlobUrl);
+            customBlobUrl = '';
+        }
+        if (customPreview) {
+            customBlobUrl = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+            customPreview.src = customBlobUrl;
+            customPreview.alt = 'Generiertes Trikot';
+        }
+        updateCustomSaveState(false);
+    }
+
+    function loadRandomKit() {
+        if (!avatarTab) {
+            return;
+        }
+        const baseUrl = avatarTab.getAttribute('data-kit-kitchen-url') || '';
+        if (!baseUrl) {
+            updateCustomSaveState(false);
+            if (regenerateBtn) {
+                regenerateBtn.textContent = regenerateLabel;
+            }
+            return;
+        }
+        updateCustomSaveState(true);
+        const url = baseUrl + (baseUrl.indexOf('?') >= 0 ? '&' : '?') + '_=' + Date.now();
+        fetch(url, { cache: 'no-store', credentials: 'omit' })
+            .then(function (res) {
+                if (!res.ok) {
+                    throw new Error('HTTP ' + res.status);
+                }
+                return res.text();
+            })
+            .then(function (text) {
+                const svg = String(text || '').trim();
+                if (!/<svg\b/i.test(svg)) {
+                    throw new Error('Kein SVG');
+                }
+                showCustomSvg(svg);
+            })
+            .catch(function () {
+                customSvg = '';
+                customDirty = false;
+                if (customPayload) {
+                    customPayload.value = '';
+                }
+                showCurrentAvatarInCustomPreview();
+                updateCustomSaveState(false);
+            });
+    }
+
     document.querySelectorAll('input[name="user_details_avatar_shirt"]').forEach(function (radio) {
         radio.addEventListener('change', function () {
-            if (!avatarPreview || !radio.checked) {
+            if (!radio.checked) {
                 return;
             }
             const url = radio.getAttribute('data-preview-url');
-            if (url) {
+            if (avatarPreview && url) {
                 avatarPreview.src = url;
             }
+            updateReadySaveState();
         });
     });
+
+    document.querySelectorAll('input[name="avatar_mode"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            if (!radio.checked) {
+                return;
+            }
+            setAvatarMode(radio.value);
+        });
+    });
+
+    if (regenerateBtn) {
+        regenerateBtn.addEventListener('click', function () {
+            loadRandomKit();
+        });
+    }
+
+    if (readyForm) {
+        readyForm.addEventListener('submit', function (event) {
+            updateReadySaveState();
+            if (!readyDirty) {
+                event.preventDefault();
+            }
+        });
+    }
+
+    if (customForm) {
+        customForm.addEventListener('submit', function (event) {
+            if (!customDirty || !customSvg) {
+                event.preventDefault();
+                return;
+            }
+            if (customPayload) {
+                customPayload.value = customSvg;
+            }
+        });
+    }
+
+    updateReadySaveState();
+    updateCustomSaveState(false);
+    if (avatarTab) {
+        const checkedMode = document.querySelector('input[name="avatar_mode"]:checked');
+        setAvatarMode(checkedMode ? checkedMode.value : 'ready');
+    }
 
     const serverErrors = Array.isArray(window.FFB_ACCOUNT_ERRORS) ? window.FFB_ACCOUNT_ERRORS : [];
     if (serverErrors.length) {

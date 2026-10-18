@@ -262,7 +262,41 @@ class AccountPageTest extends TestCase
             ->assertOk()
             ->assertSee('user_details_avatar_shirt', false)
             ->assertSee('profile_section" value="avatar"', false)
+            ->assertSee('Fertige Trikots', false)
+            ->assertSee('Eigenes Trikot', false)
+            ->assertSee('Neu generieren', false)
+            ->assertSee('Als Avatar speichern', false)
+            ->assertSee('profile_section" value="avatar_custom"', false)
+            ->assertSee('tobijat.at/kit-kitchen/random.php', false)
             ->assertSee('account-tab ffb-tab is-active', false);
+    }
+
+    public function test_profile_avatar_custom_update_is_forwarded(): void
+    {
+        $form = $this->profilePayload()['data']['form'];
+        $form['user_details_avatar'] = 'abcdef0123456789abcdef0123456789.svg';
+        $form['user_details_avatar_url'] = '/images/ffb/profiles/avatar/abcdef0123456789abcdef0123456789.svg';
+
+        $this->mock(AccountService::class, function ($mock) use ($form) {
+            $mock->shouldReceive('updateProfile')->once()->andReturn([
+                'ok' => true,
+                'message' => '<b>Dein Avatar wurde gespeichert!</b>',
+                'form' => $form,
+            ]);
+            $mock->shouldReceive('pagePayload')->once()->andReturn($this->accountPayload());
+            $mock->shouldReceive('profilePayload')->once()->andReturn([
+                'ok' => true,
+                'data' => array_merge($this->profilePayload()['data'], ['form' => $form]),
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->post('/profile', [
+                'profile_section' => 'avatar_custom',
+                'avatar_svg' => '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+            ])
+            ->assertOk()
+            ->assertSee('Dein Avatar wurde gespeichert', false);
     }
 
     public function test_profile_update_shows_success(): void

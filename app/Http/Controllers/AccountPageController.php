@@ -93,7 +93,7 @@ class AccountPageController extends Controller
     {
         return match ($tab) {
             'account' => 'account',
-            'avatar' => 'avatar',
+            'avatar', 'avatar_custom' => 'avatar',
             default => 'profile',
         };
     }
