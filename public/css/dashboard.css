@@ -124,7 +124,8 @@
     border-radius: var(--radius);
     color: var(--ink);
     padding: 6px 8px;
-    margin-left: auto;
+    /* No margin-left:auto — that keeps the tile right-aligned after wrap.
+       Same-row right placement comes from .dash-top-main { flex: 1 } + space-between. */
     flex: 0 1 auto;
     max-width: 24rem;
 }

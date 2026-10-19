@@ -6,7 +6,7 @@
     <title>Registrieren — SoccerSportsfan</title>
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
     <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=39">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=45">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=46">
     <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=8">
     <link rel="stylesheet" href="{{ $assetBase }}/css/registration.css?v=3">
 </head>

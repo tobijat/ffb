@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Start — SoccerSportsfan</title>
     <link rel="stylesheet" href="css/start.css?v=39">
-    <link rel="stylesheet" href="css/dashboard.css?v=45">
+    <link rel="stylesheet" href="css/dashboard.css?v=46">
 </head>
 <body class="dash-body">
     @php
