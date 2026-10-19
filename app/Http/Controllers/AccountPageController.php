@@ -106,7 +106,7 @@ class AccountPageController extends Controller
         }
 
         $number = trim((string) $request->query('number', ''));
-        if ($number !== '' && ! preg_match('/^\d{2}$/', $number)) {
+        if ($number !== '' && ! preg_match('/^\d{1,2}$/', $number)) {
             $number = '';
         }
 

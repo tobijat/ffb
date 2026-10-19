@@ -339,8 +339,8 @@
                                         name="avatar_kit_number"
                                         inputmode="numeric"
                                         maxlength="2"
-                                        pattern="[0-9]{2}"
-                                        placeholder="z. B. 10"
+                                        pattern="[0-9]{1,2}"
+                                        placeholder="z. B. 7"
                                         autocomplete="off"
                                     >
                                 </div>
@@ -454,6 +454,6 @@
             window.FFB_ACCOUNT_ERRORS = @json(array_values($errors));
         </script>
     @endif
-    <script src="{{ $assetBase }}/js/account.js?v=15" defer></script>
+    <script src="{{ $assetBase }}/js/account.js?v=16" defer></script>
 </body>
 </html>

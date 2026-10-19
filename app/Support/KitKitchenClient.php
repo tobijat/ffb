@@ -131,7 +131,7 @@ final class KitKitchenClient
         }
 
         $number = trim((string) ($options['number'] ?? ''));
-        if (preg_match('/^\d{2}$/', $number)) {
+        if (preg_match('/^\d{1,2}$/', $number)) {
             $query['number'] = $number;
         }
 

@@ -262,7 +262,7 @@
             }
         }
         let number = kitNumber ? String(kitNumber.value || '').trim() : '';
-        if (number !== '' && !/^\d{2}$/.test(number)) {
+        if (number !== '' && !/^\d{1,2}$/.test(number)) {
             number = '';
         }
         let maker = kitMaker ? String(kitMaker.value || '').trim().toLowerCase() : '';
@@ -581,7 +581,7 @@
     }
     if (kitNumber) {
         kitNumber.addEventListener('change', function () {
-            if (kitNumber.value !== '' && !/^\d{2}$/.test(kitNumber.value.trim())) {
+            if (kitNumber.value !== '' && !/^\d{1,2}$/.test(kitNumber.value.trim())) {
                 kitNumber.value = '';
             }
             onKitOptionsChanged();

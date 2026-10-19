@@ -65,7 +65,7 @@ class KitKitchenClientTest extends TestCase
         });
     }
 
-    public function test_build_query_omits_invalid_number_and_limits_text(): void
+    public function test_build_query_accepts_one_digit_number_and_limits_text(): void
     {
         $client = new KitKitchenClient;
         $query = $client->buildQuery([
@@ -77,10 +77,20 @@ class KitKitchenClientTest extends TestCase
         ]);
 
         $this->assertSame(9, $query['stars']);
-        $this->assertArrayNotHasKey('number', $query);
+        $this->assertSame('7', $query['number']);
         $this->assertArrayNotHasKey('maker', $query);
         $this->assertSame(1, $query['backside']);
         $this->assertSame(16, strlen($query['text']));
+    }
+
+    public function test_build_query_omits_invalid_number(): void
+    {
+        $client = new KitKitchenClient;
+        $query = $client->buildQuery([
+            'number' => '100',
+        ]);
+
+        $this->assertArrayNotHasKey('number', $query);
     }
 
     public function test_normalize_maker(): void
