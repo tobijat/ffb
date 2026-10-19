@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Impressum — SoccerSportsfan</title>
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
-    <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=39">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=46">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=45">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=49">
     <link rel="stylesheet" href="{{ $assetBase }}/css/help.css?v=5">
 </head>
 <body class="dash-body">

@@ -13,12 +13,12 @@
         </span>
         <span class="brand-league brand-tagline">{{ $brandSubtitle }}</span>
     @else
-        <img src="{{ $iconSrc }}" alt="" width="40" height="40" loading="lazy">
+        <span class="brand-icon">
+            <img src="{{ $iconSrc }}" alt="" width="40" height="40" loading="lazy">
+        </span>
         <span class="brand-text">
             <span class="brand-name">{{ $brandLabel ?? 'SoccerSportsfan' }}</span>
-            @if (!empty($league['league_title']))
-                <span class="brand-league">{{ $league['league_title'] }}</span>
-            @endif
+            <span class="brand-league">{{ $league['league_title'] ?? '' }}</span>
         </span>
     @endif
 </a>

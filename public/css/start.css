@@ -263,7 +263,7 @@ main,
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    line-height: 1.1;
+    line-height: 1.15;
     padding: 2px 4px;
 }
 
@@ -275,27 +275,53 @@ main,
     object-fit: contain;
 }
 
+/* League icon = SoccerSportsfan (40px) + gap + league title (nav label line). */
+.brand-icon {
+    display: block;
+    flex: 0 0 auto;
+    line-height: 0;
+}
+
+.brand-icon img {
+    width: auto;
+    height: calc(40px + 2px + 1.15 * 8pt);
+    aspect-ratio: 1;
+    object-fit: contain;
+}
+
+/*
+ * Text column mirrors a nav item: 40px “icon” slot + 8pt label.
+ * That locks the brand tile to the same height as a nav tile.
+ */
 .brand-text {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 1px;
+    justify-content: center;
+    gap: 2px;
     min-width: 0;
 }
 
 .brand-name {
+    box-sizing: border-box;
+    height: 40px;
+    display: flex;
+    align-items: center;
     white-space: nowrap;
+    line-height: 1;
 }
 
 .brand-league {
+    display: block;
     font-family: var(--font-body);
     font-size: 8pt;
     font-weight: normal;
-    line-height: 1.2;
+    line-height: 1.15;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 14rem;
+    min-height: 1.15em;
 }
 
 .brand-stacked {

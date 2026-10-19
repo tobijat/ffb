@@ -87,6 +87,16 @@
     text-decoration: none;
 }
 
+.dash-nav a.is-active {
+    font-weight: bold;
+    background: var(--panel, #99cc99);
+    color: var(--ink, #000);
+}
+
+.dash-nav a.is-active:hover {
+    background: var(--link-hover-bg, #b8e0b8);
+}
+
 .dash-nav a img,
 .dash-nav .nav-big img {
     width: 40px;
