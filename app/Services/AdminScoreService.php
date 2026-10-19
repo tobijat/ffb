@@ -447,7 +447,7 @@ class AdminScoreService
         }
 
         $userteams = Userteam::query()
-            ->with('user')
+            ->with(['user', 'slots', 'substituteSlots'])
             ->whereIn('userteam_matchround_id', $matchroundIds)
             ->orderBy('userteam_matchround_id')
             ->orderBy('userteam_id')
@@ -461,7 +461,8 @@ class AdminScoreService
         foreach ($userteams as $userteam) {
             $userteamId = (int) $userteam->userteam_id;
             $roundId = (int) $userteam->userteam_matchround_id;
-            $playerteamIds = $userteam->playerteamIdsInSlotOrder();
+            // Apply saved substitutions: drop replaced starters, add their substitutes.
+            $playerteamIds = $userteam->scoringPlayerteamIds();
             $score = 0;
             if ($playerteamIds !== []) {
                 $score = (int) Playerstats::query()

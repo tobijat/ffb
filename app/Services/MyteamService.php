@@ -186,7 +186,8 @@ class MyteamService
             ];
         }
 
-        $slotIds = $userteam->playerteamIdsInSlotOrder();
+        // Same XI as admin scoring: starters after applying saved substitutions.
+        $slotIds = $userteam->scoringPlayerteamIds();
         $stats = $this->aggregateUserteamStats($slotIds, $matchroundId);
         $price = (float) $userteam->userteam_price;
         $score = (int) $userteam->userteam_score;

@@ -144,6 +144,56 @@ class SubstitutionCalculationTest extends TestCase
         );
     }
 
+    #[Test]
+    public function scoring_playerteam_ids_swap_replaced_starters_for_substitutes(): void
+    {
+        [$starters, $subs] = $this->seedLineup();
+        $userteam = Userteam::query()->where('userteam_matchround_id', $this->roundId)->firstOrFail();
+
+        $this->assertSame($starters, $userteam->scoringPlayerteamIds());
+
+        DB::table('ffb_userteam_substitute_slot')
+            ->where('substitute_slot_userteam_id', $userteam->userteam_id)
+            ->where('substitute_slot_playerteam_id', $subs[1])
+            ->update(['substitute_slot_replaces_playerteam_id' => $starters[1]]);
+
+        $scoring = $userteam->fresh()->scoringPlayerteamIds();
+        $this->assertNotContains($starters[1], $scoring);
+        $this->assertContains($subs[1], $scoring);
+        $this->assertNotContains($subs[0], $scoring);
+        $this->assertCount(11, $scoring);
+    }
+
+    #[Test]
+    public function admin_userteam_score_uses_substitutions(): void
+    {
+        [$starters, $subs] = $this->seedLineup();
+        // 10 starters at 5 pts; one starter (index 1) did not play; bench defender at 7.
+        $this->markPlayed(array_diff($starters, [$starters[1]]), score: 5);
+        $this->markPlayed([$subs[1]], score: 7);
+
+        $subsService = app(SubstitutionCalculationService::class);
+        $subsPreview = $subsService->previewForRound($this->leagueId, $this->roundId);
+        $this->assertTrue($subsPreview['ok']);
+        $subsService->savePreview($subsPreview['preview']);
+
+        $adminCenter = \Mockery::mock(\App\Services\AdminCenterService::class);
+        $adminCenter->shouldReceive('selectedLeagueId')->andReturn($this->leagueId);
+
+        $scoreService = new \App\Services\AdminScoreService(
+            $adminCenter,
+            app(\App\Services\LineupOptionsResolver::class),
+            $subsService,
+        );
+        $result = $scoreService->calculateUserteamScores(544, ['matchround_id' => $this->roundId]);
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+
+        $rows = $result['preview']['rows'] ?? [];
+        $this->assertCount(1, $rows);
+        // Without substitutions: 10*5 + 0 = 50. With sub: 10*5 + 7 = 57.
+        $this->assertSame(57, (int) $rows[0]['score']);
+    }
+
     /**
      * @return array{0: list<int>, 1: list<int>}
      */

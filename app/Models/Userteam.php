@@ -93,6 +93,39 @@ class Userteam extends Model
     }
 
     /**
+     * Playerteam IDs that contribute to the userteam score after substitutions.
+     * Starters replaced via substitute_slot_replaces_playerteam_id are excluded;
+     * those substitutes are included instead. Unused bench players are ignored.
+     *
+     * @return list<int>
+     */
+    public function scoringPlayerteamIds(): array
+    {
+        $starters = $this->playerteamIdsInSlotOrder();
+        $removed = [];
+        $added = [];
+        foreach ($this->substituteReplacesByPlayerteamId() as $subId => $outId) {
+            if ($outId === null || $outId <= 0) {
+                continue;
+            }
+            $removed[$outId] = true;
+            $added[(int) $subId] = true;
+        }
+
+        $ids = [];
+        foreach ($starters as $id) {
+            if (! isset($removed[$id])) {
+                $ids[] = $id;
+            }
+        }
+        foreach (array_keys($added) as $subId) {
+            $ids[] = $subId;
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    /**
      * Replace lineup slots with exactly these playerteam IDs (pitch order).
      *
      * @param  list<int>  $playerteamIds
