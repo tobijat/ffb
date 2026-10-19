@@ -135,6 +135,13 @@
     position: relative;
     border-radius: 16px;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: 6px;
+    padding: 6px 0;
+    box-sizing: border-box;
 }
 
 .soccer-field::before {
@@ -225,7 +232,7 @@
 
 .bench-players {
     position: absolute;
-    top: 3%; /* same as .field-g — % of height, not width */
+    top: 6px; /* match field padding-top / row gap */
     left: 0;
     right: 0;
     bottom: 0;
@@ -250,7 +257,7 @@
     flex-wrap: wrap;
     align-items: stretch;
     justify-content: center;
-    gap: 8px 10px;
+    gap: 6px;
     padding: 8px;
     /* Avoid overflow-x:auto — it forces overflow-y clipping and crops tiles. */
     overflow: visible;
@@ -274,23 +281,20 @@
 }
 
 .field-line {
-    position: absolute;
-    left: 0;
+    position: relative;
+    left: auto;
+    top: auto;
     width: 100%;
+    flex: 0 0 auto;
     text-align: center;
     z-index: 1;
 }
-
-.field-g { top: 3%; }
-.field-d { top: 26%; }
-.field-m { top: 49%; }
-.field-s { top: 72%; }
 
 .line-players {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 8px 10px;
+    gap: 6px;
     padding: 0 var(--chrome-inset, 4px);
 }
 
