@@ -129,13 +129,13 @@
 
 .soccer-field {
     width: 100%;
-    /* Height follows player rows; unused pitch below is clipped. */
+    /* Height follows player rows; floor is ~70% of full pitch (see min-height below). */
     height: auto;
     aspect-ratio: unset;
     max-height: none;
     margin: 0;
     position: relative;
-    border-radius: 16px;
+    border-radius: var(--radius, 6px);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -146,6 +146,8 @@
     box-sizing: border-box;
     container-type: inline-size;
     container-name: soccer-field;
+    /* cqw = .pitch-stage width (field is full stage when alone / below). */
+    min-height: calc(70cqw * 729 / 647);
 }
 
 .soccer-field::before {
@@ -171,6 +173,8 @@
     width: 100%;
     align-items: start;
     justify-items: stretch;
+    container-type: inline-size;
+    container-name: pitch-stage;
 }
 
 /* Keep field:bench at SVG width ratio (647:104) so both fill the stage. */
@@ -178,6 +182,11 @@
     grid-template-columns: minmax(0, 647fr) minmax(0, 104fr);
     /* Bench matches the content-sized field height. */
     align-items: stretch;
+}
+
+/* Side bench: field is only the 647fr track — scale min-height to that width. */
+.pitch-stage.has-bench:not(.bench-below) .soccer-field {
+    min-height: calc((100cqw - var(--chrome-inset, 4px)) * 0.7 * 729 / 751);
 }
 
 /* Narrow stage: bench moves under the field and runs full width. */
@@ -203,7 +212,7 @@
     height: auto;
     /* Stretch to the field when shorter; grow with cards when taller. */
     align-self: stretch;
-    border-radius: 12px;
+    border-radius: var(--radius, 6px);
     overflow: hidden;
     box-sizing: border-box;
     display: flex;
