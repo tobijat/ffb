@@ -6,107 +6,14 @@
     align-items: start;
 }
 
-/*
- * Default: round | save/messages | credits on one row (while they fit).
- * .is-stacked: round uses all space left of credits; save/messages on row below.
- */
-.lineup-pitch-info-cq {
-    margin-bottom: var(--chrome-inset, 4px);
-}
-
-.lineup-layout .lineup-pitch-info {
-    display: grid;
-    /* Round/credits size to content; middle column absorbs free space. */
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: stretch;
-    justify-items: start;
-    gap: var(--chrome-inset, 4px) 8px;
-    margin-bottom: 0;
-}
-
-.lineup-layout .lineup-pitch-info .pitch-info-round {
-    grid-column: 1;
-    min-width: 0;
-    margin: 0;
-    padding: 2px 6px 4px;
-    text-align: left;
-    justify-self: start;
-    align-self: stretch;
-    box-sizing: border-box;
-    background: #99cc99;
-    border: 1px solid #7aaa7a;
-    border-radius: var(--radius, 6px);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.lineup-layout .lineup-pitch-info .pitch-round {
-    text-align: left;
-}
-
-.lineup-layout .lineup-pitch-info .pitch-round-title,
-.lineup-layout .lineup-pitch-info .lineup-deadline {
-    white-space: nowrap;
-}
-
-.lineup-layout .lineup-pitch-info .pitch-info-center {
-    grid-column: 2;
-    min-width: 0;
-    text-align: center;
-    justify-self: center;
-    align-self: center;
-}
-
-.lineup-layout .lineup-pitch-info .pitch-stats {
-    grid-column: 3;
-    justify-self: end;
-    align-self: stretch;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    box-sizing: border-box;
-}
-
-.lineup-layout .lineup-pitch-info.is-stacked {
-    grid-template-columns: minmax(0, 1fr) auto;
-    justify-items: stretch;
-    align-items: stretch;
-}
-
-.lineup-layout .lineup-pitch-info.is-stacked .pitch-info-round {
-    grid-column: 1;
-    grid-row: 1;
-    justify-self: start;
-    align-self: stretch;
-    width: auto;
-    max-width: 100%;
-    text-align: left;
-}
-
-.lineup-layout .lineup-pitch-info.is-stacked .pitch-round {
-    text-align: left;
-}
-
-.lineup-layout .lineup-pitch-info.is-stacked .pitch-stats {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
-    align-self: stretch;
-}
-
-.lineup-layout .lineup-pitch-info.is-stacked .pitch-info-center {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    justify-self: center;
-    align-self: center;
-}
-
 .lineup-actions {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
     text-align: center;
     margin: 0;
-    min-height: 1.6rem;
+    min-height: 0;
+    height: 100%;
 }
 
 .lineup-actions:empty {
@@ -116,22 +23,33 @@
 .lineup-actions .ffb-button,
 .lineup-actions .ffb-button-disabled {
     appearance: none;
-    border: 1px solid #336633;
-    border-radius: var(--radius-sm);
+    box-sizing: border-box;
+    /* Same thin chrome as .pitch-info-round / .pitch-stats. */
+    border: 1px solid #7aaa7a;
+    border-radius: var(--radius, 6px);
     background: #008000;
     color: #fff;
     font-family: var(--font-body);
     font-size: 10pt;
     font-weight: bold;
-    padding: 3px 10px;
+    padding: 2px 6px 4px;
     cursor: pointer;
+    height: 100%;
+    min-height: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.15;
+    white-space: normal;
+    text-align: center;
 }
 
 .lineup-actions .ffb-button-disabled {
-    background: #7aaa7a;
-    border-color: #7aaa7a;
+    /* Lighter than the #7aaa7a border so the thin outline stays visible. */
+    background: #99cc99;
+    color: #336633;
     cursor: not-allowed;
-    opacity: 0.75;
+    opacity: 0.85;
 }
 
 .lineup-messages {
@@ -532,21 +450,3 @@
     }
 }
 
-/* Don't force the shared myteam single-column pitch-info on lineup. */
-@media (max-width: 960px) {
-    .lineup-layout .lineup-pitch-info {
-        /* Keep lineup grid / container query layout above. */
-        display: grid;
-    }
-
-    .lineup-layout .lineup-pitch-info .pitch-info-center {
-        order: unset;
-    }
-
-    .lineup-layout .lineup-pitch-info .pitch-stats {
-        width: max-content;
-        max-width: 100%;
-        margin: 0;
-        order: unset;
-    }
-}

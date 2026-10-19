@@ -9,15 +9,12 @@
     const creditsEl = document.getElementById('lineup-credits');
     const matchlistEl = document.getElementById('matchlist');
     const pitchMessageEl = document.getElementById('pitch-message');
-    const pitchInfoEl = document.querySelector('.lineup-pitch-info');
-    const pitchInfoCqEl = document.querySelector('.lineup-pitch-info-cq');
     const lines = {
         g: document.getElementById('line-g'),
         d: document.getElementById('line-d'),
         m: document.getElementById('line-m'),
         s: document.getElementById('line-s'),
     };
-    let pitchInfoLayoutObserver = null;
 
     let options = null;
     let matchround = null;
@@ -100,60 +97,16 @@
             .replace(/"/g, '&quot;');
     }
 
-    function naturalWidth(el) {
-        if (!el || el.hidden) {
-            return 0;
-        }
-        const previous = el.style.width;
-        el.style.width = 'max-content';
-        const width = el.getBoundingClientRect().width;
-        el.style.width = previous;
-        return width;
-    }
-
     function updatePitchInfoLayout() {
-        if (!pitchInfoEl) {
-            return;
-        }
-
-        pitchInfoEl.classList.remove('is-stacked');
-
-        const round = pitchInfoEl.querySelector('.pitch-info-round');
-        const center = pitchInfoEl.querySelector('.pitch-info-center');
-        const credits = pitchInfoEl.querySelector('.pitch-stats');
-        if (!round || !center) {
-            return;
-        }
-
-        const style = window.getComputedStyle(pitchInfoEl);
-        const gap = parseFloat(style.columnGap) || 8;
-        const roundW = naturalWidth(round);
-        const centerW = naturalWidth(center);
-        const creditsW = naturalWidth(credits);
-        const parts = [roundW, centerW, creditsW].filter(function (w) {
-            return w > 0;
-        });
-        if (parts.length < 2) {
-            return;
-        }
-
-        const need = parts.reduce(function (sum, w) {
-            return sum + w;
-        }, 0) + gap * (parts.length - 1);
-
-        if (need > pitchInfoEl.clientWidth + 0.5) {
-            pitchInfoEl.classList.add('is-stacked');
+        if (window.FfbPitchInfoBar) {
+            window.FfbPitchInfoBar.update();
         }
     }
 
     function watchPitchInfoLayout() {
-        if (!pitchInfoCqEl || typeof ResizeObserver === 'undefined' || pitchInfoLayoutObserver) {
-            return;
+        if (window.FfbPitchInfoBar) {
+            window.FfbPitchInfoBar.watch();
         }
-        pitchInfoLayoutObserver = new ResizeObserver(function () {
-            updatePitchInfoLayout();
-        });
-        pitchInfoLayoutObserver.observe(pitchInfoCqEl);
     }
 
     function clearMessages() {
@@ -1384,14 +1337,15 @@
             btn.className = 'ffb-button-disabled';
             btn.disabled = true;
             btn.title = 'Bitte warten…';
-            btn.textContent = 'Bitte warten…';
+            btn.innerHTML = 'Bitte<br>warten…';
             actionsEl.appendChild(btn);
             updatePitchInfoLayout();
             return;
         }
 
         const reason = saveBlockedReason();
-        btn.textContent = 'Aufstellung speichern';
+        /* Two-line label keeps the pitch-info row together longer on narrow widths. */
+        btn.innerHTML = 'Aufstellung<br>speichern';
         if (reason) {
             // Not using disabled=true so hover title + click both work.
             btn.className = 'ffb-button-disabled';

@@ -153,18 +153,27 @@
         if (window.FfbPitchBench) {
             window.FfbPitchBench.sync(null, legacyBase, [], { mode: 'view' });
         }
+        updatePitchInfoLayout();
+    }
+
+    function updatePitchInfoLayout() {
+        if (window.FfbPitchInfoBar) {
+            window.FfbPitchInfoBar.update();
+        }
     }
 
     function renderRoundMeta() {
         const round = currentRound();
         if (!round) {
             metaEl.textContent = 'Keine Spielrunden';
+            updatePitchInfoLayout();
             return;
         }
-        let html = escapeHtml(round.matchround_title || '');
+        let title = escapeHtml(round.matchround_title || '');
         if (Number(round.matchround_running) === 1) {
-            html += ' <em>(Deadline offen)</em>';
+            title += ' <em>(Deadline offen)</em>';
         }
+        let html = '<span class="pitch-round-title">' + title + '</span>';
         if (round.matchround_startdate) {
             const dates =
                 round.matchround_startdate === round.matchround_enddate
@@ -175,6 +184,7 @@
             html += '<span class="pitch-round-dates">' + dates + '</span>';
         }
         metaEl.innerHTML = html;
+        updatePitchInfoLayout();
     }
 
     function renderRoundSelect() {
@@ -528,6 +538,7 @@
                     matchroundId: matchroundId,
                 });
             }
+            updatePitchInfoLayout();
             return;
         }
 
@@ -571,6 +582,7 @@
                 matchroundId: matchroundId,
             });
         }
+        updatePitchInfoLayout();
     }
 
     async function loadUsers() {
@@ -639,6 +651,9 @@
     }
 
     async function init() {
+        if (window.FfbPitchInfoBar) {
+            window.FfbPitchInfoBar.watch();
+        }
         try {
             const data = await fetchJson('myteam/matchrounds');
             matchrounds = data.matchrounds || [];
@@ -656,11 +671,13 @@
                 sideTab = 'stats';
             }
             await loadUsers();
+            updatePitchInfoLayout();
         } catch (err) {
             roundSelect.innerHTML = '<option>Keine Spielrunden</option>';
             clearPitch();
             setPitchMessage('Noch keine Spielrunden verfügbar.');
             matchlistEl.innerHTML = '<p class="muted">Keine Spiele.</p>';
+            updatePitchInfoLayout();
         }
     }
 

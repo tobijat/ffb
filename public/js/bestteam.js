@@ -144,13 +144,23 @@
         teamSelect.disabled = !enabled;
     }
 
+    function updatePitchInfoLayout() {
+        if (window.FfbPitchInfoBar) {
+            window.FfbPitchInfoBar.update();
+        }
+    }
+
     function renderRoundMeta() {
         const round = currentRound();
         if (!round) {
             metaEl.textContent = 'Keine Spielrunden';
+            updatePitchInfoLayout();
             return;
         }
-        let html = escapeHtml(round.matchround_title);
+        let html =
+            '<span class="pitch-round-title">' +
+            escapeHtml(round.matchround_title) +
+            '</span>';
         if (round.matchround_startdate) {
             const dates =
                 round.matchround_startdate === round.matchround_enddate
@@ -161,6 +171,7 @@
             html += '<span class="pitch-round-dates">' + dates + '</span>';
         }
         metaEl.innerHTML = html;
+        updatePitchInfoLayout();
     }
 
     function renderRoundSelect() {
@@ -352,6 +363,7 @@
                 })
                 .join('');
         });
+        updatePitchInfoLayout();
     }
 
     async function loadTeam() {
@@ -359,6 +371,7 @@
         if (!round) {
             clearPitch();
             setPitchMessage('Noch keine Spielrunden verfügbar.');
+            updatePitchInfoLayout();
             return;
         }
 
@@ -370,6 +383,7 @@
         if (teamSideStatsEl) {
             teamSideStatsEl.hidden = true;
         }
+        updatePitchInfoLayout();
 
         const key = cacheKey(round.matchround_id, teamType);
         try {
@@ -403,6 +417,9 @@
     }
 
     async function init() {
+        if (window.FfbPitchInfoBar) {
+            window.FfbPitchInfoBar.watch();
+        }
         setSelectsEnabled(false);
         try {
             const data = await fetchJson('bestteam/matchrounds');
@@ -412,6 +429,7 @@
                 clearPitch();
                 setPitchMessage('Noch keine Spielrunden verfügbar.');
                 matchlistEl.innerHTML = '<p class="muted">Keine Spiele.</p>';
+                updatePitchInfoLayout();
                 return;
             }
             renderRoundSelect();
@@ -420,11 +438,13 @@
             setSelectsEnabled(true);
             await loadTeam();
             await renderSidePanel();
+            updatePitchInfoLayout();
         } catch (err) {
             roundSelect.innerHTML = '<option>Keine Spielrunden</option>';
             clearPitch();
             setPitchMessage('Noch keine Spielrunden verfügbar.');
             matchlistEl.innerHTML = '<p class="muted">Keine Spiele.</p>';
+            updatePitchInfoLayout();
         }
     }
 

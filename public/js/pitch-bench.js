@@ -434,9 +434,87 @@
         });
     }
 
+    let pitchInfoLayoutObserver = null;
+
+    function naturalPitchInfoWidth(el) {
+        if (!el || el.hidden) {
+            return 0;
+        }
+        const previous = el.style.width;
+        el.style.width = 'max-content';
+        const width = el.getBoundingClientRect().width;
+        el.style.width = previous;
+        return width;
+    }
+
+    function updatePitchInfoLayout(root) {
+        const scope = root && root.querySelector ? root : document;
+        const info = scope.querySelector
+            ? scope.querySelector('.pitch-info')
+            : document.querySelector('.pitch-info');
+        if (!info) {
+            return;
+        }
+
+        info.classList.remove('is-stacked');
+
+        const round = info.querySelector('.pitch-info-round');
+        const center = info.querySelector('.pitch-info-center');
+        const right =
+            info.querySelector(':scope > .pitch-stats-group') ||
+            info.querySelector(':scope > .pitch-stats');
+        if (!round || !center) {
+            return;
+        }
+
+        const style = global.getComputedStyle(info);
+        const gap = parseFloat(style.columnGap) || 8;
+        const roundW = naturalPitchInfoWidth(round);
+        const centerW = naturalPitchInfoWidth(center);
+        const rightW = naturalPitchInfoWidth(right);
+        const parts = [roundW, centerW, rightW].filter(function (w) {
+            return w > 0;
+        });
+        if (parts.length < 2) {
+            return;
+        }
+
+        const need =
+            parts.reduce(function (sum, w) {
+                return sum + w;
+            }, 0) +
+            gap * (parts.length - 1);
+
+        if (need > info.clientWidth + 0.5) {
+            info.classList.add('is-stacked');
+        }
+    }
+
+    function watchPitchInfoLayout(root) {
+        const cq =
+            (root && root.querySelector && root.querySelector('.pitch-info-cq')) ||
+            document.querySelector('.pitch-info-cq');
+        if (!cq || typeof ResizeObserver === 'undefined') {
+            updatePitchInfoLayout(root || document);
+            return;
+        }
+        if (!pitchInfoLayoutObserver) {
+            pitchInfoLayoutObserver = new ResizeObserver(function () {
+                updatePitchInfoLayout(document);
+            });
+        }
+        pitchInfoLayoutObserver.observe(cq);
+        updatePitchInfoLayout(root || document);
+    }
+
     global.FfbPitchBench = {
         isActive: isActive,
         sync: sync,
         matchBenchToField: matchBenchToField,
+    };
+
+    global.FfbPitchInfoBar = {
+        update: updatePitchInfoLayout,
+        watch: watchPitchInfoLayout,
     };
 })(window);

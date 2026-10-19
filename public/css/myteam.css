@@ -24,26 +24,76 @@
     box-sizing: border-box;
 }
 
-/* Shared pitch header: round left, name/actions center, stats right */
+/* Shared pitch header (lineup / myteam / bestteam) */
+.pitch-info-cq {
+    margin-bottom: var(--chrome-inset, 4px);
+}
+
+/*
+ * Lineup wide: round | save | credits
+ * Myteam/bestteam wide: round | score/credits | username
+ * Stacking differs per page (see .is-stacked rules below).
+ */
 .pitch-info {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    gap: var(--chrome-inset, 4px);
-    align-items: start;
-    margin-bottom: var(--chrome-inset, 4px);
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: stretch;
+    justify-items: start;
+    gap: var(--chrome-inset, 4px) 8px;
+    margin-bottom: 0;
     min-height: 0;
 }
 
 .pitch-info-round {
+    grid-column: 1;
     min-width: 0;
+    margin: 0;
+    padding: 2px 6px 4px;
     text-align: left;
     justify-self: start;
+    align-self: stretch;
+    box-sizing: border-box;
+    background: #99cc99;
+    border: 1px solid #7aaa7a;
+    border-radius: var(--radius, 6px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .pitch-info-center {
+    grid-column: 2;
     min-width: 0;
     text-align: center;
     justify-self: center;
+    align-self: center;
+}
+
+/* Username / team label tile (myteam, bestteam) — right column, same chrome as round. */
+.pitch-info:has(.pitch-user) .pitch-info-center {
+    grid-column: 3;
+    justify-self: end;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 6px 4px;
+    box-sizing: border-box;
+    background: #99cc99;
+    border: 1px solid #7aaa7a;
+    border-radius: var(--radius, 6px);
+}
+
+/* Lineup save actions — stretch to match round/credits tile height. */
+.pitch-info-center:has(.lineup-actions) {
+    align-self: stretch;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    min-width: 0;
+}
+
+.pitch-info.is-stacked .pitch-info-center:has(.lineup-actions) {
     align-self: center;
 }
 
@@ -54,6 +104,12 @@
     color: var(--ink);
     line-height: 1.2;
     text-align: left;
+}
+
+.pitch-round .pitch-round-title,
+.pitch-round .pitch-round-dates,
+.pitch-round .lineup-deadline {
+    white-space: nowrap;
 }
 
 .pitch-round .pitch-round-dates,
@@ -75,16 +131,26 @@
     font-weight: bold;
     min-width: 0;
     line-height: 1.2;
+    white-space: nowrap;
 }
 
 .pitch-stats-group {
+    grid-column: 3;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: flex-end;
     align-items: stretch;
     gap: 6px;
     justify-self: end;
-    align-self: start;
+    align-self: stretch;
+    margin: 0;
+}
+
+/* Myteam / bestteam: score+credits sit in the center column. */
+.pitch-info:has(.pitch-user) .pitch-stats-group {
+    grid-column: 2;
+    justify-self: center;
+    justify-content: center;
 }
 
 .pitch-stats {
@@ -99,15 +165,70 @@
     font-size: 8pt;
     line-height: 1.2;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-/* Lineup puts credits directly in the pitch-info grid — don't stretch the tile. */
 .pitch-info > .pitch-stats {
+    grid-column: 3;
     justify-self: end;
-    align-self: start;
+    align-self: stretch;
+    margin: 0;
+}
+
+.pitch-info.is-stacked {
+    grid-template-columns: minmax(0, 1fr) auto;
+    justify-items: stretch;
+    align-items: stretch;
+}
+
+.pitch-info.is-stacked .pitch-info-round {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+    align-self: stretch;
+    width: auto;
+    max-width: 100%;
+}
+
+/* Lineup stacked: round + credits on row 1; save button on row 2. */
+.pitch-info.is-stacked:not(:has(.pitch-user)) .pitch-stats-group,
+.pitch-info.is-stacked:not(:has(.pitch-user)) > .pitch-stats {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    align-self: stretch;
+}
+
+.pitch-info.is-stacked:not(:has(.pitch-user)) .pitch-info-center {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: center;
+    align-self: center;
+}
+
+/* Myteam / bestteam stacked: round + username on row 1; score/credits centered on row 2. */
+.pitch-info.is-stacked:has(.pitch-user) .pitch-info-center {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    align-self: stretch;
+}
+
+.pitch-info.is-stacked:has(.pitch-user) .pitch-stats-group {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: center;
+    justify-content: center;
+    align-self: stretch;
 }
 
 .pitch-stats[hidden] {
+    display: none !important;
+}
+
+.pitch-stats-group[hidden] {
     display: none !important;
 }
 
@@ -554,30 +675,7 @@
         grid-template-columns: 1fr;
     }
 
-    .pitch-info {
-        grid-template-columns: 1fr;
-    }
-
-    .pitch-info-round,
-    .pitch-round {
-        text-align: center;
-        justify-self: center;
-    }
-
-    .pitch-info-center {
-        order: 3;
-    }
-
-    .pitch-stats-group,
-    .pitch-info > .pitch-stats {
-        width: max-content;
-        max-width: 100%;
-        margin: 0 auto;
-        justify-self: center;
-        justify-content: center;
-        order: 2;
-    }
-
+    /* Stacking is handled by .pitch-info.is-stacked (content-fit), not a fixed breakpoint. */
     .pitch-stats {
         width: max-content;
         min-width: 4.5rem;

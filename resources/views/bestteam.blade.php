@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/start.css?v=39">
     <link rel="stylesheet" href="css/dashboard.css?v=46">
     <link rel="stylesheet" href="css/modal.css?v=48">
-    <link rel="stylesheet" href="css/myteam.css?v=58">
+    <link rel="stylesheet" href="css/myteam.css?v=62">
 </head>
 <body class="dash-body">
     @php
@@ -28,35 +28,37 @@
 
     <main class="dash-main myteam-layout">
         <section class="panel myteam-pitch" aria-label="Top und Flop Teams">
-            <div class="pitch-info">
-                <div class="pitch-info-round">
-                    <p class="pitch-round" id="round-meta">Lade Spielrunden…</p>
-                </div>
-                <div class="pitch-info-center">
-                    <p class="pitch-user" id="selected-team"></p>
-                </div>
-                <div class="pitch-stats-group" id="team-side-stats" hidden>
-                    <div class="pitch-stats" id="team-score-tile">
-                        <div class="pitch-stats-row">
-                            <img
-                                src="{{ $legacyBase }}images/ffb/symbols/symbol_score.svg"
-                                alt=""
-                                width="28"
-                                height="28"
-                            >
-                            <span id="team-score">–</span>
+            <div class="pitch-info-cq">
+                <div class="pitch-info">
+                    <div class="pitch-info-round">
+                        <p class="pitch-round" id="round-meta">Lade Spielrunden…</p>
+                    </div>
+                    <div class="pitch-stats-group" id="team-side-stats" hidden>
+                        <div class="pitch-stats" id="team-score-tile">
+                            <div class="pitch-stats-row">
+                                <img
+                                    src="{{ $legacyBase }}images/ffb/symbols/symbol_score.svg"
+                                    alt=""
+                                    width="28"
+                                    height="28"
+                                >
+                                <span id="team-score">–</span>
+                            </div>
+                        </div>
+                        <div class="pitch-stats" id="team-credits">
+                            <div class="pitch-stats-row">
+                                <img
+                                    src="{{ $legacyBase }}images/ffb/symbols/symbol_credits.svg"
+                                    alt=""
+                                    width="28"
+                                    height="28"
+                                >
+                                <span id="team-price">–</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="pitch-stats" id="team-credits">
-                        <div class="pitch-stats-row">
-                            <img
-                                src="{{ $legacyBase }}images/ffb/symbols/symbol_credits.svg"
-                                alt=""
-                                width="28"
-                                height="28"
-                            >
-                            <span id="team-price">–</span>
-                        </div>
+                    <div class="pitch-info-center">
+                        <p class="pitch-user" id="selected-team"></p>
                     </div>
                 </div>
             </div>
@@ -124,6 +126,7 @@
     <script src="js/modal.js?v=32" defer></script>
     <script src="js/player-modal.js?v=35" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
-    <script src="js/bestteam.js?v=16" defer></script>
+    <script src="js/pitch-bench.js?v=34" defer></script>
+    <script src="js/bestteam.js?v=17" defer></script>
 </body>
 </html>
