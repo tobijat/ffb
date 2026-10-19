@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/start.css?v=39">
     <link rel="stylesheet" href="css/dashboard.css?v=46">
     <link rel="stylesheet" href="css/modal.css?v=48">
-    <link rel="stylesheet" href="css/myteam.css?v=38">
+    <link rel="stylesheet" href="css/myteam.css?v=42">
     <link rel="stylesheet" href="css/lineup.css?v=34">
 </head>
 <body class="dash-body">
@@ -57,13 +57,14 @@
                     hidden
                     aria-label="Ersatzbank"
                 >
-                    <img
-                        class="soccer-bench-bg"
-                        src="{{ $legacyBase }}images/ffb/backgrounds/soccer_field_bench.svg"
-                        alt=""
-                        aria-hidden="true"
-                        decoding="async"
-                    >
+                    <div class="soccer-bench-surface" aria-hidden="true">
+                        <img
+                            class="soccer-bench-bg"
+                            src="{{ $legacyBase }}images/ffb/backgrounds/soccer_field_bench.svg"
+                            alt=""
+                            decoding="async"
+                        >
+                    </div>
                     <div id="line-bench" class="bench-players"></div>
                 </aside>
             </div>
@@ -102,7 +103,7 @@
     <script src="js/modal.js?v=32" defer></script>
     <script src="js/player-modal.js?v=35" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
-    <script src="js/pitch-bench.js?v=26" defer></script>
+    <script src="js/pitch-bench.js?v=29" defer></script>
     <script src="js/lineup.js?v=43" defer></script>
 </body>
 </html>

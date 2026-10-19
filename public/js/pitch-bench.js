@@ -1,5 +1,8 @@
 (function (global) {
     let fieldObserver = null;
+    /** Min side-strip width before switching bench under the field (player tile ≈ 90px). */
+    const BENCH_SIDE_MIN = 92;
+    const BENCH_SIDE_RATIO = 104 / (647 + 104);
 
     function benchLimits(options) {
         const min = Math.max(0, Number(options && options.lineup_min_bench) || 0);
@@ -282,7 +285,21 @@
         );
     }
 
+    function updateBenchOrientation() {
+        const stage = document.getElementById('pitch-stage');
+        const bench = document.getElementById('soccer-bench');
+        if (!stage || !bench || bench.hidden || !stage.classList.contains('has-bench')) {
+            return;
+        }
+
+        const gap = 4;
+        const stageW = stage.getBoundingClientRect().width;
+        const sideW = Math.max(0, (stageW - gap) * BENCH_SIDE_RATIO);
+        stage.classList.toggle('bench-below', sideW < BENCH_SIDE_MIN);
+    }
+
     function matchBenchToField() {
+        const stage = document.getElementById('pitch-stage');
         const field = document.getElementById('soccer-field');
         const bench = document.getElementById('soccer-bench');
         const line = document.getElementById('line-bench');
@@ -291,8 +308,20 @@
             return;
         }
 
-        // Width/height come from CSS (647fr:104fr + matching aspect ratios).
-        // Only sync substitute stack top with the keeper line.
+        updateBenchOrientation();
+
+        const below = stage && stage.classList.contains('bench-below');
+        if (below) {
+            if (line) {
+                line.style.removeProperty('top');
+            }
+            bench.style.removeProperty('height');
+            bench.style.removeProperty('width');
+            bench.style.removeProperty('flex-basis');
+            return;
+        }
+
+        // Side layout: sync substitute stack top with the keeper line.
         if (line && fieldG) {
             const fieldRect = field.getBoundingClientRect();
             const gRect = fieldG.getBoundingClientRect();
@@ -302,8 +331,9 @@
     }
 
     function watchField() {
+        const stage = document.getElementById('pitch-stage');
         const field = document.getElementById('soccer-field');
-        if (!field || typeof ResizeObserver === 'undefined') {
+        if ((!stage && !field) || typeof ResizeObserver === 'undefined') {
             return;
         }
 
@@ -314,7 +344,16 @@
         fieldObserver = new ResizeObserver(function () {
             matchBenchToField();
         });
-        fieldObserver.observe(field);
+        if (stage) {
+            fieldObserver.observe(stage);
+        }
+        if (field) {
+            fieldObserver.observe(field);
+        }
+        const bench = document.getElementById('soccer-bench');
+        if (bench) {
+            fieldObserver.observe(bench);
+        }
     }
 
     function clearBenchSize(bench) {
@@ -327,6 +366,10 @@
         const line = document.getElementById('line-bench');
         if (line) {
             line.style.removeProperty('top');
+        }
+        const stage = document.getElementById('pitch-stage');
+        if (stage) {
+            stage.classList.remove('bench-below');
         }
     }
 
@@ -398,7 +441,10 @@
         bench.hidden = false;
         watchField();
         matchBenchToField();
-        requestAnimationFrame(matchBenchToField);
+        requestAnimationFrame(function () {
+            matchBenchToField();
+            requestAnimationFrame(matchBenchToField);
+        });
     }
 
     global.FfbPitchBench = {
