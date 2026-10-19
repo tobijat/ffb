@@ -299,35 +299,22 @@
     }
 
     function matchBenchToField() {
-        const stage = document.getElementById('pitch-stage');
         const field = document.getElementById('soccer-field');
         const bench = document.getElementById('soccer-bench');
         const line = document.getElementById('line-bench');
-        const fieldG = field ? field.querySelector('.field-g') : null;
         if (!field || !bench || bench.hidden) {
             return;
         }
 
         updateBenchOrientation();
 
-        const below = stage && stage.classList.contains('bench-below');
-        if (below) {
-            if (line) {
-                line.style.removeProperty('top');
-            }
-            bench.style.removeProperty('height');
-            bench.style.removeProperty('width');
-            bench.style.removeProperty('flex-basis');
-            return;
+        // Cards are in-flow; padding handles top inset — clear any legacy offsets.
+        if (line) {
+            line.style.removeProperty('top');
         }
-
-        // Side layout: sync substitute stack top with the keeper line.
-        if (line && fieldG) {
-            const fieldRect = field.getBoundingClientRect();
-            const gRect = fieldG.getBoundingClientRect();
-            const topPx = Math.max(0, Math.round(gRect.top - fieldRect.top));
-            line.style.top = topPx + 'px';
-        }
+        bench.style.removeProperty('height');
+        bench.style.removeProperty('width');
+        bench.style.removeProperty('flex-basis');
     }
 
     function watchField() {
