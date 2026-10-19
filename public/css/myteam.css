@@ -243,9 +243,17 @@
 
 .pitch-player {
     width: 90px;
+    box-sizing: border-box;
     text-align: center;
     font-size: 8pt;
     line-height: 1.15;
+    padding: 4px 3px 5px;
+    border-radius: var(--radius, 6px);
+    background: rgba(204, 255, 204, 0.28);
+    border: 1px solid rgba(122, 170, 122, 0.4);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .pitch-player img.shirt {
