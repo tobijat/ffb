@@ -9,12 +9,15 @@
     const creditsEl = document.getElementById('lineup-credits');
     const matchlistEl = document.getElementById('matchlist');
     const pitchMessageEl = document.getElementById('pitch-message');
+    const pitchInfoEl = document.querySelector('.lineup-pitch-info');
+    const pitchInfoCqEl = document.querySelector('.lineup-pitch-info-cq');
     const lines = {
         g: document.getElementById('line-g'),
         d: document.getElementById('line-d'),
         m: document.getElementById('line-m'),
         s: document.getElementById('line-s'),
     };
+    let pitchInfoLayoutObserver = null;
 
     let options = null;
     let matchround = null;
@@ -97,14 +100,72 @@
             .replace(/"/g, '&quot;');
     }
 
+    function naturalWidth(el) {
+        if (!el || el.hidden) {
+            return 0;
+        }
+        const previous = el.style.width;
+        el.style.width = 'max-content';
+        const width = el.getBoundingClientRect().width;
+        el.style.width = previous;
+        return width;
+    }
+
+    function updatePitchInfoLayout() {
+        if (!pitchInfoEl) {
+            return;
+        }
+
+        pitchInfoEl.classList.remove('is-stacked');
+
+        const round = pitchInfoEl.querySelector('.pitch-info-round');
+        const center = pitchInfoEl.querySelector('.pitch-info-center');
+        const credits = pitchInfoEl.querySelector('.pitch-stats');
+        if (!round || !center) {
+            return;
+        }
+
+        const style = window.getComputedStyle(pitchInfoEl);
+        const gap = parseFloat(style.columnGap) || 8;
+        const roundW = naturalWidth(round);
+        const centerW = naturalWidth(center);
+        const creditsW = naturalWidth(credits);
+        const parts = [roundW, centerW, creditsW].filter(function (w) {
+            return w > 0;
+        });
+        if (parts.length < 2) {
+            return;
+        }
+
+        const need = parts.reduce(function (sum, w) {
+            return sum + w;
+        }, 0) + gap * (parts.length - 1);
+
+        if (need > pitchInfoEl.clientWidth + 0.5) {
+            pitchInfoEl.classList.add('is-stacked');
+        }
+    }
+
+    function watchPitchInfoLayout() {
+        if (!pitchInfoCqEl || typeof ResizeObserver === 'undefined' || pitchInfoLayoutObserver) {
+            return;
+        }
+        pitchInfoLayoutObserver = new ResizeObserver(function () {
+            updatePitchInfoLayout();
+        });
+        pitchInfoLayoutObserver.observe(pitchInfoCqEl);
+    }
+
     function clearMessages() {
         messagesEl.className = 'lineup-messages';
         messagesEl.innerHTML = '';
+        updatePitchInfoLayout();
     }
 
     function addErrorMessage(error) {
         messagesEl.className = 'lineup-messages is-error';
         messagesEl.innerHTML = '<b>' + error + '</b>';
+        updatePitchInfoLayout();
         if (typeof messagesEl.scrollIntoView === 'function') {
             messagesEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         }
@@ -114,6 +175,7 @@
         messagesEl.className = 'lineup-messages is-ok';
         messagesEl.innerHTML =
             '<img src="' + symbolUrl('ok.svg') + '" height="11" alt=""> <b>' + escapeHtml(answer) + '</b>';
+        updatePitchInfoLayout();
     }
 
     function setPitchMessage(text) {
@@ -1275,27 +1337,73 @@
             options.lineup_max_players_team +
             '</b> Sp./Team</div>';
         creditsEl.innerHTML = html;
+        updatePitchInfoLayout();
+    }
+
+    function saveBlockedReason() {
+        if (!options) {
+            return 'Aufstellung kann derzeit nicht gespeichert werden.';
+        }
+
+        const neededStarters = Number(options.lineup_max_players) - lineuplist.length;
+        if (neededStarters > 0) {
+            return neededStarters === 1
+                ? 'Du musst noch 1 Spieler aufstellen.'
+                : 'Du musst noch ' + neededStarters + ' Spieler aufstellen.';
+        }
+
+        const minBench = minBenchRequired();
+        const maxBench = maxBenchAllowed();
+        if (benchlist.length < minBench) {
+            const neededBench = minBench - benchlist.length;
+            return neededBench === 1
+                ? 'Du musst noch 1 Ersatzspieler aufstellen.'
+                : 'Du musst noch ' + neededBench + ' Ersatzspieler aufstellen.';
+        }
+        if (benchlist.length > maxBench) {
+            return 'Du hast zu viele Ersatzspieler aufgestellt.';
+        }
+
+        if (Math.round(credits * 10) / 10 < 0) {
+            return 'Du hast zuwenig Credits um diese Aufstellung zu speichern!';
+        }
+
+        if (!lineupDirty) {
+            return 'Deine aktuelle Aufstellung wurde bereits gespeichert.';
+        }
+
+        return null;
     }
 
     function dispActionButtons(saving) {
+        actionsEl.innerHTML = '';
+        const btn = document.createElement('button');
+        btn.type = 'button';
+
         if (saving) {
-            actionsEl.innerHTML =
-                '<button type="button" class="ffb-button-disabled" disabled>Bitte warten…</button>';
+            btn.className = 'ffb-button-disabled';
+            btn.disabled = true;
+            btn.title = 'Bitte warten…';
+            btn.textContent = 'Bitte warten…';
+            actionsEl.appendChild(btn);
+            updatePitchInfoLayout();
             return;
         }
-        const startersComplete =
-            options && lineuplist.length === Number(options.lineup_max_players);
-        const benchComplete =
-            benchlist.length >= minBenchRequired() &&
-            benchlist.length <= maxBenchAllowed();
-        const withinBudget = Math.round(credits * 10) / 10 >= 0;
-        if (startersComplete && benchComplete && withinBudget && lineupDirty) {
-            actionsEl.innerHTML =
-                '<button type="button" class="ffb-button" id="save-lineup-btn">Aufstellung speichern</button>';
+
+        const reason = saveBlockedReason();
+        btn.textContent = 'Aufstellung speichern';
+        if (reason) {
+            // Not using disabled=true so hover title + click both work.
+            btn.className = 'ffb-button-disabled';
+            btn.id = 'save-lineup-btn-disabled';
+            btn.setAttribute('aria-disabled', 'true');
+            btn.title = reason;
         } else {
-            actionsEl.innerHTML =
-                '<button type="button" class="ffb-button-disabled" disabled>Aufstellung speichern</button>';
+            btn.className = 'ffb-button';
+            btn.id = 'save-lineup-btn';
         }
+        actionsEl.appendChild(btn);
+        updatePitchInfoLayout();
     }
 
     function checkLineup(player) {
@@ -1458,6 +1566,8 @@
     }
 
     async function init() {
+        watchPitchInfoLayout();
+
         if (config.gameOver) {
             gameOverUi();
             return;
@@ -1512,10 +1622,13 @@
                 };
             });
             roundMetaEl.innerHTML =
+                '<span class="pitch-round-title">' +
                 escapeHtml(matchround.matchround_title) +
+                '</span>' +
                 '<span class="lineup-deadline"><u>Deadline:</u> <em>' +
                 escapeHtml(matchround.matchround_deadline) +
                 '</em></span>';
+            updatePitchInfoLayout();
 
             if (
                 Number(matchround.matchround_status) !== 1 ||
@@ -1529,6 +1642,7 @@
 
             renderLineupMatches();
             await loadExistingLineup();
+            updatePitchInfoLayout();
         } catch (err) {
             addErrorMessage(escapeHtml((err && err.message) || 'Aufstellung konnte nicht geladen werden.'));
             blockUi('');
@@ -1578,8 +1692,20 @@
     }
 
     actionsEl.addEventListener('click', function (event) {
-        if (event.target.id === 'save-lineup-btn') {
+        const btn = event.target.closest('button');
+        if (!btn || !actionsEl.contains(btn)) {
+            return;
+        }
+        if (btn.id === 'save-lineup-btn') {
             saveLineup();
+            return;
+        }
+        if (btn.id === 'save-lineup-btn-disabled' || btn.getAttribute('aria-disabled') === 'true') {
+            event.preventDefault();
+            const reason = btn.title || saveBlockedReason();
+            if (reason) {
+                addErrorMessage(escapeHtml(reason));
+            }
         }
     });
 

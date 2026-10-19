@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/dashboard.css?v=46">
     <link rel="stylesheet" href="css/modal.css?v=48">
     <link rel="stylesheet" href="css/myteam.css?v=58">
-    <link rel="stylesheet" href="css/lineup.css?v=36">
+    <link rel="stylesheet" href="css/lineup.css?v=44">
 </head>
 <body class="dash-body">
     @php
@@ -29,15 +29,17 @@
 
     <main class="dash-main lineup-layout">
         <section class="panel myteam-pitch" aria-label="Aufstellung">
-            <div class="pitch-info">
-                <div class="pitch-info-round">
-                    <p class="pitch-round" id="round-meta">Lade Spielrunde…</p>
+            <div class="lineup-pitch-info-cq">
+                <div class="pitch-info lineup-pitch-info">
+                    <div class="pitch-info-round">
+                        <p class="pitch-round" id="round-meta">Lade Spielrunde…</p>
+                    </div>
+                    <div class="pitch-info-center">
+                        <div class="lineup-actions" id="lineup-actions"></div>
+                    </div>
+                    <div class="pitch-stats lineup-credits" id="lineup-credits" hidden></div>
                 </div>
-                <div class="pitch-info-center">
-                    <div class="lineup-actions" id="lineup-actions"></div>
-                    <div class="lineup-messages" id="lineup-messages"></div>
-                </div>
-                <div class="pitch-stats lineup-credits" id="lineup-credits" hidden></div>
+                <div class="lineup-messages" id="lineup-messages"></div>
             </div>
 
             <div class="pitch-stage" id="pitch-stage">
@@ -104,6 +106,6 @@
     <script src="js/player-modal.js?v=35" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
     <script src="js/pitch-bench.js?v=33" defer></script>
-    <script src="js/lineup.js?v=47" defer></script>
+    <script src="js/lineup.js?v=50" defer></script>
 </body>
 </html>
