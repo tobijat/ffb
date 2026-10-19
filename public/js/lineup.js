@@ -104,14 +104,10 @@
 
     function addErrorMessage(error) {
         messagesEl.className = 'lineup-messages is-error';
-        messagesEl.innerHTML =
-            '<img src="' +
-            symbolUrl('symb_err_anim.gif') +
-            '" height="11" alt=""> <b>' +
-            error +
-            '</b> <img src="' +
-            symbolUrl('symb_err_anim.gif') +
-            '" height="11" alt="">';
+        messagesEl.innerHTML = '<b>' + error + '</b>';
+        if (typeof messagesEl.scrollIntoView === 'function') {
+            messagesEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
     }
 
     function addOkMessage(answer) {
@@ -276,6 +272,13 @@
             return '—';
         }
         return num.toFixed(1);
+    }
+
+    function lineupCompleteMessage() {
+        if (lineupDirty) {
+            return 'Deine Aufstellung ist komplett. Speichern nicht vergessen!';
+        }
+        return 'Deine Aufstellung ist komplett.';
     }
 
     function setLineupDirty(dirty) {
@@ -448,7 +451,7 @@
         ctx = ctx || lineupSelectionContext();
 
         if (lineupFullyFilled()) {
-            return 'Deine Aufstellung ist komplett. Speichern nicht vergessen!';
+            return lineupCompleteMessage();
         }
 
         if (ctx.addingToBench) {
@@ -699,7 +702,7 @@
         const maxPlayers = ctx.maxPlayers;
 
         if (lineupFullyFilled()) {
-            return 'Deine Aufstellung ist komplett. Speichern nicht vergessen!';
+            return lineupCompleteMessage();
         }
 
         if (ctx.addingToBench) {

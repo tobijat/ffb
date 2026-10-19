@@ -89,6 +89,8 @@
 
 .pitch-stats {
     min-width: 4.5rem;
+    width: max-content;
+    max-width: 100%;
     background: #99cc99;
     border: 1px solid #7aaa7a;
     border-radius: var(--radius);
@@ -96,6 +98,13 @@
     text-align: center;
     font-size: 8pt;
     line-height: 1.2;
+    box-sizing: border-box;
+}
+
+/* Lineup puts credits directly in the pitch-info grid — don't stretch the tile. */
+.pitch-info > .pitch-stats {
+    justify-self: end;
+    align-self: start;
 }
 
 .pitch-stats[hidden] {
@@ -559,8 +568,9 @@
         order: 3;
     }
 
-    .pitch-stats-group {
-        width: auto;
+    .pitch-stats-group,
+    .pitch-info > .pitch-stats {
+        width: max-content;
         max-width: 100%;
         margin: 0 auto;
         justify-self: center;
@@ -569,7 +579,7 @@
     }
 
     .pitch-stats {
-        width: auto;
+        width: max-content;
         min-width: 4.5rem;
     }
 

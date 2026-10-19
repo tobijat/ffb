@@ -53,6 +53,8 @@
 .lineup-messages.is-error {
     background: #ff0000;
     color: #fff;
+    border: 1px solid #cc0000;
+    border-radius: var(--radius, 6px);
 }
 
 .lineup-messages.is-ok {
