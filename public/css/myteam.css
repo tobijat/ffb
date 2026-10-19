@@ -142,6 +142,8 @@
     gap: 6px;
     padding: 6px 0;
     box-sizing: border-box;
+    container-type: inline-size;
+    container-name: soccer-field;
 }
 
 .soccer-field::before {
@@ -257,12 +259,17 @@
     flex-wrap: wrap;
     align-items: stretch;
     justify-content: center;
-    gap: 6px;
+    row-gap: 6px;
+    column-gap: clamp(1px, 0.75cqi, 6px);
     padding: 8px;
     /* Avoid overflow-x:auto — it forces overflow-y clipping and crops tiles. */
     overflow: visible;
     min-height: 0;
     box-sizing: border-box;
+}
+
+.pitch-stage.bench-below {
+    container-type: inline-size;
 }
 
 .soccer-bench .pitch-player {
@@ -294,7 +301,9 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 6px;
+    /* Row gap fixed; column gap shrinks with field width (min 1px, max 6px). */
+    row-gap: 6px;
+    column-gap: clamp(1px, 0.75cqi, 6px);
     padding: 0 var(--chrome-inset, 4px);
 }
 
