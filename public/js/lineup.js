@@ -958,7 +958,8 @@
             shirt +
             '<span class="name">' +
             label +
-            '</span></div>'
+            '</span>' +
+            '<div class="meta" aria-hidden="true"></div></div>'
         );
     }
 
@@ -992,7 +993,7 @@
     }
 
     function positionLabels() {
-        return { g: 'TOR', d: 'VERTEIDIGUNG', m: 'MITTELFELD', s: 'STURM' };
+        return { g: 'Tor', d: 'Abwehr', m: 'Mittelfeld', s: 'Sturm' };
     }
 
     function positionMins() {

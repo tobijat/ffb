@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/start.css?v=39">
     <link rel="stylesheet" href="css/dashboard.css?v=46">
     <link rel="stylesheet" href="css/modal.css?v=48">
-    <link rel="stylesheet" href="css/myteam.css?v=46">
+    <link rel="stylesheet" href="css/myteam.css?v=48">
 </head>
 <body class="dash-body">
     @php

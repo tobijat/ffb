@@ -414,7 +414,7 @@
 .pitch-slot {
     opacity: 0.75;
     text-align: center;
-    font-size: 7pt;
+    /* Keep same font-size as filled tiles so em-based name min-height matches. */
     color: #333;
 }
 

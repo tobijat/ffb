@@ -46,7 +46,7 @@
             '<div class="pitch-player pitch-slot pitch-bench-slot">' +
             shirt +
             '<span class="name">Ersatz</span>' +
-            '</div>'
+            '<div class="meta" aria-hidden="true"></div></div>'
         );
     }
 
