@@ -27,9 +27,6 @@
                     @endif
                 </p>
             @endif
-            @if (!empty($showProfileNag) && !empty($user['update_profile_nag']))
-                <p class="nag">Dein Profil ist noch leer. <a href="/profile">Profil aktualisieren</a></p>
-            @endif
         </div>
         <a class="user-card-logout" href="/logout" title="Ausloggen">
             <img src="{{ $legacyBase ?? '/' }}images/ffb/navigation/nav_logout.png" alt="" width="32" height="32" loading="lazy">

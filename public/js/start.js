@@ -11,6 +11,11 @@
     const passwordField = document.getElementById('field-password');
     const passwordInput = document.getElementById('user_password');
     const registerLink = document.getElementById('register-link');
+    const submitIcon = submitBtn ? submitBtn.querySelector('img') : null;
+    const loginIconSrc = submitIcon ? submitIcon.getAttribute('src') : '';
+    const mailIconSrc = loginIconSrc
+        ? loginIconSrc.replace(/nav_login\.png(?:\?.*)?$/i, 'nav_mail.png')
+        : '';
 
     if (!form) {
         return;
@@ -26,6 +31,19 @@
         }
         if (submitBtn) {
             submitBtn.title = text;
+        }
+    }
+
+    function setSubmitIcon(modeName) {
+        if (!submitIcon) {
+            return;
+        }
+        if (modeName === 'forgot' && mailIconSrc) {
+            submitIcon.setAttribute('src', mailIconSrc);
+            return;
+        }
+        if (loginIconSrc) {
+            submitIcon.setAttribute('src', loginIconSrc);
         }
     }
 
@@ -146,6 +164,7 @@
             passwordInput.value = '';
             clearFieldError(passwordInput);
             setSubmitLabel('Reset-Link senden');
+            setSubmitIcon('forgot');
             if (forgotBtn) {
                 forgotBtn.hidden = true;
             }
@@ -173,6 +192,7 @@
         passwordInput.required = true;
         clearFieldError(passwordInput);
         setSubmitLabel('Anmelden');
+        setSubmitIcon('login');
         if (forgotBtn) {
             forgotBtn.hidden = false;
         }

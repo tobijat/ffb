@@ -24,7 +24,6 @@
     @if (! empty($headerUser))
         @include('partials.user-card', [
             'user' => $headerUser,
-            'showProfileNag' => $showProfileNag ?? false,
         ])
     @else
         @include('partials.login-card')

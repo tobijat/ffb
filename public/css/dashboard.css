@@ -5,7 +5,7 @@
 }
 
 .dash-top {
-    padding: 8px 10px 6px;
+    padding: 4px;
     background: var(--panel);
     border: 1px solid #7aaa7a;
     border-radius: var(--radius);
@@ -14,17 +14,41 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 10px 16px;
+    gap: 4px;
     width: calc(100% - (2 * var(--page-gutter, 10px)));
     max-width: calc(var(--page-max, 1100px) - (2 * var(--page-gutter, 10px)));
     box-sizing: border-box;
+}
+
+.dash-top:not(.dash-top-guest) {
+    align-items: stretch;
+}
+
+.dash-top:not(.dash-top-guest) .dash-top-main {
+    align-items: stretch;
+}
+
+.dash-top:not(.dash-top-guest) .brand {
+    box-sizing: border-box;
+    align-self: stretch;
+}
+
+.dash-top:not(.dash-top-guest) .user-card {
+    box-sizing: border-box;
+    align-self: stretch;
+    padding: 2px 6px;
+    gap: 6px;
+}
+
+.dash-top:not(.dash-top-guest) .user-card-logout {
+    margin-left: 0;
 }
 
 .dash-top-main {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px 14px;
+    gap: 4px;
     min-width: 0;
     flex: 1 1 auto;
 }
@@ -32,7 +56,7 @@
 .dash-nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px 10px;
+    gap: 4px;
     align-items: flex-start;
 }
 
@@ -46,13 +70,15 @@
     gap: 2px;
     font-size: 8pt;
     font-weight: normal;
-    background: transparent;
+    background: var(--panel-light);
+    border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
+    box-sizing: border-box;
     min-width: 4rem;
     max-width: 5.5rem;
     padding: 2px 4px;
     text-align: center;
     line-height: 1.15;
-    border-radius: var(--radius-sm);
 }
 
 .dash-nav a:hover {
@@ -89,6 +115,7 @@
 }
 
 .user-card {
+    --user-card-action-size: 3.25rem;
     display: flex;
     gap: 8px;
     align-items: center;
@@ -105,18 +132,24 @@
 .user-card-photo {
     position: relative;
     flex-shrink: 0;
+    width: var(--user-card-action-size);
+    height: var(--user-card-action-size);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     line-height: 0;
     background: transparent;
-    display: inline-block;
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    padding: 1px;
+    border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
+    box-sizing: border-box;
+    padding: 2px;
     text-decoration: none;
 }
 
 .user-card-photo:hover {
-    background: transparent;
-    border-color: #5a9a5a;
+    color: var(--link-hover);
+    background: var(--link-hover-bg);
+    text-decoration: none;
 }
 
 /* Shine sweep clipped to the avatar shape (shirt SVG alpha).
@@ -210,8 +243,10 @@
     display: inline-flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 2px;
     flex: 0 0 auto;
+    min-height: var(--user-card-action-size);
     margin-left: 4px;
     padding: 2px 4px;
     color: var(--ink);
@@ -220,8 +255,9 @@
     font-family: inherit;
     line-height: 1.15;
     background: transparent;
-    border: 0;
-    border-radius: var(--radius-sm);
+    border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
+    box-sizing: border-box;
     cursor: pointer;
 }
 
@@ -347,6 +383,15 @@
     flex-shrink: 0;
 }
 
+.user-card-photo .user-photo {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    object-fit: contain;
+}
+
 .user-photo-avatar {
     object-fit: contain;
     background: transparent;
@@ -371,16 +416,6 @@
 .user-card-admin a {
     color: var(--ink);
     font-weight: bold;
-}
-
-.nag {
-    margin: 4px 0 0;
-    color: #ff0000;
-    font-size: 8pt;
-}
-
-.nag a {
-    color: var(--ink);
 }
 
 .section-head {
@@ -437,7 +472,7 @@
 }
 
 .game-tile:hover {
-    background: var(--panel-hover);
+    background: var(--link-hover-bg);
 }
 
 .game-tile.is-selected {
@@ -640,7 +675,14 @@
 
     .user-card {
         margin-left: 0;
-        width: 100%;
-        max-width: none;
+        /* Stay content-sized so login/logout icon stays beside the form/details. */
+        width: auto;
+        max-width: 100%;
+        flex: 0 1 auto;
+    }
+
+    .user-card-text {
+        flex: 0 1 auto;
     }
 }
+

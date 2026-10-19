@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Start — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css?v=20">
-    <link rel="stylesheet" href="css/dashboard.css?v=25">
+    <link rel="stylesheet" href="css/start.css?v=38">
+    <link rel="stylesheet" href="css/dashboard.css?v=44">
 </head>
 <body class="dash-body">
     @php
@@ -27,7 +27,7 @@
             </nav>
         </div>
 
-        @include('partials.user-card', ['showProfileNag' => true])
+        @include('partials.user-card')
     </header>
 
     <main class="dash-main">

@@ -9,5 +9,5 @@
             passwordUrl: new URL('registration/password', window.location.href).pathname,
         };
     </script>
-    <script src="{{ $assetBase }}/js/start.js?v=14" defer></script>
+    <script src="{{ $assetBase }}/js/start.js?v=15" defer></script>
 @endif

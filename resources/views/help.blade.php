@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Regeln — SoccerSportsfan</title>
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
-    <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=32">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=25">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=38">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=44">
     <link rel="stylesheet" href="{{ $assetBase }}/css/help.css?v=4">
 </head>
 <body class="dash-body">
@@ -151,7 +151,7 @@
                             <tr>
                                 <th><b>Kriterium</b></th>
                                 <th><b>Torwart</b></th>
-                                <th><b>Verteidigung</b></th>
+                                <th><b>Abwehr</b></th>
                                 <th><b>Mittelfeld</b></th>
                                 <th><b>Angriff</b></th>
                             </tr>

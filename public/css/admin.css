@@ -1895,6 +1895,10 @@
     color: var(--ink, #000);
 }
 
+.dash-nav a.is-active:hover {
+    background: var(--link-hover-bg, #b8e0b8);
+}
+
 @media (max-width: 640px) {
     .admin-field,
     .admin-actions {
@@ -2304,7 +2308,7 @@
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    gap: 10px 14px;
+    gap: 4px;
 }
 
 .admin-top > .brand {
@@ -2362,11 +2366,17 @@
     }
 
     .admin-top > .brand,
-    .admin-top > .admin-nav,
-    .admin-top > .user-card {
+    .admin-top > .admin-nav {
         grid-column: 1;
         justify-self: stretch;
         max-width: none;
+    }
+
+    .admin-top > .user-card {
+        grid-column: 1;
+        justify-self: start;
+        width: auto;
+        max-width: 100%;
     }
 
     .admin-top > .admin-nav {

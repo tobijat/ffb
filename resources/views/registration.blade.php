@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Registrieren — SoccerSportsfan</title>
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
-    <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=32">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=25">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=38">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=44">
     <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=7">
     <link rel="stylesheet" href="{{ $assetBase }}/css/registration.css?v=3">
 </head>
