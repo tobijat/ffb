@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/start.css?v=45">
     <link rel="stylesheet" href="css/dashboard.css?v=49">
     <link rel="stylesheet" href="css/modal.css?v=48">
-    <link rel="stylesheet" href="css/myteam.css?v=62">
+    <link rel="stylesheet" href="css/myteam.css?v=69">
 </head>
 <body class="dash-body">
     @php
@@ -31,7 +31,20 @@
             <div class="pitch-info-cq">
                 <div class="pitch-info">
                     <div class="pitch-info-round">
-                        <p class="pitch-round" id="round-meta">Lade Spielrunden…</p>
+                        <label class="pitch-round-picker">
+                            <span class="pitch-round-picker-face" aria-hidden="true">
+                                <span class="pitch-round-title" id="round-title">Lade Spielrunden…</span>
+                                <span class="pitch-round-dates" id="round-dates" hidden></span>
+                            </span>
+                            <select
+                                id="matchround_selection"
+                                class="pitch-round-select"
+                                aria-label="Spielrunde"
+                                disabled
+                            >
+                                <option>Lade Spielrunden…</option>
+                            </select>
+                        </label>
                     </div>
                     <div class="pitch-stats-group" id="team-side-stats" hidden>
                         <div class="pitch-stats" id="team-score-tile">
@@ -80,11 +93,6 @@
 
         <aside class="myteam-side">
             <div class="panel">
-                <label class="round-label" for="matchround_selection">Spielrunde</label>
-                <select id="matchround_selection" class="ffb-select" disabled>
-                    <option>Lade Spielrunden…</option>
-                </select>
-
                 <label class="round-label" for="team_selection">Team</label>
                 <select id="team_selection" class="ffb-select" disabled>
                     <option value="top">Top-Team der Runde</option>
@@ -127,6 +135,6 @@
     <script src="js/player-modal.js?v=35" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
     <script src="js/pitch-bench.js?v=34" defer></script>
-    <script src="js/bestteam.js?v=17" defer></script>
+    <script src="js/bestteam.js?v=22" defer></script>
 </body>
 </html>

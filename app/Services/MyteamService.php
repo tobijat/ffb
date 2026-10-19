@@ -227,14 +227,20 @@ class MyteamService
             ->where('playerstats_matchround_id', $matchroundId)
             ->get([
                 'playerstats_goals',
+                'playerstats_assists',
                 'playerstats_owngoals',
+                'playerstats_penaltiessaved',
+                'playerstats_penaltieslost',
                 'playerstats_cards',
                 'playerstats_minutes',
                 'playerstats_score',
             ]);
 
         $goals = 0;
+        $assists = 0;
         $owngoals = 0;
+        $penaltiesSaved = 0;
+        $penaltiesLost = 0;
         $cardsR = 0;
         $cardsYr = 0;
         $cardsY = 0;
@@ -242,7 +248,10 @@ class MyteamService
         $score = 0;
         foreach ($playerstats as $row) {
             $goals += (int) $row->playerstats_goals;
+            $assists += (int) $row->playerstats_assists;
             $owngoals += (int) $row->playerstats_owngoals;
+            $penaltiesSaved += (int) $row->playerstats_penaltiessaved;
+            $penaltiesLost += (int) $row->playerstats_penaltieslost;
             $card = (string) ($row->playerstats_cards ?: '');
             if ($card === 'r') {
                 $cardsR++;
@@ -266,7 +275,10 @@ class MyteamService
                 'matchround_id' => $matchroundId,
                 'stats' => [
                     'goals' => $goals,
+                    'assists' => $assists,
                     'owngoals' => $owngoals,
+                    'penalties_saved' => $penaltiesSaved,
+                    'penalties_lost' => $penaltiesLost,
                     'cards_r' => $cardsR,
                     'cards_yr' => $cardsYr,
                     'cards_y' => $cardsY,
@@ -290,7 +302,10 @@ class MyteamService
     private function aggregateUserteamStats(array $playerteamIds, int $matchroundId): array
     {
         $goals = 0;
+        $assists = 0;
         $owngoals = 0;
+        $penaltiesSaved = 0;
+        $penaltiesLost = 0;
         $cardsR = 0;
         $cardsYr = 0;
         $cardsY = 0;
@@ -339,7 +354,10 @@ class MyteamService
             }
 
             $goals += (int) $stat->playerstats_goals;
+            $assists += (int) $stat->playerstats_assists;
             $owngoals += (int) $stat->playerstats_owngoals;
+            $penaltiesSaved += (int) $stat->playerstats_penaltiessaved;
+            $penaltiesLost += (int) $stat->playerstats_penaltieslost;
             $card = (string) ($stat->playerstats_cards ?: '');
             if ($card === 'r') {
                 $cardsR++;
@@ -363,7 +381,10 @@ class MyteamService
 
         return [
             'goals' => $goals,
+            'assists' => $assists,
             'owngoals' => $owngoals,
+            'penalties_saved' => $penaltiesSaved,
+            'penalties_lost' => $penaltiesLost,
             'cards_r' => $cardsR,
             'cards_yr' => $cardsYr,
             'cards_y' => $cardsY,

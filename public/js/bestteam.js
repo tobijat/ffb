@@ -4,8 +4,9 @@
     const legacyBase = config.legacyBase || '/';
 
     const roundSelect = document.getElementById('matchround_selection');
+    const roundTitleEl = document.getElementById('round-title');
+    const roundDatesEl = document.getElementById('round-dates');
     const teamSelect = document.getElementById('team_selection');
-    const metaEl = document.getElementById('round-meta');
     const selectedTeamEl = document.getElementById('selected-team');
     const teamScoreEl = document.getElementById('team-score');
     const teamPriceEl = document.getElementById('team-price');
@@ -150,36 +151,41 @@
         }
     }
 
-    function renderRoundMeta() {
+    function renderRoundFace() {
         const round = currentRound();
         if (!round) {
-            metaEl.textContent = 'Keine Spielrunden';
+            roundTitleEl.textContent = 'Keine Spielrunden';
+            roundDatesEl.textContent = '';
+            roundDatesEl.hidden = true;
             updatePitchInfoLayout();
             return;
         }
-        let html =
-            '<span class="pitch-round-title">' +
-            escapeHtml(round.matchround_title) +
-            '</span>';
+        roundTitleEl.textContent = round.matchround_title || '';
         if (round.matchround_startdate) {
-            const dates =
+            roundDatesEl.textContent =
                 round.matchround_startdate === round.matchround_enddate
-                    ? escapeHtml(round.matchround_startdate)
-                    : escapeHtml(round.matchround_startdate) +
-                      ' - ' +
-                      escapeHtml(round.matchround_enddate);
-            html += '<span class="pitch-round-dates">' + dates + '</span>';
+                    ? String(round.matchround_startdate)
+                    : String(round.matchround_startdate) + ' - ' + String(round.matchround_enddate);
+            roundDatesEl.hidden = false;
+        } else {
+            roundDatesEl.textContent = '';
+            roundDatesEl.hidden = true;
         }
-        metaEl.innerHTML = html;
         updatePitchInfoLayout();
     }
 
     function renderRoundSelect() {
         roundSelect.innerHTML = '';
+        if (!matchrounds.length) {
+            roundSelect.innerHTML = '<option>Keine Spielrunden</option>';
+            roundSelect.disabled = true;
+            renderRoundFace();
+            return;
+        }
         matchrounds.forEach(function (round, index) {
             const opt = document.createElement('option');
             opt.value = String(index);
-            opt.textContent = round.matchround_title;
+            opt.textContent = round.matchround_title || '';
             opt.className = 'ffb-select-' + (index % 2);
             if (Number(round.matchround_actual) === 1) {
                 opt.selected = true;
@@ -187,7 +193,12 @@
             }
             roundSelect.appendChild(opt);
         });
-        roundSelect.disabled = matchrounds.length === 0;
+        if (!roundSelect.querySelector('option[selected]') && matchrounds.length) {
+            roundSelect.options[0].selected = true;
+            roundIndex = 0;
+        }
+        roundSelect.disabled = false;
+        renderRoundFace();
     }
 
     function renderMatches() {
@@ -216,24 +227,56 @@
         );
     }
 
+    function pluralize(count, singular, plural) {
+        const n = Number(count);
+        const word = Math.abs(n) === 1 ? singular : plural;
+        return n + ' ' + word;
+    }
+
     function renderRoundStatsBlock(stats) {
         if (!stats) {
             return '<p class="muted">Keine Statistik verfügbar.</p>';
         }
+        const owngoals = Number(stats.owngoals) || 0;
+        const penaltiesSaved = Number(stats.penalties_saved) || 0;
+        const penaltiesLost = Number(stats.penalties_lost) || 0;
         let html = '<div class="stats-block">';
         html += '<div class="stats-heading">-- Spielrunden Statistik --</div>';
-
-        html += '<div class="stats-subheading"><u>Statistik</u></div>';
-        html += statsRow('symbol_user.svg', 'Teilnehmer:', Number(stats.num_users) + ' Mitspieler');
-        html += statsRow('stats_point.svg', 'Anzahl Spiele:', Number(stats.num_matches) + ' Spiele');
-        html += statsRow('stats_goal.svg', 'gefallene Tore:', Number(stats.goals) + ' Tore');
-        html += statsRow('stats_owngoal.svg', 'gefallene Eigentore:', Number(stats.owngoals) + ' Tore');
+        html += statsRow('symbol_user.svg', 'Teilnehmer:', pluralize(stats.num_users, 'Mitspieler', 'Mitspieler'));
+        html += statsRow('stats_point.svg', 'Anzahl Spiele:', pluralize(stats.num_matches, 'Spiel', 'Spiele'));
+        html += statsRow('stats_goal.svg', 'gefallene Tore:', pluralize(stats.goals, 'Tor', 'Tore'));
+        html += statsRow('stats_assist.svg', 'Assists:', pluralize(stats.assists, 'Assist', 'Assists'));
+        if (owngoals > 0) {
+            html += statsRow(
+                'stats_owngoal.svg',
+                'gefallene Eigentore:',
+                pluralize(owngoals, 'Eigentor', 'Eigentore')
+            );
+        }
         html += statsRow(
             'stats_card_yr.svg',
             'Karten (G/GR/R):',
             Number(stats.cards_y) + '/' + Number(stats.cards_yr) + '/' + Number(stats.cards_r)
         );
-        html += statsRow('stats_point.svg', 'Punkte pro Spieler:', Number(stats.score_per_player) + ' Punkte');
+        if (penaltiesSaved > 0) {
+            html += statsRow(
+                'stats_penaltysaved.svg',
+                'gehaltene Elfer:',
+                pluralize(penaltiesSaved, 'gehaltener Elfer', 'gehaltene Elfer')
+            );
+        }
+        if (penaltiesLost > 0) {
+            html += statsRow(
+                'stats_penaltylost.svg',
+                'verschossene Elfer:',
+                pluralize(penaltiesLost, 'verschossener Elfer', 'verschossene Elfer')
+            );
+        }
+        html += statsRow(
+            'stats_point.svg',
+            'Punkte pro Spieler:',
+            pluralize(stats.score_per_player, 'Punkt', 'Punkte')
+        );
         html += '</div>';
         return html;
     }
@@ -433,7 +476,6 @@
                 return;
             }
             renderRoundSelect();
-            renderRoundMeta();
             teamType = teamSelect.value || 'top';
             setSelectsEnabled(true);
             await loadTeam();
@@ -450,7 +492,7 @@
 
     roundSelect.addEventListener('change', function () {
         roundIndex = Number(roundSelect.value) || 0;
-        renderRoundMeta();
+        renderRoundFace();
         loadTeam();
         renderSidePanel();
     });

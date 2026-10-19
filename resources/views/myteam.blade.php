@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/start.css?v=45">
     <link rel="stylesheet" href="css/dashboard.css?v=49">
     <link rel="stylesheet" href="css/modal.css?v=48">
-    <link rel="stylesheet" href="css/myteam.css?v=62">
+    <link rel="stylesheet" href="css/myteam.css?v=69">
 </head>
 <body class="dash-body">
     @php
@@ -31,7 +31,20 @@
             <div class="pitch-info-cq">
                 <div class="pitch-info">
                     <div class="pitch-info-round">
-                        <p class="pitch-round" id="round-meta">Lade Spielrunden…</p>
+                        <label class="pitch-round-picker">
+                            <span class="pitch-round-picker-face" aria-hidden="true">
+                                <span class="pitch-round-title" id="round-title">Lade Spielrunden…</span>
+                                <span class="pitch-round-dates" id="round-dates" hidden></span>
+                            </span>
+                            <select
+                                id="matchround_selection"
+                                class="pitch-round-select"
+                                aria-label="Spielrunde"
+                                disabled
+                            >
+                                <option>Lade Spielrunden…</option>
+                            </select>
+                        </label>
                     </div>
                     <div class="pitch-stats-group" id="team-side-stats" hidden>
                         <div class="pitch-stats" id="team-score-tile">
@@ -58,7 +71,19 @@
                         </div>
                     </div>
                     <div class="pitch-info-center">
-                        <p class="pitch-user" id="selected-user"></p>
+                        <label class="pitch-round-picker">
+                            <span class="pitch-round-picker-face" aria-hidden="true">
+                                <span class="pitch-user" id="selected-user">Lade Mitspieler…</span>
+                            </span>
+                            <select
+                                id="user_selection"
+                                class="pitch-round-select"
+                                aria-label="Mitspieler"
+                                disabled
+                            >
+                                <option>Lade Mitspieler…</option>
+                            </select>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -95,19 +120,6 @@
         </section>
 
         <aside class="myteam-side">
-            <div class="panel">
-                <label class="round-label" for="matchround_selection">Spielrunde</label>
-                <select id="matchround_selection" class="ffb-select" disabled>
-                    <option>Lade Spielrunden…</option>
-                </select>
-
-                <label class="round-label" for="user_selection">Mitspieler</label>
-                <select id="user_selection" class="ffb-select" disabled>
-                    <option>Lade Mitspieler…</option>
-                </select>
-                <p class="hint" id="user-profile-link"></p>
-            </div>
-
             <div class="panel" id="matchlist-panel">
                 <div class="myteam-tabs ffb-tabs" id="side-tabs" hidden>
                     <button type="button" class="myteam-tab ffb-tab is-active" data-side-tab="matches">Spiele anzeigen</button>
@@ -144,6 +156,6 @@
     <script src="js/player-modal.js?v=35" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
     <script src="js/pitch-bench.js?v=34" defer></script>
-    <script src="js/myteam.js?v=21" defer></script>
+    <script src="js/myteam.js?v=29" defer></script>
 </body>
 </html>

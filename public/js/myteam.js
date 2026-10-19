@@ -6,15 +6,15 @@
     const isAdmin = !!config.isAdmin;
 
     const roundSelect = document.getElementById('matchround_selection');
+    const roundTitleEl = document.getElementById('round-title');
+    const roundDatesEl = document.getElementById('round-dates');
     const userSelect = document.getElementById('user_selection');
-    const metaEl = document.getElementById('round-meta');
     const selectedUserEl = document.getElementById('selected-user');
     const teamScoreEl = document.getElementById('team-score');
     const teamPriceEl = document.getElementById('team-price');
     const teamCreditsEl = document.getElementById('team-credits');
     const teamSideStatsEl = document.getElementById('team-side-stats');
     const matchlistEl = document.getElementById('matchlist');
-    const profileLinkEl = document.getElementById('user-profile-link');
     const pitchMessageEl = document.getElementById('pitch-message');
     const sideTabsEl = document.getElementById('side-tabs');
     const lines = {
@@ -162,28 +162,26 @@
         }
     }
 
-    function renderRoundMeta() {
+    function renderRoundFace() {
         const round = currentRound();
         if (!round) {
-            metaEl.textContent = 'Keine Spielrunden';
+            roundTitleEl.textContent = 'Keine Spielrunden';
+            roundDatesEl.textContent = '';
+            roundDatesEl.hidden = true;
             updatePitchInfoLayout();
             return;
         }
-        let title = escapeHtml(round.matchround_title || '');
-        if (Number(round.matchround_running) === 1) {
-            title += ' <em>(Deadline offen)</em>';
-        }
-        let html = '<span class="pitch-round-title">' + title + '</span>';
+        roundTitleEl.textContent = round.matchround_title || '';
         if (round.matchround_startdate) {
-            const dates =
+            roundDatesEl.textContent =
                 round.matchround_startdate === round.matchround_enddate
-                    ? escapeHtml(round.matchround_startdate)
-                    : escapeHtml(round.matchround_startdate) +
-                      ' - ' +
-                      escapeHtml(round.matchround_enddate);
-            html += '<span class="pitch-round-dates">' + dates + '</span>';
+                    ? String(round.matchround_startdate)
+                    : String(round.matchround_startdate) + ' - ' + String(round.matchround_enddate);
+            roundDatesEl.hidden = false;
+        } else {
+            roundDatesEl.textContent = '';
+            roundDatesEl.hidden = true;
         }
-        metaEl.innerHTML = html;
         updatePitchInfoLayout();
     }
 
@@ -192,12 +190,13 @@
         if (!matchrounds.length) {
             roundSelect.innerHTML = '<option>Keine Spielrunden</option>';
             roundSelect.disabled = true;
+            renderRoundFace();
             return;
         }
         matchrounds.forEach(function (round, index) {
             const opt = document.createElement('option');
             opt.value = String(index);
-            opt.textContent = round.matchround_title;
+            opt.textContent = round.matchround_title || '';
             opt.className = 'ffb-select-' + (index % 2);
             if (index === roundIndex) {
                 opt.selected = true;
@@ -205,15 +204,27 @@
             roundSelect.appendChild(opt);
         });
         roundSelect.disabled = false;
+        renderRoundFace();
+    }
+
+    function renderUserFace() {
+        const user = currentUser();
+        if (!user) {
+            selectedUserEl.textContent = users.length ? '' : 'Keine Mitspieler';
+            updatePitchInfoLayout();
+            return;
+        }
+        selectedUserEl.textContent = user.user_nickname || '';
+        updatePitchInfoLayout();
     }
 
     function renderUserSelect() {
         userSelect.innerHTML = '';
-        profileLinkEl.innerHTML = '';
         if (!users.length) {
             userSelect.innerHTML = '<option>Keine Mitspieler</option>';
             userSelect.disabled = true;
             userIndex = -1;
+            renderUserFace();
             return;
         }
 
@@ -232,21 +243,7 @@
             userSelect.appendChild(opt);
         });
         userSelect.disabled = false;
-        updateProfileLink();
-    }
-
-    function updateProfileLink() {
-        const user = currentUser();
-        if (!user) {
-            profileLinkEl.innerHTML = '';
-            return;
-        }
-        profileLinkEl.innerHTML =
-            '<a href="#" data-modal="profile" data-id="' +
-            user.user_id +
-            '">Profil von ' +
-            escapeHtml(user.user_nickname) +
-            '</a>';
+        renderUserFace();
     }
 
     function renderMatches() {
@@ -275,51 +272,123 @@
         );
     }
 
+    function pluralize(count, singular, plural) {
+        const n = Number(count);
+        const word = Math.abs(n) === 1 ? singular : plural;
+        return n + ' ' + word;
+    }
+
     function renderRoundStatsBlock(stats) {
         if (!stats) {
             return '';
         }
+        const owngoals = Number(stats.owngoals) || 0;
+        const penaltiesSaved = Number(stats.penalties_saved) || 0;
+        const penaltiesLost = Number(stats.penalties_lost) || 0;
         let html = '<div class="stats-block">';
         html += '<div class="stats-heading">-- Spielrunden Statistik --</div>';
-
-        html += '<div class="stats-subheading"><u>Statistik</u></div>';
-        html += statsRow('symbol_user.svg', 'Teilnehmer:', Number(stats.num_users) + ' Mitspieler');
-        html += statsRow('stats_point.svg', 'Anzahl Spiele:', Number(stats.num_matches) + ' Spiele');
-        html += statsRow('stats_goal.svg', 'gefallene Tore:', Number(stats.goals) + ' Tore');
-        html += statsRow('stats_owngoal.svg', 'gefallene Eigentore:', Number(stats.owngoals) + ' Tore');
+        html += statsRow('symbol_user.svg', 'Teilnehmer:', pluralize(stats.num_users, 'Mitspieler', 'Mitspieler'));
+        html += statsRow('stats_point.svg', 'Anzahl Spiele:', pluralize(stats.num_matches, 'Spiel', 'Spiele'));
+        html += statsRow('stats_goal.svg', 'gefallene Tore:', pluralize(stats.goals, 'Tor', 'Tore'));
+        html += statsRow('stats_assist.svg', 'Assists:', pluralize(stats.assists, 'Assist', 'Assists'));
+        if (owngoals > 0) {
+            html += statsRow(
+                'stats_owngoal.svg',
+                'gefallene Eigentore:',
+                pluralize(owngoals, 'Eigentor', 'Eigentore')
+            );
+        }
         html += statsRow(
             'stats_card_yr.svg',
             'Karten (G/GR/R):',
             Number(stats.cards_y) + '/' + Number(stats.cards_yr) + '/' + Number(stats.cards_r)
         );
-        html += statsRow('stats_point.svg', 'Punkte pro Spieler:', Number(stats.score_per_player) + ' Punkte');
+        if (penaltiesSaved > 0) {
+            html += statsRow(
+                'stats_penaltysaved.svg',
+                'gehaltene Elfer:',
+                pluralize(penaltiesSaved, 'gehaltener Elfer', 'gehaltene Elfer')
+            );
+        }
+        if (penaltiesLost > 0) {
+            html += statsRow(
+                'stats_penaltylost.svg',
+                'verschossene Elfer:',
+                pluralize(penaltiesLost, 'verschossener Elfer', 'verschossene Elfer')
+            );
+        }
+        html += statsRow(
+            'stats_point.svg',
+            'Punkte pro Spieler:',
+            pluralize(stats.score_per_player, 'Punkt', 'Punkte')
+        );
         html += '</div>';
         return html;
     }
 
     function renderUserStatsBlock(stats) {
         if (!stats) {
-            return '<div class="stats-block"><p class="muted">Keine Benutzerstatistik verfügbar.</p></div>';
+            return '<div class="stats-block"><p class="muted">Keine Teamstatistik verfügbar.</p></div>';
         }
+        const owngoals = Number(stats.owngoals) || 0;
+        const penaltiesSaved = Number(stats.penalties_saved) || 0;
+        const penaltiesLost = Number(stats.penalties_lost) || 0;
         let html = '<div class="stats-block">';
-        html += '<div class="stats-heading">-- Benutzer Statistik --</div>';
+        html += '<div class="stats-heading">-- Team Statistik --</div>';
         html += statsRow('stats_lineup.svg', 'Spielsystem:', escapeHtml(stats.system));
-        html += statsRow('stats_goal.svg', 'erzielte Tore:', Number(stats.goals) + ' Tore');
-        html += statsRow('stats_owngoal.svg', 'erzielte Eigentore:', Number(stats.owngoals) + ' Tore');
+        html += statsRow('stats_goal.svg', 'erzielte Tore:', pluralize(stats.goals, 'Tor', 'Tore'));
+        html += statsRow('stats_assist.svg', 'Assists:', pluralize(stats.assists, 'Assist', 'Assists'));
+        if (owngoals > 0) {
+            html += statsRow(
+                'stats_owngoal.svg',
+                'erzielte Eigentore:',
+                pluralize(owngoals, 'Eigentor', 'Eigentore')
+            );
+        }
         html += statsRow(
             'stats_card_yr.svg',
             'Karten (G/GR/R):',
             Number(stats.cards_y) + '/' + Number(stats.cards_yr) + '/' + Number(stats.cards_r)
         );
+        if (penaltiesSaved > 0) {
+            html += statsRow(
+                'stats_penaltysaved.svg',
+                'gehaltene Elfer:',
+                pluralize(penaltiesSaved, 'gehaltener Elfer', 'gehaltene Elfer')
+            );
+        }
+        if (penaltiesLost > 0) {
+            html += statsRow(
+                'stats_penaltylost.svg',
+                'verschossene Elfer:',
+                pluralize(penaltiesLost, 'verschossener Elfer', 'verschossene Elfer')
+            );
+        }
         html += statsRow(
             'stats_point.svg',
             'Punkte Abwehr:',
-            Number(stats.score_g) + Number(stats.score_d) + ' Punkte'
+            pluralize(Number(stats.score_g) + Number(stats.score_d), 'Punkt', 'Punkte')
         );
-        html += statsRow('stats_point.svg', 'Punkte Mittelfeld:', Number(stats.score_m) + ' Punkte');
-        html += statsRow('stats_point.svg', 'Punkte Angriff:', Number(stats.score_s) + ' Punkte');
-        html += statsRow('stats_point.svg', 'Punkte pro Spieler:', Number(stats.score_per_player) + ' Punkte');
-        html += statsRow('symbol_credits.svg', 'Credits pro Punkt:', Number(stats.credits_per_point) + ' Credits');
+        html += statsRow(
+            'stats_point.svg',
+            'Punkte Mittelfeld:',
+            pluralize(stats.score_m, 'Punkt', 'Punkte')
+        );
+        html += statsRow(
+            'stats_point.svg',
+            'Punkte Angriff:',
+            pluralize(stats.score_s, 'Punkt', 'Punkte')
+        );
+        html += statsRow(
+            'stats_point.svg',
+            'Punkte pro Spieler:',
+            pluralize(stats.score_per_player, 'Punkt', 'Punkte')
+        );
+        html += statsRow(
+            'symbol_credits.svg',
+            'Credits pro Punkt:',
+            pluralize(stats.credits_per_point, 'Credit', 'Credits')
+        );
         html += '</div>';
         return html;
     }
@@ -525,7 +594,13 @@
         clearPitch();
         setPitchMessage('');
         const user = currentUser();
-        selectedUserEl.textContent = user ? user.user_nickname : data.user_nickname || '';
+        if (user) {
+            selectedUserEl.textContent = user.user_nickname;
+        } else if (data.user_nickname) {
+            selectedUserEl.textContent = data.user_nickname;
+        } else {
+            renderUserFace();
+        }
         const round = currentRound();
         const matchroundId = round ? round.matchround_id : 0;
 
@@ -664,7 +739,6 @@
                 roundIndex = 0;
             }
             renderRoundSelect();
-            renderRoundMeta();
             if (currentRound() && Number(currentRound().matchround_running) === 1) {
                 sideTab = 'matches';
             } else {
@@ -683,7 +757,7 @@
 
     roundSelect.addEventListener('change', function () {
         roundIndex = Number(roundSelect.value) || 0;
-        renderRoundMeta();
+        renderRoundFace();
         if (currentRound() && Number(currentRound().matchround_running) === 1) {
             sideTab = 'matches';
         }
@@ -692,7 +766,7 @@
 
     userSelect.addEventListener('change', function () {
         userIndex = Number(userSelect.value);
-        updateProfileLink();
+        renderUserFace();
         loadTeam();
         renderSidePanel();
     });
