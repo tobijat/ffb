@@ -71,7 +71,20 @@
                         </div>
                     </div>
                     <div class="pitch-info-center">
-                        <p class="pitch-user" id="selected-team"></p>
+                        <label class="pitch-round-picker">
+                            <span class="pitch-round-picker-face" aria-hidden="true">
+                                <span class="pitch-user" id="selected-team">Top-Team der Runde</span>
+                            </span>
+                            <select
+                                id="team_selection"
+                                class="pitch-round-select"
+                                aria-label="Team"
+                                disabled
+                            >
+                                <option value="top" class="ffb-select-0">Top-Team der Runde</option>
+                                <option value="flop" class="ffb-select-1">Flop-Team der Runde</option>
+                            </select>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -92,14 +105,6 @@
         </section>
 
         <aside class="myteam-side">
-            <div class="panel">
-                <label class="round-label" for="team_selection">Team</label>
-                <select id="team_selection" class="ffb-select" disabled>
-                    <option value="top">Top-Team der Runde</option>
-                    <option value="flop">Flop-Team der Runde</option>
-                </select>
-            </div>
-
             <div class="panel" id="matchlist-panel">
                 <div class="myteam-tabs ffb-tabs" id="side-tabs" hidden>
                     <button type="button" class="myteam-tab ffb-tab" data-side-tab="matches">Spiele anzeigen</button>
@@ -135,6 +140,6 @@
     <script src="js/player-modal.js?v=35" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
     <script src="js/pitch-bench.js?v=34" defer></script>
-    <script src="js/bestteam.js?v=22" defer></script>
+    <script src="js/bestteam.js?v=24" defer></script>
 </body>
 </html>

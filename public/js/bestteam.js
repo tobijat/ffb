@@ -27,6 +27,7 @@
     let sideTab = 'stats';
     const teamCache = {};
     const roundStatsCache = {};
+    const teamStatsCache = {};
 
     function symbolUrl(name) {
         return legacyBase + 'images/ffb/symbols/' + name;
@@ -118,6 +119,10 @@
         return String(matchroundId) + ':' + String(type);
     }
 
+    function teamStatsCacheKey(matchroundId, type) {
+        return cacheKey(matchroundId, type);
+    }
+
     function setPitchMessage(text) {
         if (!text) {
             pitchMessageEl.hidden = true;
@@ -134,7 +139,6 @@
         });
         teamScoreEl.textContent = '–';
         teamPriceEl.textContent = '–';
-        selectedTeamEl.textContent = '';
         if (teamSideStatsEl) {
             teamSideStatsEl.hidden = true;
         }
@@ -143,6 +147,19 @@
     function setSelectsEnabled(enabled) {
         roundSelect.disabled = !enabled;
         teamSelect.disabled = !enabled;
+    }
+
+    function teamLabel(type) {
+        return type === 'flop' ? 'Flop-Team der Runde' : 'Top-Team der Runde';
+    }
+
+    function renderTeamFace() {
+        const type = teamType === 'flop' ? 'flop' : 'top';
+        selectedTeamEl.textContent = teamLabel(type);
+        if (teamSelect) {
+            teamSelect.value = type;
+        }
+        updatePitchInfoLayout();
     }
 
     function updatePitchInfoLayout() {
@@ -281,6 +298,73 @@
         return html;
     }
 
+    function renderTeamStatsBlock(stats) {
+        if (!stats) {
+            return '<div class="stats-block"><p class="muted">Keine Teamstatistik verfügbar.</p></div>';
+        }
+        const owngoals = Number(stats.owngoals) || 0;
+        const penaltiesSaved = Number(stats.penalties_saved) || 0;
+        const penaltiesLost = Number(stats.penalties_lost) || 0;
+        let html = '<div class="stats-block">';
+        html += '<div class="stats-heading">-- Team Statistik --</div>';
+        html += statsRow('stats_lineup.svg', 'Spielsystem:', escapeHtml(stats.system));
+        html += statsRow('stats_goal.svg', 'erzielte Tore:', pluralize(stats.goals, 'Tor', 'Tore'));
+        html += statsRow('stats_assist.svg', 'Assists:', pluralize(stats.assists, 'Assist', 'Assists'));
+        if (owngoals > 0) {
+            html += statsRow(
+                'stats_owngoal.svg',
+                'erzielte Eigentore:',
+                pluralize(owngoals, 'Eigentor', 'Eigentore')
+            );
+        }
+        html += statsRow(
+            'stats_card_yr.svg',
+            'Karten (G/GR/R):',
+            Number(stats.cards_y) + '/' + Number(stats.cards_yr) + '/' + Number(stats.cards_r)
+        );
+        if (penaltiesSaved > 0) {
+            html += statsRow(
+                'stats_penaltysaved.svg',
+                'gehaltene Elfer:',
+                pluralize(penaltiesSaved, 'gehaltener Elfer', 'gehaltene Elfer')
+            );
+        }
+        if (penaltiesLost > 0) {
+            html += statsRow(
+                'stats_penaltylost.svg',
+                'verschossene Elfer:',
+                pluralize(penaltiesLost, 'verschossener Elfer', 'verschossene Elfer')
+            );
+        }
+        html += statsRow(
+            'stats_point.svg',
+            'Punkte Abwehr:',
+            pluralize(Number(stats.score_g) + Number(stats.score_d), 'Punkt', 'Punkte')
+        );
+        html += statsRow(
+            'stats_point.svg',
+            'Punkte Mittelfeld:',
+            pluralize(stats.score_m, 'Punkt', 'Punkte')
+        );
+        html += statsRow(
+            'stats_point.svg',
+            'Punkte Angriff:',
+            pluralize(stats.score_s, 'Punkt', 'Punkte')
+        );
+        html += statsRow(
+            'stats_point.svg',
+            'Punkte pro Spieler:',
+            pluralize(stats.score_per_player, 'Punkt', 'Punkte')
+        );
+        html += statsRow(
+            'symbol_credits.svg',
+            'Credits pro Punkt:',
+            pluralize(stats.credits_per_point, 'Credit', 'Credits')
+        );
+        html += '</div>';
+        return html;
+    }
+
     function updateSideTabs() {
         const round = currentRound();
         if (!sideTabsEl) {
@@ -313,6 +397,7 @@
         matchlistEl.innerHTML = '<p class="muted">Lade Statistiken…</p>';
 
         const roundId = round.matchround_id;
+        const type = teamType === 'flop' ? 'flop' : 'top';
         try {
             let roundStats = roundStatsCache[roundId];
             if (!roundStats) {
@@ -323,11 +408,27 @@
                 roundStatsCache[roundId] = roundStats;
             }
 
-            if (currentRound() !== round || sideTab !== 'stats') {
+            const teamKey = teamStatsCacheKey(roundId, type);
+            let teamStats;
+            if (Object.prototype.hasOwnProperty.call(teamStatsCache, teamKey)) {
+                teamStats = teamStatsCache[teamKey];
+            } else {
+                const data = await fetchJson(
+                    'bestteam/stats/team?matchround_id=' +
+                        encodeURIComponent(roundId) +
+                        '&type=' +
+                        encodeURIComponent(type)
+                );
+                teamStats = data.stats || null;
+                teamStatsCache[teamKey] = teamStats;
+            }
+
+            if (currentRound() !== round || sideTab !== 'stats' || teamType !== type) {
                 return;
             }
 
-            matchlistEl.innerHTML = renderRoundStatsBlock(roundStats);
+            matchlistEl.innerHTML =
+                renderRoundStatsBlock(roundStats) + renderTeamStatsBlock(teamStats);
         } catch (err) {
             matchlistEl.innerHTML =
                 '<p class="muted">' +
@@ -375,8 +476,7 @@
 
     function renderTeam(data) {
         clearPitch();
-        selectedTeamEl.textContent =
-            teamType === 'flop' ? 'FLOP Team der Runde' : 'TOP Team der Runde';
+        renderTeamFace();
         const ut = data.userteam || {};
         teamScoreEl.textContent = String(ut.userteam_score != null ? ut.userteam_score : '–');
         const price = ut.userteam_price != null ? Math.round(Number(ut.userteam_price) * 10) / 10 : null;
@@ -420,13 +520,12 @@
 
         setPitchMessage('');
         lines.m.innerHTML = '<p class="muted">Lade Team…</p>';
-        selectedTeamEl.textContent = teamType === 'flop' ? 'FLOP Team der Runde' : 'TOP Team der Runde';
+        renderTeamFace();
         teamScoreEl.textContent = '–';
         teamPriceEl.textContent = '–';
         if (teamSideStatsEl) {
             teamSideStatsEl.hidden = true;
         }
-        updatePitchInfoLayout();
 
         const key = cacheKey(round.matchround_id, teamType);
         try {
@@ -445,11 +544,7 @@
             }
             if (data.available === false) {
                 clearPitch();
-                setPitchMessage(
-                    teamType === 'flop'
-                        ? 'Flop-Team der Runde noch nicht verfügbar'
-                        : 'Top-Team der Runde noch nicht verfügbar'
-                );
+                setPitchMessage(teamLabel(teamType) + ' noch nicht verfügbar');
                 return;
             }
             renderTeam(data);
@@ -499,7 +594,9 @@
 
     teamSelect.addEventListener('change', function () {
         teamType = teamSelect.value || 'top';
+        renderTeamFace();
         loadTeam();
+        renderSidePanel();
     });
 
     if (sideTabsEl) {

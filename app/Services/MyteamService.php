@@ -297,6 +297,17 @@ class MyteamService
     }
 
     /**
+     * Aggregate lineup stats for an XI (userteam after subs, or extreme top/flop).
+     *
+     * @param  list<int>  $playerteamIds
+     * @return array<string, mixed>
+     */
+    public function aggregateTeamStats(array $playerteamIds, int $matchroundId): array
+    {
+        return $this->aggregateUserteamStats($playerteamIds, $matchroundId);
+    }
+
+    /**
      * @param  list<int>  $playerteamIds
      * @return array<string, mixed>
      */

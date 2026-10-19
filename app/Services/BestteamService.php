@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Extremeteam;
 use App\Models\League;
 use App\Models\WebUser;
 use App\Support\UserAvatar;
@@ -63,6 +64,54 @@ class BestteamService
     public function roundStats(int $matchroundId): array
     {
         return $this->myteam->roundStats($matchroundId);
+    }
+
+    /**
+     * Team statistics for the stored top or flop XI of a matchround.
+     *
+     * @return array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}
+     */
+    public function teamStats(int $matchroundId, string $type): array
+    {
+        if ($matchroundId <= 0) {
+            return ['ok' => false, 'status' => 422, 'error' => 'matchround_id is required'];
+        }
+
+        $type = $type === 'flop' ? 'flop' : 'top';
+
+        $team = Extremeteam::query()
+            ->where('extremeteam_matchround_id', $matchroundId)
+            ->where('extremeteam_top_or_flop', $type)
+            ->first();
+
+        if (! $team) {
+            return [
+                'ok' => true,
+                'data' => [
+                    'matchround_id' => $matchroundId,
+                    'type' => $type,
+                    'stats' => null,
+                ],
+            ];
+        }
+
+        $slotIds = $team->playerteamIdsInSlotOrder();
+        $stats = $this->myteam->aggregateTeamStats($slotIds, $matchroundId);
+        $price = (float) $team->extremeteam_price;
+        $score = (int) $team->extremeteam_score;
+        $stats['price'] = $price;
+        $stats['score'] = $score;
+        $stats['score_per_player'] = round($score / 11, 2);
+        $stats['credits_per_point'] = $score > 0 ? round($price / $score, 1) : 0.0;
+
+        return [
+            'ok' => true,
+            'data' => [
+                'matchround_id' => $matchroundId,
+                'type' => $type,
+                'stats' => $stats,
+            ],
+        ];
     }
 
     /**

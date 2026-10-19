@@ -28,6 +28,7 @@ class BestteamApiTest extends TestCase
         $this->getJson('/api/bestteam/matchrounds')->assertStatus(401);
         $this->getJson('/api/bestteam/team?matchround_id=1&type=top')->assertStatus(401);
         $this->getJson('/api/bestteam/stats/round?matchround_id=1')->assertStatus(401);
+        $this->getJson('/api/bestteam/stats/team?matchround_id=1&type=top')->assertStatus(401);
     }
 
     public function test_matchrounds_returns_payload(): void
@@ -141,6 +142,32 @@ class BestteamApiTest extends TestCase
             ->assertJsonPath('data.stats.num_users', 10);
     }
 
+    public function test_team_stats_returns_payload(): void
+    {
+        $this->actingAsFfbUser();
+
+        $this->mock(BestteamService::class, function ($mock) {
+            $mock->shouldReceive('teamStats')->once()->with(280, 'top')->andReturn([
+                'ok' => true,
+                'data' => [
+                    'matchround_id' => 280,
+                    'type' => 'top',
+                    'stats' => [
+                        'system' => '4-4-2',
+                        'goals' => 12,
+                        'assists' => 8,
+                    ],
+                ],
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->getJson('/api/bestteam/stats/team?matchround_id=280&type=top')
+            ->assertOk()
+            ->assertJsonPath('data.stats.system', '4-4-2')
+            ->assertJsonPath('data.type', 'top');
+    }
+
     public function test_page_redirects_guests(): void
     {
         $this->get('/bestteam')
@@ -171,8 +198,9 @@ class BestteamApiTest extends TestCase
             ->get('/bestteam')
             ->assertOk()
             ->assertSee('js/bestteam.js', false)
-            ->assertDontSee('js/pitch-bench.js', false)
+            ->assertSee('js/pitch-bench.js', false)
             ->assertDontSee('soccer-bench', false)
+            ->assertSee('id="team_selection"', false)
             ->assertSee('Top-Team der Runde', false)
             ->assertSee('Statistiken anzeigen', false);
     }

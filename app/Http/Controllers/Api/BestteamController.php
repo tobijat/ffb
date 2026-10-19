@@ -39,6 +39,15 @@ class BestteamController extends Controller
         return $this->respond($result);
     }
 
+    public function teamStats(Request $request): JsonResponse
+    {
+        $matchroundId = (int) $request->query('matchround_id', 0);
+        $type = (string) $request->query('type', 'top');
+        $result = $this->bestteam->teamStats($matchroundId, $type);
+
+        return $this->respond($result);
+    }
+
     /**
      * @param  array{ok: true, data: array<string, mixed>}|array{ok: false, status: int, error: string}  $result
      */
