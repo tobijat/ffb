@@ -1,7 +1,7 @@
 .help-layout {
     display: grid;
     grid-template-columns: minmax(10rem, 0.32fr) minmax(0, 1fr);
-    gap: 10px;
+    gap: var(--chrome-inset, 4px);
     align-items: start;
 }
 
@@ -15,7 +15,7 @@
     background: #99cc99;
     border: 1px solid #7aaa7a;
     border-radius: var(--radius);
-    padding: 8px 10px 12px;
+    padding: var(--chrome-inset, 4px);
 }
 
 .help-title {

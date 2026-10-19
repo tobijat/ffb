@@ -1,7 +1,8 @@
 .myteam-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 0.9fr);
-    gap: 10px;
+    /* Side track capped so the pitch panel grows to match dash-top width. */
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+    gap: var(--chrome-inset, 4px);
     align-items: start;
 }
 
@@ -13,7 +14,7 @@
 .myteam-layout > .myteam-side,
 .lineup-layout > .myteam-side {
     min-width: 0;
-    max-width: 22rem;
+    max-width: none;
     justify-self: stretch;
 }
 
@@ -27,9 +28,9 @@
 .pitch-info {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    gap: 4px 10px;
+    gap: var(--chrome-inset, 4px);
     align-items: start;
-    margin-bottom: 4px;
+    margin-bottom: var(--chrome-inset, 4px);
     min-height: 0;
 }
 
@@ -127,10 +128,10 @@
 }
 
 .soccer-field {
-    width: min(100%, 647px);
+    width: 100%;
     aspect-ratio: 647 / 729;
     max-height: none;
-    margin: 0 auto;
+    margin: 0;
     position: relative;
     border-radius: 16px;
     overflow: hidden;
@@ -152,35 +153,32 @@
 }
 
 .pitch-stage {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--chrome-inset, 4px);
     width: 100%;
+    align-items: start;
+    justify-items: stretch;
+}
+
+/* Keep field:bench at SVG width ratio (647:104) so both fill the stage. */
+.pitch-stage.has-bench {
+    grid-template-columns: minmax(0, 647fr) minmax(0, 104fr);
 }
 
 .pitch-stage .soccer-field {
     margin: 0;
-    flex: 0 1 auto;
-}
-
-.pitch-stage.has-bench {
-    align-items: flex-start;
-}
-
-.pitch-stage.has-bench .soccer-field {
-    width: min(100%, 560px);
+    width: 100%;
+    min-width: 0;
 }
 
 .soccer-bench {
     position: relative;
-    flex: 0 0 auto;
-    width: auto;
-    height: auto;
+    width: 100%;
+    aspect-ratio: 104 / 729;
     margin: 0;
     padding: 0;
-    align-self: flex-start;
-    aspect-ratio: 104 / 729;
+    min-height: 0;
     border-radius: 12px;
     overflow: hidden;
     box-sizing: border-box;
@@ -208,14 +206,15 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    gap: 8px;
-    padding: 0 2px 6px;
+    gap: 6px;
+    padding: 0 2px 4px;
     box-sizing: border-box;
     overflow: hidden;
 }
 
 .soccer-bench .pitch-player {
-    width: 90px;
+    width: 100%;
+    max-width: 90px;
     flex: 0 0 auto;
     /* same footprint as a field player card (shirt + name + score/meta) */
     min-height: 7.25rem;
@@ -238,8 +237,8 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 8px 12px;
-    padding: 0 8px;
+    gap: 8px 10px;
+    padding: 0 var(--chrome-inset, 4px);
 }
 
 .pitch-player {
@@ -453,9 +452,5 @@
 
     .soccer-field {
         width: 100%;
-    }
-
-    .pitch-stage.has-bench .soccer-field {
-        width: calc(100% - 72px);
     }
 }

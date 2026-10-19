@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Rangliste — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css?v=38">
-    <link rel="stylesheet" href="css/dashboard.css?v=44">
-    <link rel="stylesheet" href="css/userscore.css?v=10">
+    <link rel="stylesheet" href="css/start.css?v=39">
+    <link rel="stylesheet" href="css/dashboard.css?v=45">
+    <link rel="stylesheet" href="css/userscore.css?v=11">
     <link rel="stylesheet" href="css/modal.css?v=48">
 </head>
 <body class="dash-body">

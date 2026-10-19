@@ -1,5 +1,4 @@
 (function (global) {
-    const BENCH_ASPECT = 104 / 729;
     let fieldObserver = null;
 
     function benchLimits(options) {
@@ -292,16 +291,8 @@
             return;
         }
 
-        const fieldHeight = Math.round(field.getBoundingClientRect().height);
-        if (fieldHeight <= 0) {
-            return;
-        }
-
-        const benchWidth = Math.max(1, Math.round(fieldHeight * BENCH_ASPECT));
-        bench.style.height = fieldHeight + 'px';
-        bench.style.width = benchWidth + 'px';
-        bench.style.flexBasis = benchWidth + 'px';
-
+        // Width/height come from CSS (647fr:104fr + matching aspect ratios).
+        // Only sync substitute stack top with the keeper line.
         if (line && fieldG) {
             const fieldRect = field.getBoundingClientRect();
             const gRect = fieldG.getBoundingClientRect();
@@ -327,6 +318,9 @@
     }
 
     function clearBenchSize(bench) {
+        if (!bench) {
+            return;
+        }
         bench.style.removeProperty('height');
         bench.style.removeProperty('width');
         bench.style.removeProperty('flex-basis');

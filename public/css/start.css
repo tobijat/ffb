@@ -19,6 +19,8 @@
     --font-title: "Kristen ITC", "Comic Sans MS", Verdana, sans-serif;
     --page-max: 1100px;
     --page-gutter: 10px;
+    /* Inner tile/panel spacing — match .dash-top padding/gap */
+    --chrome-inset: 4px;
     --radius: 6px;
     --radius-sm: 4px;
     --ffb-tab-border: #7aaa7a;
@@ -240,12 +242,12 @@ main,
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 4px;
+    padding: var(--chrome-inset, 4px);
     background: var(--panel);
     border: 1px solid #7aaa7a;
     border-radius: var(--radius);
     margin-top: 6px;
-    gap: 4px;
+    gap: var(--chrome-inset, 4px);
 }
 
 .brand {
@@ -371,19 +373,19 @@ main,
 }
 
 main {
-    padding: 8px var(--page-gutter) 24px;
+    padding: var(--chrome-inset, 4px) var(--page-gutter) 24px;
 }
 
 .start-page main {
-    padding-top: 10px;
+    padding-top: var(--chrome-inset, 4px);
 }
 
 .start-layout {
     display: grid;
     grid-template-columns: 1.2fr 0.8fr;
-    gap: 10px;
+    gap: var(--chrome-inset, 4px);
     align-items: start;
-    margin-top: 8px;
+    margin-top: var(--chrome-inset, 4px);
 }
 
 .start-page .start-layout {
@@ -396,7 +398,7 @@ main {
     max-width: none;
     margin-left: 0;
     margin-right: 0;
-    gap: 10px;
+    gap: var(--chrome-inset, 4px);
 }
 
 .start-page .start-leagues .start-league-tile {

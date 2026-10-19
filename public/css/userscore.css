@@ -1,13 +1,13 @@
 .userscore-layout {
     display: grid;
     grid-template-columns: 1.4fr 0.8fr;
-    gap: 10px;
+    gap: var(--chrome-inset, 4px);
     align-items: start;
 }
 
 .userscore-side {
     display: grid;
-    gap: 10px;
+    gap: var(--chrome-inset, 4px);
 }
 
 .userscore-side .tip {

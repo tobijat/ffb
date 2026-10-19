@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Top / Flop Teams — SoccerSportsfan</title>
-    <link rel="stylesheet" href="css/start.css?v=38">
-    <link rel="stylesheet" href="css/dashboard.css?v=44">
+    <link rel="stylesheet" href="css/start.css?v=39">
+    <link rel="stylesheet" href="css/dashboard.css?v=45">
     <link rel="stylesheet" href="css/modal.css?v=48">
-    <link rel="stylesheet" href="css/myteam.css?v=33">
+    <link rel="stylesheet" href="css/myteam.css?v=37">
 </head>
 <body class="dash-body">
     @php

@@ -5,7 +5,7 @@
 }
 
 .dash-top {
-    padding: 4px;
+    padding: var(--chrome-inset, 4px);
     background: var(--panel);
     border: 1px solid #7aaa7a;
     border-radius: var(--radius);
@@ -14,7 +14,7 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 4px;
+    gap: var(--chrome-inset, 4px);
     width: calc(100% - (2 * var(--page-gutter, 10px)));
     max-width: calc(var(--page-max, 1100px) - (2 * var(--page-gutter, 10px)));
     box-sizing: border-box;
@@ -109,9 +109,9 @@
 }
 
 .dash-main {
-    padding: 8px var(--page-gutter, 10px) 24px;
+    padding: var(--chrome-inset, 4px) var(--page-gutter, 10px) 24px;
     display: grid;
-    gap: 10px;
+    gap: var(--chrome-inset, 4px);
 }
 
 .user-card {
@@ -438,7 +438,7 @@
     background: var(--panel);
     border: 1px solid #7aaa7a;
     border-radius: var(--radius);
-    padding: 8px 10px 10px;
+    padding: var(--chrome-inset, 4px);
 }
 
 .hint {
@@ -511,14 +511,14 @@
 .dash-columns {
     display: grid;
     grid-template-columns: 1.2fr 0.8fr;
-    gap: 10px;
+    gap: var(--chrome-inset, 4px);
 }
 
 .panel {
     background: var(--panel);
     border: 1px solid #7aaa7a;
     border-radius: var(--radius);
-    padding: 8px 10px 10px;
+    padding: var(--chrome-inset, 4px);
 }
 
 .news-item {

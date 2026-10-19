@@ -1,7 +1,8 @@
 .lineup-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 0.9fr);
-    gap: 10px;
+    /* Side track capped so the pitch panel grows to match dash-top width. */
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+    gap: var(--chrome-inset, 4px);
     align-items: start;
 }
 

@@ -1,7 +1,7 @@
 .account-layout {
     display: grid;
     grid-template-columns: 1.4fr 0.8fr;
-    gap: 10px;
+    gap: var(--chrome-inset, 4px);
     align-items: start;
 }
 
@@ -110,8 +110,8 @@
 }
 
 .account-flash {
-    margin: 8px 0;
-    padding: 8px 10px;
+    margin: var(--chrome-inset, 4px) 0;
+    padding: var(--chrome-inset, 4px);
     border: 1px solid #7aaa7a;
     border-radius: var(--radius);
     font-size: 10pt;
@@ -133,8 +133,8 @@
 }
 
 .account-helptext {
-    margin-top: 8px;
-    padding: 8px;
+    margin-top: var(--chrome-inset, 4px);
+    padding: var(--chrome-inset, 4px);
     background: var(--panel-light);
     border: 1px solid #7aaa7a;
     border-radius: var(--radius);
