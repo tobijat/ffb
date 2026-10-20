@@ -230,6 +230,28 @@ final class TeamShirt
     }
 
     /**
+     * Absolute path to the kit-kitchen config SVG for a stored shirt avatar
+     * (`shirts/{team}/{nat}[-league].svg` → `shirts-config/{nat}.svg`).
+     */
+    public static function configSvgPathFromShirtRelative(string $shirtRelative): ?string
+    {
+        $relative = str_replace('\\', '/', trim($shirtRelative));
+        if (! UserAvatar::isShirtPath($relative)) {
+            return null;
+        }
+
+        if (! preg_match('#^shirts/[^/]+/([a-z0-9_]+)(?:-[a-z0-9_-]+)?\.svg$#', $relative, $match)) {
+            return null;
+        }
+
+        $nat = $match[1];
+        $base = rtrim((string) config('ffb.legacy_images_path'), DIRECTORY_SEPARATOR.'\\/');
+        $path = $base.DIRECTORY_SEPARATOR.'shirts-config'.DIRECTORY_SEPARATOR.$nat.'.svg';
+
+        return is_file($path) ? $path : null;
+    }
+
+    /**
      * Whether a relative path under images/ffb exists on disk.
      */
     public static function relativeExists(string $relativeUnderFfb): bool

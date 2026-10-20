@@ -100,4 +100,36 @@ class KitKitchenClientTest extends TestCase
         $this->assertNull(KitKitchenClient::normalizeMaker(''));
         $this->assertNull(KitKitchenClient::normalizeMaker('unknown'));
     }
+
+    public function test_fetch_posts_svg_body(): void
+    {
+        config(['ffb.kit_kitchen_random_url' => 'https://kit.test/random.php']);
+
+        Http::fake([
+            'kit.test/*' => Http::response(
+                '<svg xmlns="http://www.w3.org/2000/svg"><rect id="imported"/></svg>',
+                200,
+                ['X-Kit-Seed' => 'k1OpaqueSeedToken_abc']
+            ),
+        ]);
+
+        $config = '<svg xmlns="http://www.w3.org/2000/svg"><metadata id="kitroom-config">e30=</metadata></svg>';
+        $result = (new KitKitchenClient)->fetch([
+            'svg_body' => $config,
+            'stars' => 1,
+            'number' => '7',
+        ]);
+
+        $this->assertNotNull($result);
+        $this->assertSame('k1OpaqueSeedToken_abc', $result['seed']);
+        $this->assertStringContainsString('imported', $result['svg']);
+
+        Http::assertSent(function ($request) use ($config) {
+            return $request->method() === 'POST'
+                && str_contains($request->url(), 'stars=1')
+                && str_contains($request->url(), 'number=7')
+                && $request->body() === $config
+                && str_contains((string) $request->header('Content-Type')[0], 'image/svg+xml');
+        });
+    }
 }

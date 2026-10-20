@@ -265,7 +265,7 @@ class AccountPageTest extends TestCase
             ->assertSee('Fertige Trikots', false)
             ->assertSee('Eigenes Trikot', false)
             ->assertSee('Neu generieren', false)
-            ->assertSee('Als Avatar speichern', false)
+            ->assertSee('Avatar speichern', false)
             ->assertSee('profile_section" value="avatar_custom"', false)
             ->assertSee('avatar-kit-prev', false)
             ->assertSee('avatar-kit-next', false)
@@ -324,6 +324,81 @@ class AccountPageTest extends TestCase
     {
         $this->getJson('/profile/avatar/kit-random')
             ->assertUnauthorized();
+    }
+
+    public function test_kit_from_shirt_endpoint_posts_config_svg(): void
+    {
+        config([
+            'ffb.kit_kitchen_random_url' => 'https://kit.test/random.php',
+            'ffb.legacy_images_path' => storage_path('framework/testing/kit-from-shirt-'.uniqid('', true)),
+        ]);
+
+        $imagesRoot = config('ffb.legacy_images_path');
+        $configDir = $imagesRoot.DIRECTORY_SEPARATOR.'shirts-config';
+        mkdir($configDir, 0775, true);
+        $configSvg = '<svg xmlns="http://www.w3.org/2000/svg"><metadata id="kitroom-config">e30=</metadata></svg>';
+        file_put_contents($configDir.DIRECTORY_SEPARATOR.'aut.svg', $configSvg);
+
+        \Illuminate\Support\Facades\Http::fake([
+            'kit.test/*' => \Illuminate\Support\Facades\Http::sequence()
+                ->push(
+                    '<svg xmlns="http://www.w3.org/2000/svg"><rect id="front"/></svg>',
+                    200,
+                    ['X-Kit-Seed' => 'k1OpaqueFromShirtSeed_token']
+                )
+                ->push(
+                    '<svg xmlns="http://www.w3.org/2000/svg"><rect id="back"/></svg>',
+                    200,
+                    ['X-Kit-Seed' => 'k1OpaqueFromShirtSeed_token']
+                ),
+        ]);
+
+        try {
+            $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+                ->postJson('/profile/avatar/kit-from-shirt', [
+                    'shirt' => 'shirts/austria-abcd/aut.svg',
+                    'stars' => 2,
+                    'number' => '7',
+                    'text' => 'Boss',
+                ])
+                ->assertOk()
+                ->assertJson([
+                    'seed' => 'k1OpaqueFromShirtSeed_token',
+                    'svg' => '<svg xmlns="http://www.w3.org/2000/svg"><rect id="front"/></svg>',
+                    'svg_back' => '<svg xmlns="http://www.w3.org/2000/svg"><rect id="back"/></svg>',
+                ]);
+
+            \Illuminate\Support\Facades\Http::assertSentCount(2);
+            \Illuminate\Support\Facades\Http::assertSent(function ($request) use ($configSvg) {
+                return $request->method() === 'POST'
+                    && $request->body() === $configSvg
+                    && str_contains($request->url(), 'stars=2')
+                    && str_contains($request->url(), 'number=7')
+                    && ! str_contains($request->url(), 'backside=');
+            });
+            \Illuminate\Support\Facades\Http::assertSent(function ($request) {
+                return $request->method() === 'GET'
+                    && str_contains($request->url(), 'seed=k1OpaqueFromShirtSeed_token')
+                    && str_contains($request->url(), 'backside=1')
+                    && str_contains($request->url(), 'text=Boss');
+            });
+        } finally {
+            \Illuminate\Support\Facades\File::deleteDirectory($imagesRoot);
+        }
+    }
+
+    public function test_profile_avatar_tab_exposes_kit_from_shirt_url(): void
+    {
+        $this->mock(AccountService::class, function ($mock) {
+            $mock->shouldReceive('pagePayload')->once()->andReturn($this->accountPayload());
+            $mock->shouldReceive('profilePayload')->once()->andReturn($this->profilePayload());
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->get('/profile?tab=avatar')
+            ->assertOk()
+            ->assertSee('profile/avatar/kit-from-shirt', false)
+            ->assertSee('data-current-avatar-is-shirt', false);
     }
 
     public function test_profile_avatar_custom_update_is_forwarded(): void

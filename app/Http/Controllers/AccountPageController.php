@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\UserDetails;
 use App\Services\AccountService;
 use App\Services\FfbAuth;
 use App\Support\CustomAvatarSvg;
 use App\Support\KitKitchenClient;
+use App\Support\TeamShirt;
+use App\Support\UserAvatar;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -121,6 +124,84 @@ class AccountPageController extends Controller
         ];
 
         $front = $kits->fetch($shared);
+        if ($front === null) {
+            return response()->json(['error' => 'Kit konnte nicht geladen werden.'], 502);
+        }
+
+        $back = $kits->fetch([
+            ...$shared,
+            'seed' => $front['seed'],
+            'backside' => true,
+            'text' => $text,
+        ]);
+        if ($back === null) {
+            return response()->json(['error' => 'Kit konnte nicht geladen werden.'], 502);
+        }
+
+        return response()->json([
+            'seed' => $front['seed'],
+            'svg' => $front['svg'],
+            'svg_back' => $back['svg'],
+        ]);
+    }
+
+    /**
+     * Import a saved ready-made team shirt into Kit Kitchen by POSTing its
+     * config SVG, returning front/back/seed like kit-random.
+     */
+    public function kitFromShirt(Request $request, KitKitchenClient $kits): JsonResponse
+    {
+        $userId = $this->auth->userId($request);
+        if ($userId <= 0) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $shirt = trim((string) $request->input('shirt', ''));
+        if ($shirt === '') {
+            $shirt = trim((string) (UserDetails::query()
+                ->where('user_id', $userId)
+                ->value('user_details_avatar') ?? ''));
+        }
+
+        if (! UserAvatar::isShirtPath($shirt)) {
+            return response()->json(['error' => 'Kein fertiges Trikot als Avatar gesetzt.'], 422);
+        }
+
+        $configPath = TeamShirt::configSvgPathFromShirtRelative($shirt);
+        if ($configPath === null) {
+            return response()->json(['error' => 'Trikot-Config nicht gefunden.'], 404);
+        }
+
+        $configSvg = @file_get_contents($configPath);
+        if (! is_string($configSvg) || ! CustomAvatarSvg::isAcceptable($configSvg)) {
+            return response()->json(['error' => 'Trikot-Config ungültig.'], 502);
+        }
+
+        $stars = $request->input('stars', $request->query('stars'));
+        $starsInt = is_numeric($stars) ? (int) $stars : null;
+        if ($starsInt !== null && ($starsInt < 0 || $starsInt > 9)) {
+            $starsInt = null;
+        }
+
+        $number = trim((string) $request->input('number', $request->query('number', '')));
+        if ($number !== '' && ! preg_match('/^\d{1,2}$/', $number)) {
+            $number = '';
+        }
+
+        $text = (string) $request->input('text', $request->query('text', ''));
+        $maker = KitKitchenClient::normalizeMaker(
+            $request->input('maker', $request->query('maker'))
+        );
+        $shared = [
+            'stars' => $starsInt,
+            'number' => $number !== '' ? $number : null,
+            'maker' => $maker,
+        ];
+
+        $front = $kits->fetch([
+            ...$shared,
+            'svg_body' => $configSvg,
+        ]);
         if ($front === null) {
             return response()->json(['error' => 'Kit konnte nicht geladen werden.'], 502);
         }

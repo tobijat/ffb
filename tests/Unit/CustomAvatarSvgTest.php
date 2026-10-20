@@ -38,12 +38,14 @@ class CustomAvatarSvgTest extends TestCase
         $this->assertFalse(CustomAvatarSvg::isAcceptable('not svg'));
     }
 
-    public function test_normalize_seed_accepts_digits(): void
+    public function test_normalize_seed_accepts_digits_and_opaque_tokens(): void
     {
         $this->assertSame('706317194', CustomAvatarSvg::normalizeSeed('706317194'));
+        $this->assertSame('12345678901', CustomAvatarSvg::normalizeSeed('12345678901'));
+        $opaque = 'k1RYxBDsIgEEXvMm6JYagxKVuP4MI17QyWhAABWhfGuwuNqZnVvP_ff8';
+        $this->assertSame($opaque, CustomAvatarSvg::normalizeSeed($opaque));
         $this->assertNull(CustomAvatarSvg::normalizeSeed(''));
-        $this->assertNull(CustomAvatarSvg::normalizeSeed('abc'));
-        $this->assertNull(CustomAvatarSvg::normalizeSeed('12345678901'));
+        $this->assertNull(CustomAvatarSvg::normalizeSeed('bad seed!'));
     }
 
     public function test_store_writes_front_and_back_files(): void
@@ -68,8 +70,27 @@ class CustomAvatarSvgTest extends TestCase
     public function test_store_rejects_invalid_seed_or_back(): void
     {
         $svg = '<svg xmlns="http://www.w3.org/2000/svg"><circle r="5"/></svg>';
-        $this->assertNull(CustomAvatarSvg::store($svg, 'nope', $svg));
+        $this->assertNull(CustomAvatarSvg::store($svg, 'bad seed!', $svg));
         $this->assertNull(CustomAvatarSvg::store($svg, '123', 'not-svg'));
+    }
+
+    public function test_store_opaque_seed_writes_companion_seed_file(): void
+    {
+        $front = '<svg xmlns="http://www.w3.org/2000/svg"><circle r="5"/></svg>';
+        $back = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="5" height="5"/></svg>';
+        $opaque = 'k1RYxBDsIgEEXvMm6JYagxKVuP4MI17QyWhAABWhfGuwuNqZnVvP_ff8';
+        $name = CustomAvatarSvg::store($front, $opaque, $back);
+        $this->assertNotNull($name);
+        $this->assertMatchesRegularExpression('/^k[a-f0-9]{16}_[a-f0-9]{8}\.svg$/', $name);
+        $this->assertSame($opaque, CustomAvatarSvg::seedFromFilename($name));
+
+        $dir = $this->imagesRoot.DIRECTORY_SEPARATOR.'profiles'.DIRECTORY_SEPARATOR.'avatar';
+        $stem = preg_replace('/\.svg$/', '', $name);
+        $this->assertFileExists($dir.DIRECTORY_SEPARATOR.$stem.'.seed');
+
+        CustomAvatarSvg::deleteStored($name);
+        $this->assertFileDoesNotExist($dir.DIRECTORY_SEPARATOR.$name);
+        $this->assertFileDoesNotExist($dir.DIRECTORY_SEPARATOR.$stem.'.seed');
     }
 
     public function test_seed_from_filename(): void

@@ -7,6 +7,7 @@ use Throwable;
 
 /**
  * Fetches random / seeded shirts from the Kit Kitchen random.php endpoint.
+ * Optionally POSTs a config SVG body to import an existing shirt design.
  *
  * @phpstan-type KitOptions array{
  *   seed?: string|null,
@@ -14,7 +15,8 @@ use Throwable;
  *   number?: string|null,
  *   maker?: string|null,
  *   backside?: bool,
- *   text?: string|null
+ *   text?: string|null,
+ *   svg_body?: string|null
  * }
  * @phpstan-type KitResult array{seed: string, svg: string}
  */
@@ -73,12 +75,16 @@ final class KitKitchenClient
             $url .= (str_contains($base, '?') ? '&' : '?').http_build_query($query);
         }
 
+        $svgBody = trim((string) ($options['svg_body'] ?? ''));
+
         try {
             $request = Http::timeout(20)->accept('image/svg+xml');
             if (! config('ffb.http.verify_ssl', true)) {
                 $request = $request->withOptions(['verify' => false]);
             }
-            $response = $request->get($url);
+            $response = $svgBody !== ''
+                ? $request->withBody($svgBody, 'image/svg+xml')->post($url)
+                : $request->get($url);
         } catch (Throwable) {
             return null;
         }

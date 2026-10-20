@@ -186,8 +186,15 @@
     const savedAvatarSeed = avatarTab
         ? (avatarTab.getAttribute('data-current-avatar-seed') || '').trim()
         : '';
+    const savedAvatarIsShirt = avatarTab
+        ? avatarTab.getAttribute('data-current-avatar-is-shirt') === '1'
+        : false;
+    const kitFromShirtUrl = avatarTab
+        ? (avatarTab.getAttribute('data-kit-from-shirt-url') || '').trim()
+        : '';
     const regenerateLabel = 'Neu generieren';
     const regenerateLoadingLabel = 'Trikot wird geladen…';
+    const kitSeedPattern = /^[A-Za-z0-9_-]{1,512}$/;
     let customSvg = '';
     let customSvgBack = '';
     let customSeed = '';
@@ -199,6 +206,16 @@
     let kitIndex = -1;
     let kitBusy = false;
     let kitRestoringOptions = false;
+    let kitBootstrappedFromShirt = false;
+
+    function xsrfToken() {
+        const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+        return match ? decodeURIComponent(match[1]) : '';
+    }
+
+    function isKitSeed(value) {
+        return kitSeedPattern.test(String(value || '').trim());
+    }
 
     function setAvatarMode(mode) {
         const isCustom = mode === 'custom';
@@ -378,8 +395,100 @@
         updateCustomSaveState(false);
     }
 
+    function pushKitHistoryEntry(entry, replaceCurrent) {
+        if (replaceCurrent && kitIndex >= 0 && kitIndex < kitHistory.length) {
+            kitHistory[kitIndex] = entry;
+        } else {
+            if (kitIndex < kitHistory.length - 1) {
+                kitHistory = kitHistory.slice(0, kitIndex + 1);
+            }
+            kitHistory.push(entry);
+            kitIndex = kitHistory.length - 1;
+        }
+        showCustomEntry(entry, false);
+    }
+
+    function bootstrapFromReadyShirt() {
+        if (
+            kitBootstrappedFromShirt ||
+            kitBusy ||
+            !savedAvatarIsShirt ||
+            !kitFromShirtUrl ||
+            !avatarTab
+        ) {
+            return;
+        }
+        kitBootstrappedFromShirt = true;
+        updateCustomSaveState(true);
+        const requestOptions = readKitOptions();
+        const body = new URLSearchParams();
+        body.set('shirt', savedAvatar);
+        body.set('stars', String(requestOptions.stars));
+        if (requestOptions.maker) {
+            body.set('maker', requestOptions.maker);
+        }
+        if (requestOptions.number) {
+            body.set('number', requestOptions.number);
+        }
+        if (requestOptions.text) {
+            body.set('text', requestOptions.text);
+        }
+        const headers = {
+            Accept: 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest',
+        };
+        const xsrf = xsrfToken();
+        if (xsrf) {
+            headers['X-XSRF-TOKEN'] = xsrf;
+        }
+        fetch(kitFromShirtUrl, {
+            method: 'POST',
+            cache: 'no-store',
+            credentials: 'same-origin',
+            headers: headers,
+            body: body.toString(),
+        })
+            .then(function (res) {
+                if (!res.ok) {
+                    throw new Error('HTTP ' + res.status);
+                }
+                return res.json();
+            })
+            .then(function (data) {
+                const svg = String((data && data.svg) || '').trim();
+                const svgBack = String((data && data.svg_back) || '').trim();
+                const seed = String((data && data.seed) || '').trim();
+                if (!/<svg\b/i.test(svg) || !/<svg\b/i.test(svgBack) || !isKitSeed(seed)) {
+                    throw new Error('Ungültige Antwort');
+                }
+                kitHistory = [];
+                kitIndex = -1;
+                pushKitHistoryEntry(
+                    {
+                        seed: seed,
+                        svg: svg,
+                        svgBack: svgBack,
+                        isSaved: false,
+                        options: {
+                            maker: requestOptions.maker,
+                            stars: requestOptions.stars,
+                            number: requestOptions.number,
+                            text: requestOptions.text,
+                        },
+                    },
+                    false
+                );
+            })
+            .catch(function () {
+                kitBootstrappedFromShirt = false;
+                updateCustomSaveState(false);
+                showCurrentAvatarInCustomPreview();
+            });
+    }
+
     function initHistoryFromSavedCustom() {
-        if (!savedAvatarSeed || !savedAvatarUrl || !/^\d{1,10}$/.test(savedAvatarSeed)) {
+        if (!savedAvatarSeed || !savedAvatarUrl || !isKitSeed(savedAvatarSeed)) {
             return;
         }
         const frontReq = fetch(savedAvatarUrl, {
@@ -464,35 +573,24 @@
                 const svg = String((data && data.svg) || '').trim();
                 const svgBack = String((data && data.svg_back) || '').trim();
                 const seed = String((data && data.seed) || '').trim();
-                if (
-                    !/<svg\b/i.test(svg) ||
-                    !/<svg\b/i.test(svgBack) ||
-                    !/^\d{1,10}$/.test(seed)
-                ) {
+                if (!/<svg\b/i.test(svg) || !/<svg\b/i.test(svgBack) || !isKitSeed(seed)) {
                     throw new Error('Ungültige Antwort');
                 }
-                const entry = {
-                    seed: seed,
-                    svg: svg,
-                    svgBack: svgBack,
-                    isSaved: false,
-                    options: {
-                        maker: requestOptions.maker,
-                        stars: requestOptions.stars,
-                        number: requestOptions.number,
-                        text: requestOptions.text,
+                pushKitHistoryEntry(
+                    {
+                        seed: seed,
+                        svg: svg,
+                        svgBack: svgBack,
+                        isSaved: false,
+                        options: {
+                            maker: requestOptions.maker,
+                            stars: requestOptions.stars,
+                            number: requestOptions.number,
+                            text: requestOptions.text,
+                        },
                     },
-                };
-                if (replaceCurrent && kitIndex >= 0 && kitIndex < kitHistory.length) {
-                    kitHistory[kitIndex] = entry;
-                } else {
-                    if (kitIndex < kitHistory.length - 1) {
-                        kitHistory = kitHistory.slice(0, kitIndex + 1);
-                    }
-                    kitHistory.push(entry);
-                    kitIndex = kitHistory.length - 1;
-                }
-                showCustomEntry(entry, false);
+                    replaceCurrent
+                );
             })
             .catch(function () {
                 if (kitHistory.length === 0) {
@@ -546,6 +644,9 @@
                 return;
             }
             setAvatarMode(radio.value);
+            if (radio.value === 'custom') {
+                bootstrapFromReadyShirt();
+            }
         });
     });
 
@@ -625,8 +726,12 @@
     updateCustomSaveState(false);
     if (avatarTab) {
         const checkedMode = document.querySelector('input[name="avatar_mode"]:checked');
-        setAvatarMode(checkedMode ? checkedMode.value : 'ready');
+        const mode = checkedMode ? checkedMode.value : 'ready';
+        setAvatarMode(mode);
         initHistoryFromSavedCustom();
+        if (mode === 'custom') {
+            bootstrapFromReadyShirt();
+        }
     }
 
     const serverErrors = Array.isArray(window.FFB_ACCOUNT_ERRORS) ? window.FFB_ACCOUNT_ERRORS : [];

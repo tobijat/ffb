@@ -66,6 +66,7 @@ Route::post('/account', [AccountPageController::class, 'update'])->name('account
 Route::get('/profile', [AccountPageController::class, 'showProfile'])->name('profile');
 Route::post('/profile', [AccountPageController::class, 'updateProfile'])->name('profile.update');
 Route::get('/profile/avatar/kit-random', [AccountPageController::class, 'randomKitAvatar'])->name('profile.avatar.kitRandom');
+Route::post('/profile/avatar/kit-from-shirt', [AccountPageController::class, 'kitFromShirt'])->name('profile.avatar.kitFromShirt');
 
 Route::middleware('ffb.admin')->group(function () {
     Route::get('/admin', [AdminCenterController::class, 'show'])->name('admin.center');

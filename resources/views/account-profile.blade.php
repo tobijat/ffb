@@ -193,9 +193,11 @@
                 role="tabpanel"
                 @if ($activeTab !== 'avatar') hidden @endif
                 data-kit-random-url="{{ route('profile.avatar.kitRandom') }}"
+                data-kit-from-shirt-url="{{ route('profile.avatar.kitFromShirt') }}"
                 data-current-avatar="{{ $currentAvatar }}"
                 data-current-avatar-url="{{ $currentAvatarUrl }}"
                 data-current-avatar-back-url="{{ $currentAvatarBackUrl }}"
+                data-current-avatar-is-shirt="{{ \App\Support\UserAvatar::isShirtPath($currentAvatar) ? '1' : '0' }}"
                 @if ($currentAvatarSeed) data-current-avatar-seed="{{ $currentAvatarSeed }}" @endif
             >
                 <div class="avatar-mode-switch" role="radiogroup" aria-label="Avatar-Quelle">
@@ -445,6 +447,6 @@
             window.FFB_ACCOUNT_ERRORS = @json(array_values($errors));
         </script>
     @endif
-    <script src="{{ $assetBase }}/js/account.js?v=16" defer></script>
+    <script src="{{ $assetBase }}/js/account.js?v=17" defer></script>
 </body>
 </html>
