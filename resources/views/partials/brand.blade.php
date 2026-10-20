@@ -1,11 +1,12 @@
 @php
     $league = $brandLeague ?? null;
     $fallbackIcon = $brandIcon ?? 'images/ffb/navigation/nav_start.png';
-    $iconSrc = $league['symbol_url']
+    $iconSrc = (! empty($brandPreferIcon) ? null : ($league['symbol_url'] ?? null))
         ?? ((str_starts_with($fallbackIcon, '/') ? '' : ($legacyBase ?? '/')).$fallbackIcon);
     $hasSubtitle = ! empty($brandSubtitle) && empty($league['league_title']);
+    $brandExtraClass = trim((string) ($brandClass ?? ''));
 @endphp
-<a class="brand{{ $hasSubtitle ? ' brand-stacked' : '' }}" href="{{ $brandHref ?? '/' }}" title="{{ $brandTitle ?? 'Start' }}">
+<a class="brand{{ $hasSubtitle ? ' brand-stacked' : '' }}{{ $brandExtraClass !== '' ? ' '.$brandExtraClass : '' }}" href="{{ $brandHref ?? '/' }}" title="{{ $brandTitle ?? 'Start' }}">
     @if ($hasSubtitle)
         <span class="brand-row">
             <img src="{{ $iconSrc }}" alt="" width="40" height="40" loading="lazy">

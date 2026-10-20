@@ -13,7 +13,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: var(--chrome-inset, 4px);
     width: calc(100% - (2 * var(--page-gutter, 10px)));
     max-width: calc(var(--page-max, 1100px) - (2 * var(--page-gutter, 10px)));
@@ -24,12 +24,33 @@
     align-items: stretch;
 }
 
-.dash-top:not(.dash-top-guest) .dash-top-main {
-    align-items: stretch;
+/* Flatten brand/nav into the header flex so Profile can stay on the top row
+ * when nav wraps (same pattern as admin). Admin overrides via .admin-top. */
+.dash-top:not(.admin-top) > .dash-top-main {
+    display: contents;
+}
+
+.dash-top:not(.admin-top) .brand {
+    flex: 0 1 auto;
+    box-sizing: border-box;
+}
+
+.dash-top:not(.admin-top) .dash-nav {
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
+.dash-top-spacer {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    pointer-events: none;
 }
 
 .dash-top:not(.dash-top-guest) .brand {
-    box-sizing: border-box;
     align-self: stretch;
 }
 
@@ -51,6 +72,11 @@
     gap: 4px;
     min-width: 0;
     flex: 1 1 auto;
+}
+
+.dash-top:not(.admin-top) > .user-card,
+.dash-top:not(.admin-top) > .user-card-login {
+    flex: 0 1 auto;
 }
 
 .dash-nav {
@@ -682,6 +708,28 @@
 @media (max-width: 860px) {
     .dash-columns {
         grid-template-columns: 1fr;
+    }
+
+    /* Brand + Profile on top; normal nav below (mirrors admin narrow header). */
+    .dash-top:not(.admin-top) .brand {
+        order: 1;
+    }
+
+    .dash-top:not(.admin-top) > .dash-top-spacer {
+        order: 2;
+        flex: 1 1 auto;
+        min-width: 4px;
+    }
+
+    .dash-top:not(.admin-top) > .user-card,
+    .dash-top:not(.admin-top) > .user-card-login {
+        order: 3;
+    }
+
+    .dash-top:not(.admin-top) .dash-nav {
+        order: 4;
+        flex: 1 1 100%;
+        width: 100%;
     }
 
     .user-card {

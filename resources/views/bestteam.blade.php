@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Top / Flop Teams — SoccerSportsfan</title>
     <link rel="stylesheet" href="css/start.css?v=45">
-    <link rel="stylesheet" href="css/dashboard.css?v=49">
+    <link rel="stylesheet" href="css/dashboard.css?v=50">
     <link rel="stylesheet" href="css/modal.css?v=48">
     <link rel="stylesheet" href="css/myteam.css?v=69">
 </head>
@@ -15,16 +15,7 @@
         $nav = $data['navigation'];
     @endphp
 
-    <header class="dash-top">
-        <div class="dash-top-main">
-            @include('partials.brand')
-            <nav class="dash-nav" aria-label="Hauptnavigation">
-                @include('partials.dash-nav')
-            </nav>
-        </div>
-
-        @include('partials.user-card')
-    </header>
+    @include('partials.dash-top')
 
     <main class="dash-main myteam-layout">
         <section class="panel myteam-pitch" aria-label="Top und Flop Teams">

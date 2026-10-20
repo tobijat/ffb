@@ -21,6 +21,8 @@
         @endif
     </div>
 
+    <div class="dash-top-spacer" aria-hidden="true"></div>
+
     @if (! empty($headerUser))
         @include('partials.user-card', [
             'user' => $headerUser,

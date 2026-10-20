@@ -9,20 +9,19 @@
 .admin-brand-wrap {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 0;
+    align-items: stretch;
+    gap: 4px;
+    width: max-content;
+    max-width: 100%;
     min-width: 0;
 }
 
-.admin-brand-dashboard {
-    margin: 0 0 0 50px;
-    font-size: 8pt;
-    line-height: 1.2;
+.admin-brand-wrap > .brand {
+    width: 100%;
 }
 
-.admin-brand-dashboard a {
-    color: var(--ink);
-    font-weight: bold;
+.admin-brand-wrap > .brand.admin-brand-dashboard .brand-league {
+    display: none;
 }
 
 .admin-dashboard-section {
@@ -2303,36 +2302,52 @@
     }
 }
 
-/* Admin header: AdminCenter left, 2-row nav middle, profile right */
-.admin-top {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
+/* Admin header: AdminCenter+Dashboard, nav, then profile (right when it fits).
+ * display:contents lets brand/nav/spacer/profile share one wrap context so
+ * Profile doesn't sit alone on a right-aligned row with a large empty gap.
+ * Beat .dash-top:not(.dash-top-guest) { align-items: stretch }. */
+.dash-top.admin-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    justify-content: flex-start;
     gap: 4px;
 }
 
-.admin-top > .brand {
-    grid-column: 1;
-    justify-self: start;
+.admin-top > .admin-top-main {
+    display: contents;
 }
 
-.admin-top > .admin-nav {
-    grid-column: 2;
-    justify-self: center;
-    width: 100%;
-    max-width: 38rem;
+.admin-top .admin-brand-wrap {
+    flex: 0 1 auto;
+}
+
+.admin-top .admin-nav {
     display: grid;
     grid-template-rows: auto auto;
     grid-auto-flow: column;
     grid-auto-columns: minmax(3.2rem, 4.4rem);
-    justify-content: center;
-    align-content: center;
+    justify-content: start;
+    align-content: start;
     gap: 4px 6px;
+    width: auto;
+    max-width: 100%;
+    flex: 0 1 auto;
+}
+
+/* Grows on the current row to push Profile right; collapses when Profile wraps. */
+.admin-top > .admin-top-spacer {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    pointer-events: none;
 }
 
 .admin-top > .user-card {
-    grid-column: 3;
-    justify-self: end;
+    flex: 0 1 auto;
     margin-left: 0;
 }
 
@@ -2359,30 +2374,132 @@
     max-width: 100%;
 }
 
+/* Match AdminCenter + profile tiles to one admin nav item (28px icon + label). */
+.dash-top.admin-top .brand {
+    --admin-nav-tile-height: calc(2px + 4px + 28px + 1px + 1.15 * 7.5pt);
+    align-self: start;
+    box-sizing: border-box;
+    height: var(--admin-nav-tile-height);
+    gap: 6px;
+    padding: 2px 3px;
+    font-size: 12pt;
+    line-height: 1.15;
+}
+
+.dash-top.admin-top .brand-icon img {
+    height: calc(28px + 1px + 1.15 * 7.5pt);
+}
+
+.dash-top.admin-top .brand-name {
+    height: 28px;
+}
+
+.dash-top.admin-top .brand-league {
+    font-size: 7.5pt;
+    line-height: 1.15;
+}
+
+.dash-top.admin-top .brand-text {
+    gap: 1px;
+}
+
+.dash-top.admin-top .brand.is-active {
+    font-weight: bold;
+    background: var(--panel, #99cc99);
+    color: var(--ink, #000);
+}
+
+.dash-top.admin-top .brand.is-active:hover {
+    background: var(--link-hover-bg, #b8e0b8);
+}
+
+.dash-top.admin-top .user-card {
+    /* Same border-box height as .admin-nav a.nav-big */
+    --admin-nav-tile-height: calc(2px + 4px + 28px + 1px + 1.15 * 7.5pt);
+    --user-card-action-size: calc(var(--admin-nav-tile-height) - 2px - 4px);
+    align-self: start;
+    box-sizing: border-box;
+    height: var(--admin-nav-tile-height);
+    padding: 2px 3px;
+    gap: 4px;
+    overflow: hidden;
+}
+
+.dash-top.admin-top .user-card-photo {
+    width: var(--user-card-action-size);
+    height: var(--user-card-action-size);
+    padding: 1px;
+}
+
+.dash-top.admin-top .user-card-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0;
+    font-size: 7.5pt;
+    line-height: 1.15;
+}
+
+.dash-top.admin-top .user-card-text .hello,
+.dash-top.admin-top .user-card-text .muted,
+.dash-top.admin-top .user-card-admin {
+    margin: 0;
+    font-size: 7.5pt;
+    line-height: 1.15;
+}
+
+.dash-top.admin-top .user-card-logout {
+    box-sizing: border-box;
+    height: var(--user-card-action-size);
+    min-height: 0;
+    gap: 1px;
+    padding: 0 2px;
+    font-size: 7.5pt;
+    line-height: 1.15;
+}
+
+.dash-top.admin-top .user-card-logout img {
+    width: 22px;
+    height: 22px;
+}
+
+/*
+ * Narrow: AdminCenter, Dashboard and Profile share the top row(s);
+ * normal nav drops below. brand-wrap uses display:contents so the three
+ * tiles can wrap beside each other independently.
+ */
 @media (max-width: 900px) {
-    .admin-top {
-        grid-template-columns: 1fr;
-        justify-items: stretch;
+    .admin-top .admin-brand-wrap {
+        display: contents;
     }
 
-    .admin-top > .brand,
-    .admin-top > .admin-nav {
-        grid-column: 1;
-        justify-self: stretch;
-        max-width: none;
-    }
-
-    .admin-top > .user-card {
-        grid-column: 1;
-        justify-self: start;
+    .admin-top .admin-brand-wrap > .brand {
+        order: 1;
         width: auto;
         max-width: 100%;
     }
 
-    .admin-top > .admin-nav {
+    .admin-top > .admin-top-spacer {
+        order: 2;
+        display: block;
+        flex: 1 1 auto;
+        min-width: 4px;
+    }
+
+    .admin-top > .user-card {
+        order: 3;
+        width: auto;
+        max-width: 100%;
+    }
+
+    .admin-top .admin-nav {
+        order: 4;
         grid-auto-flow: row;
         grid-template-rows: none;
         grid-template-columns: repeat(auto-fill, minmax(3.4rem, 1fr));
+        flex: 1 1 100%;
+        width: 100%;
+        max-width: 100%;
     }
 }
 

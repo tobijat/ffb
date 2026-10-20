@@ -6,7 +6,7 @@
     <title>Profil — SoccerSportsfan</title>
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
     <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=45">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=49">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=50">
     <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=18">
 </head>
 <body class="dash-body">
@@ -33,16 +33,7 @@
         $currentAvatarSeed = \App\Support\CustomAvatarSvg::seedFromFilename($currentAvatar);
     @endphp
 
-    <header class="dash-top">
-        <div class="dash-top-main">
-            @include('partials.brand')
-            <nav class="dash-nav" aria-label="Hauptnavigation">
-                @include('partials.dash-nav')
-            </nav>
-        </div>
-
-        @include('partials.user-card')
-    </header>
+    @include('partials.dash-top')
 
     <main class="dash-main account-layout">
         <section class="panel account-main" aria-labelledby="profile-hub-title">

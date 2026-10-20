@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Start — SoccerSportsfan</title>
     <link rel="stylesheet" href="css/start.css?v=45">
-    <link rel="stylesheet" href="css/dashboard.css?v=49">
+    <link rel="stylesheet" href="css/dashboard.css?v=50">
 </head>
 <body class="dash-body">
     @php
@@ -19,16 +19,7 @@
         $archive = (bool) ($data['archive'] ?? false);
     @endphp
 
-    <header class="dash-top">
-        <div class="dash-top-main">
-            @include('partials.brand')
-            <nav class="dash-nav" aria-label="Hauptnavigation">
-                @include('partials.dash-nav')
-            </nav>
-        </div>
-
-        @include('partials.user-card')
-    </header>
+    @include('partials.dash-top')
 
     <main class="dash-main">
         <section class="games-section" aria-labelledby="games-title">
