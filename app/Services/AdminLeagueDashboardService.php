@@ -2231,6 +2231,16 @@ class AdminLeagueDashboardService
                         'userteam_slot_slot',
                         'userteam_slot_playerteam_id',
                     ]),
+                'substituteSlots' => static fn ($query) => $query
+                    ->where('substitute_slot_playerteam_id', '>', 0)
+                    ->orderBy('substitute_slot_slot')
+                    ->select([
+                        'substitute_slot_id',
+                        'substitute_slot_userteam_id',
+                        'substitute_slot_slot',
+                        'substitute_slot_playerteam_id',
+                        'substitute_slot_replaces_playerteam_id',
+                    ]),
             ])
             ->whereIn('userteam_matchround_id', $roundIds)
             ->orderBy('userteam_matchround_id')
@@ -2245,7 +2255,8 @@ class AdminLeagueDashboardService
     }
 
     /**
-     * Expected userteam score = sum of playerstats_score for starter slots (same as AdminScoreService).
+     * Expected userteam score = sum of playerstats_score for scoring XI
+     * (starters with substitutions applied; same as AdminScoreService).
      *
      * @param  Collection<int, Userteam>  $lineups
      * @param  list<int>  $roundIds
@@ -2257,13 +2268,16 @@ class AdminLeagueDashboardService
             return [];
         }
 
-        $playerteamIds = $lineups
-            ->flatMap(static fn (Userteam $lineup): Collection => $lineup->slots
-                ->pluck('userteam_slot_playerteam_id')
-                ->map(static fn ($id): int => (int) $id))
-            ->unique()
-            ->values()
-            ->all();
+        $scoringIdsByUserteamId = [];
+        $playerteamIds = [];
+        foreach ($lineups as $lineup) {
+            $ids = $lineup->scoringPlayerteamIds();
+            $scoringIdsByUserteamId[(int) $lineup->userteam_id] = $ids;
+            foreach ($ids as $id) {
+                $playerteamIds[$id] = true;
+            }
+        }
+        $playerteamIds = array_keys($playerteamIds);
 
         /** @var array<string, int> $playerScoreByRoundAndPlayerteam */
         $playerScoreByRoundAndPlayerteam = [];
@@ -2284,14 +2298,14 @@ class AdminLeagueDashboardService
         /** @var array<int, int> $expectedByUserteamId */
         $expectedByUserteamId = [];
         foreach ($lineups as $lineup) {
+            $userteamId = (int) $lineup->userteam_id;
             $roundId = (int) $lineup->userteam_matchround_id;
             $expectedScore = 0;
-            foreach ($lineup->slots as $slot) {
-                $playerteamId = (int) $slot->userteam_slot_playerteam_id;
+            foreach ($scoringIdsByUserteamId[$userteamId] ?? [] as $playerteamId) {
                 $key = $roundId.':'.$playerteamId;
                 $expectedScore += $playerScoreByRoundAndPlayerteam[$key] ?? 0;
             }
-            $expectedByUserteamId[(int) $lineup->userteam_id] = $expectedScore;
+            $expectedByUserteamId[$userteamId] = $expectedScore;
         }
 
         return $expectedByUserteamId;

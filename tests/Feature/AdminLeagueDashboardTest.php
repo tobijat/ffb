@@ -3215,6 +3215,147 @@ class AdminLeagueDashboardTest extends TestCase
     }
 
     #[Test]
+    public function score_section_lineup_scores_include_substitutions(): void
+    {
+        $this->createSchema();
+
+        $league = League::query()->create([
+            'league_title' => 'WM 2026',
+            'league_visible' => 1,
+            'league_archive' => 0,
+        ]);
+        LeagueOptions::query()->create([
+            'options_league_id' => (int) $league->league_id,
+            'options_league_rankmode' => 'score',
+            'options_league_pointsmode' => 'new',
+            'options_league_lcpoints' => '',
+        ]);
+        $home = Team::query()->create(['team_name' => 'Alpha', 'team_status' => 1]);
+        $guest = Team::query()->create(['team_name' => 'Beta', 'team_status' => 1]);
+        $round = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'Runde 1',
+            'matchround_startdate' => '2026-06-01 00:00:00',
+            'matchround_enddate' => '2026-06-30 23:59:59',
+            'matchround_status' => 1,
+        ]);
+        MatchGame::query()->create([
+            'match_round' => (int) $round->matchround_id,
+            'match_hometeam_id' => (int) $home->team_id,
+            'match_guestteam_id' => (int) $guest->team_id,
+            'match_date' => '2026-06-10 '.MatchGame::DEFAULT_TIME,
+            'match_homescore' => 1,
+            'match_guestscore' => 0,
+        ]);
+
+        $user = WebUser::query()->forceCreate([
+            'user_nickname' => 'SubUser',
+            'user_email' => 'sub@example.com',
+        ]);
+        // Score includes substitute (10 + 20), not starters-only (10 + 0).
+        $userteam = Userteam::query()->forceCreate([
+            'userteam_user_id' => (int) $user->user_id,
+            'userteam_matchround_id' => (int) $round->matchround_id,
+            'userteam_score' => 30,
+            'userteam_lc_points' => 0,
+            'userteam_price' => 100,
+        ]);
+
+        $playerStarterOk = Player::query()->create(['player_fname' => 'Ok', 'player_lname' => 'Starter']);
+        $playerStarterOut = Player::query()->create(['player_fname' => 'Out', 'player_lname' => 'Starter']);
+        $playerSub = Player::query()->create(['player_fname' => 'In', 'player_lname' => 'Sub']);
+        $starterOk = Playerteam::query()->create([
+            'playerteam_player_id' => (int) $playerStarterOk->player_id,
+            'playerteam_team_id' => (int) $home->team_id,
+            'playerteam_league_id' => (int) $league->league_id,
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 'm',
+        ]);
+        $starterOut = Playerteam::query()->create([
+            'playerteam_player_id' => (int) $playerStarterOut->player_id,
+            'playerteam_team_id' => (int) $guest->team_id,
+            'playerteam_league_id' => (int) $league->league_id,
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 'd',
+        ]);
+        $subIn = Playerteam::query()->create([
+            'playerteam_player_id' => (int) $playerSub->player_id,
+            'playerteam_team_id' => (int) $home->team_id,
+            'playerteam_league_id' => (int) $league->league_id,
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 'd',
+        ]);
+
+        $userteam->syncSlots([(int) $starterOk->playerteam_id, (int) $starterOut->playerteam_id]);
+        $userteam->syncSubstituteSlots([(int) $subIn->playerteam_id]);
+        \Illuminate\Support\Facades\DB::table('ffb_userteam_substitute_slot')
+            ->where('substitute_slot_userteam_id', (int) $userteam->userteam_id)
+            ->where('substitute_slot_playerteam_id', (int) $subIn->playerteam_id)
+            ->update(['substitute_slot_replaces_playerteam_id' => (int) $starterOut->playerteam_id]);
+
+        Playerstats::query()->forceCreate([
+            'playerstats_playerteam_id' => (int) $starterOk->playerteam_id,
+            'playerstats_matchround_id' => (int) $round->matchround_id,
+            'playerstats_match_id' => 1,
+            'playerstats_minutes' => 90,
+            'playerstats_goals' => 0,
+            'playerstats_owngoals' => 0,
+            'playerstats_penaltyshootout_hit' => 0,
+            'playerstats_score' => 10,
+            'playerstats_round_performance' => null,
+        ]);
+        Playerstats::query()->forceCreate([
+            'playerstats_playerteam_id' => (int) $starterOut->playerteam_id,
+            'playerstats_matchround_id' => (int) $round->matchround_id,
+            'playerstats_match_id' => 1,
+            'playerstats_minutes' => 0,
+            'playerstats_goals' => 0,
+            'playerstats_owngoals' => 0,
+            'playerstats_penaltyshootout_hit' => 0,
+            'playerstats_score' => 0,
+            'playerstats_round_performance' => null,
+        ]);
+        Playerstats::query()->forceCreate([
+            'playerstats_playerteam_id' => (int) $subIn->playerteam_id,
+            'playerstats_matchround_id' => (int) $round->matchround_id,
+            'playerstats_match_id' => 1,
+            'playerstats_minutes' => 90,
+            'playerstats_goals' => 0,
+            'playerstats_owngoals' => 0,
+            'playerstats_penaltyshootout_hit' => 0,
+            'playerstats_score' => 20,
+            'playerstats_round_performance' => null,
+        ]);
+        Userscore::query()->forceCreate([
+            'userscore_user_id' => (int) $user->user_id,
+            'userscore_league_id' => (int) $league->league_id,
+            'userscore_total' => 30,
+            'userscore_lc_points' => 0,
+        ]);
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('shellPayload')->once()->with(7)->andReturn([
+            'user' => ['user_id' => 7, 'user_nickname' => 'admin', 'photo_url' => '', 'is_ffb_admin' => true],
+            'navigation' => [],
+            'selected_league_id' => (int) $league->league_id,
+            'selected_league' => [
+                'league_id' => (int) $league->league_id,
+                'league_title' => 'WM 2026',
+                'symbol_url' => '/images/ffb/leagues/na.png',
+            ],
+        ]);
+
+        $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
+        $section = collect($payload['sections'])->firstWhere('key', 'score');
+
+        $this->assertNotNull($section);
+        $this->assertTrue($section['ok']);
+        $lineupScores = collect($section['checklist'])->firstWhere('key', 'lineup-scores');
+        $this->assertTrue($lineupScores['ok']);
+        $this->assertSame([], $lineupScores['match_list']);
+    }
+
+    #[Test]
     public function score_section_lists_missing_lineup_scores_and_userscore_mismatches(): void
     {
         $this->createSchema();
