@@ -275,6 +275,10 @@ class AccountPageTest extends TestCase
             ->assertSee('avatar-kit-stars', false)
             ->assertSee('avatar-kit-number', false)
             ->assertSee('avatar-kit-text', false)
+            ->assertSee('avatar-kit-mcolor', false)
+            ->assertSee('avatar-kit-ncolor', false)
+            ->assertSee('avatar-kit-tcolor', false)
+            ->assertSee('avatar-kit-scolor', false)
             ->assertSee('Vorderansicht', false)
             ->assertSee('Rückansicht', false)
             ->assertSee('avatar-custom-preview-back', false)
@@ -295,7 +299,7 @@ class AccountPageTest extends TestCase
         ]);
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
-            ->getJson('/profile/avatar/kit-random?stars=2&number=07&text=Boss')
+            ->getJson('/profile/avatar/kit-random?stars=2&number=07&text=Boss&mcolor=ff0000&ncolor=%23ffffff&scolor=fd0&tcolor=111111')
             ->assertOk()
             ->assertJson([
                 'seed' => '998877',
@@ -309,6 +313,9 @@ class AccountPageTest extends TestCase
 
             return str_contains($url, 'stars=2')
                 && str_contains($url, 'number=07')
+                && str_contains($url, 'mcolor=ff0000')
+                && str_contains($url, 'ncolor=ffffff')
+                && str_contains($url, 'scolor=ffdd00')
                 && ! str_contains($url, 'backside=');
         });
         \Illuminate\Support\Facades\Http::assertSent(function ($request) {
@@ -316,7 +323,8 @@ class AccountPageTest extends TestCase
 
             return str_contains($url, 'seed=998877')
                 && str_contains($url, 'backside=1')
-                && str_contains($url, 'text=Boss');
+                && str_contains($url, 'text=Boss')
+                && str_contains($url, 'tcolor=111111');
         });
     }
 

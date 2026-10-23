@@ -748,7 +748,7 @@
 
 .admin-squad-tabs {
     --ffb-tab-panel-bg: var(--bg);
-    margin: 10px 0 0;
+    margin: 0 0 12px;
 }
 
 .admin-squad-count {
@@ -2919,11 +2919,16 @@
     max-width: none;
 }
 
+.admin-squad-images-flash {
+    margin: 0 0 0.75rem;
+}
+
 .admin-squad-images-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
     align-items: center;
+    margin: 0 0 1rem;
 }
 
 .admin-squad-images-table tr.status-nicht_gefunden {

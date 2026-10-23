@@ -178,6 +178,17 @@
     const kitStars = document.getElementById('avatar-kit-stars');
     const kitNumber = document.getElementById('avatar-kit-number');
     const kitText = document.getElementById('avatar-kit-text');
+    const kitMcolor = document.getElementById('avatar-kit-mcolor');
+    const kitNcolor = document.getElementById('avatar-kit-ncolor');
+    const kitTcolor = document.getElementById('avatar-kit-tcolor');
+    const kitScolor = document.getElementById('avatar-kit-scolor');
+    const kitColorInputs = [kitMcolor, kitNcolor, kitTcolor, kitScolor].filter(Boolean);
+    const kitColorDefaults = {
+        mcolor: '#ffffff',
+        ncolor: '#ffffff',
+        tcolor: '#ffffff',
+        scolor: '#ffd700',
+    };
     const savedAvatar = avatarTab ? (avatarTab.getAttribute('data-current-avatar') || '').trim() : '';
     const savedAvatarUrl = avatarTab ? avatarTab.getAttribute('data-current-avatar-url') || '' : '';
     const savedAvatarBackUrl = avatarTab
@@ -267,7 +278,63 @@
         if (kitText) {
             kitText.disabled = kitBusy;
         }
+        kitColorInputs.forEach(function (input) {
+            input.disabled = kitBusy;
+        });
         updateKitNavState();
+    }
+
+    function normalizeKitColor(value) {
+        const raw = String(value || '')
+            .trim()
+            .toLowerCase();
+        if (!raw) {
+            return '';
+        }
+        const match = raw.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/);
+        if (!match) {
+            return '';
+        }
+        let hex = match[1];
+        if (hex.length === 3) {
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        }
+        return '#' + hex;
+    }
+
+    function readKitColor(input) {
+        if (!input || input.classList.contains('is-auto')) {
+            return '';
+        }
+        return normalizeKitColor(input.value);
+    }
+
+    function setKitColorInput(input, value) {
+        if (!input) {
+            return;
+        }
+        const key = input.getAttribute('data-kit-color') || '';
+        const normalized = normalizeKitColor(value);
+        if (normalized) {
+            input.value = normalized;
+            input.classList.remove('is-auto');
+        } else {
+            input.value = kitColorDefaults[key] || '#ffffff';
+            input.classList.add('is-auto');
+        }
+    }
+
+    function emptyKitOptions() {
+        return {
+            maker: '',
+            stars: 0,
+            number: '',
+            text: '',
+            mcolor: '',
+            ncolor: '',
+            tcolor: '',
+            scolor: '',
+        };
     }
 
     function readKitOptions() {
@@ -295,6 +362,10 @@
             stars: stars,
             number: number,
             text: text,
+            mcolor: readKitColor(kitMcolor),
+            ncolor: readKitColor(kitNcolor),
+            tcolor: readKitColor(kitTcolor),
+            scolor: readKitColor(kitScolor),
         };
     }
 
@@ -312,7 +383,20 @@
         if (kitText) {
             kitText.value = opts.text || '';
         }
+        setKitColorInput(kitMcolor, opts.mcolor || '');
+        setKitColorInput(kitNcolor, opts.ncolor || '');
+        setKitColorInput(kitTcolor, opts.tcolor || '');
+        setKitColorInput(kitScolor, opts.scolor || '');
         kitRestoringOptions = false;
+    }
+
+    function appendKitColorParams(params, opts) {
+        ['mcolor', 'ncolor', 'tcolor', 'scolor'].forEach(function (key) {
+            const color = normalizeKitColor(opts[key] || '');
+            if (color) {
+                params.set(key, color.slice(1));
+            }
+        });
     }
 
     function buildKitQuery(extra) {
@@ -328,6 +412,7 @@
         if (opts.text) {
             params.set('text', opts.text);
         }
+        appendKitColorParams(params, opts);
         if (extra && extra.seed) {
             params.set('seed', String(extra.seed));
         }
@@ -388,9 +473,7 @@
             customPreviewBack.alt = 'Rückansicht';
         }
         if (restoreOptions !== false) {
-            applyKitOptionsToForm(
-                entry.options || { maker: '', stars: 0, number: '', text: '' }
-            );
+            applyKitOptionsToForm(entry.options || emptyKitOptions());
         }
         updateCustomSaveState(false);
     }
@@ -433,6 +516,7 @@
         if (requestOptions.text) {
             body.set('text', requestOptions.text);
         }
+        appendKitColorParams(body, requestOptions);
         const headers = {
             Accept: 'application/json',
             'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
@@ -475,6 +559,10 @@
                             stars: requestOptions.stars,
                             number: requestOptions.number,
                             text: requestOptions.text,
+                            mcolor: requestOptions.mcolor,
+                            ncolor: requestOptions.ncolor,
+                            tcolor: requestOptions.tcolor,
+                            scolor: requestOptions.scolor,
                         },
                     },
                     false
@@ -522,7 +610,7 @@
                         svg: svg,
                         svgBack: svgBack,
                         isSaved: true,
-                        options: { maker: '', stars: 0, number: '', text: '' },
+                        options: emptyKitOptions(),
                     },
                 ];
                 kitIndex = 0;
@@ -587,6 +675,10 @@
                             stars: requestOptions.stars,
                             number: requestOptions.number,
                             text: requestOptions.text,
+                            mcolor: requestOptions.mcolor,
+                            ncolor: requestOptions.ncolor,
+                            tcolor: requestOptions.tcolor,
+                            scolor: requestOptions.scolor,
                         },
                     },
                     replaceCurrent
@@ -694,6 +786,21 @@
     if (kitText) {
         kitText.addEventListener('change', onKitOptionsChanged);
     }
+    kitColorInputs.forEach(function (input) {
+        input.addEventListener('input', function () {
+            input.classList.remove('is-auto');
+            onKitOptionsChanged();
+        });
+        input.addEventListener('change', function () {
+            input.classList.remove('is-auto');
+            onKitOptionsChanged();
+        });
+        input.addEventListener('dblclick', function (event) {
+            event.preventDefault();
+            setKitColorInput(input, '');
+            onKitOptionsChanged();
+        });
+    });
 
     if (readyForm) {
         readyForm.addEventListener('submit', function (event) {

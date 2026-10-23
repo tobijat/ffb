@@ -309,44 +309,88 @@
                             <div class="avatar-kit-options" aria-label="Trikot-Optionen">
                                 <div class="avatar-kit-option">
                                     <label for="avatar-kit-maker">Marke</label>
-                                    <select id="avatar-kit-maker" name="avatar_kit_maker">
-                                        <option value="" selected>Keine</option>
-                                        @foreach (\App\Support\KitKitchenClient::MAKERS as $makerId => $makerLabel)
-                                            <option value="{{ $makerId }}">{{ $makerLabel }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="avatar-kit-option-row">
+                                        <select id="avatar-kit-maker" name="avatar_kit_maker">
+                                            <option value="" selected>Keine</option>
+                                            @foreach (\App\Support\KitKitchenClient::MAKERS as $makerId => $makerLabel)
+                                                <option value="{{ $makerId }}">{{ $makerLabel }}</option>
+                                            @endforeach
+                                        </select>
+                                        <input
+                                            id="avatar-kit-mcolor"
+                                            class="avatar-kit-color is-auto"
+                                            type="color"
+                                            value="#ffffff"
+                                            title="Markenfarbe — Doppelklick für automatisch"
+                                            aria-label="Markenfarbe"
+                                            data-kit-color="mcolor"
+                                        >
+                                    </div>
                                 </div>
                                 <div class="avatar-kit-option">
                                     <label for="avatar-kit-stars">Sterne</label>
-                                    <select id="avatar-kit-stars" name="avatar_kit_stars">
-                                        @for ($s = 0; $s <= 9; $s++)
-                                            <option value="{{ $s }}" @selected($s === 0)>{{ $s }}</option>
-                                        @endfor
-                                    </select>
+                                    <div class="avatar-kit-option-row">
+                                        <select id="avatar-kit-stars" name="avatar_kit_stars">
+                                            @for ($s = 0; $s <= 9; $s++)
+                                                <option value="{{ $s }}" @selected($s === 0)>{{ $s }}</option>
+                                            @endfor
+                                        </select>
+                                        <input
+                                            id="avatar-kit-scolor"
+                                            class="avatar-kit-color is-auto"
+                                            type="color"
+                                            value="#ffd700"
+                                            title="Sternenfarbe — Doppelklick für automatisch"
+                                            aria-label="Sternenfarbe"
+                                            data-kit-color="scolor"
+                                        >
+                                    </div>
                                 </div>
                                 <div class="avatar-kit-option">
                                     <label for="avatar-kit-number">Nummer</label>
-                                    <input
-                                        id="avatar-kit-number"
-                                        type="text"
-                                        name="avatar_kit_number"
-                                        inputmode="numeric"
-                                        maxlength="2"
-                                        pattern="[0-9]{1,2}"
-                                        placeholder="z. B. 7"
-                                        autocomplete="off"
-                                    >
+                                    <div class="avatar-kit-option-row">
+                                        <input
+                                            id="avatar-kit-number"
+                                            type="text"
+                                            name="avatar_kit_number"
+                                            inputmode="numeric"
+                                            maxlength="2"
+                                            pattern="[0-9]{1,2}"
+                                            placeholder="z. B. 7"
+                                            autocomplete="off"
+                                        >
+                                        <input
+                                            id="avatar-kit-ncolor"
+                                            class="avatar-kit-color is-auto"
+                                            type="color"
+                                            value="#ffffff"
+                                            title="Nummernfarbe — Doppelklick für automatisch"
+                                            aria-label="Nummernfarbe"
+                                            data-kit-color="ncolor"
+                                        >
+                                    </div>
                                 </div>
                                 <div class="avatar-kit-option">
                                     <label for="avatar-kit-text">Rückentext</label>
-                                    <input
-                                        id="avatar-kit-text"
-                                        type="text"
-                                        name="avatar_kit_text"
-                                        maxlength="16"
-                                        placeholder="max. 16 Zeichen"
-                                        autocomplete="off"
-                                    >
+                                    <div class="avatar-kit-option-row">
+                                        <input
+                                            id="avatar-kit-text"
+                                            type="text"
+                                            name="avatar_kit_text"
+                                            maxlength="16"
+                                            placeholder="max. 16 Zeichen"
+                                            autocomplete="off"
+                                        >
+                                        <input
+                                            id="avatar-kit-tcolor"
+                                            class="avatar-kit-color is-auto"
+                                            type="color"
+                                            value="#ffffff"
+                                            title="Textfarbe — Doppelklick für automatisch"
+                                            aria-label="Textfarbe"
+                                            data-kit-color="tcolor"
+                                        >
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -447,6 +491,6 @@
             window.FFB_ACCOUNT_ERRORS = @json(array_values($errors));
         </script>
     @endif
-    <script src="{{ $assetBase }}/js/account.js?v=17" defer></script>
+    <script src="{{ $assetBase }}/js/account.js?v=18" defer></script>
 </body>
 </html>

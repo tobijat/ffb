@@ -121,6 +121,10 @@ class AccountPageController extends Controller
             'stars' => $starsInt,
             'number' => $number !== '' ? $number : null,
             'maker' => $maker,
+            'mcolor' => KitKitchenClient::normalizeColor($request->query('mcolor')),
+            'ncolor' => KitKitchenClient::normalizeColor($request->query('ncolor')),
+            'tcolor' => KitKitchenClient::normalizeColor($request->query('tcolor')),
+            'scolor' => KitKitchenClient::normalizeColor($request->query('scolor')),
         ];
 
         $front = $kits->fetch($shared);
@@ -192,10 +196,19 @@ class AccountPageController extends Controller
         $maker = KitKitchenClient::normalizeMaker(
             $request->input('maker', $request->query('maker'))
         );
+        $colorFrom = static function (string $key) use ($request): ?string {
+            return KitKitchenClient::normalizeColor(
+                $request->input($key, $request->query($key))
+            );
+        };
         $shared = [
             'stars' => $starsInt,
             'number' => $number !== '' ? $number : null,
             'maker' => $maker,
+            'mcolor' => $colorFrom('mcolor'),
+            'ncolor' => $colorFrom('ncolor'),
+            'tcolor' => $colorFrom('tcolor'),
+            'scolor' => $colorFrom('scolor'),
         ];
 
         $front = $kits->fetch([

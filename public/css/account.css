@@ -298,10 +298,19 @@
     margin: 0;
 }
 
+.avatar-kit-option-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    min-width: 0;
+    max-width: 12rem;
+}
+
 .avatar-kit-options select,
 .avatar-kit-options input[type="text"] {
+    flex: 1;
+    min-width: 0;
     width: 100%;
-    max-width: 10rem;
     border: 1px solid #7aaa7a;
     border-radius: var(--radius);
     background: var(--panel-light, #ccffcc);
@@ -310,6 +319,27 @@
     font-family: var(--font-body);
     font-size: 10pt;
     box-sizing: border-box;
+}
+
+.avatar-kit-color {
+    flex: 0 0 1.75rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
+    background: transparent;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.avatar-kit-color.is-auto {
+    opacity: 0.4;
+}
+
+.avatar-kit-color:disabled {
+    opacity: 0.55;
+    cursor: default;
 }
 
 .avatar-kit-options select:focus,

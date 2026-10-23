@@ -49,6 +49,10 @@ class KitKitchenClientTest extends TestCase
             'maker' => 'adidas',
             'backside' => true,
             'text' => 'Captain',
+            'mcolor' => '#ff0000',
+            'ncolor' => '0f0',
+            'tcolor' => '00ff00',
+            'scolor' => '#ffd700',
         ]);
         $this->assertNotNull($result);
         $this->assertSame('42', $result['seed']);
@@ -61,8 +65,36 @@ class KitKitchenClientTest extends TestCase
                 && str_contains($url, 'number=10')
                 && str_contains($url, 'maker=adidas')
                 && str_contains($url, 'backside=1')
-                && str_contains($url, 'text=Captain');
+                && str_contains($url, 'text=Captain')
+                && str_contains($url, 'mcolor=ff0000')
+                && str_contains($url, 'ncolor=00ff00')
+                && str_contains($url, 'tcolor=00ff00')
+                && str_contains($url, 'scolor=ffd700');
         });
+    }
+
+    public function test_normalize_color(): void
+    {
+        $this->assertSame('#ff0000', KitKitchenClient::normalizeColor('#FF0000'));
+        $this->assertSame('#00ff00', KitKitchenClient::normalizeColor('0f0'));
+        $this->assertSame('#aabbcc', KitKitchenClient::normalizeColor('aabbcc'));
+        $this->assertNull(KitKitchenClient::normalizeColor(''));
+        $this->assertNull(KitKitchenClient::normalizeColor('red'));
+        $this->assertNull(KitKitchenClient::normalizeColor('#gg0000'));
+    }
+
+    public function test_build_query_omits_invalid_colors(): void
+    {
+        $client = new KitKitchenClient;
+        $query = $client->buildQuery([
+            'mcolor' => 'nope',
+            'ncolor' => '#12345',
+            'tcolor' => '#abcdef',
+        ]);
+
+        $this->assertArrayNotHasKey('mcolor', $query);
+        $this->assertArrayNotHasKey('ncolor', $query);
+        $this->assertSame('abcdef', $query['tcolor']);
     }
 
     public function test_build_query_accepts_one_digit_number_and_limits_text(): void

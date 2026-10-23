@@ -87,94 +87,15 @@
         $selectedTeamNat = strtoupper(trim((string) ($selectedTeam['team_nationality'] ?? '')));
     @endphp
 
-    <section class="panel admin-main" aria-labelledby="admin-squad-title">
-        <div class="section-head">
-            <h2 id="admin-squad-title">Kader</h2>
-        </div>
-
-        @php
-            $squadLeagueTitle = (string) ($data['selected_league']['league_title'] ?? '');
-            if ($squadLeagueTitle === '') {
-                foreach ($leagues as $league) {
-                    if ((int) $league['league_id'] === $squadLeagueId) {
-                        $squadLeagueTitle = (string) $league['league_title'];
-                        break;
-                    }
-                }
-            }
-        @endphp
-
-        @if ($squadLeagueId <= 0)
+    @if ($squadLeagueId <= 0)
+        <section class="panel admin-main">
             <p class="hint">Bitte zuerst unter <a href="{{ url('/admin') }}">Ligen</a> eine Liga auswählen.</p>
-        @else
-            <p class="muted">Liga: {{ $squadLeagueTitle }}</p>
-        @endif
-
-        @if (!empty($data['hint']))
-            <p class="hint">{{ $data['hint'] }}</p>
-        @endif
-
-        @if (!empty($flashErrors))
-            <div class="account-flash account-flash-error" role="alert">
-                <strong>Es sind Fehler aufgetreten:</strong>
-                <ul>
-                    @foreach ($flashErrors as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        @if ($answer)
-            <div class="account-flash account-flash-ok" role="status">
-                {{ $answer }}
-            </div>
-        @endif
-
-        @if ($squadLeagueId > 0)
-            <nav class="admin-squad-tabs ffb-tabs" aria-label="Kader-Bereiche">
-                <a
-                    class="admin-squad-tab ffb-tab{{ $tab === 'roster' ? ' is-active' : '' }}"
-                    href="{{ route('admin.squad', $rosterQuery) }}"
-                >
-                    Bestand <span class="admin-squad-count" id="squad-tab-roster-count">{{ count($items) }}</span>
-                </a>
-                <a
-                    class="admin-squad-tab ffb-tab{{ $tab === 'add' ? ' is-active' : '' }}"
-                    href="{{ route('admin.squad', $addQuery) }}"
-                >
-                    Spieler hinzufügen
-                </a>
-                <a
-                    class="admin-squad-tab ffb-tab{{ $tab === 'auto' ? ' is-active' : '' }}"
-                    href="{{ route('admin.squad', $autoQuery) }}"
-                >
-                    Auto-Kader
-                </a>
-                <a
-                    class="admin-squad-tab ffb-tab{{ $tab === 'auto-uefa' ? ' is-active' : '' }}"
-                    href="{{ route('admin.squad', $autoUefaQuery) }}"
-                >
-                    Auto-Kader (UEFA)
-                </a>
-                <a
-                    class="admin-squad-tab ffb-tab{{ $tab === 'auto-fifa' ? ' is-active' : '' }}"
-                    href="{{ route('admin.squad', $autoFifaQuery) }}"
-                >
-                    Auto-Kader (FIFA)
-                </a>
-                <a
-                    class="admin-squad-tab ffb-tab{{ $tab === 'images' ? ' is-active' : '' }}"
-                    href="{{ route('admin.squad', $imagesQuery) }}"
-                >
-                    Auto-Bilder
-                </a>
-            </nav>
-        @endif
-    </section>
+        </section>
+    @endif
 
     @if ($tab === 'roster' && $squadLeagueId > 0)
         <section class="panel admin-main" aria-labelledby="admin-squad-roster-title" id="squad-roster-section">
+            @include('admin.partials.squad-tabs')
             <div class="section-head admin-squad-roster-head">
                 <h2 id="admin-squad-roster-title">{{ $selectedTeamId > 0 ? ($selectedTeam['team_label'] ?? 'Kader') : 'Bestand' }}</h2>
                 @if ($selectedTeamId > 0 && count($items) > 0)
@@ -381,6 +302,7 @@
 
     @if ($tab === 'add' && $squadLeagueId > 0)
         <section class="panel admin-main" aria-labelledby="admin-squad-add-title">
+            @include('admin.partials.squad-tabs')
             <div class="section-head">
                 <h2 id="admin-squad-add-title">Spieler hinzufügen</h2>
             </div>
@@ -501,6 +423,7 @@
             }
         @endphp
         <section class="panel admin-main" aria-labelledby="admin-squad-auto-uefa-title">
+            @include('admin.partials.squad-tabs')
             <div class="section-head">
                 <h2 id="admin-squad-auto-uefa-title">Auto-Kader (UEFA)</h2>
             </div>
@@ -639,6 +562,7 @@
             }
         @endphp
         <section class="panel admin-main" aria-labelledby="admin-squad-auto-fifa-title">
+            @include('admin.partials.squad-tabs')
             <div class="section-head">
                 <h2 id="admin-squad-auto-fifa-title">Auto-Kader (FIFA)</h2>
             </div>
@@ -769,6 +693,7 @@
             $autoSourceLabel = 'JSON';
         @endphp
         <section class="panel admin-main" aria-labelledby="admin-squad-auto-title">
+            @include('admin.partials.squad-tabs')
             <div class="section-head">
                 <h2 id="admin-squad-auto-title">Auto-Kader</h2>
             </div>
@@ -892,6 +817,7 @@
 
     @if ($tab === 'images' && $squadLeagueId > 0)
         <section class="panel admin-main" aria-labelledby="admin-squad-images-title">
+            @include('admin.partials.squad-tabs')
             <div class="section-head">
                 <h2 id="admin-squad-images-title">Auto-Bilder</h2>
             </div>
@@ -903,6 +829,23 @@
                 'squadLeagueId' => $squadLeagueId,
                 'teamSelectId' => 'team_id_images',
             ])
+
+            @if (!empty($flashErrors))
+                <div class="account-flash account-flash-error admin-squad-images-flash" role="alert">
+                    <strong>Es sind Fehler aufgetreten:</strong>
+                    <ul>
+                        @foreach ($flashErrors as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            @if ($answer)
+                <div class="account-flash account-flash-ok admin-squad-images-flash" role="status">
+                    {{ $answer }}
+                </div>
+            @endif
 
             @if ($selectedTeamId > 0)
             <p class="hint">
@@ -921,6 +864,31 @@
                     @csrf
                     <input type="hidden" name="team_id" value="{{ $selectedTeamId }}">
                     <input type="hidden" name="squad_league_id" value="{{ $squadLeagueId }}">
+
+                    <div class="admin-actions admin-squad-images-actions">
+                        <button
+                            type="submit"
+                            class="admin-submit"
+                            formaction="{{ route('admin.squad.images.check') }}"
+                            @disabled($imagesCheckCount <= 0)
+                        >
+                            Bilder von Wikimedia laden
+                            @if ($imagesCheckCount > 0)
+                                ({{ $imagesCheckCount }})
+                            @endif
+                        </button>
+                        <button
+                            type="submit"
+                            class="admin-submit"
+                            formaction="{{ route('admin.squad.images.apply') }}"
+                            @disabled(! $imagesChecked || $imagesFoundCount <= 0)
+                        >
+                            Bilder übernehmen
+                            @if ($imagesFoundCount > 0)
+                                ({{ $imagesFoundCount }})
+                            @endif
+                        </button>
+                    </div>
 
                     <div class="admin-auto-squad-table-wrap">
                         <table class="admin-auto-squad-table admin-squad-images-table">
@@ -986,31 +954,6 @@
                                 @endforeach
                             </tbody>
                         </table>
-                    </div>
-
-                    <div class="admin-actions admin-squad-images-actions">
-                        <button
-                            type="submit"
-                            class="admin-submit"
-                            formaction="{{ route('admin.squad.images.check') }}"
-                            @disabled($imagesCheckCount <= 0)
-                        >
-                            Bilder von Wikimedia laden
-                            @if ($imagesCheckCount > 0)
-                                ({{ $imagesCheckCount }})
-                            @endif
-                        </button>
-                        <button
-                            type="submit"
-                            class="admin-submit"
-                            formaction="{{ route('admin.squad.images.apply') }}"
-                            @disabled(! $imagesChecked || $imagesFoundCount <= 0)
-                        >
-                            Bilder übernehmen
-                            @if ($imagesFoundCount > 0)
-                                ({{ $imagesFoundCount }})
-                            @endif
-                        </button>
                     </div>
                 </form>
             @endif

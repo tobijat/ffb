@@ -16,6 +16,10 @@ use Throwable;
  *   maker?: string|null,
  *   backside?: bool,
  *   text?: string|null,
+ *   mcolor?: string|null,
+ *   ncolor?: string|null,
+ *   tcolor?: string|null,
+ *   scolor?: string|null,
  *   svg_body?: string|null
  * }
  * @phpstan-type KitResult array{seed: string, svg: string}
@@ -56,6 +60,27 @@ final class KitKitchenClient
         }
 
         return $maker;
+    }
+
+    /**
+     * Normalize a Kit Kitchen colour query value to #rrggbb, or null if invalid/empty.
+     * Accepts ff0000, #ff0000, f00, #f00 (as random.php does).
+     */
+    public static function normalizeColor(mixed $color): ?string
+    {
+        if (! is_string($color) && ! is_numeric($color)) {
+            return null;
+        }
+        $color = strtolower(trim((string) $color));
+        if ($color === '' || ! preg_match('/^#?([0-9a-f]{3}|[0-9a-f]{6})$/', $color, $match)) {
+            return null;
+        }
+        $hex = $match[1];
+        if (strlen($hex) === 3) {
+            $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+        }
+
+        return '#'.$hex;
     }
 
     /**
@@ -157,6 +182,14 @@ final class KitKitchenClient
             }
             if ($text !== '') {
                 $query['text'] = $text;
+            }
+        }
+
+        foreach (['mcolor', 'ncolor', 'tcolor', 'scolor'] as $colorKey) {
+            $normalized = self::normalizeColor($options[$colorKey] ?? null);
+            if ($normalized !== null) {
+                // random.php accepts with or without #; omit # so query strings stay simple.
+                $query[$colorKey] = substr($normalized, 1);
             }
         }
 
