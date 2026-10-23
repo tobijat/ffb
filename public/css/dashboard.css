@@ -492,6 +492,56 @@
     gap: 8px;
 }
 
+.archive-toggle {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 6px 10px;
+    font: inherit;
+    font-size: 9pt;
+    line-height: 1.2;
+    color: var(--ink);
+    text-decoration: none;
+    background: var(--panel-light);
+    border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.archive-toggle:hover,
+.archive-toggle:focus-visible {
+    color: var(--link-hover);
+    background: var(--link-hover-bg);
+    outline: none;
+}
+
+.archive-toggle::after {
+    content: '';
+    display: block;
+    flex-shrink: 0;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid currentColor;
+}
+
+.archive-toggle[aria-expanded="true"]::after {
+    border-top: 0;
+    border-bottom: 6px solid currentColor;
+}
+
+.archive-grid {
+    margin-top: 8px;
+}
+
+.archive-grid[hidden] {
+    display: none !important;
+}
+
 .game-tile {
     appearance: none;
     border: 1px solid #7aaa7a;

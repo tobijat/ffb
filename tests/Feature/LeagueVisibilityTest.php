@@ -56,7 +56,7 @@ class LeagueVisibilityTest extends TestCase
         $dashboard = app(DashboardService::class);
 
         $current = collect($dashboard->payload(10, 1, false)['leagues'])->pluck('league_title')->all();
-        $archive = collect($dashboard->payload(10, 1, true)['leagues'])->pluck('league_title')->all();
+        $archive = collect($dashboard->payload(10, 1, true)['archived_leagues'])->pluck('league_title')->all();
 
         $this->assertSame(['Visible Current'], $current);
         $this->assertSame(['Visible Archive'], $archive);
@@ -78,10 +78,9 @@ class LeagueVisibilityTest extends TestCase
 
         $dashboard = app(DashboardService::class);
 
-        $current = collect($dashboard->payload(10, 1, false)['leagues'])
-            ->keyBy('league_id');
-        $archive = collect($dashboard->payload(10, 1, true)['leagues'])
-            ->keyBy('league_id');
+        $payload = $dashboard->payload(10, 1, false);
+        $current = collect($payload['leagues'])->keyBy('league_id');
+        $archive = collect($payload['archived_leagues'])->keyBy('league_id');
 
         $this->assertSame('Visible Current', $current[1]['league_title']);
         $this->assertFalse($current[1]['is_faded']);
@@ -132,14 +131,17 @@ class LeagueVisibilityTest extends TestCase
             $mock->shouldReceive('isAdmin')->andReturn(false);
         });
 
-        $leagues = collect(app(DashboardService::class)->payload(10, 1, false)['leagues'])
-            ->keyBy('league_id');
+        $payload = app(DashboardService::class)->payload(10, 1, false);
+        $leagues = collect($payload['leagues'])->keyBy('league_id');
+        $archived = collect($payload['archived_leagues'])->keyBy('league_id');
 
         $this->assertTrue($leagues->has(1));
         $this->assertTrue($leagues->has(3));
         $this->assertSame('Visible Archive', $leagues[3]['league_title']);
         $this->assertSame(1, $leagues[3]['league_archive']);
         $this->assertFalse($leagues->has(4));
+        $this->assertFalse($archived->has(3));
+        $this->assertTrue($archived->has(4));
     }
 
     #[Test]

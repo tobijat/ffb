@@ -29,6 +29,16 @@
         return json;
     }
 
+    function syncArchiveUrl() {
+        const url = new URL(window.location.href);
+        if (archive) {
+            url.searchParams.set('archive', '1');
+        } else {
+            url.searchParams.delete('archive');
+        }
+        window.history.replaceState({}, '', url.toString());
+    }
+
     function reload(params) {
         const url = new URL(window.location.href);
         url.searchParams.set('news_page', String(params.newsPage || newsPage));
@@ -54,10 +64,17 @@
     });
 
     const archiveBtn = document.getElementById('toggle-archive');
-    if (archiveBtn) {
+    const archiveGrid = document.getElementById('archive-grid');
+    if (archiveBtn && archiveGrid) {
         archiveBtn.addEventListener('click', () => {
             archive = !archive;
-            reload({ newsPage: 1, archive });
+            archiveGrid.hidden = !archive;
+            archiveBtn.dataset.archive = archive ? '1' : '0';
+            archiveBtn.setAttribute('aria-expanded', archive ? 'true' : 'false');
+            archiveBtn.textContent = archive
+                ? 'vergangene Ligen ausblenden'
+                : 'vergangene Ligen einblenden';
+            syncArchiveUrl();
         });
     }
 

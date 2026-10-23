@@ -28,6 +28,7 @@ class DashboardApiTest extends TestCase
             'user' => ['user_id' => 544, 'user_nickname' => 'tester'],
             'selected_league_id' => 26,
             'leagues' => [],
+            'archived_leagues' => [],
             'archive' => false,
             'news' => ['items' => [], 'page' => 1, 'pages' => 0],
             'polls' => ['text' => null, 'select' => null],
@@ -73,6 +74,7 @@ class DashboardApiTest extends TestCase
                         'symbol_url' => '/images/ffb/leagues/26.png',
                     ],
                 ],
+                'archived_leagues' => [],
                 'archive' => false,
                 'news' => [
                     'items' => [

@@ -63,6 +63,7 @@ class DashboardService
             return [
                 'user' => null,
                 'leagues' => [],
+                'archived_leagues' => [],
                 'news' => ['items' => [], 'page' => 1, 'pages' => 0],
                 'polls' => ['text' => null, 'select' => null],
                 'navigation' => $this->navigation($userId),
@@ -72,11 +73,21 @@ class DashboardService
         $details = $user->details;
         $selectedLeagueId = (int) ($details?->user_details_ffb_selected_league ?? 0);
         $isAdmin = app(FfbAdminAccess::class)->isAdmin($userId);
+        $leagues = $this->leagues(false, $isAdmin, $selectedLeagueId);
+        $activeIds = array_fill_keys(
+            array_map(static fn (array $league): int => (int) $league['league_id'], $leagues),
+            true
+        );
+        $archivedLeagues = array_values(array_filter(
+            $this->leagues(true, $isAdmin, 0),
+            static fn (array $league): bool => ! isset($activeIds[(int) $league['league_id']])
+        ));
 
         return [
             'user' => $this->userPayload($user, $details),
             'selected_league_id' => $selectedLeagueId,
-            'leagues' => $this->leagues($archiveGames, $isAdmin, $selectedLeagueId),
+            'leagues' => $leagues,
+            'archived_leagues' => $archivedLeagues,
             'archive' => $archiveGames,
             'news' => $this->news($selectedLeagueId, $newsPage),
             'polls' => [

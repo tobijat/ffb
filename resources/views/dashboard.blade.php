@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Start — SoccerSportsfan</title>
     <link rel="stylesheet" href="css/start.css?v=45">
-    <link rel="stylesheet" href="css/dashboard.css?v=50">
+    <link rel="stylesheet" href="css/dashboard.css?v=52">
 </head>
 <body class="dash-body">
     @php
         $user = $data['user'];
         $leagues = $data['leagues'];
+        $archivedLeagues = $data['archived_leagues'] ?? [];
         $selectedId = (int) ($data['selected_league_id'] ?? 0);
         $news = $data['news'];
         $textPoll = $data['polls']['text'] ?? null;
@@ -25,9 +26,6 @@
         <section class="games-section" aria-labelledby="games-title">
             <div class="section-head">
                 <h2 id="games-title">{{ $selectedId === 0 ? 'Liga auswählen' : 'Verfügbare Ligen' }}</h2>
-                <button type="button" class="linkish" id="toggle-archive" data-archive="{{ $archive ? '1' : '0' }}">
-                    {{ $archive ? 'zu aktuellen Spielen' : 'zu vergangenen Spielen' }}
-                </button>
             </div>
             @if ($selectedId === 0)
                 <p class="hint">Klick eine Liga an, um sie auszuwählen.</p>
@@ -50,6 +48,36 @@
                     <p class="muted">Keine Ligen gefunden.</p>
                 @endforelse
             </div>
+
+            @if (count($archivedLeagues) > 0)
+                <button
+                    type="button"
+                    class="archive-toggle"
+                    id="toggle-archive"
+                    data-archive="{{ $archive ? '1' : '0' }}"
+                    aria-expanded="{{ $archive ? 'true' : 'false' }}"
+                    aria-controls="archive-grid"
+                >
+                    {{ $archive ? 'vergangene Ligen ausblenden' : 'vergangene Ligen einblenden' }}
+                </button>
+                <div
+                    class="game-grid archive-grid"
+                    id="archive-grid"
+                    @if (! $archive) hidden @endif
+                >
+                    @foreach ($archivedLeagues as $league)
+                        <button
+                            type="button"
+                            class="game-tile{{ $selectedId === (int) $league['league_id'] ? ' is-selected' : '' }}{{ ! empty($league['is_faded']) ? ' is-faded' : '' }}{{ ! empty($league['league_test']) ? ' is-test' : '' }}"
+                            data-league-id="{{ $league['league_id'] }}"
+                            @if (! empty($league['league_test'])) title="Testliga" @endif
+                        >
+                            <img src="{{ $league['symbol_url'] }}" alt="" width="56" height="56" loading="lazy">
+                            <span>{{ $league['league_title'] }}</span>
+                        </button>
+                    @endforeach
+                </div>
+            @endif
         </section>
 
         <section class="dash-columns">
@@ -143,6 +171,6 @@
             newsPage: @json($news['page']),
         };
     </script>
-    <script src="js/dashboard.js" defer></script>
+    <script src="js/dashboard.js?v=2" defer></script>
 </body>
 </html>
