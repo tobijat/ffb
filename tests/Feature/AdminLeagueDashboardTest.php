@@ -236,7 +236,7 @@ class AdminLeagueDashboardTest extends TestCase
                                 'key' => 'dates-within-rounds',
                                 'label' => 'Alle Spieldaten innerhalb der Spielrunden',
                                 'ok' => false,
-                                'match_list_summary' => 'Spiele außerhalb der Spielrunde',
+                                'match_list_summary' => 'Spiele mit Anstoßzeiten außerhalb der Spielrunden',
                                 'match_list' => [
                                     [
                                         'match_id' => 9,
@@ -249,7 +249,7 @@ class AdminLeagueDashboardTest extends TestCase
                                 'key' => 'past-results',
                                 'label' => 'Vergangene Spiele mit Ergebnis und Spieldauer',
                                 'ok' => false,
-                                'match_list_summary' => 'Vergangene Spiele ohne Ergebnis/Dauer',
+                                'match_list_summary' => 'Vergangene Spiele ohne Ergebnis oder Spieldauer',
                                 'match_list' => [
                                     [
                                         'match_id' => 9,
@@ -324,7 +324,7 @@ class AdminLeagueDashboardTest extends TestCase
                     ],
                     [
                         'key' => 'squad',
-                        'title' => 'Kader: 24 aktive Spieler in 2',
+                        'title' => 'Kader: 24 aktive Spieler in 2 Mannschaften',
                         'ok' => false,
                         'checklist' => [
                             [
@@ -488,8 +488,8 @@ class AdminLeagueDashboardTest extends TestCase
             ->assertSee('Spiele vorhanden', false)
             ->assertSee('Alle Spieldaten innerhalb der Spielrunden', false)
             ->assertSee('Vergangene Spiele mit Ergebnis und Spieldauer', false)
-            ->assertSee('Spiele außerhalb der Spielrunde', false)
-            ->assertSee('Vergangene Spiele ohne Ergebnis/Dauer', false)
+            ->assertSee('Spiele mit Anstoßzeiten außerhalb der Spielrunden', false)
+            ->assertSee('Vergangene Spiele ohne Ergebnis oder Spieldauer', false)
             ->assertSee('Vergangene Spiele mit Status-Hinweis', false)
             ->assertSee('Status: abgesagt', false)
             ->assertSee('Alpha – Beta', false)
@@ -500,7 +500,7 @@ class AdminLeagueDashboardTest extends TestCase
             ->assertSee('Trikot-Formate', false)
             ->assertSee('1 mit SVG (Liga-Trikot oder SVG-Fallback)', false)
             ->assertSee('1 mit Raster-Fallback (kein SVG)', false)
-            ->assertSee('Kader: 24 aktive Spieler in 2', false)
+            ->assertSee('Kader: 24 aktive Spieler in 2 Mannschaften', false)
             ->assertSee('Mannschaften mit zu wenigen aktiven Spielern', false)
             ->assertSee('Mannschaften ohne Teampreis', false)
             ->assertSee('Spiele mit unzureichenden Playerstats', false)
@@ -527,8 +527,9 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
+            'asset_key' => 'wm-2026-a1b2',
         ]);
-        file_put_contents($this->leaguesDir.DIRECTORY_SEPARATOR.$league->league_id.'.webp', 'x');
+        file_put_contents($this->leaguesDir.DIRECTORY_SEPARATOR.'wm-2026-a1b2.webp', 'x');
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
             'options_league_rankmode' => 'lc',
@@ -655,8 +656,9 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
+            'asset_key' => 'wm-2026-c3d4',
         ]);
-        file_put_contents($this->leaguesDir.DIRECTORY_SEPARATOR.$league->league_id.'.webp', 'x');
+        file_put_contents($this->leaguesDir.DIRECTORY_SEPARATOR.'wm-2026-c3d4.webp', 'x');
         Matchround::query()->create([
             'matchround_league_id' => (int) $league->league_id,
             'matchround_title' => 'R1',
@@ -673,7 +675,7 @@ class AdminLeagueDashboardTest extends TestCase
             'selected_league' => [
                 'league_id' => (int) $league->league_id,
                 'league_title' => 'WM 2026',
-                'symbol_url' => '/images/ffb/leagues/'.$league->league_id.'.webp',
+                'symbol_url' => '/images/ffb/leagues/wm-2026-c3d4.webp',
             ],
         ]);
 
@@ -695,8 +697,9 @@ class AdminLeagueDashboardTest extends TestCase
             'league_title' => 'WM 2026',
             'league_visible' => 1,
             'league_archive' => 0,
+            'asset_key' => 'wm-2026-e5f6',
         ]);
-        file_put_contents($this->leaguesDir.DIRECTORY_SEPARATOR.$league->league_id.'.webp', 'x');
+        file_put_contents($this->leaguesDir.DIRECTORY_SEPARATOR.'wm-2026-e5f6.webp', 'x');
         LeagueOptions::query()->create([
             'options_league_id' => (int) $league->league_id,
             'options_league_rankmode' => 'lc',
@@ -1223,11 +1226,11 @@ class AdminLeagueDashboardTest extends TestCase
         $this->assertFalse($section['checklist'][1]['ok']);
         $this->assertFalse($section['checklist'][2]['ok']);
         $this->assertCount(1, $section['checklist'][1]['match_list']);
-        $this->assertSame('Spiele außerhalb der Spielrunde', $section['checklist'][1]['match_list_summary']);
+        $this->assertSame('Spiele mit Anstoßzeiten außerhalb der Spielrunden', $section['checklist'][1]['match_list_summary']);
         $this->assertStringContainsString('Alpha – Beta', $section['checklist'][1]['match_list'][0]['label']);
         $this->assertStringContainsString('Runde 1', $section['checklist'][1]['match_list'][0]['label']);
         $this->assertCount(1, $section['checklist'][2]['match_list']);
-        $this->assertSame('Vergangene Spiele ohne Ergebnis/Dauer', $section['checklist'][2]['match_list_summary']);
+        $this->assertSame('Vergangene Spiele ohne Ergebnis oder Spieldauer', $section['checklist'][2]['match_list_summary']);
         $this->assertSame('kein Ergebnis, keine Spieldauer', $section['checklist'][2]['match_list'][0]['detail']);
     }
 
@@ -1587,7 +1590,7 @@ class AdminLeagueDashboardTest extends TestCase
         $section = $payload['sections'][4];
 
         $this->assertSame('squad', $section['key']);
-        $this->assertSame('Kader: 22 aktive Spieler in 2', $section['title']);
+        $this->assertSame('Kader: 22 aktive Spieler in 2 Mannschaften', $section['title']);
         $this->assertTrue($section['ok']);
         $this->assertTrue($section['checklist'][0]['ok']);
         $this->assertTrue($section['checklist'][1]['ok']);
@@ -1649,7 +1652,7 @@ class AdminLeagueDashboardTest extends TestCase
         $payload = (new AdminLeagueDashboardService($adminCenter, app(ExtremeTeamService::class), app(LineupOptionsResolver::class), app(SubstitutionCalculationService::class)))->pagePayload(7);
         $section = $payload['sections'][4];
 
-        $this->assertSame('Kader: 2 aktive Spieler in 2', $section['title']);
+        $this->assertSame('Kader: 2 aktive Spieler in 2 Mannschaften', $section['title']);
         $this->assertFalse($section['ok']);
         $this->assertFalse($section['checklist'][0]['ok']);
         $this->assertCount(2, $section['checklist'][0]['match_list']);
@@ -2774,7 +2777,7 @@ class AdminLeagueDashboardTest extends TestCase
         $section = collect($payload['sections'])->firstWhere('key', 'substitutions');
 
         $this->assertNotNull($section);
-        $this->assertSame('Auswechslungen: 1 Spielrunde mit Bank', $section['title']);
+        $this->assertSame('Auswechslungen: 1 vergangene Spielrunde', $section['title']);
         $this->assertTrue($section['ok']);
         $this->assertTrue($section['checklist'][0]['ok']);
         $this->assertSame([], $section['checklist'][0]['match_list']);
@@ -2895,7 +2898,7 @@ class AdminLeagueDashboardTest extends TestCase
         $section = collect($payload['sections'])->firstWhere('key', 'substitutions');
 
         $this->assertNotNull($section);
-        $this->assertSame('Auswechslungen: 1 Spielrunde mit Bank', $section['title']);
+        $this->assertSame('Auswechslungen: 1 vergangene Spielrunde', $section['title']);
         $this->assertFalse($section['ok']);
         $this->assertFalse($section['checklist'][0]['ok']);
         $this->assertCount(1, $section['checklist'][0]['match_list']);
@@ -3558,6 +3561,7 @@ class AdminLeagueDashboardTest extends TestCase
 
         Schema::create('ffb_league', function (Blueprint $table) {
             $table->increments('league_id');
+            $table->string('asset_key')->default('');
             $table->string('league_title')->default('');
             $table->tinyInteger('league_visible')->default(1);
             $table->tinyInteger('league_archive')->default(0);

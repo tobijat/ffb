@@ -31,6 +31,7 @@ class LineupTeamPriceTest extends TestCase
         Schema::dropIfExists('ffb_teamprice');
         Schema::dropIfExists('ffb_playerprice');
         Schema::dropIfExists('ffb_match');
+        Schema::dropIfExists('ffb_playerteam');
         Schema::dropIfExists('ffb_matchround_options');
         Schema::dropIfExists('ffb_matchround');
         Schema::dropIfExists('ffb_team');
@@ -121,6 +122,7 @@ class LineupTeamPriceTest extends TestCase
 
         Schema::create('ffb_league', function (Blueprint $table) {
             $table->increments('league_id');
+            $table->string('asset_key')->default('');
             $table->string('league_title')->default('');
             $table->string('league_type')->default('');
             $table->integer('league_archive')->default(0);
@@ -148,11 +150,21 @@ class LineupTeamPriceTest extends TestCase
 
         Schema::create('ffb_team', function (Blueprint $table) {
             $table->increments('team_id');
+            $table->string('asset_key')->default('');
             $table->string('team_foreign_id')->default('');
             $table->string('team_name')->default('');
             $table->string('team_nationality')->default('');
             $table->integer('team_num_players')->default(0);
             $table->tinyInteger('team_status')->default(1);
+        });
+
+        Schema::create('ffb_playerteam', function (Blueprint $table) {
+            $table->increments('playerteam_id');
+            $table->unsignedInteger('playerteam_player_id')->default(0);
+            $table->unsignedInteger('playerteam_team_id')->default(0);
+            $table->unsignedInteger('playerteam_league_id')->default(0);
+            $table->tinyInteger('playerteam_status')->default(1);
+            $table->string('playerteam_player_position', 1)->default('d');
         });
 
         Schema::create('ffb_match', function (Blueprint $table) {

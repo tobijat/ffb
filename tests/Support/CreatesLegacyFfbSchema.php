@@ -13,6 +13,7 @@ trait CreatesLegacyFfbSchema
 
         Schema::create('ffb_league', function (Blueprint $table) {
             $table->integer('league_id')->primary();
+            $table->string('asset_key')->default('');
             $table->string('league_title')->default('');
             $table->tinyInteger('league_visible')->default(1);
             $table->tinyInteger('league_archive')->default(0);
@@ -83,6 +84,7 @@ trait CreatesLegacyFfbSchema
 
         Schema::create('ffb_team', function (Blueprint $table) {
             $table->integer('team_id')->primary();
+            $table->string('asset_key')->default('');
             $table->string('team_foreign_id')->default('');
             $table->string('team_name')->default('');
             $table->string('team_nationality')->default('');
@@ -92,6 +94,7 @@ trait CreatesLegacyFfbSchema
 
         Schema::create('ffb_player', function (Blueprint $table) {
             $table->integer('player_id')->primary();
+            $table->string('asset_key')->default('');
             $table->string('player_foreign_id')->default('');
             $table->string('player_uefa_id')->default('');
             $table->string('player_fifa_id')->default('');
@@ -192,6 +195,21 @@ trait CreatesLegacyFfbSchema
             $table->index('substitute_slot_playerteam_id');
         });
 
+        Schema::create('ffb_extremeteam', function (Blueprint $table) {
+            $table->increments('extremeteam_id');
+            $table->string('extremeteam_top_or_flop', 8);
+            $table->decimal('extremeteam_price', 9, 2)->default(0);
+            $table->unsignedInteger('extremeteam_matchround_id');
+            $table->integer('extremeteam_score')->default(-1);
+        });
+
+        Schema::create('ffb_extremeteam_slot', function (Blueprint $table) {
+            $table->increments('extremeteam_slot_id');
+            $table->unsignedInteger('extremeteam_slot_extremeteam_id');
+            $table->unsignedTinyInteger('extremeteam_slot_slot');
+            $table->unsignedInteger('extremeteam_slot_playerteam_id');
+        });
+
         Schema::create('web_user_details', function (Blueprint $table) {
             $table->integer('user_id')->primary();
             $table->integer('user_details_ffb_selected_league')->default(0);
@@ -201,6 +219,8 @@ trait CreatesLegacyFfbSchema
     protected function dropLegacyFfbSchema(): void
     {
         foreach ([
+            'ffb_extremeteam_slot',
+            'ffb_extremeteam',
             'ffb_userteam_substitute_slot',
             'ffb_userteam_slot',
             'ffb_userteam',

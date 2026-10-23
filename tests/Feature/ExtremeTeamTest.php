@@ -556,9 +556,11 @@ class ExtremeTeamTest extends TestCase
 
         Schema::create('ffb_league', function (Blueprint $table) {
             $table->increments('league_id');
+            $table->string('asset_key')->default('');
             $table->string('league_title')->default('');
             $table->tinyInteger('league_visible')->default(1);
             $table->tinyInteger('league_archive')->default(0);
+            $table->tinyInteger('league_test')->default(0);
         });
 
         Schema::create('ffb_league_options', function (Blueprint $table) {
@@ -610,6 +612,7 @@ class ExtremeTeamTest extends TestCase
 
         Schema::create('ffb_team', function (Blueprint $table) {
             $table->increments('team_id');
+            $table->string('asset_key')->default('');
             $table->string('team_foreign_id')->default('');
             $table->string('team_name')->default('');
             $table->string('team_nationality')->default('');
@@ -619,6 +622,7 @@ class ExtremeTeamTest extends TestCase
 
         Schema::create('ffb_player', function (Blueprint $table) {
             $table->increments('player_id');
+            $table->string('asset_key')->default('');
             $table->string('player_foreign_id')->default('');
             $table->string('player_fname')->default('');
             $table->string('player_lname')->default('');

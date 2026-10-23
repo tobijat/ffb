@@ -141,7 +141,7 @@ class LeagueVisibilityTest extends TestCase
         $this->assertSame(1, $leagues[3]['league_archive']);
         $this->assertFalse($leagues->has(4));
         $this->assertFalse($archived->has(3));
-        $this->assertTrue($archived->has(4));
+        $this->assertFalse($archived->has(4));
     }
 
     #[Test]

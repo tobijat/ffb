@@ -36,6 +36,7 @@ class AdminDeleteBlockerTest extends TestCase
     {
         Schema::dropIfExists('ffb_extremeteam_slot');
         Schema::dropIfExists('ffb_extremeteam');
+        Schema::dropIfExists('ffb_userteam_substitute_slot');
         Schema::dropIfExists('ffb_userteam_slot');
         Schema::dropIfExists('ffb_userteam');
         Schema::dropIfExists('ffb_playerfid');
@@ -341,6 +342,7 @@ class AdminDeleteBlockerTest extends TestCase
     {
         Schema::create('ffb_league', function (Blueprint $table) {
             $table->increments('league_id');
+            $table->string('asset_key')->default('');
             $table->string('league_title')->default('');
             $table->string('league_type')->default('');
             $table->integer('league_archive')->default(0);
@@ -357,6 +359,7 @@ class AdminDeleteBlockerTest extends TestCase
 
         Schema::create('ffb_team', function (Blueprint $table) {
             $table->increments('team_id');
+            $table->string('asset_key')->default('');
             $table->string('team_foreign_id')->default('');
             $table->string('team_name')->default('');
             $table->string('team_nationality')->default('');
@@ -366,6 +369,7 @@ class AdminDeleteBlockerTest extends TestCase
 
         Schema::create('ffb_player', function (Blueprint $table) {
             $table->increments('player_id');
+            $table->string('asset_key')->default('');
             $table->string('player_foreign_id')->default('');
             $table->string('player_uefa_id')->default('');
             $table->string('player_fifa_id')->default('');
@@ -438,6 +442,16 @@ class AdminDeleteBlockerTest extends TestCase
             $table->unsignedInteger('userteam_slot_userteam_id');
             $table->unsignedTinyInteger('userteam_slot_slot');
             $table->unsignedInteger('userteam_slot_playerteam_id');
+        });
+
+        Schema::create('ffb_userteam_substitute_slot', function (Blueprint $table) {
+            $table->increments('substitute_slot_id');
+            $table->unsignedInteger('substitute_slot_userteam_id');
+            $table->unsignedTinyInteger('substitute_slot_slot');
+            $table->unsignedInteger('substitute_slot_playerteam_id');
+            $table->unsignedInteger('substitute_slot_replaces_playerteam_id')->nullable();
+            $table->unique(['substitute_slot_userteam_id', 'substitute_slot_slot']);
+            $table->index('substitute_slot_playerteam_id');
         });
 
         Schema::create('ffb_extremeteam', function (Blueprint $table) {

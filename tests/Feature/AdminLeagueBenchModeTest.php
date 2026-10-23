@@ -168,6 +168,7 @@ class AdminLeagueBenchModeTest extends TestCase
 
         Schema::create('ffb_league', function (Blueprint $table) {
             $table->increments('league_id');
+            $table->string('asset_key')->default('');
             $table->string('league_title')->default('');
             $table->tinyInteger('league_visible')->default(1);
             $table->tinyInteger('league_archive')->default(0);

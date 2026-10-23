@@ -1220,6 +1220,7 @@ class AdminSquadAutoTest extends TestCase
 
         Schema::create('ffb_league', function (Blueprint $table) {
             $table->increments('league_id');
+            $table->string('asset_key')->default('');
             $table->string('league_title')->default('');
             $table->tinyInteger('league_visible')->default(1);
             $table->tinyInteger('league_archive')->default(0);
@@ -1227,6 +1228,7 @@ class AdminSquadAutoTest extends TestCase
 
         Schema::create('ffb_team', function (Blueprint $table) {
             $table->increments('team_id');
+            $table->string('asset_key')->default('');
             $table->string('team_foreign_id')->default('');
             $table->string('team_name')->default('');
             $table->string('team_nationality')->default('');
@@ -1236,6 +1238,7 @@ class AdminSquadAutoTest extends TestCase
 
         Schema::create('ffb_player', function (Blueprint $table) {
             $table->increments('player_id');
+            $table->string('asset_key')->default('');
             $table->string('player_foreign_id')->default('');
             $table->string('player_uefa_id')->default('');
             $table->string('player_fifa_id')->default('');
@@ -1255,6 +1258,7 @@ class AdminSquadAutoTest extends TestCase
             $table->string('playerteam_player_picture')->default('');
             $table->tinyInteger('playerteam_status')->default(1);
             $table->string('playerteam_player_position', 1)->default('d');
+            $table->string('playerteam_player_note')->default('');
             $table->string('playerteam_date_transfer')->nullable();
         });
     }

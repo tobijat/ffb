@@ -115,7 +115,7 @@ class AdminCenterTest extends TestCase
             ->assertSee('>test</li>', false)
             ->assertSee('href="/admin/matchrounds"', false)
             ->assertSee('href="/admin/news"', false)
-            ->assertSee('class="brand" href="/admin"', false)
+            ->assertSee('class="brand is-active" href="/admin"', false)
             ->assertSee('AdminCenter', false)
             ->assertSee('Testliga', false)
             ->assertSee('leagues/na.png', false)
