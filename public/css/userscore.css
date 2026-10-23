@@ -2,33 +2,23 @@
     display: grid;
     grid-template-columns: 1.4fr 0.8fr;
     gap: var(--chrome-inset, 4px);
-    align-items: start;
+    align-items: stretch;
 }
 
 .userscore-side {
-    display: grid;
-    gap: var(--chrome-inset, 4px);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
-.userscore-side .tip {
-    margin: 0 0 10px;
-    font-size: 8pt;
-    line-height: 1.35;
+.userscore-side > .panel {
+    flex: 1 1 auto;
+    min-height: 100%;
+    box-sizing: border-box;
 }
 
-.round-label {
-    display: block;
-    font-size: 9pt;
-    margin-bottom: 4px;
-}
-
-.ffb-select {
-    width: 100%;
-    font-family: var(--font-body);
-    font-size: 10pt;
-    padding: 4px;
-    border: 1px solid #666;
-    background: #fff;
+.userscore-main .pitch-info {
+    grid-template-columns: auto;
 }
 
 .userscore-table-wrap {
@@ -54,22 +44,54 @@
 .userscore-table th {
     background: #99bb99;
     font-size: 9pt;
+    white-space: nowrap;
 }
 
-.userscore-table th a {
-    color: var(--ink);
-    text-decoration: none;
-    margin-left: 2px;
-    display: inline-block;
-    padding: 1px 3px;
+.userscore-table .th-sort {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 4px;
+    margin: 0;
+    padding: 2px 4px;
     border-radius: var(--radius-sm);
+    font: inherit;
+    font-weight: bold;
+    white-space: nowrap;
+    max-width: 100%;
 }
 
-.userscore-table th a:hover {
+.userscore-table .th-sort:hover,
+.userscore-table .th-sort:focus-visible {
     background: var(--link-hover-bg);
     color: var(--link-hover);
-    text-decoration: none;
-    border-radius: var(--radius-sm);
+    outline: none;
+}
+
+.userscore-table .th-sort .th-label {
+    font-weight: bold;
+}
+
+.userscore-table .sort-tri {
+    display: block;
+    flex-shrink: 0;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+}
+
+.userscore-table .sort-tri.sort-asc {
+    border-bottom: 5px solid currentColor;
+}
+
+.userscore-table .sort-tri.sort-desc {
+    border-top: 5px solid currentColor;
 }
 
 .userscore-table .col-rank,
@@ -80,9 +102,15 @@
     white-space: nowrap;
 }
 
-.userscore-table .col-flag {
-    width: 24px;
-    text-align: center;
+.userscore-table .name-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.userscore-table .name-cell .ffb-flag {
+    flex-shrink: 0;
 }
 
 .userscore-table tr.row-even td {
@@ -158,5 +186,26 @@
 @media (max-width: 860px) {
     .userscore-layout {
         grid-template-columns: 1fr;
+    }
+
+    .userscore-side {
+        display: none;
+    }
+
+    .userscore-table .th-sort {
+        padding: 4px 6px;
+    }
+
+    .userscore-table .sort-tri {
+        border-left-width: 5px;
+        border-right-width: 5px;
+    }
+
+    .userscore-table .sort-tri.sort-asc {
+        border-bottom-width: 6px;
+    }
+
+    .userscore-table .sort-tri.sort-desc {
+        border-top-width: 6px;
     }
 }

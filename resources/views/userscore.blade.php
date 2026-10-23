@@ -6,7 +6,8 @@
     <title>Rangliste — SoccerSportsfan</title>
     <link rel="stylesheet" href="css/start.css?v=45">
     <link rel="stylesheet" href="css/dashboard.css?v=50">
-    <link rel="stylesheet" href="css/userscore.css?v=11">
+    <link rel="stylesheet" href="css/myteam.css?v=69">
+    <link rel="stylesheet" href="css/userscore.css?v=18">
     <link rel="stylesheet" href="css/modal.css?v=48">
 </head>
 <body class="dash-body">
@@ -18,31 +19,35 @@
     @include('partials.dash-top')
 
     <main class="dash-main userscore-layout">
-        <section class="panel userscore-main" aria-labelledby="userscore-title">
-            <div class="section-head">
-                <h2 id="userscore-title">Rangliste</h2>
-                <p class="hint" id="round-meta">Gesamtrangliste</p>
+        <section class="panel userscore-main" aria-label="Rangliste">
+            <div class="pitch-info-cq">
+                <div class="pitch-info">
+                    <div class="pitch-info-round">
+                        <label class="pitch-round-picker">
+                            <span class="pitch-round-picker-face" aria-hidden="true">
+                                <span class="pitch-round-title" id="round-title">Lade Spielrunden…</span>
+                                <span class="pitch-round-dates" id="round-dates" hidden></span>
+                            </span>
+                            <select
+                                id="matchround_selection"
+                                class="pitch-round-select"
+                                aria-label="Spielrunde"
+                                disabled
+                            >
+                                <option>Lade Spielrunden…</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
             </div>
             <div id="userscore-table" class="userscore-table-wrap">
                 <p class="muted">Lade Rangliste…</p>
             </div>
         </section>
 
-        <aside class="userscore-side">
-            <div class="panel">
-                <p class="hint tip">
-                    <strong>Tipp:</strong> Klick in der Rangliste auf einen Nickname, um das Profil zu öffnen.
-                </p>
-                <label class="round-label" for="matchround_selection">Spielrunde</label>
-                <select id="matchround_selection" class="ffb-select" disabled>
-                    <option>Lade Spielrunden…</option>
-                </select>
-            </div>
-
+        <aside class="userscore-side is-empty">
             <div class="panel" id="matchlist-panel">
-                <div id="matchlist">
-                    <p class="muted">Gesamtrangliste — keine Einzelspiele.</p>
-                </div>
+                <div id="matchlist"></div>
             </div>
         </aside>
     </main>
@@ -68,6 +73,6 @@
     <script src="js/modal.js?v=32" defer></script>
     <script src="js/player-modal.js?v=35" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
-    <script src="js/userscore.js?v=10" defer></script>
+    <script src="js/userscore.js?v=16" defer></script>
 </body>
 </html>

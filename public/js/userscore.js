@@ -7,8 +7,10 @@
 
     const tableEl = document.getElementById('userscore-table');
     const selectEl = document.getElementById('matchround_selection');
-    const metaEl = document.getElementById('round-meta');
+    const roundTitleEl = document.getElementById('round-title');
+    const roundDatesEl = document.getElementById('round-dates');
     const matchlistEl = document.getElementById('matchlist');
+    const sideEl = document.querySelector('.userscore-side');
 
     let matchrounds = [];
     let selectedIndex = 0;
@@ -54,43 +56,68 @@
         };
     }
 
-    function renderMeta() {
+    function renderRoundFace() {
         const round = currentRound();
-        let text = round.matchround_title || 'Rangliste';
+        if (!round) {
+            roundTitleEl.textContent = 'Keine Spielrunden';
+            roundDatesEl.textContent = '';
+            roundDatesEl.hidden = true;
+            return;
+        }
+
+        let title = round.matchround_title || 'Rangliste';
         if (Number(round.matchround_running) === 1) {
-            text += ' (aktuelle Runde)';
+            title += ' (aktuelle Runde)';
         } else if (Number(round.matchround_future) === 1) {
-            text += ' (nächste Runde)';
+            title += ' (nächste Runde)';
         }
-        if (round.matchround_id > 0 && round.matchround_startdate) {
-            if (round.matchround_startdate === round.matchround_enddate) {
-                text += ' · ' + round.matchround_startdate;
-            } else {
-                text += ' · ' + round.matchround_startdate + ' bis ' + round.matchround_enddate;
-            }
+        roundTitleEl.textContent = title;
+
+        if (Number(round.matchround_id) > 0 && round.matchround_startdate) {
+            roundDatesEl.textContent =
+                round.matchround_startdate === round.matchround_enddate
+                    ? String(round.matchround_startdate)
+                    : String(round.matchround_startdate) + ' - ' + String(round.matchround_enddate);
+            roundDatesEl.hidden = false;
+        } else {
+            roundDatesEl.textContent = '';
+            roundDatesEl.hidden = true;
         }
-        metaEl.textContent = text;
     }
 
     function renderSelect() {
         selectEl.innerHTML = '';
+        if (!matchrounds.length) {
+            selectEl.innerHTML = '<option>Keine Spielrunden</option>';
+            selectEl.disabled = true;
+            renderRoundFace();
+            return;
+        }
         matchrounds.forEach(function (round, index) {
             const opt = document.createElement('option');
             opt.value = String(index);
             opt.textContent = round.matchround_title;
+            opt.className = 'ffb-select-' + (index % 2);
             if (index === selectedIndex) {
                 opt.selected = true;
             }
             selectEl.appendChild(opt);
         });
-        selectEl.disabled = matchrounds.length === 0;
+        selectEl.disabled = false;
+        renderRoundFace();
     }
 
     function renderMatches() {
         const round = currentRound();
         if (!round.matchround_id) {
-            matchlistEl.innerHTML = '<p class="muted">Gesamtrangliste — keine Einzelspiele.</p>';
+            matchlistEl.innerHTML = '';
+            if (sideEl) {
+                sideEl.classList.add('is-empty');
+            }
             return;
+        }
+        if (sideEl) {
+            sideEl.classList.remove('is-empty');
         }
         const matches = round.matches || [];
         if (window.FfbMatchList) {
@@ -108,14 +135,32 @@
             .replace(/"/g, '&quot;');
     }
 
-    function sortLink(flag, dir, title) {
-        return '<a href="#" data-sort="' + flag + '" data-dir="' + dir + '" title="' + title + '">' +
-            (dir === 'asc' ? '↑' : '↓') + '</a>';
+    function activeSortKey() {
+        if (sortFlag === '') {
+            return displayMode === 'lc' ? 'lc' : 'po';
+        }
+        return sortFlag;
+    }
+
+    function thHead(label, flag) {
+        const isActive = activeSortKey() === flag;
+        const tri = isActive
+            ? '<span class="sort-tri sort-' + sortDir + '" aria-hidden="true"></span>'
+            : '';
+        return '<button type="button" class="th-sort' + (isActive ? ' is-active' : '') +
+            '" data-sort="' + flag + '" title="Sortieren" aria-label="' + label + ' sortieren">' +
+            '<span class="th-label">' + label + '</span>' + tri + '</button>';
+    }
+
+    function thCell(cls, label, flag) {
+        const isActive = activeSortKey() === flag;
+        const ariaSort = isActive ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none';
+        return '<th class="' + cls + '" aria-sort="' + ariaSort + '">' + thHead(label, flag) + '</th>';
     }
 
     function renderTable() {
         if (!entries.length) {
-            tableEl.innerHTML = '<p class="muted">Noch keine Einträge.</p>';
+            tableEl.innerHTML = '<p class="muted">Keine Mitspieler in dieser Runde.</p>';
             return;
         }
 
@@ -135,18 +180,15 @@
             pager += '</div>';
         }
 
-        const scoreHeader = displayMode === 'lc'
-            ? '<th class="col-score"><b>LigaCup</b> ' + sortLink('lc', 'asc', 'Aufsteigend') + sortLink('lc', 'desc', 'Absteigend') + '</th>'
-            : '<th class="col-score"><b>Punkte</b> ' + sortLink('po', 'asc', 'Aufsteigend') + sortLink('po', 'desc', 'Absteigend') + '</th>';
-
         let html = pager;
         html += '<table class="userscore-table"><thead><tr>';
-        html += '<th class="col-rank"><b>Rang</b> ' + sortLink('r', 'asc', 'Aufsteigend') + sortLink('r', 'desc', 'Absteigend') + '</th>';
-        html += '<th class="col-flag"></th>';
-        html += '<th><b>Name</b> ' + sortLink('n', 'asc', 'Aufsteigend') + sortLink('n', 'desc', 'Absteigend') + '</th>';
-        html += '<th class="col-part"><b>Teiln.</b> ' + sortLink('p', 'asc', 'Aufsteigend') + sortLink('p', 'desc', 'Absteigend') + '</th>';
-        html += '<th class="col-wins"><b>Siege</b> ' + sortLink('w', 'asc', 'Aufsteigend') + sortLink('w', 'desc', 'Absteigend') + '</th>';
-        html += scoreHeader;
+        html += thCell('col-rank', 'Rang', 'r');
+        html += thCell('col-name', 'Name', 'n');
+        html += thCell('col-part', 'Runden', 'p');
+        html += thCell('col-wins', 'Siege', 'w');
+        html += displayMode === 'lc'
+            ? thCell('col-score', 'LigaCup', 'lc')
+            : thCell('col-score', 'Punkte', 'po');
         html += '</tr></thead><tbody>';
 
         for (let i = pageStart; i < end; i++) {
@@ -169,9 +211,10 @@
 
             html += '<tr class="' + cls.trim() + '">';
             html += '<td class="col-rank">' + row.user_rank + '</td>';
-            html += '<td class="col-flag">' + flagHtml(row.user_favourite_team_nationality) + '</td>';
-            html += '<td><a class="nolink" href="#" data-modal="profile" data-id="' + row.user_id + '">' +
-                escapeHtml(row.user_nickname) + '</a></td>';
+            html += '<td class="col-name"><span class="name-cell">' +
+                flagHtml(row.user_favourite_team_nationality) +
+                '<a class="nolink" href="#" data-modal="profile" data-id="' + row.user_id + '">' +
+                escapeHtml(row.user_nickname) + '</a></span></td>';
             html += '<td class="col-part">' + row.participations + '</td>';
             html += '<td class="col-wins">' + row.matchround_wins + '</td>';
             html += '<td class="col-score">' + scoreCell + '</td>';
@@ -229,13 +272,15 @@
             }].concat(rounds);
             selectedIndex = 0;
             renderSelect();
-            renderMeta();
             renderMatches();
             await loadRanking();
         } catch (err) {
             selectEl.innerHTML = '<option>Keine Spielrunden</option>';
+            selectEl.disabled = true;
             tableEl.innerHTML = '<p class="muted">Noch keine Spielrunden gespielt.</p>';
-            metaEl.textContent = '';
+            roundTitleEl.textContent = 'Keine Spielrunden';
+            roundDatesEl.textContent = '';
+            roundDatesEl.hidden = true;
         }
     }
 
@@ -243,7 +288,7 @@
         selectedIndex = Number(selectEl.value) || 0;
         sortFlag = '';
         sortDir = 'desc';
-        renderMeta();
+        renderRoundFace();
         renderMatches();
         loadRanking();
     });
@@ -252,12 +297,13 @@
         const sortBtn = event.target.closest('[data-sort]');
         if (sortBtn) {
             event.preventDefault();
-            sortFlag = sortBtn.getAttribute('data-sort') || '';
-            // Map UI lc/po to server flags (legacy: default path for score cols)
-            if (sortFlag === 'lc' || sortFlag === 'po') {
-                sortFlag = '';
+            const flag = sortBtn.getAttribute('data-sort') || '';
+            if (activeSortKey() === flag) {
+                sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortFlag = (flag === 'lc' || flag === 'po') ? '' : flag;
+                sortDir = (flag === 'n' || flag === 'r') ? 'asc' : 'desc';
             }
-            sortDir = sortBtn.getAttribute('data-dir') || 'desc';
             loadRanking();
             return;
         }
