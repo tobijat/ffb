@@ -358,6 +358,7 @@
                                             pattern="[0-9]{1,2}"
                                             placeholder="z. B. 7"
                                             autocomplete="off"
+                                            value=""
                                         >
                                         <input
                                             id="avatar-kit-ncolor"
@@ -380,6 +381,7 @@
                                             maxlength="16"
                                             placeholder="max. 16 Zeichen"
                                             autocomplete="off"
+                                            value=""
                                         >
                                         <input
                                             id="avatar-kit-tcolor"
@@ -491,6 +493,6 @@
             window.FFB_ACCOUNT_ERRORS = @json(array_values($errors));
         </script>
     @endif
-    <script src="{{ $assetBase }}/js/account.js?v=18" defer></script>
+    <script src="{{ $assetBase }}/js/account.js?v=20" defer></script>
 </body>
 </html>

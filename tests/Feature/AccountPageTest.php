@@ -291,11 +291,23 @@ class AccountPageTest extends TestCase
         config(['ffb.kit_kitchen_random_url' => 'https://kit.test/random.php']);
 
         \Illuminate\Support\Facades\Http::fake([
-            'kit.test/*' => \Illuminate\Support\Facades\Http::response(
-                '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
-                200,
-                ['X-Kit-Seed' => '998877']
-            ),
+            'kit.test/*' => \Illuminate\Support\Facades\Http::sequence()
+                ->push(
+                    '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+                    200,
+                    [
+                        'X-Kit-Seed' => '998877',
+                        'X-Kit-Query' => 'maker=nike&stars=2&number=07&mcolor=ff0000&ncolor=ffffff&scolor=ffdd00&tcolor=111111',
+                    ]
+                )
+                ->push(
+                    '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+                    200,
+                    [
+                        'X-Kit-Seed' => '998877',
+                        'X-Kit-Query' => 'maker=nike&stars=2&number=07&backside=1&text=Boss&mcolor=ff0000&ncolor=ffffff&scolor=ffdd00&tcolor=111111',
+                    ]
+                ),
         ]);
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
@@ -305,6 +317,16 @@ class AccountPageTest extends TestCase
                 'seed' => '998877',
                 'svg' => '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
                 'svg_back' => '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+                'options' => [
+                    'maker' => 'nike',
+                    'stars' => 2,
+                    'number' => '07',
+                    'text' => 'Boss',
+                    'mcolor' => '#ff0000',
+                    'ncolor' => '#ffffff',
+                    'tcolor' => '#111111',
+                    'scolor' => '#ffdd00',
+                ],
             ]);
 
         \Illuminate\Support\Facades\Http::assertSentCount(2);
@@ -352,12 +374,18 @@ class AccountPageTest extends TestCase
                 ->push(
                     '<svg xmlns="http://www.w3.org/2000/svg"><rect id="front"/></svg>',
                     200,
-                    ['X-Kit-Seed' => 'k1OpaqueFromShirtSeed_token']
+                    [
+                        'X-Kit-Seed' => 'k1OpaqueFromShirtSeed_token',
+                        'X-Kit-Query' => 'maker=umbro&stars=2&number=7&mcolor=aabbcc',
+                    ]
                 )
                 ->push(
                     '<svg xmlns="http://www.w3.org/2000/svg"><rect id="back"/></svg>',
                     200,
-                    ['X-Kit-Seed' => 'k1OpaqueFromShirtSeed_token']
+                    [
+                        'X-Kit-Seed' => 'k1OpaqueFromShirtSeed_token',
+                        'X-Kit-Query' => 'maker=umbro&stars=2&number=7&backside=1&text=Boss&mcolor=aabbcc',
+                    ]
                 ),
         ]);
 
@@ -374,6 +402,16 @@ class AccountPageTest extends TestCase
                     'seed' => 'k1OpaqueFromShirtSeed_token',
                     'svg' => '<svg xmlns="http://www.w3.org/2000/svg"><rect id="front"/></svg>',
                     'svg_back' => '<svg xmlns="http://www.w3.org/2000/svg"><rect id="back"/></svg>',
+                    'options' => [
+                        'maker' => 'umbro',
+                        'stars' => 2,
+                        'number' => '7',
+                        'text' => 'Boss',
+                        'mcolor' => '#aabbcc',
+                        'ncolor' => '',
+                        'tcolor' => '',
+                        'scolor' => '',
+                    ],
                 ]);
 
             \Illuminate\Support\Facades\Http::assertSentCount(2);
@@ -384,12 +422,162 @@ class AccountPageTest extends TestCase
                     && str_contains($request->url(), 'number=7')
                     && ! str_contains($request->url(), 'backside=');
             });
-            \Illuminate\Support\Facades\Http::assertSent(function ($request) {
-                return $request->method() === 'GET'
+            \Illuminate\Support\Facades\Http::assertSent(function ($request) use ($configSvg) {
+                return $request->method() === 'POST'
+                    && $request->body() === $configSvg
                     && str_contains($request->url(), 'seed=k1OpaqueFromShirtSeed_token')
                     && str_contains($request->url(), 'backside=1')
                     && str_contains($request->url(), 'text=Boss');
             });
+        } finally {
+            \Illuminate\Support\Facades\File::deleteDirectory($imagesRoot);
+        }
+    }
+
+    public function test_kit_from_shirt_endpoint_accepts_posted_svg_body(): void
+    {
+        config([
+            'ffb.kit_kitchen_random_url' => 'https://kit.test/random.php',
+            'ffb.legacy_images_path' => storage_path('framework/testing/kit-from-svg-'.uniqid('', true)),
+        ]);
+
+        $postedSvg = '<svg xmlns="http://www.w3.org/2000/svg"><metadata id="kitroom-config">e30=</metadata></svg>';
+
+        \Illuminate\Support\Facades\Http::fake([
+            'kit.test/*' => \Illuminate\Support\Facades\Http::sequence()
+                ->push(
+                    '<svg xmlns="http://www.w3.org/2000/svg"><rect id="front"/></svg>',
+                    200,
+                    [
+                        'X-Kit-Seed' => 'postedSvgSeedToken1',
+                        'X-Kit-Query' => 'maker=adidas&stars=3&number=10&mcolor=ff0000&scolor=ffd700',
+                    ]
+                )
+                ->push(
+                    '<svg xmlns="http://www.w3.org/2000/svg"><rect id="back"/></svg>',
+                    200,
+                    [
+                        'X-Kit-Seed' => 'postedSvgSeedToken1',
+                        'X-Kit-Query' => 'maker=adidas&stars=3&number=10&backside=1&text=Captain',
+                    ]
+                ),
+        ]);
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->postJson('/profile/avatar/kit-from-shirt', [
+                'svg' => $postedSvg,
+            ])
+            ->assertOk()
+            ->assertJson([
+                'seed' => 'postedSvgSeedToken1',
+                'options' => [
+                    'maker' => 'adidas',
+                    'stars' => 3,
+                    'number' => '10',
+                    'text' => 'Captain',
+                    'mcolor' => '#ff0000',
+                    'ncolor' => '',
+                    'tcolor' => '',
+                    'scolor' => '#ffd700',
+                ],
+            ]);
+
+        \Illuminate\Support\Facades\Http::assertSentCount(2);
+        \Illuminate\Support\Facades\Http::assertSent(function ($request) use ($postedSvg) {
+            return $request->method() === 'POST'
+                && $request->body() === $postedSvg
+                && str_contains($request->url(), 'backside=1')
+                && ! str_contains($request->url(), 'text=');
+        });
+    }
+
+    public function test_kit_from_shirt_prefills_back_text_from_x_kit_query_without_client_text(): void
+    {
+        config([
+            'ffb.kit_kitchen_random_url' => 'https://kit.test/random.php',
+            'ffb.legacy_images_path' => storage_path('framework/testing/kit-from-shirt-text-'.uniqid('', true)),
+        ]);
+
+        $imagesRoot = config('ffb.legacy_images_path');
+        $configDir = $imagesRoot.DIRECTORY_SEPARATOR.'shirts-config';
+        mkdir($configDir, 0775, true);
+        $configSvg = '<svg xmlns="http://www.w3.org/2000/svg"><metadata id="kitroom-config">e30=</metadata></svg>';
+        file_put_contents($configDir.DIRECTORY_SEPARATOR.'aut.svg', $configSvg);
+
+        \Illuminate\Support\Facades\Http::fake([
+            'kit.test/*' => \Illuminate\Support\Facades\Http::sequence()
+                ->push(
+                    '<svg xmlns="http://www.w3.org/2000/svg"><rect id="front"/></svg>',
+                    200,
+                    [
+                        'X-Kit-Seed' => 'shirtTextSeed',
+                        'X-Kit-Query' => 'maker=nike&stars=1&number=9',
+                    ]
+                )
+                ->push(
+                    '<svg xmlns="http://www.w3.org/2000/svg"><rect id="back"/></svg>',
+                    200,
+                    [
+                        'X-Kit-Seed' => 'shirtTextSeed',
+                        'X-Kit-Query' => 'maker=nike&stars=1&number=9&backside=1&text=Alaba',
+                    ]
+                ),
+        ]);
+
+        try {
+            $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+                ->postJson('/profile/avatar/kit-from-shirt', [
+                    'shirt' => 'shirts/austria-abcd/aut.svg',
+                ])
+                ->assertOk()
+                ->assertJsonPath('options.text', 'Alaba')
+                ->assertJsonPath('options.maker', 'nike')
+                ->assertJsonPath('options.number', '9');
+        } finally {
+            \Illuminate\Support\Facades\File::deleteDirectory($imagesRoot);
+        }
+    }
+
+    public function test_kit_from_shirt_keeps_front_text_when_back_query_has_empty_text(): void
+    {
+        config([
+            'ffb.kit_kitchen_random_url' => 'https://kit.test/random.php',
+            'ffb.legacy_images_path' => storage_path('framework/testing/kit-from-shirt-front-text-'.uniqid('', true)),
+        ]);
+
+        $imagesRoot = config('ffb.legacy_images_path');
+        $configDir = $imagesRoot.DIRECTORY_SEPARATOR.'shirts-config';
+        mkdir($configDir, 0775, true);
+        $configSvg = '<svg xmlns="http://www.w3.org/2000/svg"><metadata id="kitroom-config">e30=</metadata></svg>';
+        file_put_contents($configDir.DIRECTORY_SEPARATOR.'aut.svg', $configSvg);
+
+        \Illuminate\Support\Facades\Http::fake([
+            'kit.test/*' => \Illuminate\Support\Facades\Http::sequence()
+                ->push(
+                    '<svg xmlns="http://www.w3.org/2000/svg"><rect id="front"/></svg>',
+                    200,
+                    [
+                        'X-Kit-Seed' => 'frontTextSeed',
+                        'X-Kit-Query' => 'maker=puma&number=5&text=Arnautovic',
+                    ]
+                )
+                ->push(
+                    '<svg xmlns="http://www.w3.org/2000/svg"><rect id="back"/></svg>',
+                    200,
+                    [
+                        'X-Kit-Seed' => 'frontTextSeed',
+                        'X-Kit-Query' => 'maker=puma&number=5&backside=1&text=',
+                    ]
+                ),
+        ]);
+
+        try {
+            $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+                ->postJson('/profile/avatar/kit-from-shirt', [
+                    'shirt' => 'shirts/austria-abcd/aut.svg',
+                ])
+                ->assertOk()
+                ->assertJsonPath('options.text', 'Arnautovic');
         } finally {
             \Illuminate\Support\Facades\File::deleteDirectory($imagesRoot);
         }

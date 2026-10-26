@@ -146,12 +146,13 @@ class AccountPageController extends Controller
             'seed' => $front['seed'],
             'svg' => $front['svg'],
             'svg_back' => $back['svg'],
+            'options' => $this->kitOptionsForUi($shared, $text, $front['query'] ?? [], $back['query'] ?? []),
         ]);
     }
 
     /**
-     * Import a saved ready-made team shirt into Kit Kitchen by POSTing its
-     * config SVG, returning front/back/seed like kit-random.
+     * Import a shirt SVG into Kit Kitchen by POST (config or stored custom front),
+     * returning front/back/seed and UI options from X-Kit-Query.
      */
     public function kitFromShirt(Request $request, KitKitchenClient $kits): JsonResponse
     {
@@ -160,25 +161,45 @@ class AccountPageController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $shirt = trim((string) $request->input('shirt', ''));
-        if ($shirt === '') {
-            $shirt = trim((string) (UserDetails::query()
-                ->where('user_id', $userId)
-                ->value('user_details_avatar') ?? ''));
-        }
+        $configSvg = trim((string) $request->input('svg', ''));
+        $backSvgBody = trim((string) $request->input('svg_back', ''));
+        if ($configSvg !== '') {
+            if (! CustomAvatarSvg::isAcceptable($configSvg)) {
+                return response()->json(['error' => 'Trikot-SVG ungültig.'], 422);
+            }
+            if ($backSvgBody !== '' && ! CustomAvatarSvg::isAcceptable($backSvgBody)) {
+                return response()->json(['error' => 'Trikot-Rückseite ungültig.'], 422);
+            }
+        } else {
+            $shirt = trim((string) $request->input('shirt', ''));
+            if ($shirt === '') {
+                $shirt = trim((string) (UserDetails::query()
+                    ->where('user_id', $userId)
+                    ->value('user_details_avatar') ?? ''));
+            }
 
-        if (! UserAvatar::isShirtPath($shirt)) {
-            return response()->json(['error' => 'Kein fertiges Trikot als Avatar gesetzt.'], 422);
-        }
+            if (CustomAvatarSvg::isCustomKitFilename($shirt)) {
+                $customPath = CustomAvatarSvg::absolutePath($shirt);
+                if ($customPath === null) {
+                    return response()->json(['error' => 'Eigenes Trikot nicht gefunden.'], 404);
+                }
+                $configSvg = (string) file_get_contents($customPath);
+                if (! CustomAvatarSvg::isAcceptable($configSvg)) {
+                    return response()->json(['error' => 'Eigenes Trikot ungültig.'], 502);
+                }
+            } elseif (UserAvatar::isShirtPath($shirt)) {
+                $configPath = TeamShirt::configSvgPathFromShirtRelative($shirt);
+                if ($configPath === null) {
+                    return response()->json(['error' => 'Trikot-Config nicht gefunden.'], 404);
+                }
 
-        $configPath = TeamShirt::configSvgPathFromShirtRelative($shirt);
-        if ($configPath === null) {
-            return response()->json(['error' => 'Trikot-Config nicht gefunden.'], 404);
-        }
-
-        $configSvg = @file_get_contents($configPath);
-        if (! is_string($configSvg) || ! CustomAvatarSvg::isAcceptable($configSvg)) {
-            return response()->json(['error' => 'Trikot-Config ungültig.'], 502);
+                $configSvg = @file_get_contents($configPath);
+                if (! is_string($configSvg) || ! CustomAvatarSvg::isAcceptable($configSvg)) {
+                    return response()->json(['error' => 'Trikot-Config ungültig.'], 502);
+                }
+            } else {
+                return response()->json(['error' => 'Kein Trikot zum Importieren gesetzt.'], 422);
+            }
         }
 
         $stars = $request->input('stars', $request->query('stars'));
@@ -219,11 +240,14 @@ class AccountPageController extends Controller
             return response()->json(['error' => 'Kit konnte nicht geladen werden.'], 502);
         }
 
+        // POST SVG with backside=1 so X-Kit-Query includes Rückentext baked into
+        // the shirt (a seed-only GET omits text unless the client sent it).
         $back = $kits->fetch([
             ...$shared,
+            'svg_body' => $backSvgBody !== '' ? $backSvgBody : $configSvg,
             'seed' => $front['seed'],
             'backside' => true,
-            'text' => $text,
+            'text' => $text !== '' ? $text : null,
         ]);
         if ($back === null) {
             return response()->json(['error' => 'Kit konnte nicht geladen werden.'], 502);
@@ -233,7 +257,78 @@ class AccountPageController extends Controller
             'seed' => $front['seed'],
             'svg' => $front['svg'],
             'svg_back' => $back['svg'],
+            'options' => $this->kitOptionsForUi($shared, $text, $front['query'] ?? [], $back['query'] ?? []),
         ]);
+    }
+
+    /**
+     * Merge request options with kit-kitchen X-Kit-Query echoes for the UI form.
+     *
+     * @param  array<string, mixed>  $shared
+     * @param  array<string, mixed>  $frontQuery
+     * @param  array<string, mixed>  $backQuery
+     * @return array{
+     *   maker: string,
+     *   stars: int,
+     *   number: string,
+     *   text: string,
+     *   mcolor: string,
+     *   ncolor: string,
+     *   tcolor: string,
+     *   scolor: string
+     * }
+     */
+    private function kitOptionsForUi(array $shared, string $requestedText, array $frontQuery, array $backQuery): array
+    {
+        $merged = array_merge($frontQuery, $backQuery);
+
+        $maker = KitKitchenClient::normalizeMaker($merged['maker'] ?? ($shared['maker'] ?? null));
+        $stars = $merged['stars'] ?? ($shared['stars'] ?? 0);
+        $starsInt = is_numeric($stars) ? (int) $stars : 0;
+        if ($starsInt < 0 || $starsInt > 9) {
+            $starsInt = 0;
+        }
+
+        $number = trim((string) ($merged['number'] ?? ($shared['number'] ?? '')));
+        if ($number !== '' && ! preg_match('/^\d{1,2}$/', $number)) {
+            $number = '';
+        }
+
+        // Prefer non-empty text: backside query, then front (shirt POST often
+        // echoes Rückentext only on one of the two X-Kit-Query headers), then request.
+        $text = '';
+        foreach ([$backQuery['text'] ?? null, $frontQuery['text'] ?? null, $requestedText] as $candidate) {
+            if ($candidate === null) {
+                continue;
+            }
+            $normalized = preg_replace('/[\x00-\x1F\x7F]+/u', '', trim((string) $candidate)) ?? '';
+            if ($normalized !== '') {
+                $text = $normalized;
+                break;
+            }
+        }
+        if (function_exists('mb_substr')) {
+            $text = mb_substr($text, 0, 16);
+        } else {
+            $text = substr($text, 0, 16);
+        }
+
+        $color = static function (string $key) use ($merged, $shared): string {
+            $normalized = KitKitchenClient::normalizeColor($merged[$key] ?? ($shared[$key] ?? null));
+
+            return $normalized ?? '';
+        };
+
+        return [
+            'maker' => $maker ?? '',
+            'stars' => $starsInt,
+            'number' => $number,
+            'text' => $text,
+            'mcolor' => $color('mcolor'),
+            'ncolor' => $color('ncolor'),
+            'tcolor' => $color('tcolor'),
+            'scolor' => $color('scolor'),
+        ];
     }
 
     private function resolveTab(mixed $tab): string

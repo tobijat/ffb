@@ -126,7 +126,7 @@ final class CustomAvatarSvg
     }
 
     /**
-     * Companion backside basename for a stored front avatar filename.
+     * Companion backside basename for a stored custom avatar filename.
      */
     public static function backFilename(string $frontBasename): ?string
     {
@@ -205,6 +205,25 @@ final class CustomAvatarSvg
         }
 
         return self::normalizeSeed((string) file_get_contents($seedPath));
+    }
+
+    /**
+     * Absolute filesystem path to a stored custom kit front SVG, or null.
+     */
+    public static function absolutePath(?string $stored): ?string
+    {
+        if (! self::isCustomKitFilename($stored)) {
+            return null;
+        }
+
+        $base = rtrim((string) config('ffb.legacy_images_path'), DIRECTORY_SEPARATOR.'\\/');
+        $path = $base.DIRECTORY_SEPARATOR.'profiles'.DIRECTORY_SEPARATOR.'avatar'
+            .DIRECTORY_SEPARATOR.basename((string) $stored);
+        if (! is_file($path)) {
+            return null;
+        }
+
+        return $path;
     }
 
     /**

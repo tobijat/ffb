@@ -19,6 +19,7 @@ class KitKitchenClientTest extends TestCase
                 [
                     'Content-Type' => 'image/svg+xml',
                     'X-Kit-Seed' => '123456789',
+                    'X-Kit-Query' => 'maker=adidas&stars=3&number=10&mcolor=ff0000&ncolor=0f0&scolor=fd0&tcolor=111111&text=Boss',
                 ]
             ),
         ]);
@@ -28,6 +29,24 @@ class KitKitchenClientTest extends TestCase
         $this->assertNotNull($result);
         $this->assertSame('123456789', $result['seed']);
         $this->assertStringContainsString('<svg', $result['svg']);
+        $this->assertSame('adidas', $result['query']['maker']);
+        $this->assertSame(3, $result['query']['stars']);
+        $this->assertSame('10', $result['query']['number']);
+        $this->assertSame('Boss', $result['query']['text']);
+        $this->assertSame('#ff0000', $result['query']['mcolor']);
+        $this->assertSame('#00ff00', $result['query']['ncolor']);
+        $this->assertSame('#ffdd00', $result['query']['scolor']);
+        $this->assertSame('#111111', $result['query']['tcolor']);
+    }
+
+    public function test_options_from_query_header_parses_leading_question_mark(): void
+    {
+        $options = KitKitchenClient::optionsFromQueryHeader('?maker=puma&stars=1&number=7');
+
+        $this->assertSame('puma', $options['maker']);
+        $this->assertSame(1, $options['stars']);
+        $this->assertSame('7', $options['number']);
+        $this->assertArrayNotHasKey('mcolor', $options);
     }
 
     public function test_fetch_passes_seed_and_options_query(): void

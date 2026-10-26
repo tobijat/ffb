@@ -68,8 +68,9 @@ return [
     | Kit Kitchen random shirt generator (custom avatar)
     |--------------------------------------------------------------------------
     |
-    | Returns image/svg+xml and X-Kit-Seed. Fetched server-side via
-    | /profile/avatar/kit-random so the seed header is available to the UI.
+    | Returns image/svg+xml, X-Kit-Seed, and X-Kit-Query (effective request
+    | query string). Fetched server-side via /profile/avatar/kit-random so the
+    | seed and resolved options are available to the UI.
     |
     */
     'kit_kitchen_random_url' => env(

@@ -390,6 +390,38 @@
         kitRestoringOptions = false;
     }
 
+    function resolveKitOptionsFromResponse(requestOptions, responseOptions) {
+        const base = requestOptions || emptyKitOptions();
+        const fromKit = responseOptions && typeof responseOptions === 'object' ? responseOptions : {};
+        let stars = fromKit.stars != null ? parseInt(fromKit.stars, 10) : base.stars;
+        if (isNaN(stars) || stars < 0 || stars > 9) {
+            stars = base.stars;
+        }
+        let number = fromKit.number != null ? String(fromKit.number).trim() : base.number;
+        if (number !== '' && !/^\d{1,2}$/.test(number)) {
+            number = base.number;
+        }
+        let maker = fromKit.maker != null ? String(fromKit.maker).trim().toLowerCase() : base.maker;
+        let textFromKit =
+            fromKit.text != null
+                ? String(fromKit.text)
+                      .replace(/[\u0000-\u001F\u007F]+/g, '')
+                      .trim()
+                      .slice(0, 16)
+                : '';
+        let text = textFromKit || base.text || '';
+        return {
+            maker: maker || '',
+            stars: stars,
+            number: number || '',
+            text: text,
+            mcolor: normalizeKitColor(fromKit.mcolor != null ? fromKit.mcolor : base.mcolor),
+            ncolor: normalizeKitColor(fromKit.ncolor != null ? fromKit.ncolor : base.ncolor),
+            tcolor: normalizeKitColor(fromKit.tcolor != null ? fromKit.tcolor : base.tcolor),
+            scolor: normalizeKitColor(fromKit.scolor != null ? fromKit.scolor : base.scolor),
+        };
+    }
+
     function appendKitColorParams(params, opts) {
         ['mcolor', 'ncolor', 'tcolor', 'scolor'].forEach(function (key) {
             const color = normalizeKitColor(opts[key] || '');
@@ -491,6 +523,30 @@
         showCustomEntry(entry, false);
     }
 
+    function postKitFromShirt(bodyParams) {
+        const headers = {
+            Accept: 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest',
+        };
+        const xsrf = xsrfToken();
+        if (xsrf) {
+            headers['X-XSRF-TOKEN'] = xsrf;
+        }
+        return fetch(kitFromShirtUrl, {
+            method: 'POST',
+            cache: 'no-store',
+            credentials: 'same-origin',
+            headers: headers,
+            body: bodyParams.toString(),
+        }).then(function (res) {
+            if (!res.ok) {
+                throw new Error('HTTP ' + res.status);
+            }
+            return res.json();
+        });
+    }
+
     function bootstrapFromReadyShirt() {
         if (
             kitBootstrappedFromShirt ||
@@ -517,28 +573,7 @@
             body.set('text', requestOptions.text);
         }
         appendKitColorParams(body, requestOptions);
-        const headers = {
-            Accept: 'application/json',
-            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-            'X-Requested-With': 'XMLHttpRequest',
-        };
-        const xsrf = xsrfToken();
-        if (xsrf) {
-            headers['X-XSRF-TOKEN'] = xsrf;
-        }
-        fetch(kitFromShirtUrl, {
-            method: 'POST',
-            cache: 'no-store',
-            credentials: 'same-origin',
-            headers: headers,
-            body: body.toString(),
-        })
-            .then(function (res) {
-                if (!res.ok) {
-                    throw new Error('HTTP ' + res.status);
-                }
-                return res.json();
-            })
+        postKitFromShirt(body)
             .then(function (data) {
                 const svg = String((data && data.svg) || '').trim();
                 const svgBack = String((data && data.svg_back) || '').trim();
@@ -546,6 +581,10 @@
                 if (!/<svg\b/i.test(svg) || !/<svg\b/i.test(svgBack) || !isKitSeed(seed)) {
                     throw new Error('Ungültige Antwort');
                 }
+                const resolvedOptions = resolveKitOptionsFromResponse(
+                    requestOptions,
+                    data && data.options
+                );
                 kitHistory = [];
                 kitIndex = -1;
                 pushKitHistoryEntry(
@@ -554,24 +593,38 @@
                         svg: svg,
                         svgBack: svgBack,
                         isSaved: false,
-                        options: {
-                            maker: requestOptions.maker,
-                            stars: requestOptions.stars,
-                            number: requestOptions.number,
-                            text: requestOptions.text,
-                            mcolor: requestOptions.mcolor,
-                            ncolor: requestOptions.ncolor,
-                            tcolor: requestOptions.tcolor,
-                            scolor: requestOptions.scolor,
-                        },
+                        options: resolvedOptions,
                     },
                     false
                 );
+                applyKitOptionsToForm(resolvedOptions);
             })
             .catch(function () {
                 kitBootstrappedFromShirt = false;
                 updateCustomSaveState(false);
                 showCurrentAvatarInCustomPreview();
+            });
+    }
+
+    /**
+     * Prefill maker/stars/number/text/colors from kit-kitchen's X-Kit-Query
+     * by POSTing the shirt SVG(s) (no local options sidecar).
+     */
+    function resolveOptionsFromPostedSvg(svg, svgBack) {
+        if (!kitFromShirtUrl || !svg) {
+            return Promise.resolve(emptyKitOptions());
+        }
+        const body = new URLSearchParams();
+        body.set('svg', svg);
+        if (svgBack) {
+            body.set('svg_back', svgBack);
+        }
+        return postKitFromShirt(body)
+            .then(function (data) {
+                return resolveKitOptionsFromResponse(emptyKitOptions(), data && data.options);
+            })
+            .catch(function () {
+                return emptyKitOptions();
             });
     }
 
@@ -604,17 +657,19 @@
                 if (!/<svg\b/i.test(svg) || !/<svg\b/i.test(svgBack)) {
                     throw new Error('svg');
                 }
-                kitHistory = [
-                    {
-                        seed: savedAvatarSeed,
-                        svg: svg,
-                        svgBack: svgBack,
-                        isSaved: true,
-                        options: emptyKitOptions(),
-                    },
-                ];
-                kitIndex = 0;
-                showCustomEntry(kitHistory[0], true);
+                return resolveOptionsFromPostedSvg(svg, svgBack).then(function (restoredOptions) {
+                    kitHistory = [
+                        {
+                            seed: savedAvatarSeed,
+                            svg: svg,
+                            svgBack: svgBack,
+                            isSaved: true,
+                            options: restoredOptions,
+                        },
+                    ];
+                    kitIndex = 0;
+                    showCustomEntry(kitHistory[0], true);
+                });
             })
             .catch(function () {
                 // Keep empty history; static preview URLs already show the saved kit.
@@ -664,25 +719,21 @@
                 if (!/<svg\b/i.test(svg) || !/<svg\b/i.test(svgBack) || !isKitSeed(seed)) {
                     throw new Error('Ungültige Antwort');
                 }
+                const resolvedOptions = resolveKitOptionsFromResponse(
+                    requestOptions,
+                    data && data.options
+                );
                 pushKitHistoryEntry(
                     {
                         seed: seed,
                         svg: svg,
                         svgBack: svgBack,
                         isSaved: false,
-                        options: {
-                            maker: requestOptions.maker,
-                            stars: requestOptions.stars,
-                            number: requestOptions.number,
-                            text: requestOptions.text,
-                            mcolor: requestOptions.mcolor,
-                            ncolor: requestOptions.ncolor,
-                            tcolor: requestOptions.tcolor,
-                            scolor: requestOptions.scolor,
-                        },
+                        options: resolvedOptions,
                     },
                     replaceCurrent
                 );
+                applyKitOptionsToForm(resolvedOptions);
             })
             .catch(function () {
                 if (kitHistory.length === 0) {

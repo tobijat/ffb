@@ -22,7 +22,17 @@ use Throwable;
  *   scolor?: string|null,
  *   svg_body?: string|null
  * }
- * @phpstan-type KitResult array{seed: string, svg: string}
+ * @phpstan-type KitQueryOptions array{
+ *   maker?: string,
+ *   stars?: int,
+ *   number?: string,
+ *   text?: string,
+ *   mcolor?: string,
+ *   ncolor?: string,
+ *   tcolor?: string,
+ *   scolor?: string
+ * }
+ * @phpstan-type KitResult array{seed: string, svg: string, query: KitQueryOptions}
  */
 final class KitKitchenClient
 {
@@ -138,7 +148,68 @@ final class KitKitchenClient
         return [
             'seed' => $headerSeed,
             'svg' => $svg,
+            'query' => self::optionsFromQueryHeader($response->header('X-Kit-Query')),
         ];
+    }
+
+    /**
+     * Parse kit-kitchen's X-Kit-Query response header (echo of the effective request query).
+     *
+     * @return KitQueryOptions
+     */
+    public static function optionsFromQueryHeader(?string $header): array
+    {
+        $header = trim((string) $header);
+        if ($header === '') {
+            return [];
+        }
+        if (str_starts_with($header, '?')) {
+            $header = substr($header, 1);
+        }
+
+        $parsed = [];
+        parse_str($header, $parsed);
+        if (! is_array($parsed) || $parsed === []) {
+            return [];
+        }
+
+        $out = [];
+
+        $maker = self::normalizeMaker(isset($parsed['maker']) ? (string) $parsed['maker'] : null);
+        if ($maker !== null) {
+            $out['maker'] = $maker;
+        }
+
+        if (isset($parsed['stars']) && is_numeric($parsed['stars'])) {
+            $stars = (int) $parsed['stars'];
+            if ($stars >= 0 && $stars <= 9) {
+                $out['stars'] = $stars;
+            }
+        }
+
+        $number = trim((string) ($parsed['number'] ?? ''));
+        if (preg_match('/^\d{1,2}$/', $number)) {
+            $out['number'] = $number;
+        }
+
+        if (array_key_exists('text', $parsed)) {
+            $text = preg_replace('/[\x00-\x1F\x7F]+/u', '', trim((string) $parsed['text'])) ?? '';
+            if (function_exists('mb_substr')) {
+                $text = mb_substr($text, 0, 16);
+            } else {
+                $text = substr($text, 0, 16);
+            }
+            $out['text'] = $text;
+        }
+
+        foreach (['mcolor', 'ncolor', 'tcolor', 'scolor'] as $colorKey) {
+            $normalized = self::normalizeColor($parsed[$colorKey] ?? null);
+            if ($normalized !== null) {
+                $out[$colorKey] = $normalized;
+            }
+        }
+
+        return $out;
     }
 
     /**
