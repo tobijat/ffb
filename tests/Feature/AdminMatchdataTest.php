@@ -39,7 +39,7 @@ class AdminMatchdataTest extends TestCase
                 'user' => [
                     'user_id' => 7,
                     'user_nickname' => 'admin',
-                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'photo_url' => '/images/ffb/profiles/avatar/avatar_na.png',
                 ],
                 'navigation' => [
                     [
@@ -91,7 +91,7 @@ class AdminMatchdataTest extends TestCase
                 'user' => [
                     'user_id' => 7,
                     'user_nickname' => 'admin',
-                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'photo_url' => '/images/ffb/profiles/avatar/avatar_na.png',
                 ],
                 'navigation' => [],
                 'selected_league_id' => 1,
@@ -130,7 +130,7 @@ class AdminMatchdataTest extends TestCase
                 'user' => [
                     'user_id' => 7,
                     'user_nickname' => 'admin',
-                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'photo_url' => '/images/ffb/profiles/avatar/avatar_na.png',
                 ],
                 'navigation' => [],
                 'selected_league_id' => 1,

@@ -334,7 +334,7 @@ class AdminPlayerpriceTest extends TestCase
             'teams_without_elo' => 2,
             'teams_skipped' => [
                 ['team_id' => 90, 'team_name' => 'Admira Villach'],
-                ['team_id' => 86, 'team_name' => 'FC Bayern MÃ¼nchen'],
+                ['team_id' => 86, 'team_name' => 'FC Bayern München'],
             ],
             'lineup_max_credits' => 100.0,
             'lineup_max_players_team' => 3,
@@ -366,9 +366,9 @@ class AdminPlayerpriceTest extends TestCase
                 'tab' => 'teams',
             ])
             ->assertOk()
-            ->assertSee('2 Team(s) ohne ELO-Zuordnung wurden Ã¼bersprungen', false)
+            ->assertSee('2 Team(s) ohne ELO-Zuordnung wurden übersprungen', false)
             ->assertSee('Admira Villach', false)
-            ->assertSee('FC Bayern MÃ¼nchen', false);
+            ->assertSee('FC Bayern München', false);
     }
 
     #[Test]
@@ -430,7 +430,7 @@ class AdminPlayerpriceTest extends TestCase
             'user' => [
                 'user_id' => 544,
                 'user_nickname' => 'adminuser',
-                'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                'photo_url' => '/images/ffb/profiles/avatar/avatar_na.png',
                 'is_ffb_admin' => true,
             ],
             'navigation' => [

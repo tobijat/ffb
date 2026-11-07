@@ -183,7 +183,7 @@ class BestteamApiTest extends TestCase
                     'user' => [
                         'user_id' => 544,
                         'user_nickname' => 'tester',
-                        'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                        'photo_url' => '/images/ffb/profiles/avatar/avatar_na.png',
                         'is_admin' => false,
                     ],
                     'selected_league_id' => 26,

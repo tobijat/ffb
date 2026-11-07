@@ -132,7 +132,7 @@ class AdminLeagueDashboardTest extends TestCase
                 'user' => [
                     'user_id' => 7,
                     'user_nickname' => 'admin',
-                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'photo_url' => '/images/ffb/profiles/avatar/avatar_na.png',
                     'is_ffb_admin' => true,
                 ],
                 'navigation' => [],
@@ -165,7 +165,7 @@ class AdminLeagueDashboardTest extends TestCase
                 'user' => [
                     'user_id' => 7,
                     'user_nickname' => 'admin',
-                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'photo_url' => '/images/ffb/profiles/avatar/avatar_na.png',
                     'is_ffb_admin' => true,
                 ],
                 'navigation' => [],

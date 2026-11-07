@@ -34,12 +34,6 @@ class ProfilePopupService
 
         $visibleProfile = (bool) ($perms?->user_permissions_ffb_visible_profile ?? false);
         $avatar = (string) ($details->user_details_avatar ?: 'avatar_na.png');
-        $photo = (string) ($details->user_details_photo ?: 'profile_na.png');
-        if ($photo === 'profile_na.png' && $user->user_gender) {
-            $photoUrl = '/images/ffb/profiles/photo/'.$user->user_gender.'_'.$photo;
-        } else {
-            $photoUrl = '/images/ffb/profiles/photo/'.$photo;
-        }
 
         $favTeam = $this->teamInfo((int) ($details->user_details_ffb_favourite_team ?? 0));
         $ownTeam = $this->teamInfo((int) ($details->user_details_ffb_own_team ?? 0));
@@ -68,7 +62,6 @@ class ProfilePopupService
                         : null,
                     'avatar_url' => UserAvatar::publicUrl($avatar),
                     'avatar_back_url' => CustomAvatarSvg::publicBackUrl($avatar),
-                    'photo_url' => $photoUrl,
                     'user_details_city' => $details->user_details_city ?: null,
                     'user_details_website' => $details->user_details_website ?: null,
                     'user_details_phone' => $visibleProfile ? ($details->user_details_phone ?: null) : null,

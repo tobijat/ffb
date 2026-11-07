@@ -68,7 +68,7 @@ class AdminDbCleanupTest extends TestCase
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
-                    'photo_url' => '/images/ffb/profiles/photo/profile_na.png',
+                    'photo_url' => '/images/ffb/profiles/avatar/avatar_na.png',
                     'is_ffb_admin' => true,
                 ],
                 'navigation' => [

@@ -188,7 +188,6 @@ class DashboardService
      */
     private function userPayload(WebUser $user, ?UserDetails $details): array
     {
-        $photo = (string) ($details?->user_details_photo ?: 'profile_na.png');
         $avatar = (string) ($details?->user_details_avatar ?: 'avatar_na.png');
         $emptyProfile = UserAvatar::isDefault($avatar)
             && ! $details?->user_details_zip
@@ -203,7 +202,6 @@ class DashboardService
             'user_id' => (int) $user->user_id,
             'user_nickname' => (string) $user->user_nickname,
             'user_name' => trim(($user->user_fname ?? '').' '.($user->user_lname ?? '')),
-            'user_photo' => $photo,
             'user_avatar' => $avatar,
             'photo_url' => UserAvatar::publicUrl($avatar),
             'update_profile_nag' => $emptyProfile,
