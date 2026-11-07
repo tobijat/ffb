@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Aufstellung — SoccerSportsfan</title>
+    @include('partials.favicon')
     <link rel="stylesheet" href="css/start.css?v=45">
     <link rel="stylesheet" href="css/dashboard.css?v=50">
     <link rel="stylesheet" href="css/modal.css?v=48">

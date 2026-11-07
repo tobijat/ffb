@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ !empty($passwordReset) ? 'Passwort zurücksetzen — SoccerSportsfan' : 'SoccerSportsfan — Fantasy Football' }}</title>
     <meta name="description" content="Fantasy Football Manager bei SoccerSportsfan. Kostenlos mitspielen.">
+    @include('partials.favicon')
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
     <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=45">
     <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=50">

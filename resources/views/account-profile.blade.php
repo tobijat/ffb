@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Profil — SoccerSportsfan</title>
+    @include('partials.favicon')
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
     <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=45">
     <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=50">

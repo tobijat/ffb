@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Admin Center') — SoccerSportsfan</title>
+    @include('partials.favicon', ['favicon' => 'images/admin/favicon.png'])
     <link rel="stylesheet" href="{{ url('css/start.css') }}?v=39">
     <link rel="stylesheet" href="{{ url('css/dashboard.css') }}?v=50">
     <link rel="stylesheet" href="{{ url('css/admin.css') }}?v=87">
