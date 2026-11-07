@@ -19,7 +19,7 @@ class LineupApiTest extends TestCase
 
         $response->assertStatus(401)
             ->assertJsonPath('status', 401)
-            ->assertJsonPath('error', 'Authentication required (login session)');
+            ->assertJsonPath('error', 'Du wurdest ausgeloggt. Bitte Seite neu laden um dich erneut einzuloggen.');
     }
 
     public function test_accepts_laravel_session(): void

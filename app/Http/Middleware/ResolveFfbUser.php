@@ -38,7 +38,7 @@ class ResolveFfbUser
         if ($userId <= 0) {
             return response()->json([
                 'status' => 401,
-                'error' => 'Authentication required (login session)',
+                'error' => 'Du wurdest ausgeloggt. Bitte Seite neu laden um dich erneut einzuloggen.',
             ], 401);
         }
 
