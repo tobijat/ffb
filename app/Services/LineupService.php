@@ -544,9 +544,6 @@ class LineupService
             if ((int) ($pt->playerteam_league_id ?? 0) !== $leagueId) {
                 return $this->fail(422, 'Invalid lineup: player does not belong to this league');
             }
-            if ((int) $pt->playerteam_status !== 1) {
-                return $this->fail(422, 'Invalid lineup: inactive players are not allowed');
-            }
         }
 
         $prices = $this->resolvePlayerPrices($allIds, $matchroundId, $playerteams);
@@ -687,10 +684,6 @@ class LineupService
                 return 'Invalid lineup: one or more players were not found';
             }
 
-            if (! $pt->playerteam_status) {
-                return 'Invalid lineup: inactive players are not allowed';
-            }
-
             $position = strtolower((string) $pt->playerteam_player_position);
             if (! isset($counts[$position])) {
                 return 'Invalid lineup: unknown player position';
@@ -705,10 +698,6 @@ class LineupService
             $pt = $playerteams->get($id);
             if (! $pt) {
                 return 'Invalid lineup: one or more substitutes were not found';
-            }
-
-            if (! $pt->playerteam_status) {
-                return 'Invalid lineup: inactive substitutes are not allowed';
             }
 
             $teamId = (int) $pt->playerteam_team_id;
