@@ -20,6 +20,11 @@
         $pointsMode = $o['options_league_pointsmode'] ?? 'new';
         $lcBestCount = max(0, count($lc) - 1);
         $lcRest = $lc[$lcBestCount] ?? 1;
+        $benchMode = $o['options_league_benchmode'] ?? null;
+        // Guests / no league: explain both modes. Logged-in league: only that mode (or hide if off).
+        $showSubstitutes = $usingDefaults || in_array($benchMode, ['cover', 'bestof'], true);
+        $showBenchModeCover = $usingDefaults || $benchMode === 'cover';
+        $showBenchModeBestof = $usingDefaults || $benchMode === 'bestof';
     @endphp
 
     @include('partials.dash-top')
@@ -33,6 +38,9 @@
                 <li><u><a class="nolink" href="#goal">Spielziel</a></u></li>
                 <li><u><a class="nolink" href="#ranks">Rangliste</a></u></li>
                 <li><u><a class="nolink" href="#lineup">Aufstellung</a></u></li>
+                @if ($showSubstitutes)
+                    <li><u><a class="nolink" href="#substitutes">Ersatzspieler</a></u></li>
+                @endif
                 <li><u><a class="nolink" href="#prices">Spieler-Preise</a></u></li>
                 <li><u><a class="nolink" href="#points">Spieler-Punkte</a></u></li>
                 <li><u><a class="nolink" href="#grade">Spieler-Leistung</a></u></li>
@@ -127,6 +135,55 @@
                     bedeuten eine <b>bessere Leistung</b>.
                 </div>
             </section>
+
+            @if ($showSubstitutes)
+                <section class="help-chapter" id="substitutes">
+                    <h2 class="help-chapter-title">-- <a title="Seitenanfang" class="nolink" href="#top">&uarr;</a> Ersatzspieler --</h2>
+                    <div class="help-chapter-text">
+                        In einigen Ligen oder Spielrunden ist es möglich Ersatzspieler aufzustellen. Diese werden in einem
+                        separaten Bereich neben oder unter dem Spielfeld angezeigt. Je nach Liga-Einstellung kann es sein,
+                        dass du eine bestimmte Anzahl an Ersatzspielern aufstellen <b>musst</b> oder es dir freisteht ob und
+                        wieviele Ersatzspieler du nominierst. Ersatzspieler kosten genauso viel wie wenn der Spieler in der
+                        Stammelf aufgestellt wird. Du kannst dir also überlegen, ob du die Credits lieber in deine Stammelf
+                        investierst, oder die volle Anzahl an möglichen Ersatzspielern aufstellst.<br>
+                        @if ($usingDefaults)
+                            Es gibt 2 verschiedene Modi für Ersatzspieler.<br><br>
+                        @else
+                            <br>
+                        @endif
+                        @if ($showBenchModeCover)
+                            <b>@if ($usingDefaults)Modus 1 - @endif"Ersatz für Ausfälle"</b><br>
+                            In diesem Modus werden Ersatzspieler nur für Spieler deiner Stammelf eingewechselt wenn diese nicht
+                            zum Einsatz kamen.<br>
+                            <u>Beispiel:</u> <em>du hast Alexander Schlager als Torwart in deiner Stammelf. Es kommt jedoch Florian Wiegele
+                            zum Einsatz und Alexander Schlager bringt dir 0 Punkte. Du hast jedoch einen anderen Torwart als
+                            Ersatzspieler aufgestellt, der in seinem Match auch tatsächlich gespielt hat. Dieser Torwart ersetzt
+                            dann Alexander Schlager in deiner Aufstellung und du bekommst seine erspielten Punkte verrechnet.</em><br><br>
+                        @endif
+                        @if ($showBenchModeBestof)
+                            <b>@if ($usingDefaults)Modus 2 - @endif"Ersatz für schlechte Spieler"</b><br>
+                            In diesem Modus werden die schlechtesten Spieler (die mit den wenigsten Punkten) deiner Stammelf
+                            durch deine Ersatzspieler ersetzt falls diese mehr Punkte einbringen. Deine Elf besteht damit aus den
+                            besten Spielern der Stammelf und der Ersatzbank.<br><br>
+                        @endif
+                        @if ($usingDefaults)
+                            Unabhängig vom Modus gilt es zu beachten, dass Ersatzspieler nur dann zum Einsatz kommen können, wenn
+                        @else
+                            Dabei gilt es zu beachten, dass Ersatzspieler nur dann zum Einsatz kommen können, wenn
+                        @endif
+                        sie auf ihrer jeweiligen Spielposition auch Platz haben. Das heißt, jeder Ersatzspieler kann
+                        grundsätzlich einen Spieler auf der selben Position ersetzen. Er kann jedoch auch einen Spieler mit
+                        einer anderen Position ersetzen wenn das nicht dazu führt dass eine Spielposition dadurch über- oder
+                        unterbesetzt wird.<br>
+                        <u>Beispiel 1:</u> <em>ein Stürmer von der Ersatzbank kann für einen Stürmer der Stammelf eingewechselt werden.</em><br>
+                        <u>Beispiel 2:</u> <em>auch ein Abwehrspieler kann für einen Stürmer eingewechselt werden, wenn in der Abwehr
+                        noch ein Platz frei ist und das Auswechseln des Stürmers nicht dazu führt dass die Mindestanzahl an
+                        Stürmern unterschritten wird.</em><br>
+                        <u>Beispiel 3:</u> <em>ein Torwart kann nur durch einen anderen Torwart ersetzt werden, da ansonsten die
+                        Torwart-Position unbesetzt wäre.</em>
+                    </div>
+                </section>
+            @endif
 
             <section class="help-chapter" id="prices">
                 <h2 class="help-chapter-title">-- <a title="Seitenanfang" class="nolink" href="#top">&uarr;</a> Spieler-Preise --</h2>

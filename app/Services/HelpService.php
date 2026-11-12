@@ -89,6 +89,7 @@ class HelpService
                 'options_lineup_max_s' => 3,
                 'options_lineup_min_bench' => 0,
                 'options_lineup_max_bench' => 0,
+                'options_league_benchmode' => null,
                 'options_score_minutes_threshold_upper' => 60,
                 'options_score_minutes_threshold_lower' => 30,
                 'options_score_minutes_high' => 2,
@@ -133,6 +134,11 @@ class HelpService
             'options_lineup_max_s' => (int) $options->options_lineup_max_s,
             'options_lineup_min_bench' => (int) ($options->options_lineup_min_bench ?? 0),
             'options_lineup_max_bench' => (int) ($options->options_lineup_max_bench ?? 0),
+            'options_league_benchmode' => in_array(
+                ($mode = trim((string) ($options->options_league_benchmode ?? ''))),
+                ['cover', 'bestof'],
+                true
+            ) ? $mode : null,
             'options_score_minutes_threshold_upper' => (int) $options->options_score_minutes_threshold_upper,
             'options_score_minutes_threshold_lower' => (int) $options->options_score_minutes_threshold_lower,
             'options_score_minutes_high' => (int) $options->options_score_minutes_high,

@@ -34,6 +34,7 @@ class HelpPageTest extends TestCase
                         'options_lineup_max_s' => 3,
                         'options_lineup_min_bench' => 0,
                         'options_lineup_max_bench' => 0,
+                        'options_league_benchmode' => null,
                         'options_score_minutes_threshold_upper' => 60,
                         'options_score_minutes_threshold_lower' => 30,
                         'options_score_minutes_high' => 2,
@@ -71,6 +72,10 @@ class HelpPageTest extends TestCase
             ->assertOk()
             ->assertSee('Kapitelauswahl', false)
             ->assertSee('Spieler-Punkte', false)
+            ->assertSee('Ersatzspieler', false)
+            ->assertSee('Ersatz für Ausfälle', false)
+            ->assertSee('Ersatz für schlechte Spieler', false)
+            ->assertSee('Es gibt 2 verschiedene Modi', false)
             ->assertSee('css/help.css', false)
             ->assertSee('Standard-Einstellung', false)
             ->assertSee('user-card-login', false)
@@ -106,8 +111,9 @@ class HelpPageTest extends TestCase
                         'options_lineup_max_d' => 5,
                         'options_lineup_max_m' => 5,
                         'options_lineup_max_s' => 3,
-                        'options_lineup_min_bench' => 0,
-                        'options_lineup_max_bench' => 0,
+                        'options_lineup_min_bench' => 1,
+                        'options_lineup_max_bench' => 3,
+                        'options_league_benchmode' => 'cover',
                         'options_score_minutes_threshold_upper' => 60,
                         'options_score_minutes_threshold_lower' => 30,
                         'options_score_minutes_high' => 2,
@@ -146,6 +152,10 @@ class HelpPageTest extends TestCase
             ->assertOk()
             ->assertSee('Hallo', false)
             ->assertSee('tester', false)
-            ->assertDontSee('Standard-Einstellung', false);
+            ->assertDontSee('Standard-Einstellung', false)
+            ->assertSee('Ersatzspieler', false)
+            ->assertSee('Ersatz für Ausfälle', false)
+            ->assertDontSee('Ersatz für schlechte Spieler', false)
+            ->assertDontSee('Es gibt 2 verschiedene Modi', false);
     }
 }
