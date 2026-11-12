@@ -22,6 +22,7 @@
 /public/images/ffb/profiles/avatar/*
 !/public/images/ffb/profiles/avatar/avatar_na.png
 /public/images/ffb/profiles/photo/
+/public/data/
 /node_modules
 /public/build
 /public/fonts-manifest.dev.json
