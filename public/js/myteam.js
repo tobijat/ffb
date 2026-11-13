@@ -552,11 +552,25 @@
         return { field: field, bench: bench };
     }
 
-    function playerScoreLabel(player) {
-        if (player.match_has_result === false || player.match_has_result === 0) {
-            return '? Punkte';
+    function playerScorePending(player) {
+        return player.match_has_result === false || player.match_has_result === 0;
+    }
+
+    function playerScoreTitle(player) {
+        if (playerScorePending(player)) {
+            return 'Matchdaten noch nicht verfügbar.';
         }
-        return Number(player.playerstats_score || 0) + ' Punkte';
+        if (!player.played) {
+            return 'In dieser Runde nicht eingesetzt.';
+        }
+        return 'Für Details klicken.';
+    }
+
+    function playerScoreLabel(player) {
+        if (playerScorePending(player)) {
+            return '_ Punkte';
+        }
+        return pluralize(Number(player.playerstats_score || 0), 'Punkt', 'Punkte');
     }
 
     function playerCard(player, showPrice) {
@@ -567,6 +581,7 @@
         const price = formatPlayerPrice(player.playerteam_player_price);
         const roundId = currentRound() ? Number(currentRound().matchround_id) || 0 : 0;
         const roundAttr = roundId > 0 ? '" data-matchround-id="' + roundId : '';
+        const scorePending = playerScorePending(player);
         return (
             '<div class="pitch-player">' +
             '<a href="#" data-modal="player" data-id="' +
@@ -580,7 +595,11 @@
             '<br>' +
             lname +
             '</span>' +
-            '<a class="score" href="#" data-modal="player-points" data-id="' +
+            '<a class="score' +
+            (scorePending ? ' is-pending' : '') +
+            '" href="#" title="' +
+            escapeHtml(playerScoreTitle(player)) +
+            '" data-modal="player-points" data-id="' +
             player.playerteam_id +
             '" data-matchround-id="' +
             roundId +

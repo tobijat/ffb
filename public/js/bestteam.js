@@ -458,13 +458,13 @@
             '<br>' +
             lname +
             '</span>' +
-            '<a class="score" href="#" data-modal="player-points" data-id="' +
+            '<a class="score" href="#" title="Für Details klicken." data-modal="player-points" data-id="' +
             player.playerteam_id +
             '" data-matchround-id="' +
             roundId +
             '">' +
-            Number(player.playerstats_score || 0) +
-            ' Punkte</a>' +
+            pluralize(Number(player.playerstats_score || 0), 'Punkt', 'Punkte') +
+            '</a>' +
             '<div class="meta">' +
             (showPrice
                 ? '<span title="Preis: ' + price + ' Credits">' + price + '</span>'

@@ -628,6 +628,10 @@
     flex: 0 0 auto;
 }
 
+.pitch-player .score.is-pending {
+    background: #659bdf;
+}
+
 .pitch-player .score:hover {
     border-color: #fff;
     text-decoration: none;

@@ -785,6 +785,7 @@ class LineupService
             'playerteam_player_price' => (float) ($prices->get($playerteamId) ?? 0),
             'playerteam_player_note' => (string) ($pt->playerteam_player_note ?? ''),
             'playerstats_score' => (int) ($scores->get($playerteamId) ?? 0),
+            'played' => $scores->has($playerteamId),
             'match_has_result' => (bool) $matchHasResultByTeamId->get($teamId, false),
             'card_warning' => $cardWarnings->get((int) $pt->playerteam_id),
         ];
