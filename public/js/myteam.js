@@ -552,6 +552,13 @@
         return { field: field, bench: bench };
     }
 
+    function playerScoreLabel(player) {
+        if (player.match_has_result === false || player.match_has_result === 0) {
+            return '? Punkte';
+        }
+        return Number(player.playerstats_score || 0) + ' Punkte';
+    }
+
     function playerCard(player, showPrice) {
         const fname = escapeHtml(player.player_fname || '');
         const lname = escapeHtml(player.player_lname || '');
@@ -578,8 +585,8 @@
             '" data-matchround-id="' +
             roundId +
             '">' +
-            Number(player.playerstats_score || 0) +
-            ' Punkte</a>' +
+            playerScoreLabel(player) +
+            '</a>' +
             '<div class="meta">' +
             (showPrice
                 ? '<span title="Preis: ' + price + ' Credits">' + price + '</span>'

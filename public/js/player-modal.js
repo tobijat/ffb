@@ -189,6 +189,13 @@
 
     function renderPlayerHead(player) {
         const league = String(player.league_title || '').trim();
+        const matchround = String(player.matchround_title || '').trim();
+        let subtitle = league;
+        if (league && matchround) {
+            subtitle = league + ' - ' + matchround;
+        } else if (matchround) {
+            subtitle = matchround;
+        }
         return (
             '<div class="ffb-player-modal-head" style="--ffb-flag-team:' +
             cssUrl(flagBackgroundUrl(player.player_team_nationality)) +
@@ -198,8 +205,8 @@
             ' — <em>' +
             escapeHtml(player.player_team_name) +
             '</em>' +
-            (league
-                ? '<div class="ffb-modal-head-subtitle">' + escapeHtml(league) + '</div>'
+            (subtitle
+                ? '<div class="ffb-modal-head-subtitle">' + escapeHtml(subtitle) + '</div>'
                 : '') +
             '</div>' +
             defaultCloseBtn() +
@@ -966,10 +973,15 @@
     function renderPlayerRoundBody(data) {
         const player = data.player;
         if (!data.played || !data.stats) {
+            const emptyMsg = data.match_has_result
+                ? 'In diese Runde nicht eingesetzt.'
+                : 'Matchdaten noch nicht verfügbar.';
             return (
                 '<div class="ffb-profile ffb-player">' +
                 renderPlayerPhoto(player) +
-                '<div class="ffb-profile-rows"><p>nicht eingesetzt</p></div></div>'
+                '<div class="ffb-profile-rows"><p>' +
+                emptyMsg +
+                '</p></div></div>'
             );
         }
 

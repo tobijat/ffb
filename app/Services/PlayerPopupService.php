@@ -290,9 +290,12 @@ class PlayerPopupService
                 'player_team_name' => (string) $playerteam->team->team_name,
                 'player_team_nationality' => (string) ($playerteam->team->team_nationality ?: ''),
                 'league_title' => $roundLeagueTitle,
+                'matchround_title' => (string) ($matchround->matchround_title ?: ''),
                 ...$this->playerPictureFields($playerteam),
             ],
         ];
+
+        $matchHasResult = $this->teamMatchHasResult($teamId, $matchroundId);
 
         $stat = Playerstats::query()
             ->with(['playerteam'])
@@ -305,6 +308,7 @@ class PlayerPopupService
                 'ok' => true,
                 'data' => array_merge($base, [
                     'played' => false,
+                    'match_has_result' => $matchHasResult,
                     'stats' => null,
                 ]),
             ];
@@ -343,6 +347,7 @@ class PlayerPopupService
             'ok' => true,
             'data' => array_merge($base, [
                 'played' => true,
+                'match_has_result' => $matchHasResult,
                 'stats' => [
                     'playerstats_goals' => (int) $stat->playerstats_goals,
                     'playerstats_assists' => (int) $stat->playerstats_assists,
@@ -544,6 +549,11 @@ class PlayerPopupService
         }
 
         return $this->emptyMatchFields();
+    }
+
+    private function teamMatchHasResult(int $teamId, int $matchroundId): bool
+    {
+        return $this->rowHasFinishedMatch($this->matchFieldsForTeamRound($teamId, $matchroundId));
     }
 
     /**

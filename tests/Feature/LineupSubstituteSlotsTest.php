@@ -85,6 +85,8 @@ class LineupSubstituteSlotsTest extends TestCase
         $this->assertArrayHasKey('replaces_playerteam_id', $loaded['substitutes'][0]);
         $this->assertNull($loaded['substitutes'][0]['replaces_playerteam_id']);
         $this->assertSame(13.0, (float) $loaded['userteam']['userteam_price']);
+        $this->assertArrayHasKey('match_has_result', $loaded['players'][0]);
+        $this->assertFalse($loaded['players'][0]['match_has_result']);
     }
 
     #[Test]

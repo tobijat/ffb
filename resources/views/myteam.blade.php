@@ -145,9 +145,9 @@
         };
     </script>
     <script src="js/modal.js?v=32" defer></script>
-    <script src="js/player-modal.js?v=35" defer></script>
+    <script src="js/player-modal.js?v=37" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
-    <script src="js/pitch-bench.js?v=34" defer></script>
-    <script src="js/myteam.js?v=29" defer></script>
+    <script src="js/pitch-bench.js?v=35" defer></script>
+    <script src="js/myteam.js?v=30" defer></script>
 </body>
 </html>

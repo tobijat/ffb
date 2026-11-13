@@ -72,7 +72,7 @@
         };
     </script>
     <script src="js/modal.js?v=32" defer></script>
-    <script src="js/player-modal.js?v=35" defer></script>
+    <script src="js/player-modal.js?v=37" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
     <script src="js/userscore.js?v=16" defer></script>
 </body>

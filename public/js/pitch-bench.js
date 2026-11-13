@@ -274,8 +274,10 @@
             '" data-matchround-id="' +
             roundId +
             '">' +
-            Number(player.playerstats_score || 0) +
-            ' Punkte</a>' +
+            (player.match_has_result === false || player.match_has_result === 0
+                ? '? Punkte'
+                : Number(player.playerstats_score || 0) + ' Punkte') +
+            '</a>' +
             '<div class="meta">' +
             priceHtml +
             flagHtml(legacyBase, nat, player.playerteam_team || '') +

@@ -298,9 +298,39 @@ class PlayerPopupPastMatchesTest extends TestCase
 
         $this->assertTrue($result['ok']);
         $this->assertTrue($result['data']['played']);
+        $this->assertTrue($result['data']['match_has_result']);
+        $this->assertSame('Past League', $result['data']['player']['league_title']);
+        $this->assertSame('Past R1', $result['data']['player']['matchround_title']);
         $this->assertNotNull($result['data']['stats']);
         $this->assertSame(90, (int) $result['data']['stats']['playerstats_minutes']);
         $this->assertSame(1, (int) $result['data']['stats']['playerstats_goals']);
         $this->assertSame(5, (int) $result['data']['stats']['playerstats_score']);
+    }
+
+    #[Test]
+    public function player_round_popup_marks_not_played_when_match_has_result(): void
+    {
+        $result = (new PlayerPopupService)->forRound(544, 100, 1);
+
+        $this->assertTrue($result['ok']);
+        $this->assertFalse($result['data']['played']);
+        $this->assertTrue($result['data']['match_has_result']);
+        $this->assertNull($result['data']['stats']);
+    }
+
+    #[Test]
+    public function player_round_popup_marks_match_data_unavailable_before_result(): void
+    {
+        DB::table('ffb_match')->where('match_id', 19)->update([
+            'match_homescore' => -1,
+            'match_guestscore' => -1,
+        ]);
+
+        $result = (new PlayerPopupService)->forRound(544, 100, 1);
+
+        $this->assertTrue($result['ok']);
+        $this->assertFalse($result['data']['played']);
+        $this->assertFalse($result['data']['match_has_result']);
+        $this->assertNull($result['data']['stats']);
     }
 }

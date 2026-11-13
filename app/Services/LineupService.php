@@ -20,6 +20,7 @@ use App\Support\PlayerCardWarning;
 use App\Support\UserAvatar;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class LineupService
 {
@@ -419,6 +420,10 @@ class LineupService
         $prices = $this->resolvePlayerPrices($allIds, $matchroundId, $playerteams);
         $scores = $this->scoresForRound($allIds, $matchroundId);
         $cardWarnings = $this->resolveCardWarnings($playerteams, $matchroundId, $leagueId);
+        $matchHasResultByTeamId = $this->matchHasResultByTeamId(
+            $playerteams->map(static fn (Playerteam $pt): int => (int) $pt->playerteam_team_id)->unique()->values()->all(),
+            $matchroundId,
+        );
 
         $players = [];
         foreach ($slotIds as $slot => $playerteamId) {
@@ -429,6 +434,7 @@ class LineupService
                 $prices,
                 $scores,
                 $cardWarnings,
+                $matchHasResultByTeamId,
             );
             if ($row !== null) {
                 $players[] = $row;
@@ -444,6 +450,7 @@ class LineupService
                 $prices,
                 $scores,
                 $cardWarnings,
+                $matchHasResultByTeamId,
             );
             if ($row !== null) {
                 $row['replaces_playerteam_id'] = $replacesBySubstituteId[$playerteamId] ?? null;
@@ -738,6 +745,7 @@ class LineupService
      * @param  Collection<int, float|int|string>  $prices
      * @param  Collection<int, int>  $scores
      * @param  Collection<int, mixed>  $cardWarnings
+     * @param  Collection<int, bool>  $matchHasResultByTeamId
      * @return array<string, mixed>|null
      */
     private function playerPayload(
@@ -747,12 +755,15 @@ class LineupService
         Collection $prices,
         Collection $scores,
         Collection $cardWarnings,
+        Collection $matchHasResultByTeamId = new Collection,
     ): ?array {
         /** @var Playerteam|null $pt */
         $pt = $playerteams->get($playerteamId);
         if (! $pt || ! $pt->player || ! $pt->team) {
             return null;
         }
+
+        $teamId = (int) $pt->playerteam_team_id;
 
         return [
             'slot' => $slot,
@@ -763,7 +774,7 @@ class LineupService
             'player_status' => (int) ($pt->player->player_status ?? 0),
             'player_status_description' => (string) ($pt->player->player_status_description ?: ''),
             'playerteam_id' => (int) $pt->playerteam_id,
-            'playerteam_team_id' => (int) $pt->playerteam_team_id,
+            'playerteam_team_id' => $teamId,
             'playerteam_team_asset_key' => (string) ($pt->team->asset_key ?? ''),
             'player_asset_key' => (string) ($pt->player->asset_key ?? ''),
             'playerteam_team' => (string) $pt->team->team_name,
@@ -774,8 +785,52 @@ class LineupService
             'playerteam_player_price' => (float) ($prices->get($playerteamId) ?? 0),
             'playerteam_player_note' => (string) ($pt->playerteam_player_note ?? ''),
             'playerstats_score' => (int) ($scores->get($playerteamId) ?? 0),
+            'match_has_result' => (bool) $matchHasResultByTeamId->get($teamId, false),
             'card_warning' => $cardWarnings->get((int) $pt->playerteam_id),
         ];
+    }
+
+    /**
+     * Whether each team's match in this round already has a stored result.
+     *
+     * @param  list<int>  $teamIds
+     * @return Collection<int, bool>
+     */
+    private function matchHasResultByTeamId(array $teamIds, int $matchroundId): Collection
+    {
+        $teamIds = array_values(array_unique(array_filter($teamIds, static fn (int $id): bool => $id > 0)));
+        if ($teamIds === [] || $matchroundId <= 0 || ! Schema::hasTable('ffb_match')) {
+            return collect();
+        }
+
+        /** @var Collection<int, bool> $out */
+        $out = collect();
+        foreach ($teamIds as $teamId) {
+            $out->put($teamId, false);
+        }
+
+        $matches = MatchGame::query()
+            ->where('match_round', $matchroundId)
+            ->where(function ($query) use ($teamIds): void {
+                $query->whereIn('match_hometeam_id', $teamIds)
+                    ->orWhereIn('match_guestteam_id', $teamIds);
+            })
+            ->get(['match_hometeam_id', 'match_guestteam_id', 'match_homescore', 'match_guestscore']);
+
+        foreach ($matches as $match) {
+            $hasResult = (int) ($match->match_homescore ?? -1) >= 0
+                && (int) ($match->match_guestscore ?? -1) >= 0;
+            $homeId = (int) $match->match_hometeam_id;
+            $guestId = (int) $match->match_guestteam_id;
+            if ($out->has($homeId)) {
+                $out->put($homeId, $hasResult);
+            }
+            if ($out->has($guestId)) {
+                $out->put($guestId, $hasResult);
+            }
+        }
+
+        return $out;
     }
 
     /**
