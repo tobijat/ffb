@@ -691,12 +691,20 @@
         const listEl = side === 'Home' ? homePlayers : guestPlayers;
         const snapshot = {};
         const initialByPt = {};
+        // Snapshot only rows that exist in the current DOM and belong to that playerteam.
+        // Newly concatenated inactive players are not in the DOM yet — do not invent empty
+        // payloads for them (that used to wipe playerteam_id after re-render).
         players[side].forEach((player, index) => {
             const ptId = String(player.playerteam_id ?? '');
-            if (ptId === '') {
+            if (ptId === '' || !rowEl(side, index)) {
+                return;
+            }
+            const domPt = String(readField(side, index, 'playerteam_id') || '');
+            if (domPt !== ptId) {
                 return;
             }
             snapshot[ptId] = playerPayload(side, index);
+            snapshot[ptId].playerteam_id = ptId;
             initialByPt[ptId] = initials[side][index]
                 ? Object.assign({}, initials[side][index])
                 : null;
@@ -710,6 +718,9 @@
             const saved = snapshot[ptId];
             if (saved) {
                 STAT_FIELDS.forEach((name) => {
+                    if (name === 'playerteam_id') {
+                        return;
+                    }
                     if (saved[name] === undefined || saved[name] === null) {
                         return;
                     }
@@ -719,6 +730,7 @@
                     applyCardsUi(side, index, String(saved.cards));
                 }
             }
+            writeField(side, index, 'playerteam_id', ptId);
             syncMinutesFromInOut(side, index);
             initials[side][index] = initialByPt[ptId] || playerPayload(side, index);
             bindPlayerEvents(side, index);
@@ -1369,9 +1381,22 @@
             const jobs = dirtyPlayers.map(({ side, index, payload }) => {
                 const status = document.getElementById(`admin-mp-status-${side}${index}`);
                 if (status) status.textContent = '…';
+                const ptId = String(
+                    payload.playerteam_id
+                        || (players[side][index] && players[side][index].playerteam_id)
+                        || ''
+                );
+                if (!ptId) {
+                    if (status) {
+                        status.innerHTML = `<img src="${imagesBase}symbols/status_neg.svg" width="14" height="14" alt="err">`;
+                    }
+                    alert(`${side} #${index + 1}: playerteam_id fehlt.`);
+                    return Promise.resolve();
+                }
+                payload.playerteam_id = ptId;
                 const url = savePlayerTpl
                     .replace('__MATCH__', String(currentMatchId))
-                    .replace('__PT__', String(payload.playerteam_id));
+                    .replace('__PT__', ptId);
                 return fetchJson(url, { method: 'POST', body: JSON.stringify(payload) })
                     .then(() => {
                         initials[side][index] = Object.assign({}, payload);
