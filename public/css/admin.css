@@ -2148,6 +2148,22 @@
     min-width: 0;
 }
 
+.admin-mp-reactivate-pill {
+    display: inline-block;
+    margin-left: 0.35rem;
+    padding: 0.08rem 0.35rem;
+    font-size: 0.7rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #5a3d00;
+    background: #ffe8a3;
+    border: 1px solid #e0c060;
+    border-radius: 999px;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
 .admin-mp-savebar {
     display: flex;
     flex-wrap: wrap;

@@ -174,6 +174,101 @@ class AdminMatchdataSaveGoalsTest extends TestCase
         $this->assertSame([12, 87], $minutes);
     }
 
+    #[Test]
+    public function save_player_stats_activates_inactive_playerteam(): void
+    {
+        LeagueOptions::query()->create([
+            'options_league_id' => 0,
+            'options_league_pointsmode' => 'old',
+        ]);
+
+        $league = League::query()->create([
+            'league_title' => 'EM Test',
+            'league_visible' => 1,
+            'league_archive' => 0,
+        ]);
+        LeagueOptions::query()->create([
+            'options_league_id' => (int) $league->league_id,
+            'options_league_pointsmode' => 'old',
+            'options_score_goals_s' => 4,
+            'options_score_assists' => 3,
+            'options_score_minutes_threshold_lower' => 30,
+            'options_score_minutes_threshold_upper' => 60,
+            'options_score_minutes_low' => 1,
+            'options_score_minutes_middle' => 2,
+            'options_score_minutes_high' => 3,
+            'options_score_owngoals' => -2,
+            'options_score_card_y' => -2,
+            'options_score_card_yr' => -4,
+            'options_score_card_r' => -5,
+            'options_score_penalty_saved' => 2,
+            'options_score_penalty_lost' => -2,
+            'options_score_penaltyshootout_save' => 2,
+            'options_score_penaltyshootout_lost' => -2,
+            'options_score_penaltyshootout_hit' => 2,
+            'options_score_no_oppgoals_g' => 4,
+            'options_score_no_oppgoals_d' => 3,
+            'options_score_no_oppgoals_m' => 1,
+            'options_score_oppgoals_g' => -1,
+            'options_score_oppgoals_d' => -1,
+        ]);
+
+        $home = Team::query()->create(['team_name' => 'Home', 'team_status' => 1]);
+        $guest = Team::query()->create(['team_name' => 'Guest', 'team_status' => 1]);
+        $round = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'Finale',
+            'matchround_startdate' => '2026-07-01 00:00:00',
+            'matchround_enddate' => '2026-07-02 00:00:00',
+            'matchround_status' => 1,
+        ]);
+        $match = MatchGame::query()->create([
+            'match_round' => (int) $round->matchround_id,
+            'match_hometeam_id' => (int) $home->team_id,
+            'match_guestteam_id' => (int) $guest->team_id,
+            'match_date' => '2026-07-01 20:00:00',
+            'match_homescore' => 1,
+            'match_guestscore' => 0,
+            'match_minutes' => 90,
+        ]);
+
+        $player = Player::query()->create([
+            'player_fname' => 'Max',
+            'player_lname' => 'Inactive',
+        ]);
+        $playerteam = Playerteam::query()->create([
+            'playerteam_player_id' => (int) $player->player_id,
+            'playerteam_team_id' => (int) $home->team_id,
+            'playerteam_league_id' => (int) $league->league_id,
+            'playerteam_status' => 0,
+            'playerteam_player_position' => 'm',
+        ]);
+
+        $result = app(AdminMatchdataService::class)->savePlayerStats(
+            (int) $match->match_id,
+            (int) $playerteam->playerteam_id,
+            [
+                'minutes' => 90,
+                'minute_in' => 1,
+                'minute_out' => 90,
+                'goals' => '0',
+                'owngoals' => '0',
+                'assists' => 0,
+                'cards' => 'n',
+                'penaltieslost' => 0,
+                'penaltiessaved' => 0,
+                'penaltyshootout_save' => 0,
+                'penaltyshootout_lost' => 0,
+                'penaltyshootout_hit' => 0,
+            ],
+        );
+
+        $this->assertTrue($result['ok'] ?? false, implode('; ', $result['errors'] ?? []));
+        $playerteam->refresh();
+        $this->assertSame(1, (int) $playerteam->playerteam_status);
+        $this->assertStringContainsString('aktiv', (string) ($result['message'] ?? ''));
+    }
+
     private function createSchema(): void
     {
         Schema::dropIfExists('ffb_psgoal');

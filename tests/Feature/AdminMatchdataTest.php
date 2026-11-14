@@ -371,6 +371,54 @@ class AdminMatchdataTest extends TestCase
         ], $unmatched);
     }
 
+    #[Test]
+    public function scrape_matching_falls_back_to_inactive_squad_members(): void
+    {
+        $service = app(AdminMatchdataService::class);
+        $method = new ReflectionMethod(AdminMatchdataService::class, 'mapScrapedSide');
+
+        [$mapped, $unmatched] = $method->invoke(
+            $service,
+            [
+                [
+                    'player_name' => 'Max Mustermann',
+                    'player_uefa_id' => 'uefa-77',
+                    'player_minutes' => 90,
+                    'player_num_goals' => 1,
+                    'player_num_assists' => 0,
+                    'player_penalties_hit' => 0,
+                    'player_cards' => '0',
+                ],
+            ],
+            [
+                [
+                    'playerteam_id' => 10,
+                    'player_fname' => 'Active',
+                    'player_lname' => 'Player',
+                    'player_uefa_id' => 'uefa-1',
+                    'player_name_fid_wf' => 'Player Active',
+                ],
+            ],
+            'new',
+            'Heim FC',
+            [
+                [
+                    'playerteam_id' => 22,
+                    'player_fname' => 'Max',
+                    'player_lname' => 'Mustermann',
+                    'player_uefa_id' => 'uefa-77',
+                    'player_name_fid_wf' => 'Mustermann Max',
+                    'playerteam_status' => 0,
+                ],
+            ],
+        );
+
+        $this->assertSame([], $unmatched);
+        $this->assertArrayHasKey('22', $mapped);
+        $this->assertTrue((bool) $mapped['22']['reactivate']);
+        $this->assertSame(90, $mapped['22']['minutes']);
+    }
+
     public function test_save_player_json(): void
     {
         $this->mock(FfbAdminAccess::class, function ($mock) {

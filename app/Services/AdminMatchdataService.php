@@ -226,6 +226,8 @@ class AdminMatchdataService
                 'player_uefa_id' => trim((string) ($player?->player_uefa_id ?? '')),
                 'player_fifa_id' => trim((string) ($player?->player_fifa_id ?? '')),
                 'playerteam_id' => $playerteamId,
+                'playerteam_team_id' => $teamId,
+                'playerteam_status' => (int) ($playerteam->playerteam_status ? 1 : 0),
                 'playerteam_player_position' => (string) ($playerteam->playerteam_player_position ?: ''),
                 'player_name_fid_wf' => $wfName !== '' && $wfName !== '0'
                     ? $wfName
@@ -350,20 +352,17 @@ class AdminMatchdataService
         }
 
         $pm = $this->pointsMode($userId);
-        $homeDb = $this->playersForTeam($userId, (int) $match->match_hometeam_id, $matchId);
-        $guestDb = $this->playersForTeam($userId, (int) $match->match_guestteam_id, $matchId);
-        $homeTeamName = trim((string) ($match->homeTeam?->team_name ?? ''));
-        $guestTeamName = trim((string) ($match->guestTeam?->team_name ?? ''));
-
-        [$homeMapped, $homeUnmatched, $homeScore, $homePs] = $this->mapScrapedSide($parsed['home'], $homeDb, $pm, $homeTeamName);
-        [$guestMapped, $guestUnmatched, $guestScore, $guestPs] = $this->mapScrapedSide($parsed['guest'], $guestDb, $pm, $guestTeamName);
+        $mapped = $this->mapScrapedMatchPlayers($userId, $match, $parsed, $pm);
 
         // Own goals count for the opponent.
         $homeOwn = $this->sumScrapedOwngoals($parsed['home']);
         $guestOwn = $this->sumScrapedOwngoals($parsed['guest']);
 
-        $players = $homeMapped + $guestMapped;
-        $unmatched = array_values(array_unique(array_merge($homeUnmatched, $guestUnmatched)));
+        $players = $mapped['players'];
+        $homeScore = $mapped['home_score'];
+        $guestScore = $mapped['guest_score'];
+        $homePs = $mapped['home_ps'];
+        $guestPs = $mapped['guest_ps'];
 
         return [
             'ok' => true,
@@ -379,7 +378,8 @@ class AdminMatchdataService
                 'guestscore_penalty' => $homePs > 0 || $guestPs > 0 ? $guestPs : -1,
             ],
             'players' => $players,
-            'unmatched' => $unmatched,
+            'unmatched' => $mapped['unmatched'],
+            'reactivated_players' => $mapped['reactivated_players'],
             'matched' => count($players),
         ];
     }
@@ -446,18 +446,8 @@ class AdminMatchdataService
         }
 
         $pm = $this->pointsMode($userId);
-        $homeDb = $this->playersForTeam($userId, (int) $match->match_hometeam_id, $matchId);
-        $guestDb = $this->playersForTeam($userId, (int) $match->match_guestteam_id, $matchId);
-        $homeTeamName = trim((string) ($match->homeTeam?->team_name ?? ''));
-        $guestTeamName = trim((string) ($match->guestTeam?->team_name ?? ''));
-
-        [$homeMapped, $homeUnmatched] = $this->mapScrapedSide($parsed['home'], $homeDb, $pm, $homeTeamName);
-        [$guestMapped, $guestUnmatched] = $this->mapScrapedSide($parsed['guest'], $guestDb, $pm, $guestTeamName);
-
-        // Own goals count for the opponent — result already comes from UEFA score,
-        // so prefer official score when present.
-        $players = $homeMapped + $guestMapped;
-        $unmatched = array_values(array_unique(array_merge($homeUnmatched, $guestUnmatched)));
+        $mapped = $this->mapScrapedMatchPlayers($userId, $match, $parsed, $pm);
+        $players = $mapped['players'];
 
         return [
             'ok' => true,
@@ -467,7 +457,8 @@ class AdminMatchdataService
             'match_minutes' => (int) $parsed['match_minutes'],
             'result' => $parsed['result'],
             'players' => $players,
-            'unmatched' => $unmatched,
+            'unmatched' => $mapped['unmatched'],
+            'reactivated_players' => $mapped['reactivated_players'],
             'matched' => count($players),
             'uefa_match_id' => $uefaMatchId,
         ];
@@ -539,16 +530,8 @@ class AdminMatchdataService
         }
 
         $pm = $this->pointsMode($userId);
-        $homeDb = $this->playersForTeam($userId, (int) $match->match_hometeam_id, $matchId);
-        $guestDb = $this->playersForTeam($userId, (int) $match->match_guestteam_id, $matchId);
-        $homeTeamName = trim((string) ($match->homeTeam?->team_name ?? ''));
-        $guestTeamName = trim((string) ($match->guestTeam?->team_name ?? ''));
-
-        [$homeMapped, $homeUnmatched] = $this->mapScrapedSide($parsed['home'], $homeDb, $pm, $homeTeamName);
-        [$guestMapped, $guestUnmatched] = $this->mapScrapedSide($parsed['guest'], $guestDb, $pm, $guestTeamName);
-
-        $players = $homeMapped + $guestMapped;
-        $unmatched = array_values(array_unique(array_merge($homeUnmatched, $guestUnmatched)));
+        $mapped = $this->mapScrapedMatchPlayers($userId, $match, $parsed, $pm);
+        $players = $mapped['players'];
 
         return [
             'ok' => true,
@@ -558,7 +541,8 @@ class AdminMatchdataService
             'match_minutes' => (int) $parsed['match_minutes'],
             'result' => $parsed['result'],
             'players' => $players,
-            'unmatched' => $unmatched,
+            'unmatched' => $mapped['unmatched'],
+            'reactivated_players' => $mapped['reactivated_players'],
             'matched' => count($players),
             'fifa_match_id' => $fifaMatchId,
         ];
@@ -763,12 +747,122 @@ class AdminMatchdataService
     }
 
     /**
+     * Match scraped sides against active squad members first, then inactive.
+     *
+     * @param  array{home: list<array<string, mixed>>, guest: list<array<string, mixed>>}  $parsed
+     * @return array{
+     *     players: array<string, array<string, int|string|bool>>,
+     *     unmatched: list<string>,
+     *     reactivated_players: list<array<string, mixed>>,
+     *     home_score: int,
+     *     guest_score: int,
+     *     home_ps: int,
+     *     guest_ps: int
+     * }
+     */
+    private function mapScrapedMatchPlayers(int $userId, MatchGame $match, array $parsed, string $pm): array
+    {
+        $matchId = (int) $match->match_id;
+        $homeAll = $this->playersForTeam($userId, (int) $match->match_hometeam_id, $matchId, true);
+        $guestAll = $this->playersForTeam($userId, (int) $match->match_guestteam_id, $matchId, true);
+        [$homeActive, $homeInactive] = $this->partitionPlayersByStatus($homeAll);
+        [$guestActive, $guestInactive] = $this->partitionPlayersByStatus($guestAll);
+
+        $homeTeamName = trim((string) ($match->homeTeam?->team_name ?? ''));
+        $guestTeamName = trim((string) ($match->guestTeam?->team_name ?? ''));
+
+        [$homeMapped, $homeUnmatched, $homeScore, $homePs] = $this->mapScrapedSide(
+            $parsed['home'],
+            $homeActive,
+            $pm,
+            $homeTeamName,
+            $homeInactive,
+        );
+        [$guestMapped, $guestUnmatched, $guestScore, $guestPs] = $this->mapScrapedSide(
+            $parsed['guest'],
+            $guestActive,
+            $pm,
+            $guestTeamName,
+            $guestInactive,
+        );
+
+        $players = $homeMapped + $guestMapped;
+
+        return [
+            'players' => $players,
+            'unmatched' => array_values(array_unique(array_merge($homeUnmatched, $guestUnmatched))),
+            'reactivated_players' => $this->reactivatedPlayerRows(
+                $players,
+                array_merge($homeInactive, $guestInactive),
+            ),
+            'home_score' => $homeScore,
+            'guest_score' => $guestScore,
+            'home_ps' => $homePs,
+            'guest_ps' => $guestPs,
+        ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $players
+     * @return array{0: list<array<string, mixed>>, 1: list<array<string, mixed>>}
+     */
+    private function partitionPlayersByStatus(array $players): array
+    {
+        $active = [];
+        $inactive = [];
+        foreach ($players as $player) {
+            if ((int) ($player['playerteam_status'] ?? 0) === 1) {
+                $active[] = $player;
+            } else {
+                $inactive[] = $player;
+            }
+        }
+
+        return [$active, $inactive];
+    }
+
+    /**
+     * @param  array<string, array<string, int|string|bool>>  $mapped
+     * @param  list<array<string, mixed>>  $inactivePlayers
+     * @return list<array<string, mixed>>
+     */
+    private function reactivatedPlayerRows(array $mapped, array $inactivePlayers): array
+    {
+        $byId = [];
+        foreach ($inactivePlayers as $player) {
+            $byId[(int) ($player['playerteam_id'] ?? 0)] = $player;
+        }
+
+        $out = [];
+        foreach ($mapped as $ptId => $stats) {
+            if (empty($stats['reactivate'])) {
+                continue;
+            }
+            $id = (int) $ptId;
+            if ($id <= 0 || ! isset($byId[$id])) {
+                continue;
+            }
+            $row = $byId[$id];
+            $row['reactivate'] = true;
+            $out[] = $row;
+        }
+
+        return $out;
+    }
+
+    /**
      * @param  list<array<string, mixed>>  $scraped
      * @param  list<array<string, mixed>>  $dbPlayers
-     * @return array{0: array<string, array<string, int|string>>, 1: list<string>, 2: int, 3: int}
+     * @param  list<array<string, mixed>>  $inactivePlayers
+     * @return array{0: array<string, array<string, int|string|bool>>, 1: list<string>, 2: int, 3: int}
      */
-    private function mapScrapedSide(array $scraped, array $dbPlayers, string $pm, string $teamName = ''): array
-    {
+    private function mapScrapedSide(
+        array $scraped,
+        array $dbPlayers,
+        string $pm,
+        string $teamName = '',
+        array $inactivePlayers = [],
+    ): array {
         $mapped = [];
         $unmatched = [];
         $goals = 0;
@@ -787,7 +881,12 @@ class AdminMatchdataService
             $goals += (int) ($sp['player_num_goals'] ?? 0);
             $psHits += (int) ($sp['player_penalties_hit'] ?? 0);
 
+            $reactivate = false;
             $ptId = $this->findMatchingPlayerteamId($name, $dbPlayers, $usedPt, $uefaId, $fifaId);
+            if ($ptId === null && $inactivePlayers !== []) {
+                $ptId = $this->findMatchingPlayerteamId($name, $inactivePlayers, $usedPt, $uefaId, $fifaId);
+                $reactivate = $ptId !== null;
+            }
             if ($ptId === null) {
                 $label = $name !== ''
                     ? $name
@@ -829,6 +928,7 @@ class AdminMatchdataService
                 'penaltyshootout_save' => (int) ($sp['player_penalties_shootout_save'] ?? 0),
                 'penaltyshootout_lost' => (int) ($sp['player_penalties_fail'] ?? 0),
                 'penaltyshootout_hit' => (int) ($sp['player_penalties_hit'] ?? 0),
+                'reactivate' => $reactivate,
             ];
         }
 
@@ -1091,6 +1191,7 @@ class AdminMatchdataService
         return DB::transaction(function () use (
             $match,
             $matchId,
+            $playerteam,
             $playerteamId,
             $pm,
             $position,
@@ -1149,6 +1250,12 @@ class AdminMatchdataService
                 $stat->playerstats_playerteam_id = $playerteamId;
                 $stat->playerstats_matchround_id = (int) $match->match_round;
                 $message = 'New Playerstats successfully added!';
+            }
+
+            if ($minutes > 0 && ! (int) ($playerteam->playerteam_status ?? 0)) {
+                $playerteam->playerteam_status = 1;
+                $playerteam->save();
+                $message .= ' Spieler im Kader auf aktiv gesetzt.';
             }
 
             if ($pm === 'new') {

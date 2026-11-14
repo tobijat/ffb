@@ -319,11 +319,14 @@
         const id = `${side}${index}`;
         const name = `<strong>${escapeHtml(p.player_lname)}</strong>, <em>${escapeHtml(p.player_fname)}</em>`;
         const pos = escapeHtml(String(p.playerteam_player_position || '').toUpperCase());
+        const reactivatePill = p.reactivate
+            ? ' <span class="admin-mp-reactivate-pill">inactive → active</span>'
+            : '';
         const psHidden = isPenaltyShootoutActive() ? '' : ' hidden';
         return `<div class="admin-mp-player" data-side="${side}" data-index="${index}">
             <div class="admin-mp-player-head">
                 <div class="admin-mp-player-title">
-                    <span>${name} <span class="muted">(${pos})</span></span>
+                    <span>${name} <span class="muted">(${pos})</span>${reactivatePill}</span>
                     <span class="admin-mp-status" id="admin-mp-status-${id}"></span>
                 </div>
                 <button type="button" class="admin-icon-btn admin-mp-undo-btn" title="Rückgängig" hidden>
@@ -420,6 +423,9 @@
     }
 
     function isPlayerDirty(side, index) {
+        if (players[side][index] && players[side][index].reactivate) {
+            return true;
+        }
         const initial = initials[side][index];
         if (!initial) return false;
         return !valuesEqual(playerPayload(side, index), initial);
@@ -681,6 +687,89 @@
         refreshSavebar();
     }
 
+    function remountSidePlayers(side) {
+        const listEl = side === 'Home' ? homePlayers : guestPlayers;
+        const snapshot = {};
+        const initialByPt = {};
+        players[side].forEach((player, index) => {
+            const ptId = String(player.playerteam_id ?? '');
+            if (ptId === '') {
+                return;
+            }
+            snapshot[ptId] = playerPayload(side, index);
+            initialByPt[ptId] = initials[side][index]
+                ? Object.assign({}, initials[side][index])
+                : null;
+        });
+
+        players[side] = sortPlayersByPosition(players[side].slice());
+        listEl.innerHTML = renderPlayersList(side, players[side]);
+        initials[side] = [];
+        players[side].forEach((player, index) => {
+            const ptId = String(player.playerteam_id ?? '');
+            const saved = snapshot[ptId];
+            if (saved) {
+                STAT_FIELDS.forEach((name) => {
+                    if (saved[name] === undefined || saved[name] === null) {
+                        return;
+                    }
+                    writeField(side, index, name, String(saved[name]));
+                });
+                if (saved.cards !== undefined && saved.cards !== null && saved.cards !== '') {
+                    applyCardsUi(side, index, String(saved.cards));
+                }
+            }
+            syncMinutesFromInOut(side, index);
+            initials[side][index] = initialByPt[ptId] || playerPayload(side, index);
+            bindPlayerEvents(side, index);
+            syncPlayerRow(side, index);
+        });
+    }
+
+    function mergeReactivatedPlayers(extraPlayers) {
+        const match = matchesCache.find((m) => Number(m.match_id) === Number(currentMatchId));
+        if (!match || !Array.isArray(extraPlayers) || extraPlayers.length === 0) {
+            return 0;
+        }
+
+        const bySide = { Home: [], Guest: [] };
+        const remount = { Home: false, Guest: false };
+        extraPlayers.forEach((raw) => {
+            const teamId = Number(raw.playerteam_team_id || 0);
+            let side = null;
+            if (teamId === Number(match.match_hometeam_id)) {
+                side = 'Home';
+            } else if (teamId === Number(match.match_guestteam_id)) {
+                side = 'Guest';
+            }
+            if (!side) {
+                return;
+            }
+            const existingIndex = findPlayerIndexByPt(side, raw.playerteam_id);
+            if (existingIndex >= 0) {
+                players[side][existingIndex].reactivate = true;
+                remount[side] = true;
+                return;
+            }
+            bySide[side].push(Object.assign({}, raw, { reactivate: true }));
+            remount[side] = true;
+        });
+
+        let added = 0;
+        ['Home', 'Guest'].forEach((side) => {
+            if (!remount[side]) {
+                return;
+            }
+            if (bySide[side].length) {
+                players[side] = players[side].concat(bySide[side]);
+                added += bySide[side].length;
+            }
+            remountSidePlayers(side);
+        });
+
+        return added;
+    }
+
     function applyScrapePayload(data, options) {
         const opts = options || {};
         if (data.url && matchUrlInput) {
@@ -698,6 +787,8 @@
                 r.guestscore_penalty
             );
         }
+
+        const reactivatedCount = mergeReactivatedPlayers(data.reactivated_players || []);
 
         const mapped = data.players || {};
         Object.keys(mapped).forEach((ptId) => {
@@ -723,6 +814,11 @@
             const unmatched = data.unmatched || [];
             const parts = [];
             if (data.message) parts.push(data.message);
+            if (reactivatedCount === 1) {
+                parts.push('1 inaktiver Spieler ergänzt (wird beim Speichern aktiviert).');
+            } else if (reactivatedCount > 1) {
+                parts.push(reactivatedCount + ' inaktive Spieler ergänzt (werden beim Speichern aktiviert).');
+            }
             if (unmatched.length === 1) parts.push('Nicht zugeordnet: ' + unmatched[0]);
             else if (unmatched.length > 1) {
                 parts.push('Nicht zugeordnet (' + unmatched.length + '): ' + unmatched.slice(0, 8).join(', ')
@@ -1279,6 +1375,14 @@
                 return fetchJson(url, { method: 'POST', body: JSON.stringify(payload) })
                     .then(() => {
                         initials[side][index] = Object.assign({}, payload);
+                        if (players[side][index] && players[side][index].reactivate) {
+                            players[side][index].reactivate = false;
+                            const row = rowEl(side, index);
+                            const pill = row && row.querySelector('.admin-mp-reactivate-pill');
+                            if (pill) {
+                                pill.remove();
+                            }
+                        }
                         if (status) {
                             status.innerHTML = `<img src="${imagesBase}symbols/status_pos.svg" width="14" height="14" alt="ok">`;
                         }
