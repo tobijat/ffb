@@ -34,9 +34,12 @@ class AdminDbCleanupController extends Controller
     {
         $task = trim((string) $request->input('task', ''));
         $action = trim((string) $request->input('action', 'run'));
+        $options = [
+            'team_id' => (int) $request->input('team_id', 0),
+        ];
 
         try {
-            $result = $this->cleanup->runTask($task, $action);
+            $result = $this->cleanup->runTask($task, $action, $options);
         } catch (InvalidArgumentException $e) {
             return response()->json([
                 'ok' => false,

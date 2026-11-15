@@ -111,6 +111,12 @@ Route::middleware('ffb.admin')->group(function () {
 
     Route::get('/admin/players', [AdminPlayerController::class, 'show'])->name('admin.players');
     Route::get('/admin/players/search', [AdminPlayerController::class, 'search'])->name('admin.players.search');
+    Route::post('/admin/players/duplicates/prepare', [AdminPlayerController::class, 'prepareDuplicates'])->name('admin.players.duplicates.prepare');
+    Route::post('/admin/players/duplicates/check', [AdminPlayerController::class, 'checkDuplicate'])->name('admin.players.duplicates.check');
+    Route::post('/admin/players/duplicates/merge', [AdminPlayerController::class, 'mergeDuplicates'])->name('admin.players.duplicates.merge');
+    Route::post('/admin/players/merge/prepare', [AdminPlayerController::class, 'preparePlayerMerge'])->name('admin.players.merge.prepare');
+    Route::post('/admin/players/merge/preview', [AdminPlayerController::class, 'previewPlayerMerge'])->name('admin.players.merge.preview');
+    Route::post('/admin/players/merge/execute', [AdminPlayerController::class, 'executePlayerMerge'])->name('admin.players.merge.execute');
     Route::post('/admin/players', [AdminPlayerController::class, 'store'])->name('admin.players.store');
     Route::post('/admin/players/batch-update', [AdminPlayerController::class, 'batchUpdate'])->name('admin.players.batchUpdate');
     Route::get('/admin/players/{player}/edit', [AdminPlayerController::class, 'edit'])->name('admin.players.edit');

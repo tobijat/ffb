@@ -611,6 +611,18 @@
     gap: 10px;
 }
 
+.admin-db-cleanup-team {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.55rem;
+}
+
+.admin-db-cleanup-team select {
+    min-width: 14rem;
+    max-width: 100%;
+}
+
 .admin-db-cleanup-actions {
     display: flex;
     flex-wrap: wrap;
@@ -638,6 +650,61 @@
     color: #a40000;
 }
 
+.admin-db-cleanup-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.85rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-inline-size: 0;
+}
+
+.admin-db-cleanup-options legend {
+    padding: 0;
+    margin: 0 0.35rem 0 0;
+    font-size: 10pt;
+}
+
+.admin-db-cleanup-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 10pt;
+    cursor: pointer;
+    user-select: none;
+}
+
+.admin-duplicates-progress {
+    margin: 10px 0 0;
+    max-width: 28rem;
+}
+
+.admin-duplicates-progress[hidden] {
+    display: none;
+}
+
+.admin-duplicates-progress-track {
+    height: 10px;
+    border: 1px solid #9a9a9a;
+    background: #f0f0f0;
+    overflow: hidden;
+}
+
+.admin-duplicates-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: #3a7d44;
+    transition: width 0.15s ease-out;
+}
+
+.admin-duplicates-progress-label {
+    display: block;
+    margin-top: 4px;
+    font-size: 9pt;
+}
+
 .admin-db-cleanup-subtitle {
     margin: 12px 0 6px;
     font-size: 11pt;
@@ -662,6 +729,270 @@
 .admin-db-cleanup-player-table tr.is-inactive td {
     background: #f3f3f3;
     opacity: 0.85;
+}
+
+.admin-duplicates-group {
+    display: block;
+    margin-top: 14px;
+    padding-top: 4px;
+    border-top: 1px solid #d6d6d6;
+}
+
+.admin-duplicates-group:first-of-type {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.admin-duplicates-group-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.75rem;
+    align-items: baseline;
+    margin: 0 0 8px;
+}
+
+.admin-duplicates-section {
+    margin: 0 0 12px;
+}
+
+.admin-duplicates-section:last-child {
+    margin-bottom: 0;
+}
+
+.admin-duplicates-section-title {
+    margin: 0 0 6px;
+    font-size: 10pt;
+    font-weight: 700;
+}
+
+.admin-duplicates-player-list,
+.admin-duplicates-squad-list,
+.admin-duplicates-id-list,
+.admin-duplicates-reason-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.admin-duplicates-player-list {
+    display: grid;
+    gap: 8px;
+}
+
+.admin-duplicates-player {
+    padding: 8px 10px;
+    border: 1px solid #d0d0d0;
+    background: #fafafa;
+}
+
+.admin-duplicates-player.is-match {
+    background: #fff;
+    border-color: #c8c8c8;
+}
+
+.admin-duplicates-player-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.55rem;
+    align-items: baseline;
+}
+
+.admin-duplicates-player-name {
+    font-weight: 700;
+    font-size: 10.5pt;
+}
+
+.admin-duplicates-id-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    margin-top: 4px;
+    font-size: 9pt;
+    color: #555;
+}
+
+.admin-duplicates-label {
+    margin: 8px 0 2px;
+    font-size: 9pt;
+    font-weight: 700;
+    color: #444;
+}
+
+.admin-duplicates-squad-list {
+    display: grid;
+    gap: 2px;
+    font-size: 9.5pt;
+}
+
+.admin-duplicates-squad-list li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 0.35rem;
+    padding: 2px 0;
+}
+
+.admin-duplicates-squad-list li.is-inactive,
+.admin-duplicates-player .is-inactive {
+    opacity: 0.7;
+}
+
+.admin-duplicates-reason-list {
+    display: grid;
+    gap: 4px;
+    font-size: 9.5pt;
+}
+
+.admin-duplicates-reason-list li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+    align-items: baseline;
+}
+
+.admin-duplicates-empty {
+    margin: 4px 0 0;
+    font-size: 9pt;
+}
+
+.admin-duplicates-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(280px, 1fr);
+    gap: 12px;
+    align-items: start;
+    margin-top: 12px;
+}
+
+.admin-duplicates-layout[hidden] {
+    display: none;
+}
+
+.admin-duplicates-left,
+.admin-duplicates-right {
+    min-width: 0;
+}
+
+.admin-duplicates-right {
+    position: sticky;
+    top: 8px;
+    border: 1px solid #7aaa7a;
+    background: var(--panel-light, #ccffcc);
+    padding: 10px;
+    max-height: calc(100vh - 24px);
+    overflow: auto;
+}
+
+.admin-duplicates-merge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.admin-duplicates-merge-pick {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.55rem;
+    align-items: center;
+}
+
+.admin-duplicates-merge-start {
+    font-size: 9pt;
+    padding: 2px 8px;
+}
+
+.admin-merge-panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.admin-merge-keep-options {
+    display: grid;
+    gap: 4px;
+    margin: 0 0 8px;
+}
+
+.admin-merge-collapses {
+    margin: 10px 0 12px;
+    padding: 8px;
+    border: 1px solid #7aaa7a;
+    background: #e8f8e8;
+}
+
+.admin-merge-collapse-block {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #b7d0b7;
+}
+
+.admin-merge-collapse-block:first-of-type {
+    margin-top: 4px;
+    padding-top: 0;
+    border-top: 0;
+}
+
+.admin-merge-collapse-title {
+    margin: 0 0 6px;
+}
+
+.admin-merge-fields-table {
+    margin: 8px 0;
+    font-size: 9pt;
+}
+
+.admin-merge-fields-table th,
+.admin-merge-fields-table td {
+    vertical-align: top;
+}
+
+.admin-merge-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.admin-merge-preview {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #b7d0b7;
+}
+
+.admin-merge-confirm-label {
+    margin-top: 8px;
+    align-items: flex-start;
+}
+
+.admin-merge-field-choice {
+    align-items: flex-start;
+}
+
+.admin-merge-image-preview {
+    margin: 4px 0 0 1.4rem;
+}
+
+.admin-merge-image-preview img {
+    display: block;
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border: 1px solid #bbb;
+    background: #eee;
+}
+
+@media (max-width: 980px) {
+    .admin-duplicates-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-duplicates-right {
+        position: static;
+        max-height: none;
+    }
 }
 
 .admin-pagination {

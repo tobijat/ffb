@@ -2885,6 +2885,28 @@ class AdminSquadService
         return false;
     }
 
+    /**
+     * Same near-match rules as auto-squad (bidirectional).
+     */
+    public function namesAlmostMatch(string $fnameA, string $lnameA, string $fnameB, string $lnameB): bool
+    {
+        $singleA = $this->isSingleTokenName(trim($fnameA.' '.$lnameA));
+        $singleB = $this->isSingleTokenName(trim($fnameB.' '.$lnameB));
+
+        return $this->isAlmostNameMatch($fnameA, $lnameA, $singleA, $fnameB, $lnameB)
+            || $this->isAlmostNameMatch($fnameB, $lnameB, $singleB, $fnameA, $lnameA);
+    }
+
+    /**
+     * Human-readable reason for {@see namesAlmostMatch()} (prefers A→B explanation).
+     */
+    public function namesAlmostMatchReason(string $fnameA, string $lnameA, string $fnameB, string $lnameB): string
+    {
+        $singleA = $this->isSingleTokenName(trim($fnameA.' '.$lnameA));
+
+        return $this->almostMatchReason($fnameA, $lnameA, $singleA, $fnameB, $lnameB);
+    }
+
     private function isAlmostNameMatch(
         string $jsonFname,
         string $jsonLname,

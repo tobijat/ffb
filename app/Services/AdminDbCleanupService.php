@@ -72,6 +72,7 @@ class AdminDbCleanupService
     }
 
     /**
+     * @param  array{team_id?: int|string}  $options
      * @return array{
      *     ok: true,
      *     task: string,
@@ -81,7 +82,7 @@ class AdminDbCleanupService
      *     html: string
      * }
      */
-    public function runTask(string $task, string $action = 'run'): array
+    public function runTask(string $task, string $action = 'run', array $options = []): array
     {
         $action = $action === 'delete' ? 'delete' : 'run';
 

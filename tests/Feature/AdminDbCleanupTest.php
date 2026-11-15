@@ -124,14 +124,16 @@ class AdminDbCleanupTest extends TestCase
         });
 
         $this->mock(AdminDbCleanupService::class, function ($mock) {
-            $mock->shouldReceive('runTask')->once()->with('duplicate-playerteams', 'run')->andReturn([
-                'ok' => true,
-                'task' => 'duplicate-playerteams',
-                'clean' => false,
-                'count' => 1,
-                'summary' => '1 Doppelgruppe · 2 Einträge insgesamt',
-                'html' => '<p class="muted">1 Doppelgruppe · 2 Einträge insgesamt</p><div>Arnautovic</div>',
-            ]);
+            $mock->shouldReceive('runTask')->once()
+                ->with('duplicate-playerteams', 'run', Mockery::type('array'))
+                ->andReturn([
+                    'ok' => true,
+                    'task' => 'duplicate-playerteams',
+                    'clean' => false,
+                    'count' => 1,
+                    'summary' => '1 Doppelgruppe · 2 Einträge insgesamt',
+                    'html' => '<p class="muted">1 Doppelgruppe · 2 Einträge insgesamt</p><div>Arnautovic</div>',
+                ]);
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
@@ -152,14 +154,16 @@ class AdminDbCleanupTest extends TestCase
         });
 
         $this->mock(AdminDbCleanupService::class, function ($mock) {
-            $mock->shouldReceive('runTask')->once()->with('players-without-playerteam', 'delete')->andReturn([
-                'ok' => true,
-                'task' => 'players-without-playerteam',
-                'clean' => true,
-                'count' => 0,
-                'summary' => '1 Spieler gelöscht',
-                'html' => '<p class="muted">Alle Spieler sind mindestens einem Team zugeordnet.</p>',
-            ]);
+            $mock->shouldReceive('runTask')->once()
+                ->with('players-without-playerteam', 'delete', Mockery::type('array'))
+                ->andReturn([
+                    'ok' => true,
+                    'task' => 'players-without-playerteam',
+                    'clean' => true,
+                    'count' => 0,
+                    'summary' => '1 Spieler gelöscht',
+                    'html' => '<p class="muted">Alle Spieler sind mindestens einem Team zugeordnet.</p>',
+                ]);
         });
 
         $this->withSession([FfbAuth::SESSION_USER_ID => 544])
@@ -170,6 +174,11 @@ class AdminDbCleanupTest extends TestCase
             ->assertOk()
             ->assertJsonPath('ok', true)
             ->assertJsonPath('summary', '1 Spieler gelöscht');
+    }
+
+    private function makeCleanupService(): AdminDbCleanupService
+    {
+        return new AdminDbCleanupService(Mockery::mock(AdminCenterService::class));
     }
 
     public function test_db_cleanup_run_rejects_unknown_task(): void
@@ -198,7 +207,7 @@ class AdminDbCleanupTest extends TestCase
             'player_status_description' => '',
         ], 'player_id');
 
-        $result = (new AdminDbCleanupService(Mockery::mock(AdminCenterService::class)))
+        $result = ($this->makeCleanupService())
             ->runTask('players-without-playerteam');
 
         $this->assertFalse($result['clean']);
@@ -260,7 +269,7 @@ class AdminDbCleanupTest extends TestCase
         file_put_contents($keptImage, 'kept');
 
         try {
-            $result = (new AdminDbCleanupService(Mockery::mock(AdminCenterService::class)))
+            $result = ($this->makeCleanupService())
                 ->runTask('players-without-playerteam', 'delete');
 
             $this->assertTrue($result['ok']);
@@ -289,7 +298,7 @@ class AdminDbCleanupTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
 
-        (new AdminDbCleanupService(Mockery::mock(AdminCenterService::class)))
+        ($this->makeCleanupService())
             ->runTask('players-without-playerstats', 'delete');
     }
 
@@ -345,7 +354,7 @@ class AdminDbCleanupTest extends TestCase
             ],
         ]);
 
-        $service = new AdminDbCleanupService(Mockery::mock(AdminCenterService::class));
+        $service = $this->makeCleanupService();
         $players = $service->playersWithoutPlayerstats();
         $result = $service->runTask('players-without-playerstats');
 
@@ -406,7 +415,7 @@ class AdminDbCleanupTest extends TestCase
             'playerteam_date_transfer' => null,
         ], 'playerteam_id');
 
-        $rows = (new AdminDbCleanupService(Mockery::mock(AdminCenterService::class)))->orphanPlayerteams();
+        $rows = ($this->makeCleanupService())->orphanPlayerteams();
 
         $this->assertCount(1, $rows);
         $this->assertSame($orphanPtId, $rows[0]['playerteam_id']);
@@ -457,7 +466,7 @@ class AdminDbCleanupTest extends TestCase
             'extremeteam_slot_playerteam_id' => 4343,
         ]);
 
-        $service = new AdminDbCleanupService(Mockery::mock(AdminCenterService::class));
+        $service = $this->makeCleanupService();
         $userSlots = $service->orphanUserteamSlots();
         $extremeSlots = $service->orphanExtremeteamSlots();
 
@@ -512,7 +521,7 @@ class AdminDbCleanupTest extends TestCase
             'playerteam_date_transfer' => null,
         ]);
 
-        $groups = (new AdminDbCleanupService(Mockery::mock(AdminCenterService::class)))
+        $groups = ($this->makeCleanupService())
             ->orphanPlayerteamDataReferences();
 
         $byTable = [];
@@ -578,6 +587,8 @@ class AdminDbCleanupTest extends TestCase
             $table->string('player_fname')->default('');
             $table->string('player_lname')->default('');
             $table->string('player_nationality')->default('');
+            $table->string('player_uefa_id')->default('');
+            $table->string('player_fifa_id')->default('');
             $table->tinyInteger('player_status')->default(1);
             $table->string('player_status_description')->default('');
         });
