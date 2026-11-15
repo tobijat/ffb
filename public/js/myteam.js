@@ -489,24 +489,43 @@
             .trim();
     }
 
-    function changeIconHtml(player) {
+    function changeIconHtml(player, matchroundId) {
         const change = player && player.change;
         if (!change || (change.type !== 'in' && change.type !== 'out')) {
             return '';
         }
+        const outId = Number(change.out_playerteam_id || 0);
+        const inId = Number(change.in_playerteam_id || 0);
+        const roundId = Number(matchroundId || 0);
         const related = String(change.related_name || '').trim();
         const title =
             change.type === 'in'
                 ? 'Eingewechselt für ' + related
                 : 'Ersetzt durch ' + related;
         const icon = change.type === 'in' ? 'stats_change_in.svg' : 'stats_change_out.svg';
-
-        return (
+        const img =
             '<img src="' +
             symbolUrl(icon) +
             '" width="16" height="11" alt="" title="' +
             escapeHtml(title) +
-            '">'
+            '">';
+
+        if (outId <= 0 || inId <= 0 || roundId <= 0) {
+            return img;
+        }
+
+        return (
+            '<a href="#" class="pitch-change-link" data-modal="substitution" data-id="' +
+            outId +
+            ':' +
+            inId +
+            '" data-matchround-id="' +
+            roundId +
+            '" title="' +
+            escapeHtml(title) +
+            '">' +
+            img +
+            '</a>'
         );
     }
 
@@ -536,8 +555,16 @@
             if (!sub) {
                 return starter;
             }
+            const outId = Number(starter.playerteam_id);
+            const inId = Number(sub.playerteam_id);
             const copy = Object.assign({}, sub);
-            copy.change = { type: 'in', related_name: playerName(starter) };
+            copy.change = {
+                type: 'in',
+                related_name: playerName(starter),
+                related_playerteam_id: outId,
+                out_playerteam_id: outId,
+                in_playerteam_id: inId,
+            };
             return copy;
         });
 
@@ -547,8 +574,15 @@
             if (!out) {
                 return sub;
             }
+            const inId = Number(sub.playerteam_id);
             const copy = Object.assign({}, out);
-            copy.change = { type: 'out', related_name: playerName(sub) };
+            copy.change = {
+                type: 'out',
+                related_name: playerName(sub),
+                related_playerteam_id: inId,
+                out_playerteam_id: outId,
+                in_playerteam_id: inId,
+            };
             return copy;
         });
 
@@ -613,7 +647,7 @@
                 ? '<span title="Preis: ' + price + ' Credits">' + price + '</span>'
                 : '') +
             flagHtml(nat, player.playerteam_team || '') +
-            changeIconHtml(player) +
+            changeIconHtml(player, roundId) +
             '</div></div>'
         );
     }

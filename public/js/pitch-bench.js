@@ -190,26 +190,45 @@
         return '<span class="pos"' + titleAttr + '>' + letter + '</span>';
     }
 
-    function changeIconHtml(player, legacyBase) {
+    function changeIconHtml(player, legacyBase, matchroundId) {
         const change = player && player.change;
         if (!change || (change.type !== 'in' && change.type !== 'out')) {
             return '';
         }
+        const outId = Number(change.out_playerteam_id || 0);
+        const inId = Number(change.in_playerteam_id || 0);
+        const roundId = Number(matchroundId || 0);
         const related = String(change.related_name || '').trim();
         const title =
             change.type === 'in'
                 ? 'Eingewechselt für ' + related
                 : 'Ersetzt durch ' + related;
         const icon = change.type === 'in' ? 'stats_change_in.svg' : 'stats_change_out.svg';
-
-        return (
+        const img =
             '<img src="' +
             legacyBase +
             'images/ffb/symbols/' +
             icon +
             '" width="16" height="11" alt="" title="' +
             escapeHtml(title) +
-            '">'
+            '">';
+
+        if (outId <= 0 || inId <= 0 || roundId <= 0) {
+            return img;
+        }
+
+        return (
+            '<a href="#" class="pitch-change-link" data-modal="substitution" data-id="' +
+            outId +
+            ':' +
+            inId +
+            '" data-matchround-id="' +
+            roundId +
+            '" title="' +
+            escapeHtml(title) +
+            '">' +
+            img +
+            '</a>'
         );
     }
 
@@ -306,7 +325,7 @@
             '<div class="meta">' +
             priceHtml +
             flagHtml(legacyBase, nat, player.playerteam_team || '') +
-            changeIconHtml(player, legacyBase) +
+            changeIconHtml(player, legacyBase, roundId) +
             positionMetaHtml(player) +
             '</div></div>'
         );

@@ -656,6 +656,21 @@
     display: block;
 }
 
+.pitch-player .meta .pitch-change-link {
+    display: inline-flex;
+    line-height: 0;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+}
+
+.pitch-player .meta .pitch-change-link:hover img,
+.pitch-player .meta .pitch-change-link:focus-visible img {
+    outline: 1px solid #ffe566;
+    outline-offset: 1px;
+}
+
 .pitch-player .meta .pos {
     font-size: 8pt;
     font-weight: 700;

@@ -970,19 +970,12 @@
         );
     }
 
-    function renderPlayerRoundBody(data) {
-        const player = data.player;
+    function renderRoundStatsLines(data) {
         if (!data.played || !data.stats) {
             const emptyMsg = data.match_has_result
                 ? 'In diese Runde nicht eingesetzt.'
                 : 'Matchdaten noch nicht verfügbar.';
-            return (
-                '<div class="ffb-profile ffb-player">' +
-                renderPlayerPhoto(player) +
-                '<div class="ffb-profile-rows"><p>' +
-                emptyMsg +
-                '</p></div></div>'
-            );
+            return '<p class="ffb-sub-empty">' + emptyMsg + '</p>';
         }
 
         const s = data.stats;
@@ -1112,13 +1105,70 @@
         const sumPts = (s.playerstats_score >= 0 ? '+' : '') + s.playerstats_score + ' Punkte';
         lines += statsLine(null, '<b>Summe</b>', '', sumPts);
 
+        return lines;
+    }
+
+    function renderPlayerRoundBody(data) {
+        const player = data.player;
+        if (!data.played || !data.stats) {
+            const emptyMsg = data.match_has_result
+                ? 'In diese Runde nicht eingesetzt.'
+                : 'Matchdaten noch nicht verfügbar.';
+            return (
+                '<div class="ffb-profile ffb-player">' +
+                renderPlayerPhoto(player) +
+                '<div class="ffb-profile-rows"><p>' +
+                emptyMsg +
+                '</p></div></div>'
+            );
+        }
+
         return (
             '<div class="ffb-profile ffb-player">' +
             renderPlayerPhoto(player) +
             '<div class="ffb-profile-rows ffb-player-round-stats">' +
-            lines +
+            renderRoundStatsLines(data) +
             '</div></div>'
         );
+    }
+
+    function renderSubstitutionBlock(data, role) {
+        const player = (data && data.player) || {};
+        const isIn = role === 'in';
+        const title = isIn ? 'Eingewechselt' : 'Ausgewechselt';
+        const icon = isIn ? 'stats_change_in.svg' : 'stats_change_out.svg';
+        const name = String(
+            player.player_name || player.player_display_name || ''
+        ).trim() || 'Unbekannt';
+        const team = String(player.player_team_name || '').trim();
+
+        return (
+            '<section class="ffb-sub-block ffb-sub-block--' +
+            role +
+            '">' +
+            '<h3 class="ffb-sub-heading">' +
+            '<img src="' +
+            symbolUrl(icon) +
+            '" width="16" height="11" alt="">' +
+            '<span>' +
+            title +
+            '</span>' +
+            '</h3>' +
+            '<div class="ffb-sub-player-title">' +
+            escapeHtml(name) +
+            (team ? ' — <em>' + escapeHtml(team) + '</em>' : '') +
+            '</div>' +
+            renderPlayerRoundBody(data || {}) +
+            '</section>'
+        );
+    }
+
+    function setDialogWide(enabled) {
+        const dialog = document.querySelector('.ffb-modal-dialog');
+        if (!dialog) {
+            return;
+        }
+        dialog.classList.toggle('ffb-modal-dialog--wide', !!enabled);
     }
 
     function setModal(head, tabs, body) {
@@ -1243,6 +1293,7 @@
             throw new Error('matchround_id is required');
         }
 
+        setDialogWide(false);
         waitingUi();
         const json = await fetchJson(
             apiBase +
@@ -1255,7 +1306,76 @@
         setModal(renderPlayerHead(data.player), '', renderPlayerRoundBody(data));
     }
 
+    function parseSubstitutionIds(rawId) {
+        const parts = String(rawId || '').split(':');
+        return {
+            outId: Number(parts[0] || 0),
+            inId: Number(parts[1] || 0),
+        };
+    }
+
+    async function openSubstitution(pairId, opts) {
+        const ids = parseSubstitutionIds(pairId);
+        const matchroundId = Number(
+            (opts && (opts.matchroundId || opts.matchround_id || opts['matchround-id'])) || 0
+        );
+        if (ids.outId <= 0 || ids.inId <= 0 || matchroundId <= 0) {
+            throw new Error('out, in und matchround_id sind erforderlich');
+        }
+
+        setDialogWide(false);
+        waitingUi();
+
+        const [outJson, inJson] = await Promise.all([
+            fetchJson(
+                apiBase +
+                    '/popups/player/' +
+                    encodeURIComponent(ids.outId) +
+                    '/rounds/' +
+                    encodeURIComponent(matchroundId)
+            ),
+            fetchJson(
+                apiBase +
+                    '/popups/player/' +
+                    encodeURIComponent(ids.inId) +
+                    '/rounds/' +
+                    encodeURIComponent(matchroundId)
+            ),
+        ]);
+
+        const outData = outJson.data || {};
+        const inData = inJson.data || {};
+        const headPlayer = inData.player || outData.player || {};
+        const league = String(headPlayer.league_title || '').trim();
+        const matchround = String(headPlayer.matchround_title || '').trim();
+        let subtitle = league;
+        if (league && matchround) {
+            subtitle = league + ' - ' + matchround;
+        } else if (matchround) {
+            subtitle = matchround;
+        }
+
+        const head =
+            '<div class="ffb-modal-head-title">' +
+            'Wechsel' +
+            (subtitle
+                ? '<div class="ffb-modal-head-subtitle">' + escapeHtml(subtitle) + '</div>'
+                : '') +
+            '</div>' +
+            defaultCloseBtn();
+
+        const body =
+            '<div class="ffb-substitution">' +
+            renderSubstitutionBlock(inData, 'in') +
+            '<hr class="ffb-sub-rule">' +
+            renderSubstitutionBlock(outData, 'out') +
+            '</div>';
+
+        setModal(head, '', body);
+    }
+
     window.FfbModal.register('player', function (id, opts) {
+        setDialogWide(false);
         return openPlayer(id, opts || {});
     });
 
@@ -1263,7 +1383,12 @@
         return openPlayerPoints(id, opts || {});
     });
 
+    window.FfbModal.register('substitution', function (id, opts) {
+        return openSubstitution(id, opts || {});
+    });
+
     window.FfbModal.register('attribution', function (id) {
+        setDialogWide(false);
         return openAttribution(id);
     });
 
