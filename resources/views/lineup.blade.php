@@ -97,7 +97,8 @@
     <script src="js/modal.js?v=32" defer></script>
     <script src="js/player-modal.js?v=37" defer></script>
     <script src="js/match-list.js?v=4" defer></script>
-    <script src="js/pitch-bench.js?v=38" defer></script>
-    <script src="js/lineup.js?v=52" defer></script>
+    <script src="js/player-display-name.js?v=1" defer></script>
+    <script src="js/pitch-bench.js?v=39" defer></script>
+    <script src="js/lineup.js?v=54" defer></script>
 </body>
 </html>

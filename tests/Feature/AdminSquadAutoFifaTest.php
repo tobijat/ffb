@@ -438,6 +438,7 @@ class AdminSquadAutoFifaTest extends TestCase
             $table->string('player_fifa_id')->default('');
             $table->string('player_fname')->default('');
             $table->string('player_lname')->default('');
+            $table->string('player_display_name')->default('');
             $table->string('player_nationality')->default('');
             $table->tinyInteger('player_status')->default(1);
             $table->string('player_status_description')->default('');

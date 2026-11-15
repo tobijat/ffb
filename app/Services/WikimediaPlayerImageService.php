@@ -497,19 +497,7 @@ class WikimediaPlayerImageService
      */
     public function displayName(string $fname, string $lname): string
     {
-        $fname = trim($fname);
-        $lname = trim($lname);
-        if ($fname === '' && $lname === '') {
-            return '';
-        }
-        if ($fname === '' || $fname === $lname) {
-            return $lname !== '' ? $lname : $fname;
-        }
-        if ($lname === '') {
-            return $fname;
-        }
-
-        return $fname.' '.$lname;
+        return \App\Support\PlayerDisplayName::default($fname, $lname);
     }
 
     /**

@@ -11,10 +11,11 @@
                                             <th>#</th>
                                             <th>Vorname *</th>
                                             <th>Nachname *</th>
+                                            <th>Anzeigename</th>
                                             <th>Nat.</th>
                                             <th>{{ $externalIdLabel }}</th>
                                             <th>Pos. *</th>
-                                            <th>Kader-Status</th>
+                                            <th>Status</th>
                                             <th></th>
                                         </tr>
                                     </thead>
@@ -48,6 +49,7 @@
                                                     'player_status_description' => '',
                                                     'player_fname' => (string) ($player['player_fname'] ?? ''),
                                                     'player_lname' => (string) ($player['player_lname'] ?? ''),
+                                                    'player_display_name' => (string) ($player['player_display_name'] ?? ''),
                                                     'player_nationality' => (string) ($player['player_nationality'] ?? ''),
                                                     'player_foreign_id' => (string) ($player['player_foreign_id'] ?? ''),
                                                     'player_uefa_id' => (string) ($player['player_uefa_id'] ?? ''),
@@ -55,6 +57,11 @@
                                                     'playerteam_player_position' => (string) ($player['playerteam_player_position'] ?? ''),
                                                     'playerteam_status' => (int) ($player['playerteam_status'] ?? 1),
                                                 ];
+                                                $displayName = \App\Support\PlayerDisplayName::resolve(
+                                                    (string) ($player['player_display_name'] ?? ''),
+                                                    (string) ($player['player_fname'] ?? ''),
+                                                    (string) ($player['player_lname'] ?? ''),
+                                                );
                                             @endphp
                                             <tr class="{{ $rowClass }}" data-row='@json($rowPayload)'>
                                                 <td class="admin-auto-squad-num">
@@ -94,6 +101,20 @@
                                                         >
                                                     @else
                                                         <span class="admin-auto-squad-readonly">{{ $player['player_lname'] ?? '' }}</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if ($canEditIdentity)
+                                                        <input
+                                                            type="text"
+                                                            class="admin-auto-squad-display"
+                                                            value="{{ $displayName }}"
+                                                            maxlength="255"
+                                                            placeholder="Anzeigename"
+                                                            aria-label="Anzeigename {{ $index + 1 }}"
+                                                        >
+                                                    @else
+                                                        <span class="admin-auto-squad-readonly" title="Anzeigename">{{ $displayName }}</span>
                                                     @endif
                                                 </td>
                                                 <td>

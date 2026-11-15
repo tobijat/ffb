@@ -20,6 +20,7 @@ class AdminPlayerMergeService
     public const EDITABLE_FIELDS = [
         'player_fname',
         'player_lname',
+        'player_display_name',
         'player_nationality',
         'player_status',
         'player_status_description',
@@ -1419,6 +1420,7 @@ class AdminPlayerMergeService
         return match ($key) {
             'player_fname' => 'Vorname',
             'player_lname' => 'Nachname',
+            'player_display_name' => 'Anzeigename',
             'player_nationality' => 'Nationalität',
             'player_status' => 'Status',
             'player_status_description' => 'Status-Text',

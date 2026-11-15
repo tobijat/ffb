@@ -1021,6 +1021,7 @@
             fields: {
                 player_fname: '.admin-auto-squad-fname',
                 player_lname: '.admin-auto-squad-lname',
+                player_display_name: '.admin-auto-squad-display',
                 player_nationality: 'select.admin-auto-squad-nationality',
                 player_foreign_id: '.admin-auto-squad-foreign-id',
                 playerteam_player_position: 'select.admin-auto-squad-position',

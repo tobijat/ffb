@@ -1215,13 +1215,19 @@
 
 .admin-squad-grid {
     display: grid;
-    grid-template-columns: 3.2rem minmax(0, 1.5fr) 4.2rem 5.5rem minmax(0, 1.2fr);
+    /* photo | name | pos | status | note */
+    grid-template-columns: 3.2rem minmax(0, 1.5fr) 3.4rem 4.2rem minmax(0, 1.2fr);
     gap: 6px 8px;
     align-items: center;
     padding: 6px;
     padding-right: 2.2rem;
-    min-width: 34rem;
+    min-width: 32rem;
     box-sizing: border-box;
+}
+
+.admin-squad-grid select[data-field="position"],
+.admin-squad-grid select[data-field="status"] {
+    max-width: 4.5rem;
 }
 
 .admin-squad-photo-cell {
@@ -2100,9 +2106,15 @@
     flex: 1 1 auto;
     min-width: 0;
     display: grid;
-    grid-template-columns: minmax(5rem, 0.85fr) minmax(5rem, 0.85fr) minmax(6.5rem, 1fr) 5.5rem minmax(5.5rem, 0.9fr) minmax(5.5rem, 0.85fr) minmax(5.5rem, 0.85fr);
+    /* fname | lname | display | nat | status | status-desc | uefa | fifa */
+    grid-template-columns: minmax(5rem, 0.75fr) minmax(5rem, 0.75fr) minmax(7rem, 1.25fr) 3.6rem 4.2rem minmax(5rem, 0.85fr) minmax(5rem, 0.75fr) minmax(5rem, 0.75fr);
     gap: 6px 8px;
     align-items: center;
+}
+
+.admin-player-edit-grid .admin-player-field-nat,
+.admin-player-edit-grid .admin-player-field-status {
+    max-width: 4.5rem;
 }
 
 .admin-player-id-meta {
@@ -3142,15 +3154,27 @@
     max-width: 10rem;
 }
 
-.admin-auto-squad-table select[name*="[player_nationality]"] {
-    min-width: 4.5rem;
-    max-width: 5.5rem;
+.admin-auto-squad-table select.admin-auto-squad-nationality,
+.admin-auto-squad-table select.admin-auto-squad-position,
+.admin-auto-squad-table select.admin-auto-squad-status,
+.admin-auto-squad-table select.admin-auto-squad-almost-position,
+.admin-auto-squad-table select.admin-auto-squad-almost-status,
+.admin-auto-squad-almost-table select.admin-auto-squad-almost-position,
+.admin-auto-squad-almost-table select.admin-auto-squad-almost-status {
+    min-width: 3rem;
+    max-width: 4.25rem;
+    width: auto;
 }
 
-.admin-auto-squad-table input[name*="[player_fname]"],
-.admin-auto-squad-table input[name*="[player_lname]"] {
-    min-width: 6rem;
-    max-width: 9rem;
+.admin-auto-squad-table input.admin-auto-squad-fname,
+.admin-auto-squad-table input.admin-auto-squad-lname {
+    min-width: 5.5rem;
+    max-width: 8rem;
+}
+
+.admin-auto-squad-table input.admin-auto-squad-display {
+    min-width: 7rem;
+    max-width: 12rem;
 }
 
 .admin-auto-squad-photo {

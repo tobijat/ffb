@@ -510,6 +510,7 @@ class AdminPlayerMergeTest extends TestCase
             $table->string('player_foreign_id')->default('');
             $table->string('player_fname')->default('');
             $table->string('player_lname')->default('');
+            $table->string('player_display_name')->default('');
             $table->string('player_nationality')->default('');
             $table->string('player_uefa_id')->default('');
             $table->string('player_fifa_id')->default('');

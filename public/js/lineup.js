@@ -845,7 +845,7 @@
                             ? ' aria-disabled="true" title="' + escapeHtml(reason) + '"'
                             : '') +
                         '>' +
-                        escapeHtml(p.player_fname + ' ' + p.player_lname) +
+                        escapeHtml((window.FfbPlayerName && FfbPlayerName.full(p)) || (p.player_fname + ' ' + p.player_lname)) +
                         '</a></span>' +
                         '<span class="price">' +
                         escapeHtml(formatTeamPrice(p.playerteam_player_price)) +
@@ -994,9 +994,9 @@
             '<a class="name" href="#" data-remove="' +
             player.playerteam_id +
             '" title="Klicken um Spieler zu entfernen">' +
-            escapeHtml(player.player_fname || '') +
-            '<br>' +
-            escapeHtml(player.player_lname || '') +
+            (window.FfbPlayerName
+                ? FfbPlayerName.linesHtml(player, escapeHtml)
+                : (escapeHtml(player.player_fname || '') + '<br>' + escapeHtml(player.player_lname || ''))) +
             '</a>' +
             '<div class="meta">' +
             '<span title="Preis: ' +
@@ -1240,6 +1240,7 @@
             player_id: player.player_id,
             player_fname: player.player_fname,
             player_lname: player.player_lname,
+            player_display_name: player.player_display_name || '',
             player_nationality: player.player_nationality,
             player_status: player.player_status,
             player_status_description: player.player_status_description,

@@ -7,7 +7,7 @@
     @include('partials.favicon', ['favicon' => 'images/admin/favicon.png'])
     <link rel="stylesheet" href="{{ url('css/start.css') }}?v=39">
     <link rel="stylesheet" href="{{ url('css/dashboard.css') }}?v=50">
-    <link rel="stylesheet" href="{{ url('css/admin.css') }}?v=90">
+    <link rel="stylesheet" href="{{ url('css/admin.css') }}?v=92">
     @stack('head')
 </head>
 <body class="dash-body">

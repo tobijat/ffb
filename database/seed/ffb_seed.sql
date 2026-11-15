@@ -1192,6 +1192,7 @@ CREATE TABLE `ffb_player` (
   `player_fifa_id` varchar(64) NOT NULL DEFAULT '',
   `player_fname` varchar(255) NOT NULL DEFAULT '',
   `player_lname` varchar(255) NOT NULL DEFAULT '',
+  `player_display_name` varchar(255) NOT NULL DEFAULT '',
   `player_nationality` varchar(255) NOT NULL DEFAULT 'na',
   `player_status` tinyint(4) NOT NULL DEFAULT 1,
   `player_status_description` varchar(255) NOT NULL DEFAULT '',

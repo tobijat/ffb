@@ -383,6 +383,7 @@ class ExtremeTeamService
             $byPosition[$pos][] = [
                 'player_fname' => (string) $player->player_fname,
                 'player_lname' => (string) $player->player_lname,
+                'player_display_name' => $player->resolvedDisplayName(),
                 'player_nationality' => (string) ($player->player_nationality ?: ''),
                 'player_status' => (int) ($player->player_status ?: 0),
                 'player_status_description' => (string) ($player->player_status_description ?: '0'),
@@ -928,6 +929,7 @@ class ExtremeTeamService
             $players[] = [
                 'player_fname' => (string) $player->player_fname,
                 'player_lname' => (string) $player->player_lname,
+                'player_display_name' => $player->resolvedDisplayName(),
                 'player_nationality' => (string) ($player->player_nationality ?: ''),
                 'player_status' => (int) ($player->player_status ?: 0),
                 'player_status_description' => (string) ($player->player_status_description ?: '0'),

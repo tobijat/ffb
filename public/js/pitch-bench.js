@@ -228,9 +228,9 @@
             '<a class="name" href="#" data-remove-bench="' +
             player.playerteam_id +
             '" title="Klicken um Ersatzspieler zu entfernen">' +
-            escapeHtml(player.player_fname || '') +
-            '<br>' +
-            escapeHtml(player.player_lname || '') +
+            (window.FfbPlayerName
+                ? FfbPlayerName.linesHtml(player, escapeHtml)
+                : (escapeHtml(player.player_fname || '') + '<br>' + escapeHtml(player.player_lname || ''))) +
             '</a>' +
             '<div class="meta">' +
             '<span title="Preis: ' +
@@ -288,9 +288,9 @@
             shirtImg(legacyBase, teamKey, nat) +
             '</a>' +
             '<span class="name">' +
-            escapeHtml(player.player_fname || '') +
-            '<br>' +
-            escapeHtml(player.player_lname || '') +
+            (window.FfbPlayerName
+                ? FfbPlayerName.linesHtml(player, escapeHtml)
+                : (escapeHtml(player.player_fname || '') + '<br>' + escapeHtml(player.player_lname || ''))) +
             '</span>' +
             '<a class="score' +
             (scorePending ? ' is-pending' : '') +

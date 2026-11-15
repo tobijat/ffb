@@ -192,6 +192,18 @@
             </div>
 
             <div class="admin-field">
+                <label for="player_display_name">Anzeigename</label>
+                <input
+                    id="player_display_name"
+                    type="text"
+                    name="player_display_name"
+                    value="{{ $form['player_display_name'] ?? '' }}"
+                    maxlength="255"
+                    placeholder="leer = Vorname Nachname (bzw. nur Vorname wenn gleich)"
+                >
+            </div>
+
+            <div class="admin-field">
                 <label for="player_nationality">Nationalität</label>
                 <select id="player_nationality" name="player_nationality">
                     <option value="">— optional —</option>
@@ -1076,6 +1088,7 @@
         return {
             player_fname: String(item.player_fname || ''),
             player_lname: String(item.player_lname || ''),
+            player_display_name: String(item.player_display_name || ''),
             player_nationality: String(item.player_nationality || ''),
             player_status: String(Number(item.player_status) ? 1 : 0),
             player_status_description: String(item.player_status_description || ''),
@@ -1090,6 +1103,7 @@
     function valuesEqual(a, b) {
         return a.player_fname === b.player_fname
             && a.player_lname === b.player_lname
+            && a.player_display_name === b.player_display_name
             && a.player_nationality === b.player_nationality
             && a.player_status === b.player_status
             && a.player_status_description === b.player_status_description
@@ -1145,6 +1159,7 @@
             const hay = (
                 String(values.player_fname || '') + ' ' +
                 String(values.player_lname || '') + ' ' +
+                String(values.player_display_name || '') + ' ' +
                 String(id)
             ).toLowerCase();
             if (hay.indexOf(q) === -1) return false;
@@ -1200,6 +1215,10 @@
                     '<label class="admin-squad-compact admin-player-field-lname">' +
                         '<span class="visually-hidden">Nachname</span>' +
                         '<input type="text" data-field="player_lname" value="' + escapeHtml(values.player_lname) + '" maxlength="255" ' + (pendingDelete ? 'disabled' : '') + '>' +
+                    '</label>' +
+                    '<label class="admin-squad-compact admin-player-field-display">' +
+                        '<span class="visually-hidden">Anzeigename</span>' +
+                        '<input type="text" data-field="player_display_name" value="' + escapeHtml(values.player_display_name) + '" maxlength="255" placeholder="Anzeigename" ' + (pendingDelete ? 'disabled' : '') + '>' +
                     '</label>' +
                     '<label class="admin-squad-compact admin-player-field-nat">' +
                         '<span class="visually-hidden">Nationalität</span>' +
@@ -1332,6 +1351,7 @@
         return {
             player_fname: String((row.querySelector('[data-field="player_fname"]') || {}).value || ''),
             player_lname: String((row.querySelector('[data-field="player_lname"]') || {}).value || ''),
+            player_display_name: String((row.querySelector('[data-field="player_display_name"]') || {}).value || ''),
             player_nationality: String((row.querySelector('[data-field="player_nationality"]') || {}).value || ''),
             player_status: String((row.querySelector('[data-field="player_status"]') || {}).value || '1'),
             player_status_description: String((row.querySelector('[data-field="player_status_description"]') || {}).value || ''),
@@ -1349,6 +1369,7 @@
         if (valuesEqual(values, {
             player_fname: initial.player_fname,
             player_lname: initial.player_lname,
+            player_display_name: initial.player_display_name,
             player_nationality: initial.player_nationality,
             player_status: initial.player_status,
             player_status_description: initial.player_status_description,
@@ -1583,6 +1604,7 @@
                 queued += 1;
                 appendHidden('items[' + id + '][player_fname]', values.player_fname);
                 appendHidden('items[' + id + '][player_lname]', values.player_lname);
+                appendHidden('items[' + id + '][player_display_name]', values.player_display_name);
                 appendHidden('items[' + id + '][player_nationality]', values.player_nationality);
                 appendHidden('items[' + id + '][player_status]', values.player_status);
                 appendHidden('items[' + id + '][player_status_description]', values.player_status_description);

@@ -216,6 +216,7 @@ class AdminSquadAutoUefaTest extends TestCase
         $this->assertSame('s', $byName['New Striker']['playerteam_player_position']);
         $this->assertSame(10, $byName['New Striker']['json_number']);
         $this->assertSame('2', $byName['New Striker']['player_uefa_id']);
+        $this->assertSame('New Striker', $byName['New Striker']['player_display_name']);
         $this->assertSame('1', $byName['Henry Bonello']['player_uefa_id']);
         $this->assertArrayNotHasKey('Other Player', $byName);
     }
@@ -234,6 +235,7 @@ class AdminSquadAutoUefaTest extends TestCase
                     'on_squad' => false,
                     'player_fname' => 'New',
                     'player_lname' => 'Striker',
+                    'player_display_name' => 'N. Striker',
                     'player_nationality' => 'MLT',
                     'player_foreign_id' => '',
                     'player_uefa_id' => '25001',
@@ -257,6 +259,7 @@ class AdminSquadAutoUefaTest extends TestCase
         $this->assertDatabaseHas('ffb_player', [
             'player_fname' => 'New',
             'player_lname' => 'Striker',
+            'player_display_name' => 'N. Striker',
             'player_uefa_id' => '25001',
         ]);
     }
@@ -690,6 +693,7 @@ class AdminSquadAutoUefaTest extends TestCase
             $table->string('player_fifa_id')->default('');
             $table->string('player_fname')->default('');
             $table->string('player_lname')->default('');
+            $table->string('player_display_name')->default('');
             $table->string('player_nationality')->default('');
             $table->tinyInteger('player_status')->default(1);
             $table->string('player_status_description')->default('');

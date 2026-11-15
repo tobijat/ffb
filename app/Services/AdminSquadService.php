@@ -1118,13 +1118,18 @@ class AdminSquadService
             $existingNationality = $existing !== null
                 ? strtoupper(trim((string) ($existing->player_nationality ?? '')))
                 : '';
+            $draftFname = $isNew ? $fname : (string) $existing->player_fname;
+            $draftLname = $isNew ? $lname : (string) $existing->player_lname;
             $draft[] = [
                 'player_id' => $playerId,
                 'playerteam_id' => $squadRow !== null ? (int) $squadRow->playerteam_id : 0,
                 'is_new' => $isNew,
                 'on_squad' => $onSquad,
-                'player_fname' => $isNew ? $fname : (string) $existing->player_fname,
-                'player_lname' => $isNew ? $lname : (string) $existing->player_lname,
+                'player_fname' => $draftFname,
+                'player_lname' => $draftLname,
+                'player_display_name' => $isNew
+                    ? \App\Support\PlayerDisplayName::default($draftFname, $draftLname)
+                    : $existing->resolvedDisplayName(),
                 'player_nationality' => $isNew
                     ? $fifaCode
                     : ($existingNationality !== '' ? $existingNationality : $fifaCode),
@@ -1668,6 +1673,7 @@ class AdminSquadService
                 $createResult = $this->players->create([
                     'player_fname' => $row['player_fname'],
                     'player_lname' => $row['player_lname'],
+                    'player_display_name' => $row['player_display_name'] ?? '',
                     'player_nationality' => $row['player_nationality'],
                     'player_status' => 1,
                     'player_status_description' => '',
@@ -3486,6 +3492,8 @@ class AdminSquadService
                 ->where('playerteam_league_id', $leagueId)
                 ->first();
 
+            $dbPlayer = Player::query()->find($playerId);
+
             return $this->normalizeAutoDraftRow([
                 'player_id' => $playerId,
                 'playerteam_id' => $squadRow !== null ? (int) $squadRow->playerteam_id : 0,
@@ -3493,6 +3501,11 @@ class AdminSquadService
                 'on_squad' => $squadRow !== null,
                 'player_fname' => $almost['db_fname'],
                 'player_lname' => $almost['db_lname'],
+                'player_display_name' => $dbPlayer?->resolvedDisplayName()
+                    ?? \App\Support\PlayerDisplayName::default(
+                        (string) $almost['db_fname'],
+                        (string) $almost['db_lname'],
+                    ),
                 'player_nationality' => $almost['db_nationality'] !== ''
                     ? $almost['db_nationality']
                     : $almost['json_nationality'],
@@ -3513,6 +3526,10 @@ class AdminSquadService
             'on_squad' => false,
             'player_fname' => $almost['json_fname'],
             'player_lname' => $almost['json_lname'],
+            'player_display_name' => \App\Support\PlayerDisplayName::default(
+                (string) $almost['json_fname'],
+                (string) $almost['json_lname'],
+            ),
             'player_nationality' => $almost['json_nationality'],
             'player_foreign_id' => '',
             'player_uefa_id' => $almost['player_uefa_id'] ?? '',
@@ -3537,14 +3554,22 @@ class AdminSquadService
             || (int) ($row['player_id'] ?? 0) <= 0
         );
 
+        $fname = trim((string) ($row['player_fname'] ?? ''));
+        $lname = trim((string) ($row['player_lname'] ?? ''));
+        $displayName = trim((string) ($row['player_display_name'] ?? ''));
+        if ($displayName === '') {
+            $displayName = \App\Support\PlayerDisplayName::default($fname, $lname);
+        }
+
         return [
             'player_id' => (int) ($row['player_id'] ?? 0),
             'playerteam_id' => (int) ($row['playerteam_id'] ?? 0),
             'is_new' => $isNew,
             'on_squad' => $onSquad,
             'not_in_json' => ((string) ($row['not_in_json'] ?? '0') === '1' || ($row['not_in_json'] ?? false) === true),
-            'player_fname' => trim((string) ($row['player_fname'] ?? '')),
-            'player_lname' => trim((string) ($row['player_lname'] ?? '')),
+            'player_fname' => $fname,
+            'player_lname' => $lname,
+            'player_display_name' => $displayName,
             'player_nationality' => strtoupper(trim((string) ($row['player_nationality'] ?? ''))),
             'player_status' => 1,
             'player_status_description' => '',
@@ -3591,6 +3616,7 @@ class AdminSquadService
                 'player_id',
                 'player_fname',
                 'player_lname',
+                'player_display_name',
                 'player_nationality',
                 'player_foreign_id',
                 'player_uefa_id',
@@ -3608,7 +3634,7 @@ class AdminSquadService
 
             $fname = (string) $player->player_fname;
             $lname = (string) $player->player_lname;
-            $displayName = trim($fname.' '.$lname);
+            $displayName = $player->resolvedDisplayName();
 
             $draft[] = [
                 'player_id' => $playerId,
@@ -3618,6 +3644,7 @@ class AdminSquadService
                 'not_in_json' => true,
                 'player_fname' => $fname,
                 'player_lname' => $lname,
+                'player_display_name' => $displayName,
                 'player_nationality' => strtoupper(trim((string) ($player->player_nationality ?? ''))),
                 'player_status' => 1,
                 'player_status_description' => '',

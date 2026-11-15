@@ -817,6 +817,7 @@ class AdminPlayerService
             'player_id' => '',
             'player_fname' => '',
             'player_lname' => '',
+            'player_display_name' => '',
             'player_nationality' => '',
             'player_status' => 1,
             'player_status_description' => '',
@@ -845,6 +846,7 @@ class AdminPlayerService
             'player_id' => (int) $item->player_id,
             'player_fname' => (string) $item->player_fname,
             'player_lname' => (string) $item->player_lname,
+            'player_display_name' => $item->resolvedDisplayName(),
             'player_nationality' => strtoupper(trim((string) ($item->player_nationality ?? ''))),
             'player_status' => (int) $item->player_status ? 1 : 0,
             'player_status_description' => $desc,
@@ -866,7 +868,7 @@ class AdminPlayerService
             return ['ok' => false, 'errors' => $errors, 'form' => $form];
         }
 
-        $player = Player::query()->create([
+        $attrs = [
             'asset_key' => AssetKey::generate(
                 'ffb_player',
                 AssetKey::playerSourceName((string) $form['player_fname'], (string) $form['player_lname'])
@@ -879,7 +881,19 @@ class AdminPlayerService
             'player_nationality' => $form['player_nationality'],
             'player_status' => (int) $form['player_status'],
             'player_status_description' => $form['player_status_description'],
-        ]);
+        ];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('ffb_player', 'player_display_name')) {
+            $displayName = (string) ($form['player_display_name'] ?? '');
+            if ($displayName === '') {
+                $displayName = \App\Support\PlayerDisplayName::default(
+                    (string) $form['player_fname'],
+                    (string) $form['player_lname'],
+                );
+            }
+            $attrs['player_display_name'] = $displayName;
+        }
+
+        $player = Player::query()->create($attrs);
 
         return [
             'ok' => true,
@@ -1048,6 +1062,16 @@ class AdminPlayerService
         $item->player_fifa_id = $form['player_fifa_id'];
         $item->player_fname = $form['player_fname'];
         $item->player_lname = $form['player_lname'];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('ffb_player', 'player_display_name')) {
+            $displayName = (string) ($form['player_display_name'] ?? '');
+            if ($displayName === '') {
+                $displayName = \App\Support\PlayerDisplayName::default(
+                    (string) $form['player_fname'],
+                    (string) $form['player_lname'],
+                );
+            }
+            $item->player_display_name = $displayName;
+        }
         $item->player_nationality = $form['player_nationality'];
         $item->player_status = (int) $form['player_status'];
         $item->player_status_description = $form['player_status_description'];
@@ -1147,6 +1171,9 @@ class AdminPlayerService
                     ->orWhere('player_lname', 'like', $like)
                     ->orWhereRaw("CONCAT(player_fname, ' ', player_lname) LIKE ?", [$like])
                     ->orWhereRaw("CONCAT(player_lname, ' ', player_fname) LIKE ?", [$like]);
+                if (\Illuminate\Support\Facades\Schema::hasColumn('ffb_player', 'player_display_name')) {
+                    $builder->orWhere('player_display_name', 'like', $like);
+                }
 
                 if (ctype_digit($q)) {
                     $builder->orWhere('player_id', (int) $q)
@@ -1173,6 +1200,7 @@ class AdminPlayerService
                     'player_asset_key' => (string) ($item->asset_key ?? ''),
                     'player_fname' => (string) $item->player_fname,
                     'player_lname' => (string) $item->player_lname,
+                    'player_display_name' => $item->resolvedDisplayName(),
                     'player_nationality' => $nat,
                     'player_nationality_label' => $nat !== '' ? ($countries[$nat] ?? $nat) : '',
                     'player_status' => (int) $item->player_status ? 1 : 0,
@@ -1252,6 +1280,7 @@ class AdminPlayerService
             'player_id' => (string) ($input['player_id'] ?? ''),
             'player_fname' => trim((string) ($input['player_fname'] ?? '')),
             'player_lname' => trim((string) ($input['player_lname'] ?? '')),
+            'player_display_name' => trim((string) ($input['player_display_name'] ?? '')),
             'player_nationality' => $nat,
             'player_status' => ((string) ($input['player_status'] ?? '1') === '0') ? 0 : 1,
             'player_status_description' => trim((string) ($input['player_status_description'] ?? '')),

@@ -438,8 +438,9 @@
     }
 
     function playerCard(player, showPrice) {
-        const fname = escapeHtml(player.player_fname || '');
-        const lname = escapeHtml(player.player_lname || '');
+        const nameHtml = window.FfbPlayerName
+            ? FfbPlayerName.linesHtml(player, escapeHtml)
+            : (escapeHtml(player.player_fname || '') + '<br>' + escapeHtml(player.player_lname || ''));
         const nat = player.playerteam_team_nationality || 'AUT';
         const teamKey = player.playerteam_team_asset_key || '';
         const price = formatPlayerPrice(player.playerteam_player_price);
@@ -454,9 +455,7 @@
             shirtImgTag(teamKey, nat, 'alt="" width="64" height="64"') +
             '</a>' +
             '<span class="name">' +
-            fname +
-            '<br>' +
-            lname +
+            nameHtml +
             '</span>' +
             '<a class="score" href="#" title="Für Details klicken." data-modal="player-points" data-id="' +
             player.playerteam_id +

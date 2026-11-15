@@ -92,7 +92,7 @@ class MatchPopupService
         return $stats->map(function (Playerstats $item) {
             $pt = $item->playerteam;
             $player = $pt?->player;
-            $name = trim(($player->player_fname ?? '').' '.($player->player_lname ?? ''));
+            $name = $player ? $player->resolvedDisplayName() : '';
 
             return [
                 'player_playerteam_id' => (int) $item->playerstats_playerteam_id,
@@ -128,7 +128,7 @@ class MatchPopupService
         return $goals->map(function (Goal $item) {
             $pt = $item->playerteam;
             $player = $pt?->player;
-            $name = trim(($player->player_fname ?? '').' '.($player->player_lname ?? ''));
+            $name = $player ? $player->resolvedDisplayName() : '';
 
             return [
                 'goal_minute' => (int) $item->goal_minute,
@@ -159,7 +159,7 @@ class MatchPopupService
             $pt = $item->playerteam;
             $player = $pt?->player;
             $team = $pt?->team;
-            $name = trim(($player->player_fname ?? '').' '.($player->player_lname ?? ''));
+            $name = $player ? $player->resolvedDisplayName() : '';
 
             return [
                 'psgoal_minute' => (int) $item->psgoal_minute,
