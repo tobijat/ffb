@@ -1088,6 +1088,15 @@ class AdminMatchdataService
                     ->get()
                     ->groupBy('playerstats_playerteam_id');
 
+                // Preload conceded-goal minutes once per side (pointsmode "new").
+                $homeGoalsAgainst = $pm === 'new'
+                    ? $this->goalsAgainst($matchId, $guestTeamId, $homeTeamId)
+                    : [];
+                $guestGoalsAgainst = $pm === 'new'
+                    ? $this->goalsAgainst($matchId, $homeTeamId, $guestTeamId)
+                    : [];
+                $matchMinutes = (int) $match->match_minutes;
+
                 foreach ($statsByPlayerteam as $playerteamId => $group) {
                     /** @var Playerstats $stat */
                     $stat = $group->first();
@@ -1102,28 +1111,33 @@ class AdminMatchdataService
 
                     if ($teamId === $homeTeamId) {
                         $oppScore = $guestscore;
+                        $goalMinutes = $homeGoalsAgainst;
                     } elseif ($teamId === $guestTeamId) {
                         $oppScore = $homescore;
+                        $goalMinutes = $guestGoalsAgainst;
                     } else {
                         continue;
                     }
 
                     $scoreNooppgoals = $this->calcScoreOppGoalsNo($oppScore, $position, $statMinutes);
+                    $scoreOppgoals = $pm === 'new'
+                        ? $this->calcScoreOppGoalsNew(
+                            $goalMinutes,
+                            $position,
+                            $statMinutes,
+                            (int) $stat->playerstats_minute_in,
+                            (int) $stat->playerstats_minute_out,
+                            $matchMinutes
+                        )
+                        : $this->calcScoreOppGoals($oppScore, $position, $statMinutes);
 
-                    if ($pm === 'new') {
-                        $score = (int) $stat->playerstats_score
-                            - (int) $stat->playerstats_score_nooppgoals
-                            + $scoreNooppgoals;
-                    } else {
-                        $scoreOppgoals = $this->calcScoreOppGoals($oppScore, $position, $statMinutes);
-                        $score = (int) $stat->playerstats_score
-                            - (int) $stat->playerstats_score_oppgoals
-                            - (int) $stat->playerstats_score_nooppgoals
-                            + $scoreOppgoals
-                            + $scoreNooppgoals;
-                        $stat->playerstats_score_oppgoals = $scoreOppgoals;
-                    }
+                    $score = (int) $stat->playerstats_score
+                        - (int) $stat->playerstats_score_oppgoals
+                        - (int) $stat->playerstats_score_nooppgoals
+                        + $scoreOppgoals
+                        + $scoreNooppgoals;
 
+                    $stat->playerstats_score_oppgoals = $scoreOppgoals;
                     $stat->playerstats_score_nooppgoals = $scoreNooppgoals;
                     $stat->playerstats_score = $score;
                     $stat->save();

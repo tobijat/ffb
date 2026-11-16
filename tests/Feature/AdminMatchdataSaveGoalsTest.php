@@ -269,6 +269,125 @@ class AdminMatchdataSaveGoalsTest extends TestCase
         $this->assertStringContainsString('aktiv', (string) ($result['message'] ?? ''));
     }
 
+    #[Test]
+    public function set_match_result_recalculates_oppgoals_in_new_pointsmode(): void
+    {
+        $league = League::query()->create([
+            'league_title' => 'Nations League Test',
+            'league_visible' => 1,
+            'league_archive' => 0,
+        ]);
+        LeagueOptions::query()->create([
+            'options_league_id' => (int) $league->league_id,
+            'options_league_pointsmode' => 'new',
+            'options_score_goals_s' => 4,
+            'options_score_assists' => 3,
+            'options_score_minutes_threshold_lower' => 30,
+            'options_score_minutes_threshold_upper' => 60,
+            'options_score_minutes_low' => 1,
+            'options_score_minutes_middle' => 2,
+            'options_score_minutes_high' => 3,
+            'options_score_owngoals' => -2,
+            'options_score_card_y' => -2,
+            'options_score_card_yr' => -4,
+            'options_score_card_r' => -5,
+            'options_score_penalty_saved' => 2,
+            'options_score_penalty_lost' => -2,
+            'options_score_penaltyshootout_save' => 2,
+            'options_score_penaltyshootout_lost' => -2,
+            'options_score_penaltyshootout_hit' => 2,
+            'options_score_no_oppgoals_g' => 4,
+            'options_score_no_oppgoals_d' => 3,
+            'options_score_no_oppgoals_m' => 1,
+            'options_score_oppgoals_g' => -1,
+            'options_score_oppgoals_d' => -1,
+        ]);
+
+        $home = Team::query()->create(['team_name' => 'Home', 'team_status' => 1]);
+        $guest = Team::query()->create(['team_name' => 'Guest', 'team_status' => 1]);
+        $round = Matchround::query()->create([
+            'matchround_league_id' => (int) $league->league_id,
+            'matchround_title' => 'Gruppe',
+            'matchround_startdate' => '2026-07-01 00:00:00',
+            'matchround_enddate' => '2026-07-02 00:00:00',
+            'matchround_status' => 1,
+        ]);
+        $match = MatchGame::query()->create([
+            'match_round' => (int) $round->matchround_id,
+            'match_hometeam_id' => (int) $home->team_id,
+            'match_guestteam_id' => (int) $guest->team_id,
+            'match_date' => '2026-07-01 20:00:00',
+            'match_homescore' => 0,
+            'match_guestscore' => 0,
+            'match_minutes' => 90,
+        ]);
+
+        $homeGk = Player::query()->create(['player_fname' => 'Home', 'player_lname' => 'Keeper']);
+        $guestScorer = Player::query()->create(['player_fname' => 'Guest', 'player_lname' => 'Scorer']);
+        $homeGkPt = Playerteam::query()->create([
+            'playerteam_player_id' => (int) $homeGk->player_id,
+            'playerteam_team_id' => (int) $home->team_id,
+            'playerteam_league_id' => (int) $league->league_id,
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 'g',
+        ]);
+        $guestScorerPt = Playerteam::query()->create([
+            'playerteam_player_id' => (int) $guestScorer->player_id,
+            'playerteam_team_id' => (int) $guest->team_id,
+            'playerteam_league_id' => (int) $league->league_id,
+            'playerteam_status' => 1,
+            'playerteam_player_position' => 's',
+        ]);
+
+        $service = app(AdminMatchdataService::class);
+
+        // Stats saved while the score is still 0:0 → clean sheet awarded, no oppgoals yet.
+        $saved = $service->savePlayerStats((int) $match->match_id, (int) $homeGkPt->playerteam_id, [
+            'minutes' => 90,
+            'minute_in' => 1,
+            'minute_out' => 90,
+            'goals' => '0',
+            'owngoals' => '0',
+            'assists' => 0,
+            'cards' => 'n',
+            'penaltieslost' => 0,
+            'penaltiessaved' => 0,
+            'penaltyshootout_save' => 0,
+            'penaltyshootout_lost' => 0,
+            'penaltyshootout_hit' => 0,
+        ]);
+        $this->assertTrue($saved['ok'] ?? false, implode('; ', $saved['errors'] ?? []));
+
+        Goal::query()->forceCreate([
+            'goal_match_id' => (int) $match->match_id,
+            'goal_playerteam_id' => (int) $guestScorerPt->playerteam_id,
+            'goal_minute' => 19,
+            'goal_owngoal' => 0,
+        ]);
+        Goal::query()->forceCreate([
+            'goal_match_id' => (int) $match->match_id,
+            'goal_playerteam_id' => (int) $guestScorerPt->playerteam_id,
+            'goal_minute' => 34,
+            'goal_owngoal' => 0,
+        ]);
+
+        $updated = $service->setMatchResult((int) $match->match_id, [
+            'homescore' => 0,
+            'guestscore' => 2,
+            'minutes' => 90,
+        ]);
+        $this->assertTrue($updated['ok'] ?? false, implode('; ', $updated['errors'] ?? []));
+
+        $stat = Playerstats::query()
+            ->where('playerstats_match_id', (int) $match->match_id)
+            ->where('playerstats_playerteam_id', (int) $homeGkPt->playerteam_id)
+            ->first();
+
+        $this->assertNotNull($stat);
+        $this->assertSame(0, (int) $stat->playerstats_score_nooppgoals);
+        $this->assertSame(-1, (int) $stat->playerstats_score_oppgoals);
+    }
+
     private function createSchema(): void
     {
         Schema::dropIfExists('ffb_psgoal');
