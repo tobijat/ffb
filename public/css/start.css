@@ -1027,7 +1027,42 @@ main {
     .start-page .brand-tagline,
     .dash-top-guest .brand-tagline {
         white-space: normal;
-        max-width: 22rem;
+        max-width: none;
+    }
+
+    /* Brand + login stack as full-width tiles; brand content stays left. */
+    .start-page .dash-top.dash-top-guest .brand,
+    .dash-top-guest .brand {
+        flex: 1 1 100%;
+        width: 100%;
+        max-width: none;
+        align-items: flex-start;
+        justify-content: center;
+    }
+
+    .start-page .dash-top.dash-top-guest > .dash-top-spacer,
+    .dash-top-guest > .dash-top-spacer {
+        display: none;
+    }
+
+    .start-page .dash-top.dash-top-guest > .user-card-login,
+    .dash-top-guest > .user-card-login {
+        flex: 1 1 100%;
+        width: 100%;
+        max-width: none;
+        justify-content: space-between;
+    }
+
+    .start-page .dash-top.dash-top-guest > .user-card-login .user-card-text,
+    .dash-top-guest > .user-card-login .user-card-text {
+        flex: 0 1 auto;
+        align-items: flex-start;
+    }
+
+    .start-page .dash-top.dash-top-guest > .user-card-login .user-card-logout,
+    .dash-top-guest > .user-card-login .user-card-logout {
+        align-self: center;
+        margin-left: auto;
     }
 
     .start-page .result-list {

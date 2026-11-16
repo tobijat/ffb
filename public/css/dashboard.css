@@ -795,3 +795,44 @@
     }
 }
 
+/*
+ * Logged-in player app only when brand, profile, and nav each sit on their
+ * own row: full-width tiles (brand content left, logout right) and nav items
+ * that share the row width.
+ */
+@media (max-width: 560px) {
+    .dash-top:not(.admin-top):not(.dash-top-guest) .brand {
+        flex: 1 1 100%;
+        width: 100%;
+        max-width: none;
+        align-items: flex-start;
+    }
+
+    .dash-top:not(.admin-top):not(.dash-top-guest) > .dash-top-spacer {
+        display: none;
+    }
+
+    .dash-top:not(.admin-top):not(.dash-top-guest) > .user-card {
+        flex: 1 1 100%;
+        width: 100%;
+        max-width: none;
+        justify-content: space-between;
+    }
+
+    .dash-top:not(.admin-top):not(.dash-top-guest) > .user-card .user-card-logout {
+        align-self: center;
+        margin-left: auto;
+    }
+
+    .dash-top:not(.admin-top):not(.dash-top-guest) .dash-nav {
+        justify-content: space-between;
+    }
+
+    .dash-top:not(.admin-top):not(.dash-top-guest) .dash-nav > a,
+    .dash-top:not(.admin-top):not(.dash-top-guest) .dash-nav > .nav-big {
+        flex: 1 1 0;
+        min-width: 4rem;
+        max-width: none;
+    }
+}
+

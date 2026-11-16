@@ -6,7 +6,7 @@
     <title>Start — SoccerSportsfan</title>
     @include('partials.favicon')
     <link rel="stylesheet" href="css/start.css?v=45">
-    <link rel="stylesheet" href="css/dashboard.css?v=52">
+    <link rel="stylesheet" href="css/dashboard.css?v=54">
 </head>
 <body class="dash-body">
     @php
