@@ -1110,14 +1110,20 @@ class AdminPlayerpriceService
 
     public function previewEloTeamPrices(int $userId, array $input): array
     {
-        $built = $this->buildEloTeamPricePreview($userId, $input);
+        $built = $this->truthyInput($input['copy_from_previous'] ?? null)
+            ? $this->buildCopyTeamPricePreview($userId, $input)
+            : $this->buildEloTeamPricePreview($userId, $input);
         if (! ($built['ok'] ?? false)) {
             return $built;
         }
 
+        $isCopy = (($built['preview']['mode'] ?? '') === 'copy');
+
         return [
             'ok' => true,
-            'message' => 'ELO Team-Preise berechnet (Vorschau, nicht gespeichert).',
+            'message' => $isCopy
+                ? 'Team-Preise von vorheriger Runde übernommen (Vorschau, nicht gespeichert).'
+                : 'ELO Team-Preise berechnet (Vorschau, nicht gespeichert).',
             'price_league_id' => $built['price_league_id'],
             'matchround_id' => $built['matchround_id'],
             'tab' => 'teams',
@@ -1143,7 +1149,10 @@ class AdminPlayerpriceService
      */
     public function saveEloTeamPrices(int $userId, array $input): array
     {
-        $built = $this->buildEloTeamPricePreview($userId, $input);
+        $copyMode = $this->truthyInput($input['copy_from_previous'] ?? null);
+        $built = $copyMode
+            ? $this->buildCopyTeamPricePreview($userId, $input)
+            : $this->buildEloTeamPricePreview($userId, $input);
         if (! ($built['ok'] ?? false)) {
             return $built;
         }
@@ -1151,6 +1160,7 @@ class AdminPlayerpriceService
         $leagueId = (int) $built['price_league_id'];
         $matchroundId = (int) $built['matchround_id'];
         $preview = $built['preview'];
+        $isCopy = (($preview['mode'] ?? '') === 'copy');
 
         $targetMatchroundIds = $this->writableMatchroundIdsForSave($leagueId, $matchroundId);
         if ($targetMatchroundIds === []) {
@@ -1174,7 +1184,7 @@ class AdminPlayerpriceService
                 continue;
             }
             $pricesByTeamId[$teamId] = (float) ($row['price'] ?? 0);
-            if (array_key_exists('elo_rating', $row)) {
+            if (! $isCopy && array_key_exists('elo_rating', $row)) {
                 $eloByTeamId[$teamId] = (float) $row['elo_rating'];
             }
         }
@@ -1190,22 +1200,28 @@ class AdminPlayerpriceService
             ];
         }
 
-        $eloYear = (int) ($preview['form']['elo_year'] ?? 0);
-        if ($eloYear < self::MIN_ELO_YEAR) {
-            return [
-                'ok' => false,
-                'errors' => ['ELO-Jahr fehlt in der Preisberechnung.'],
-                'price_league_id' => $leagueId,
-                'matchround_id' => $matchroundId,
-                'tab' => 'teams',
-                'preview' => $preview,
-            ];
+        if (! $isCopy) {
+            $eloYear = (int) ($preview['form']['elo_year'] ?? 0);
+            if ($eloYear < self::MIN_ELO_YEAR) {
+                return [
+                    'ok' => false,
+                    'errors' => ['ELO-Jahr fehlt in der Preisberechnung.'],
+                    'price_league_id' => $leagueId,
+                    'matchround_id' => $matchroundId,
+                    'tab' => 'teams',
+                    'preview' => $preview,
+                ];
+            }
+        } else {
+            $eloYear = 0;
         }
 
         try {
-            $details = DB::transaction(function () use ($pricesByTeamId, $targetMatchroundIds, $leagueId, $eloByTeamId, $eloYear): array {
+            $details = DB::transaction(function () use ($pricesByTeamId, $targetMatchroundIds, $leagueId, $eloByTeamId, $eloYear, $isCopy): array {
                 $details = $this->persistTeamPrices($pricesByTeamId, $targetMatchroundIds);
-                $this->persistTeamElos($leagueId, $eloByTeamId, $eloYear);
+                if (! $isCopy) {
+                    $this->persistTeamElos($leagueId, $eloByTeamId, $eloYear);
+                }
 
                 return $details;
             });
@@ -1220,14 +1236,23 @@ class AdminPlayerpriceService
             ];
         }
 
+        $sourceTitle = (string) ($preview['source_matchround_title'] ?? '');
+
         return [
             'ok' => true,
-            'message' => sprintf(
-                'ELO Team-Preise gespeichert: %d Team(s) × %d Spielrunde(n); Team-Elo (%d) aktualisiert.',
-                count($pricesByTeamId),
-                count($targetMatchroundIds),
-                $eloYear,
-            ),
+            'message' => $isCopy
+                ? sprintf(
+                    'Team-Preise von „%s“ übernommen: %d Team(s) × %d Spielrunde(n). Team-Elo unverändert.',
+                    $sourceTitle !== '' ? $sourceTitle : 'vorheriger Runde',
+                    count($pricesByTeamId),
+                    count($targetMatchroundIds),
+                )
+                : sprintf(
+                    'ELO Team-Preise gespeichert: %d Team(s) × %d Spielrunde(n); Team-Elo (%d) aktualisiert.',
+                    count($pricesByTeamId),
+                    count($targetMatchroundIds),
+                    $eloYear,
+                ),
             'details' => $details,
             'price_league_id' => $leagueId,
             'matchround_id' => $matchroundId,
@@ -1424,6 +1449,10 @@ class AdminPlayerpriceService
     }
 
     /**
+     * Copy stored team prices from a previous matchround into the preview
+     * (no Elo recalculation). All target teams must already have a price in
+     * the source round.
+     *
      * @param  array<string, mixed>  $input
      * @return array{
      *     ok: bool,
@@ -1434,6 +1463,143 @@ class AdminPlayerpriceService
      *     preview?: array<string, mixed>
      * }
      */
+    private function buildCopyTeamPricePreview(int $userId, array $input): array
+    {
+        $leagueId = $this->resolveLeagueIdFromInput($userId, $input);
+        if ($leagueId <= 0) {
+            return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga auswählen.'], 'tab' => 'teams'];
+        }
+
+        $matchroundId = (int) ($input['matchround_id'] ?? 0);
+        if ($matchroundId > 0) {
+            if (! $this->matchroundBelongsToLeague($matchroundId, $leagueId)) {
+                return [
+                    'ok' => false,
+                    'errors' => ['Ungültige Spielrunde für die aktive Liga.'],
+                    'price_league_id' => $leagueId,
+                    'tab' => 'teams',
+                ];
+            }
+            if ($this->matchroundHasUserLineups($matchroundId)) {
+                return [
+                    'ok' => false,
+                    'errors' => ['Spielrunden mit bestehenden Aufstellungen können nicht aktualisiert werden.'],
+                    'price_league_id' => $leagueId,
+                    'matchround_id' => $matchroundId,
+                    'tab' => 'teams',
+                ];
+            }
+        }
+
+        $sourceMatchroundId = (int) ($input['source_matchround_id'] ?? 0);
+        if ($sourceMatchroundId <= 0) {
+            return [
+                'ok' => false,
+                'errors' => ['Bitte eine vorherige Spielrunde als Quelle wählen.'],
+                'price_league_id' => $leagueId,
+                'matchround_id' => $matchroundId,
+                'tab' => 'teams',
+            ];
+        }
+        if (! $this->matchroundBelongsToLeague($sourceMatchroundId, $leagueId)) {
+            return [
+                'ok' => false,
+                'errors' => ['Die Quell-Spielrunde gehört nicht zur aktiven Liga.'],
+                'price_league_id' => $leagueId,
+                'matchround_id' => $matchroundId,
+                'tab' => 'teams',
+            ];
+        }
+        if ($matchroundId > 0 && $sourceMatchroundId === $matchroundId) {
+            return [
+                'ok' => false,
+                'errors' => ['Quell- und Ziel-Spielrunde müssen unterschiedlich sein.'],
+                'price_league_id' => $leagueId,
+                'matchround_id' => $matchroundId,
+                'tab' => 'teams',
+            ];
+        }
+
+        $teamIds = $matchroundId > 0
+            ? $this->teamIdsForMatchround($matchroundId)
+            : $this->teamIdsForGame($leagueId);
+
+        if ($teamIds === []) {
+            return [
+                'ok' => false,
+                'errors' => ['Keine Teams für die Übernahme gefunden.'],
+                'price_league_id' => $leagueId,
+                'matchround_id' => $matchroundId,
+                'tab' => 'teams',
+            ];
+        }
+
+        $sourcePrices = $this->teamPricesForMatchround($teamIds, $sourceMatchroundId);
+        $missingIds = array_values(array_diff($teamIds, array_keys($sourcePrices)));
+        if ($missingIds !== []) {
+            $names = Team::query()
+                ->whereIn('team_id', $missingIds)
+                ->pluck('team_name', 'team_id')
+                ->all();
+            $labels = array_map(
+                static fn (int $id): string => (string) ($names[$id] ?? ('Team #'.$id)),
+                $missingIds,
+            );
+            sort($labels, SORT_STRING | SORT_FLAG_CASE);
+
+            return [
+                'ok' => false,
+                'errors' => [
+                    'Nicht alle Ziel-Teams haben einen Teampreis in der Quell-Runde: '.implode(', ', $labels).'.',
+                ],
+                'price_league_id' => $leagueId,
+                'matchround_id' => $matchroundId,
+                'tab' => 'teams',
+            ];
+        }
+
+        $sourceTitle = (string) (Matchround::query()
+            ->whereKey($sourceMatchroundId)
+            ->value('matchround_title') ?? '');
+
+        $names = Team::query()
+            ->whereIn('team_id', $teamIds)
+            ->pluck('team_name', 'team_id')
+            ->all();
+
+        $teams = [];
+        foreach ($teamIds as $teamId) {
+            $teams[] = [
+                'team_id' => $teamId,
+                'team_name' => (string) ($names[$teamId] ?? ('Team #'.$teamId)),
+                'price' => round((float) $sourcePrices[$teamId], 1),
+            ];
+        }
+        usort($teams, static fn (array $a, array $b): int => strcasecmp($a['team_name'], $b['team_name']));
+
+        return [
+            'ok' => true,
+            'price_league_id' => $leagueId,
+            'matchround_id' => $matchroundId,
+            'tab' => 'teams',
+            'preview' => [
+                'mode' => 'copy',
+                'source_matchround_id' => $sourceMatchroundId,
+                'source_matchround_title' => $sourceTitle,
+                'matchround_id' => $matchroundId,
+                'teams' => $teams,
+                'teams_skipped' => [],
+                'teams_without_elo' => 0,
+                'checks' => [],
+                'params' => [],
+                'form' => [
+                    'copy_from_previous' => 1,
+                    'source_matchround_id' => $sourceMatchroundId,
+                ],
+            ],
+        ];
+    }
+
     private function buildEloTeamPricePreview(int $userId, array $input): array
     {
         $leagueId = $this->resolveLeagueIdFromInput($userId, $input);

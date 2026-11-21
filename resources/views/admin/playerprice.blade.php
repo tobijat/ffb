@@ -58,6 +58,15 @@
         $eloYearOptions = is_array($data['elo_year_options'] ?? null)
             ? $data['elo_year_options']
             : range((int) now()->year, 2007);
+        $copyFromPrevious = (string) old(
+            'copy_from_previous',
+            (($teamPricePreview['mode'] ?? '') === 'copy' || ! empty($previewForm['copy_from_previous'])) ? '1' : '0',
+        ) === '1';
+        $sourceMatchroundId = (int) old(
+            'source_matchround_id',
+            $previewForm['source_matchround_id']
+                ?? ($teamPricePreview['source_matchround_id'] ?? 0),
+        );
         $flashErrors = $errors ?: (session('admin_errors') ?: []);
         $flashDetails = is_array($details ?? null) ? $details : [];
         $hasLeague = $priceLeagueId > 0;
@@ -576,6 +585,7 @@
                 Ohne Spielrunde: alle Liga-Teams; Speichern schreibt in alle Spielrunden der Liga ohne Aufstellungen.
                 Mit Spielrunde: nur Teams der Runde; Speichern nur für diese Runde (sofern noch keine Aufstellungen existieren).
                 Spielrunden mit bestehenden Aufstellungen sind sichtbar, aber nicht wählbar und werden nicht verändert.
+                Alternativ: Preise unverändert von einer früheren Runde übernehmen (ohne neue ELO-Berechnung).
             </p>
 
             <form class="admin-league-picker" method="get" action="{{ route('admin.playerprice') }}">
@@ -607,14 +617,68 @@
                 max. {{ $lineupMaxPlayersTeam }} Spieler / Team.
             </p>
 
-            <form class="admin-form" method="post" action="{{ route('admin.playerprice.previewEloTeamPrices') }}" accept-charset="UTF-8">
+            <form
+                class="admin-form"
+                id="admin-playerprice-elo-form"
+                method="post"
+                action="{{ route('admin.playerprice.previewEloTeamPrices') }}"
+                accept-charset="UTF-8"
+            >
                 @csrf
                 <input type="hidden" name="price_league_id" value="{{ $priceLeagueId }}">
                 <input type="hidden" name="tab" value="teams">
                 <input type="hidden" name="matchround_id" value="{{ $matchroundId > 0 ? $matchroundId : '' }}">
+
                 <div class="admin-field">
+                    <input type="hidden" name="copy_from_previous" value="0">
+                    <label>
+                        <input
+                            id="pp_copy_from_previous"
+                            type="checkbox"
+                            name="copy_from_previous"
+                            value="1"
+                            @checked($copyFromPrevious)
+                            data-pp-copy-toggle
+                        >
+                        von vorheriger Runde übernehmen
+                    </label>
+                    <p class="hint">
+                        Kopiert gespeicherte Teampreise 1:1 — ohne neue ELO-Berechnung.
+                        Nur möglich, wenn alle Ziel-Teams in der Quell-Runde einen Teampreis haben.
+                    </p>
+                </div>
+                <div class="admin-field" data-pp-copy-only @if (! $copyFromPrevious) hidden @endif>
+                    <label for="pp_source_matchround">Quell-Spielrunde</label>
+                    <select
+                        id="pp_source_matchround"
+                        name="source_matchround_id"
+                        data-pp-copy-required
+                        @disabled(! $copyFromPrevious)
+                        @required($copyFromPrevious)
+                    >
+                        <option value="">— Runde wählen —</option>
+                        @foreach ($matchrounds as $round)
+                            @php
+                                $sourceId = (int) $round['matchround_id'];
+                                $isSameTarget = $matchroundId > 0 && $sourceId === $matchroundId;
+                            @endphp
+                            <option
+                                value="{{ $sourceId }}"
+                                @selected($sourceMatchroundId === $sourceId)
+                                @disabled($isSameTarget)
+                            >
+                                {{ $round['matchround_title'] }}
+                                @if ($isSameTarget)
+                                    (Zielrunde)
+                                @endif
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="admin-field" data-pp-elo-only @if ($copyFromPrevious) hidden @endif>
                     <label for="pp_elo_year">ELO-Jahr</label>
-                    <select id="pp_elo_year" name="elo_year" required>
+                    <select id="pp_elo_year" name="elo_year" data-pp-elo-required @required(! $copyFromPrevious) @disabled($copyFromPrevious)>
                         @foreach ($eloYearOptions as $yearOption)
                             <option value="{{ $yearOption }}" @selected($eloYear === (int) $yearOption)>
                                 {{ $yearOption }}
@@ -625,7 +689,7 @@
                         Quelle: http://www.eloratings.net/&lt;Jahr&gt;.tsv (2007–aktuelles Jahr).
                     </p>
                 </div>
-                <div class="admin-field">
+                <div class="admin-field" data-pp-elo-only @if ($copyFromPrevious) hidden @endif>
                     <label for="pp_elo_max_credits">Max. Credits / Aufstellung</label>
                     <input
                         id="pp_elo_max_credits"
@@ -635,11 +699,13 @@
                         min="1"
                         max="500"
                         step="0.5"
-                        required
+                        data-pp-elo-required
+                        @required(! $copyFromPrevious)
+                        @disabled($copyFromPrevious)
                     >
                     <p class="hint">Budget für die Checks (Standard aus {{ $limitsSourceLabel }}).</p>
                 </div>
-                <div class="admin-field">
+                <div class="admin-field" data-pp-elo-only @if ($copyFromPrevious) hidden @endif>
                     <label for="pp_elo_max_per_team">Max. Spieler / Team</label>
                     <input
                         id="pp_elo_max_per_team"
@@ -649,11 +715,13 @@
                         min="1"
                         max="11"
                         step="1"
-                        required
+                        data-pp-elo-required
+                        @required(! $copyFromPrevious)
+                        @disabled($copyFromPrevious)
                     >
                     <p class="hint">Obergrenze pro Team im Dream-/Check-Lineup (Standard aus {{ $limitsSourceLabel }}).</p>
                 </div>
-                <div class="admin-field">
+                <div class="admin-field" data-pp-elo-only @if ($copyFromPrevious) hidden @endif>
                     <label for="pp_elo_exponent">Exponent</label>
                     <input
                         id="pp_elo_exponent"
@@ -663,11 +731,13 @@
                         min="0.1"
                         max="10"
                         step="0.1"
-                        required
+                        data-pp-elo-required
+                        @required(! $copyFromPrevious)
+                        @disabled($copyFromPrevious)
                     >
                     <p class="hint">Steuert, wie stark starke Teams teurer werden (Standard 2.0).</p>
                 </div>
-                <div class="admin-field">
+                <div class="admin-field" data-pp-elo-only @if ($copyFromPrevious) hidden @endif>
                     <label for="pp_elo_dream_ratio">Dream-Team-Ratio</label>
                     <input
                         id="pp_elo_dream_ratio"
@@ -677,11 +747,13 @@
                         min="0.1"
                         max="5"
                         step="0.05"
-                        required
+                        data-pp-elo-required
+                        @required(! $copyFromPrevious)
+                        @disabled($copyFromPrevious)
                     >
                     <p class="hint">Zielkosten des Dream-Teams als Vielfaches des Budgets (Standard 1.5 = 150%).</p>
                 </div>
-                <div class="admin-field">
+                <div class="admin-field" data-pp-elo-only @if ($copyFromPrevious) hidden @endif>
                     <label for="pp_elo_min_price">Mindestpreis</label>
                     <input
                         id="pp_elo_min_price"
@@ -691,7 +763,9 @@
                         min="0"
                         max="20"
                         step="0.1"
-                        required
+                        data-pp-elo-required
+                        @required(! $copyFromPrevious)
+                        @disabled($copyFromPrevious)
                     >
                     <p class="hint">Preis des schwächsten Teams; stärkere Teams liegen darüber (Standard 1.0).</p>
                 </div>
@@ -730,7 +804,13 @@
                     </div>
                 @endif
 
-                @if ($previewParams !== [])
+                @if (($teamPricePreview['mode'] ?? '') === 'copy')
+                    <p class="muted">
+                        Übernommen von:
+                        {{ $teamPricePreview['source_matchround_title'] ?? ('Runde #'.($teamPricePreview['source_matchround_id'] ?? '—')) }}
+                        (ohne ELO-Neuberechnung)
+                    </p>
+                @elseif ($previewParams !== [])
                     <p class="muted">
                         Parameter: ELO-Jahr {{ $previewForm['elo_year'] ?? '—' }},
                         Exponent {{ $previewParams['exponent'] ?? '—' }},
@@ -762,8 +842,10 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Team</th>
-                                    <th>ELO</th>
-                                    <th>Normalisiert</th>
+                                    @if (($teamPricePreview['mode'] ?? '') !== 'copy')
+                                        <th>ELO</th>
+                                        <th>Normalisiert</th>
+                                    @endif
                                     <th>Preis / Spieler</th>
                                 </tr>
                             </thead>
@@ -772,8 +854,10 @@
                                     <tr>
                                         <td>{{ $index + 1 }}</td>
                                         <td>{{ $row['team_name'] ?? '' }}</td>
-                                        <td>{{ $row['elo_rating'] ?? '' }}</td>
-                                        <td>{{ $row['normalized'] ?? '' }}</td>
+                                        @if (($teamPricePreview['mode'] ?? '') !== 'copy')
+                                            <td>{{ $row['elo_rating'] ?? '' }}</td>
+                                            <td>{{ $row['normalized'] ?? '' }}</td>
+                                        @endif
                                         <td><strong>{{ $row['price'] ?? '' }}</strong></td>
                                     </tr>
                                 @endforeach
@@ -788,6 +872,34 @@
 
 @push('scripts')
     <script>
+        (function () {
+            const eloForm = document.getElementById('admin-playerprice-elo-form');
+            if (eloForm) {
+                const toggle = eloForm.querySelector('[data-pp-copy-toggle]');
+                const syncCopyMode = () => {
+                    const copyOn = !!(toggle && toggle.checked);
+                    eloForm.querySelectorAll('[data-pp-copy-only]').forEach((el) => {
+                        el.hidden = !copyOn;
+                    });
+                    eloForm.querySelectorAll('[data-pp-elo-only]').forEach((el) => {
+                        el.hidden = copyOn;
+                    });
+                    eloForm.querySelectorAll('[data-pp-copy-required]').forEach((el) => {
+                        el.disabled = !copyOn;
+                        el.required = copyOn;
+                    });
+                    eloForm.querySelectorAll('[data-pp-elo-required]').forEach((el) => {
+                        el.disabled = copyOn;
+                        el.required = !copyOn;
+                    });
+                };
+                if (toggle) {
+                    toggle.addEventListener('change', syncCopyMode);
+                    syncCopyMode();
+                }
+            }
+        })();
+
         (function () {
             const table = document.getElementById('admin-playerprice-recent-table');
             if (!table) {

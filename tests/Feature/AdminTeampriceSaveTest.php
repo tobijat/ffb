@@ -314,6 +314,118 @@ class AdminTeampriceSaveTest extends TestCase
         $this->assertDatabaseCount('ffb_teamelo', 0);
     }
 
+    #[Test]
+    public function copy_from_previous_round_rejects_when_target_team_missing_in_source(): void
+    {
+        [$leagueId, $pastId, $futureA, , $teamA] = $this->seedLeague();
+
+        Teamprice::query()->insert([
+            'teamprice_team_id' => $teamA,
+            'teamprice_matchround_id' => $pastId,
+            'teamprice_price' => 7.5,
+        ]);
+
+        $elo = Mockery::mock(EloRatingClient::class);
+        $elo->shouldNotReceive('forYear');
+        $elo->shouldNotReceive('ratingsForTeamList');
+
+        $limits = Mockery::mock(LineupOptionsResolver::class);
+        $limits->shouldReceive('forLeague')->andReturn($this->lineupLimits());
+        $limits->shouldReceive('forMatchround')->andReturn($this->lineupLimits());
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('selectedLeagueId')->andReturn($leagueId);
+
+        $service = new AdminPlayerpriceService($adminCenter, $elo, $limits);
+
+        $result = $service->previewEloTeamPrices(544, [
+            'price_league_id' => $leagueId,
+            'matchround_id' => $futureA,
+            'copy_from_previous' => 1,
+            'source_matchround_id' => $pastId,
+        ]);
+
+        $this->assertFalse($result['ok']);
+        $this->assertStringContainsString('Nicht alle Ziel-Teams', $result['errors'][0] ?? '');
+        $this->assertStringContainsString('Low', $result['errors'][0] ?? '');
+    }
+
+    #[Test]
+    public function copy_from_previous_round_saves_prices_without_touching_teamelo(): void
+    {
+        [$leagueId, $pastId, $futureA, , $teamA, $teamB] = $this->seedLeague();
+
+        Teamprice::query()->insert([
+            [
+                'teamprice_team_id' => $teamA,
+                'teamprice_matchround_id' => $pastId,
+                'teamprice_price' => 8.5,
+            ],
+            [
+                'teamprice_team_id' => $teamB,
+                'teamprice_matchround_id' => $pastId,
+                'teamprice_price' => 3.0,
+            ],
+        ]);
+
+        Teamelo::query()->insert([
+            'teamelo_team_id' => $teamA,
+            'teamelo_league_id' => $leagueId,
+            'teamelo_elo' => 1999.0,
+            'teamelo_elo_year' => 2024,
+        ]);
+
+        $elo = Mockery::mock(EloRatingClient::class);
+        $elo->shouldNotReceive('forYear');
+        $elo->shouldNotReceive('ratingsForTeamList');
+
+        $limits = Mockery::mock(LineupOptionsResolver::class);
+        $limits->shouldReceive('forLeague')->andReturn($this->lineupLimits());
+        $limits->shouldReceive('forMatchround')->andReturn($this->lineupLimits());
+
+        $adminCenter = Mockery::mock(AdminCenterService::class);
+        $adminCenter->shouldReceive('selectedLeagueId')->andReturn($leagueId);
+
+        $service = new AdminPlayerpriceService($adminCenter, $elo, $limits);
+
+        $preview = $service->previewEloTeamPrices(544, [
+            'price_league_id' => $leagueId,
+            'matchround_id' => $futureA,
+            'copy_from_previous' => 1,
+            'source_matchround_id' => $pastId,
+        ]);
+
+        $this->assertTrue($preview['ok'], implode('; ', $preview['errors'] ?? []));
+        $this->assertSame('copy', $preview['preview']['mode'] ?? null);
+        $this->assertSame(8.5, (float) collect($preview['preview']['teams'])->firstWhere('team_id', $teamA)['price']);
+        $this->assertSame(3.0, (float) collect($preview['preview']['teams'])->firstWhere('team_id', $teamB)['price']);
+
+        $result = $service->saveEloTeamPrices(544, [
+            'price_league_id' => $leagueId,
+            'matchround_id' => $futureA,
+            'copy_from_previous' => 1,
+            'source_matchround_id' => $pastId,
+        ]);
+
+        $this->assertTrue($result['ok'], implode('; ', $result['errors'] ?? []));
+        $this->assertStringContainsString('Team-Elo unverändert', $result['message'] ?? '');
+        $this->assertSame(8.5, (float) Teamprice::query()
+            ->where('teamprice_team_id', $teamA)
+            ->where('teamprice_matchround_id', $futureA)
+            ->value('teamprice_price'));
+        $this->assertSame(3.0, (float) Teamprice::query()
+            ->where('teamprice_team_id', $teamB)
+            ->where('teamprice_matchround_id', $futureA)
+            ->value('teamprice_price'));
+        $this->assertDatabaseCount('ffb_teamelo', 1);
+        $this->assertDatabaseHas('ffb_teamelo', [
+            'teamelo_team_id' => $teamA,
+            'teamelo_league_id' => $leagueId,
+            'teamelo_elo' => 1999.0,
+            'teamelo_elo_year' => 2024,
+        ]);
+    }
+
     /**
      * @return array{0: int, 1: int, 2: int, 3: int, 4: int, 5: int}
      */
