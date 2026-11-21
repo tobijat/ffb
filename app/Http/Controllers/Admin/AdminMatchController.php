@@ -185,7 +185,8 @@ class AdminMatchController extends Controller
     public function analyzeAutoUefa(Request $request): RedirectResponse
     {
         $leagueId = (int) $request->input('league_id', 0);
-        $result = $this->matches->analyzeUefaMatches($leagueId);
+        $identifier = trim((string) $request->input('uefa_competition_identifier', ''));
+        $result = $this->matches->analyzeUefaMatches($leagueId, $identifier !== '' ? $identifier : null);
 
         $redirectQuery = ['tab' => 'auto-uefa'];
         if ($leagueId > 0) {
@@ -195,6 +196,7 @@ class AdminMatchController extends Controller
         if (! ($result['ok'] ?? false)) {
             return redirect()
                 ->route('admin.matches', $redirectQuery)
+                ->withInput()
                 ->with('admin_errors', $result['errors'] ?? ['Analyse fehlgeschlagen.']);
         }
 
@@ -238,7 +240,8 @@ class AdminMatchController extends Controller
     public function analyzeAutoFifa(Request $request): RedirectResponse
     {
         $leagueId = (int) $request->input('league_id', 0);
-        $result = $this->matches->analyzeFifaMatches($leagueId);
+        $identifier = trim((string) $request->input('fifa_competition_identifier', ''));
+        $result = $this->matches->analyzeFifaMatches($leagueId, $identifier !== '' ? $identifier : null);
 
         $redirectQuery = ['tab' => 'auto-fifa'];
         if ($leagueId > 0) {
@@ -248,6 +251,7 @@ class AdminMatchController extends Controller
         if (! ($result['ok'] ?? false)) {
             return redirect()
                 ->route('admin.matches', $redirectQuery)
+                ->withInput()
                 ->with('admin_errors', $result['errors'] ?? ['Analyse fehlgeschlagen.']);
         }
 

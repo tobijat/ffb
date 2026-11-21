@@ -48,6 +48,8 @@ class AdminSquadService
         ?array $images = null,
         ?string $uefaTeamId = null,
         ?string $fifaTeamId = null,
+        ?string $uefaCompetitionIdentifier = null,
+        ?string $fifaCompetitionIdentifier = null,
     ): array {
         $shell = $this->adminCenter->shellPayload($userId);
         $leagueId = $this->resolveSquadLeagueId($squadLeagueId, $shell);
@@ -86,7 +88,13 @@ class AdminSquadService
         $uefaTeams = [];
         $selectedUefaTeamId = '';
         if ($resolvedTab === 'auto-uefa' && $leagueId > 0) {
-            $uefaIdentifier = $this->uefaCompetitionIdentifierForLeague($leagueId);
+            $uefaIdentifier = trim((string) ($uefaCompetitionIdentifier ?? ''));
+            if ($uefaIdentifier === '' && is_array($auto)) {
+                $uefaIdentifier = trim((string) ($auto['competition_identifier'] ?? ''));
+            }
+            if ($uefaIdentifier === '') {
+                $uefaIdentifier = $this->uefaCompetitionIdentifierForLeague($leagueId);
+            }
             $selectedUefaTeamId = trim((string) ($uefaTeamId ?? ''));
             if ($selectedUefaTeamId === '' && is_array($auto)) {
                 $selectedUefaTeamId = trim((string) ($auto['uefa_team_id'] ?? ''));
@@ -124,7 +132,13 @@ class AdminSquadService
         $fifaTeams = [];
         $selectedFifaTeamId = '';
         if ($resolvedTab === 'auto-fifa' && $leagueId > 0) {
-            $fifaIdentifier = $this->fifaCompetitionIdentifierForLeague($leagueId);
+            $fifaIdentifier = trim((string) ($fifaCompetitionIdentifier ?? ''));
+            if ($fifaIdentifier === '' && is_array($auto)) {
+                $fifaIdentifier = trim((string) ($auto['competition_identifier'] ?? ''));
+            }
+            if ($fifaIdentifier === '') {
+                $fifaIdentifier = $this->fifaCompetitionIdentifierForLeague($leagueId);
+            }
             $selectedFifaTeamId = trim((string) ($fifaTeamId ?? ''));
             if ($selectedFifaTeamId === '' && is_array($auto)) {
                 $selectedFifaTeamId = trim((string) ($auto['fifa_team_id'] ?? ''));
@@ -586,7 +600,7 @@ class AdminSquadService
      *     auto?: array<string, mixed>
      * }
      */
-    public function analyzeSquadsFromUefa(int $leagueId, ?string $uefaTeamId): array
+    public function analyzeSquadsFromUefa(int $leagueId, ?string $uefaTeamId, ?string $identifierOverride = null): array
     {
         if ($leagueId <= 0) {
             return ['ok' => false, 'errors' => ['Bitte zuerst unter Ligen eine Liga auswählen.'], 'team_id' => 0, 'league_id' => 0];
@@ -602,11 +616,14 @@ class AdminSquadService
             ];
         }
 
-        $identifier = $this->uefaCompetitionIdentifierForLeague($leagueId);
+        $identifier = trim((string) $identifierOverride);
+        if ($identifier === '') {
+            $identifier = $this->uefaCompetitionIdentifierForLeague($leagueId);
+        }
         if ($identifier === '') {
             return [
                 'ok' => false,
-                'errors' => ['Für diese Liga ist kein UEFA-Competition-Identifier hinterlegt (Admin → Ligen).'],
+                'errors' => ['Bitte einen UEFA-Competition-Identifier angeben (oder unter Admin → Ligen hinterlegen).'],
                 'team_id' => 0,
                 'league_id' => $leagueId,
             ];
@@ -710,7 +727,7 @@ class AdminSquadService
             ];
         }
 
-        return $this->analyzeRawSquadPlayers(
+        $result = $this->analyzeRawSquadPlayers(
             $teamId,
             $leagueId,
             $fifaCode,
@@ -720,6 +737,11 @@ class AdminSquadService
             $uefaTeamId,
             '',
         );
+        if (($result['ok'] ?? false) && isset($result['auto']) && is_array($result['auto'])) {
+            $result['auto']['competition_identifier'] = $identifier;
+        }
+
+        return $result;
     }
 
     /**
@@ -732,7 +754,7 @@ class AdminSquadService
      *     auto?: array<string, mixed>
      * }
      */
-    public function analyzeSquadsFromFifa(int $leagueId, ?string $fifaTeamId): array
+    public function analyzeSquadsFromFifa(int $leagueId, ?string $fifaTeamId, ?string $identifierOverride = null): array
     {
         if ($leagueId <= 0) {
             return ['ok' => false, 'errors' => ['Bitte zuerst unter Ligen eine Liga auswählen.'], 'team_id' => 0, 'league_id' => 0];
@@ -748,11 +770,14 @@ class AdminSquadService
             ];
         }
 
-        $identifier = $this->fifaCompetitionIdentifierForLeague($leagueId);
+        $identifier = trim((string) $identifierOverride);
+        if ($identifier === '') {
+            $identifier = $this->fifaCompetitionIdentifierForLeague($leagueId);
+        }
         if ($identifier === '') {
             return [
                 'ok' => false,
-                'errors' => ['Für diese Liga ist kein FIFA-Competition-Identifier hinterlegt (Admin → Ligen).'],
+                'errors' => ['Bitte einen FIFA-Competition-Identifier angeben (oder unter Admin → Ligen hinterlegen).'],
                 'team_id' => 0,
                 'league_id' => $leagueId,
             ];
@@ -854,7 +879,7 @@ class AdminSquadService
             ];
         }
 
-        return $this->analyzeRawSquadPlayers(
+        $result = $this->analyzeRawSquadPlayers(
             $teamId,
             $leagueId,
             $fifaCode,
@@ -864,6 +889,11 @@ class AdminSquadService
             '',
             $fifaTeamId,
         );
+        if (($result['ok'] ?? false) && isset($result['auto']) && is_array($result['auto'])) {
+            $result['auto']['competition_identifier'] = $identifier;
+        }
+
+        return $result;
     }
 
     /**

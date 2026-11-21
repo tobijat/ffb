@@ -170,11 +170,13 @@ class AdminTeamController extends Controller
     public function analyzeAutoUefa(Request $request): RedirectResponse
     {
         $leagueId = (int) $request->input('league_id', 0);
-        $result = $this->teams->analyzeUefaTeams($leagueId);
+        $identifier = trim((string) $request->input('uefa_competition_identifier', ''));
+        $result = $this->teams->analyzeUefaTeams($leagueId, $identifier !== '' ? $identifier : null);
 
         if (! ($result['ok'] ?? false)) {
             return redirect()
                 ->route('admin.teams', ['tab' => 'auto-uefa'])
+                ->withInput()
                 ->with('admin_errors', $result['errors'] ?? ['Analyse fehlgeschlagen.']);
         }
 
@@ -216,11 +218,13 @@ class AdminTeamController extends Controller
     public function analyzeAutoFifa(Request $request): RedirectResponse
     {
         $leagueId = (int) $request->input('league_id', 0);
-        $result = $this->teams->analyzeFifaTeams($leagueId);
+        $identifier = trim((string) $request->input('fifa_competition_identifier', ''));
+        $result = $this->teams->analyzeFifaTeams($leagueId, $identifier !== '' ? $identifier : null);
 
         if (! ($result['ok'] ?? false)) {
             return redirect()
                 ->route('admin.teams', ['tab' => 'auto-fifa'])
+                ->withInput()
                 ->with('admin_errors', $result['errors'] ?? ['Analyse fehlgeschlagen.']);
         }
 

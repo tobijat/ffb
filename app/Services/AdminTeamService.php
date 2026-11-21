@@ -662,7 +662,7 @@ class AdminTeamService
      *     auto_uefa?: array<string, mixed>
      * }
      */
-    public function analyzeUefaTeams(int $leagueId): array
+    public function analyzeUefaTeams(int $leagueId, ?string $identifierOverride = null): array
     {
         if ($leagueId <= 0) {
             return ['ok' => false, 'errors' => ['Bitte zuerst unter Ligen eine Liga auswählen.']];
@@ -673,11 +673,14 @@ class AdminTeamService
             return ['ok' => false, 'errors' => ['Liga nicht gefunden.']];
         }
 
-        $identifier = trim((string) ($league->league_uefa_competition_identifier ?? ''));
+        $identifier = trim((string) $identifierOverride);
+        if ($identifier === '') {
+            $identifier = trim((string) ($league->league_uefa_competition_identifier ?? ''));
+        }
         if ($identifier === '') {
             return [
                 'ok' => false,
-                'errors' => ['Für diese Liga ist kein UEFA-Competition-Identifier hinterlegt (Admin → Ligen).'],
+                'errors' => ['Bitte einen UEFA-Competition-Identifier angeben (oder unter Admin → Ligen hinterlegen).'],
             ];
         }
 
@@ -953,7 +956,7 @@ class AdminTeamService
      *     auto_fifa?: array<string, mixed>
      * }
      */
-    public function analyzeFifaTeams(int $leagueId): array
+    public function analyzeFifaTeams(int $leagueId, ?string $identifierOverride = null): array
     {
         if ($leagueId <= 0) {
             return ['ok' => false, 'errors' => ['Bitte zuerst unter Ligen eine Liga auswählen.']];
@@ -964,11 +967,14 @@ class AdminTeamService
             return ['ok' => false, 'errors' => ['Liga nicht gefunden.']];
         }
 
-        $identifier = trim((string) ($league->league_fifa_competition_identifier ?? ''));
+        $identifier = trim((string) $identifierOverride);
+        if ($identifier === '') {
+            $identifier = trim((string) ($league->league_fifa_competition_identifier ?? ''));
+        }
         if ($identifier === '') {
             return [
                 'ok' => false,
-                'errors' => ['Für diese Liga ist kein FIFA-Competition-Identifier hinterlegt (Admin → Ligen).'],
+                'errors' => ['Bitte einen FIFA-Competition-Identifier angeben (oder unter Admin → Ligen hinterlegen).'],
             ];
         }
 

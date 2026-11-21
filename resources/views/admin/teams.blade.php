@@ -246,24 +246,24 @@
                 $selectedLeagueTitle = (string) (($data['selected_league']['league_title'] ?? '') ?: '');
             @endphp
 
+            @php
+                $uefaIdentifierInput = old(
+                    'uefa_competition_identifier',
+                    $autoUefaSource !== '' ? $autoUefaSource : $uefaIdentifier
+                );
+            @endphp
             <p class="hint">
-                Nutzt den UEFA-Competition-Identifier der ausgewählten Liga
+                Nutzt den UEFA-Competition-Identifier
                 @if ($selectedLeagueTitle !== '')
-                    (<strong>{{ $selectedLeagueTitle }}</strong>)
-                @endif.
+                    der Liga <strong>{{ $selectedLeagueTitle }}</strong>
+                @endif
+                (vorausgefüllt, hier anpassbar).
                 Format: <code>competitionId=…&amp;seasonYear=…&amp;competitionPhase=TOURNAMENT</code>
             </p>
 
             @if ($selectedLeagueId <= 0)
                 <p class="hint">Bitte zuerst unter <a href="{{ url('/admin') }}">Ligen</a> eine Liga auswählen.</p>
-            @elseif ($uefaIdentifier === '')
-                <p class="hint">
-                    Für diese Liga ist kein Identifier hinterlegt.
-                    Bitte unter <a href="{{ route('admin.leagues') }}">Ligen</a> setzen.
-                </p>
             @else
-                <p class="muted">Identifier: <code>{{ $uefaIdentifier }}</code></p>
-
                 <form
                     class="admin-form admin-auto-teams-upload"
                     method="post"
@@ -272,6 +272,17 @@
                 >
                     @csrf
                     <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
+                    <div class="admin-field">
+                        <label for="uefa_competition_identifier">UEFA-Competition-Identifier</label>
+                        <input
+                            id="uefa_competition_identifier"
+                            type="text"
+                            name="uefa_competition_identifier"
+                            value="{{ $uefaIdentifierInput }}"
+                            maxlength="255"
+                            required
+                        >
+                    </div>
                     <div class="admin-actions">
                         <button type="submit" class="admin-submit">Teams prüfen</button>
                     </div>
@@ -419,24 +430,24 @@
                 $selectedLeagueTitle = (string) (($data['selected_league']['league_title'] ?? '') ?: '');
             @endphp
 
+            @php
+                $fifaIdentifierInput = old(
+                    'fifa_competition_identifier',
+                    $autoFifaSource !== '' ? $autoFifaSource : $fifaIdentifier
+                );
+            @endphp
             <p class="hint">
-                Nutzt den FIFA-Competition-Identifier der ausgewählten Liga
+                Nutzt den FIFA-Competition-Identifier
                 @if ($selectedLeagueTitle !== '')
-                    (<strong>{{ $selectedLeagueTitle }}</strong>)
-                @endif.
+                    der Liga <strong>{{ $selectedLeagueTitle }}</strong>
+                @endif
+                (vorausgefüllt, hier anpassbar).
                 Format: <code>idCompetition=…&amp;idSeason=…</code>
             </p>
 
             @if ($selectedLeagueId <= 0)
                 <p class="hint">Bitte zuerst unter <a href="{{ url('/admin') }}">Ligen</a> eine Liga auswählen.</p>
-            @elseif ($fifaIdentifier === '')
-                <p class="hint">
-                    Für diese Liga ist kein Identifier hinterlegt.
-                    Bitte unter <a href="{{ route('admin.leagues') }}">Ligen</a> setzen.
-                </p>
             @else
-                <p class="muted">Identifier: <code>{{ $fifaIdentifier }}</code></p>
-
                 <form
                     class="admin-form admin-auto-teams-upload"
                     method="post"
@@ -445,6 +456,17 @@
                 >
                     @csrf
                     <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
+                    <div class="admin-field">
+                        <label for="fifa_competition_identifier">FIFA-Competition-Identifier</label>
+                        <input
+                            id="fifa_competition_identifier"
+                            type="text"
+                            name="fifa_competition_identifier"
+                            value="{{ $fifaIdentifierInput }}"
+                            maxlength="255"
+                            required
+                        >
+                    </div>
                     <div class="admin-actions">
                         <button type="submit" class="admin-submit">Teams prüfen</button>
                     </div>

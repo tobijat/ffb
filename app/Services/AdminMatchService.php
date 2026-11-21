@@ -635,7 +635,7 @@ class AdminMatchService
      *     league_id?: int
      * }
      */
-    public function analyzeUefaMatches(int $leagueId): array
+    public function analyzeUefaMatches(int $leagueId, ?string $identifierOverride = null): array
     {
         if ($leagueId <= 0) {
             return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga wählen.'], 'league_id' => 0];
@@ -646,11 +646,14 @@ class AdminMatchService
             return ['ok' => false, 'errors' => ['Liga nicht gefunden.'], 'league_id' => $leagueId];
         }
 
-        $identifier = trim((string) ($league->league_uefa_competition_identifier ?? ''));
+        $identifier = trim((string) $identifierOverride);
+        if ($identifier === '') {
+            $identifier = trim((string) ($league->league_uefa_competition_identifier ?? ''));
+        }
         if ($identifier === '') {
             return [
                 'ok' => false,
-                'errors' => ['Für diese Liga ist kein UEFA-Competition-Identifier hinterlegt (Admin → Ligen).'],
+                'errors' => ['Bitte einen UEFA-Competition-Identifier angeben (oder unter Admin → Ligen hinterlegen).'],
                 'league_id' => $leagueId,
             ];
         }
@@ -978,7 +981,7 @@ class AdminMatchService
      *     league_id?: int
      * }
      */
-    public function analyzeFifaMatches(int $leagueId): array
+    public function analyzeFifaMatches(int $leagueId, ?string $identifierOverride = null): array
     {
         if ($leagueId <= 0) {
             return ['ok' => false, 'errors' => ['Bitte zuerst eine Liga wählen.'], 'league_id' => 0];
@@ -989,11 +992,14 @@ class AdminMatchService
             return ['ok' => false, 'errors' => ['Liga nicht gefunden.'], 'league_id' => $leagueId];
         }
 
-        $identifier = trim((string) ($league->league_fifa_competition_identifier ?? ''));
+        $identifier = trim((string) $identifierOverride);
+        if ($identifier === '') {
+            $identifier = trim((string) ($league->league_fifa_competition_identifier ?? ''));
+        }
         if ($identifier === '') {
             return [
                 'ok' => false,
-                'errors' => ['Für diese Liga ist kein FIFA-Competition-Identifier hinterlegt (Admin → Ligen).'],
+                'errors' => ['Bitte einen FIFA-Competition-Identifier angeben (oder unter Admin → Ligen hinterlegen).'],
                 'league_id' => $leagueId,
             ];
         }

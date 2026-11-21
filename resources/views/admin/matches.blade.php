@@ -322,19 +322,19 @@
                 </div>
             @endif
         @elseif ($tab === 'auto-uefa')
+            @php
+                $uefaIdentifierInput = old(
+                    'uefa_competition_identifier',
+                    $autoUefaSource !== '' ? $autoUefaSource : $uefaIdentifier
+                );
+            @endphp
             <p class="muted">Liga: {{ $selectedLeagueTitle }}</p>
             <p class="hint">
-                Nutzt den UEFA-Competition-Identifier der ausgewählten Liga
-                (<code>{{ $uefaIdentifier !== '' ? $uefaIdentifier : '—' }}</code>).
+                Nutzt den UEFA-Competition-Identifier (vorausgefüllt aus der Liga, hier anpassbar).
                 Vorhandene Spiele werden über Heim-/Gast-Team (<code>team_uefa_id</code>) und Datum erkannt.
             </p>
 
-            @if ($uefaIdentifier === '')
-                <p class="hint">
-                    Für diese Liga ist kein UEFA-Competition-Identifier hinterlegt.
-                    Bitte zuerst unter <a href="{{ url('/admin/leagues') }}">Ligen</a> setzen.
-                </p>
-            @elseif ($matchrounds === [])
+            @if ($matchrounds === [])
                 <p class="hint">Noch keine Spielrunden. Lege zuerst unter Spielrunden welche an.</p>
             @else
                 <form
@@ -345,6 +345,18 @@
                 >
                     @csrf
                     <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
+                    <div class="admin-field">
+                        <label for="uefa_competition_identifier">UEFA-Competition-Identifier</label>
+                        <input
+                            id="uefa_competition_identifier"
+                            type="text"
+                            name="uefa_competition_identifier"
+                            value="{{ $uefaIdentifierInput }}"
+                            maxlength="255"
+                            required
+                        >
+                        <p class="hint">z.&nbsp;B. <code>competitionId=2014&amp;seasonYear=2027&amp;competitionPhase=TOURNAMENT,QUALIFYING</code></p>
+                    </div>
                     <div class="admin-actions">
                         <button type="submit" class="admin-submit">UEFA-Spiele prüfen</button>
                     </div>
@@ -473,21 +485,21 @@
                 <p class="muted">Keine UEFA-Spiele gefunden.</p>
             @endif
         @elseif ($tab === 'auto-fifa')
+            @php
+                $fifaIdentifierInput = old(
+                    'fifa_competition_identifier',
+                    $autoFifaSource !== '' ? $autoFifaSource : $fifaIdentifier
+                );
+            @endphp
             <p class="muted">Liga: {{ $selectedLeagueTitle }}</p>
             <p class="hint">
-                Nutzt den FIFA-Competition-Identifier der ausgewählten Liga
-                (<code>{{ $fifaIdentifier !== '' ? $fifaIdentifier : '—' }}</code>).
+                Nutzt den FIFA-Competition-Identifier (vorausgefüllt aus der Liga, hier anpassbar).
                 Vorhandene Spiele werden über Heim-/Gast-Team (<code>team_fifa_id</code> /
                 <code>team_team_code</code>) und Datum (Europe/Berlin-Kalendertag des FIFA-Anstoßes) erkannt.
                 Knockout-Runden werden aus dem FIFA-Stage-Namen vorgeschlagen.
             </p>
 
-            @if ($fifaIdentifier === '')
-                <p class="hint">
-                    Für diese Liga ist kein FIFA-Competition-Identifier hinterlegt.
-                    Bitte zuerst unter <a href="{{ url('/admin/leagues') }}">Ligen</a> setzen.
-                </p>
-            @elseif ($matchrounds === [])
+            @if ($matchrounds === [])
                 <p class="hint">Noch keine Spielrunden. Lege zuerst unter Spielrunden welche an.</p>
             @else
                 <form
@@ -498,6 +510,18 @@
                 >
                     @csrf
                     <input type="hidden" name="league_id" value="{{ $selectedLeagueId }}">
+                    <div class="admin-field">
+                        <label for="fifa_competition_identifier">FIFA-Competition-Identifier</label>
+                        <input
+                            id="fifa_competition_identifier"
+                            type="text"
+                            name="fifa_competition_identifier"
+                            value="{{ $fifaIdentifierInput }}"
+                            maxlength="255"
+                            required
+                        >
+                        <p class="hint">z.&nbsp;B. <code>idCompetition=17&amp;idSeason=285023</code></p>
+                    </div>
                     <div class="admin-actions">
                         <button type="submit" class="admin-submit">FIFA-Spiele prüfen</button>
                     </div>

@@ -49,6 +49,12 @@ class AdminSquadController extends Controller
         $fifaTeamId = $tab === 'auto-fifa'
             ? (string) $request->query('fifa_team_id', '')
             : null;
+        $uefaCompetitionIdentifier = $tab === 'auto-uefa'
+            ? (string) $request->query('uefa_competition_identifier', '')
+            : null;
+        $fifaCompetitionIdentifier = $tab === 'auto-fifa'
+            ? (string) $request->query('fifa_competition_identifier', '')
+            : null;
 
         return $this->render(
             $userId,
@@ -61,6 +67,8 @@ class AdminSquadController extends Controller
             null,
             $uefaTeamId,
             $fifaTeamId,
+            $uefaCompetitionIdentifier,
+            $fifaCompetitionIdentifier,
         );
     }
 
@@ -165,19 +173,27 @@ class AdminSquadController extends Controller
     {
         $leagueId = (int) $request->input('squad_league_id', 0);
         $uefaTeamId = (string) $request->input('uefa_team_id', '');
-        $result = $this->squad->analyzeSquadsFromUefa($leagueId, $uefaTeamId);
+        $identifier = trim((string) $request->input('uefa_competition_identifier', ''));
+        $result = $this->squad->analyzeSquadsFromUefa(
+            $leagueId,
+            $uefaTeamId,
+            $identifier !== '' ? $identifier : null,
+        );
 
         $resultTeamId = (int) ($result['team_id'] ?? 0);
         $resultLeagueId = (int) ($result['league_id'] ?? $leagueId);
+        $usedIdentifier = trim((string) ($result['auto']['competition_identifier'] ?? $identifier));
         $redirectQuery = $this->autoUefaRedirectParams(
             $resultTeamId,
             $resultLeagueId,
             (string) ($result['auto']['uefa_team_id'] ?? $uefaTeamId),
+            $usedIdentifier,
         );
 
         if (! ($result['ok'] ?? false)) {
             return redirect()
                 ->route('admin.squad', $redirectQuery)
+                ->withInput()
                 ->with('admin_errors', $result['errors'] ?? ['Analyse fehlgeschlagen.']);
         }
 
@@ -197,19 +213,27 @@ class AdminSquadController extends Controller
     {
         $leagueId = (int) $request->input('squad_league_id', 0);
         $fifaTeamId = (string) $request->input('fifa_team_id', '');
-        $result = $this->squad->analyzeSquadsFromFifa($leagueId, $fifaTeamId);
+        $identifier = trim((string) $request->input('fifa_competition_identifier', ''));
+        $result = $this->squad->analyzeSquadsFromFifa(
+            $leagueId,
+            $fifaTeamId,
+            $identifier !== '' ? $identifier : null,
+        );
 
         $resultTeamId = (int) ($result['team_id'] ?? 0);
         $resultLeagueId = (int) ($result['league_id'] ?? $leagueId);
+        $usedIdentifier = trim((string) ($result['auto']['competition_identifier'] ?? $identifier));
         $redirectQuery = $this->autoFifaRedirectParams(
             $resultTeamId,
             $resultLeagueId,
             (string) ($result['auto']['fifa_team_id'] ?? $fifaTeamId),
+            $usedIdentifier,
         );
 
         if (! ($result['ok'] ?? false)) {
             return redirect()
                 ->route('admin.squad', $redirectQuery)
+                ->withInput()
                 ->with('admin_errors', $result['errors'] ?? ['Analyse fehlgeschlagen.']);
         }
 
@@ -333,9 +357,13 @@ class AdminSquadController extends Controller
 
         $resultTeamId = (int) ($result['team_id'] ?? $teamId);
         $resultLeagueId = (int) ($result['league_id'] ?? $leagueId);
+        $uefaIdentifier = trim((string) ($request->input('uefa_competition_identifier')
+            ?: (session($sessionKey.'.competition_identifier') ?? '')));
+        $fifaIdentifier = trim((string) ($request->input('fifa_competition_identifier')
+            ?: (session($sessionKey.'.competition_identifier') ?? '')));
         $redirectQuery = match ($tab) {
-            'auto-uefa' => $this->autoUefaRedirectParams($resultTeamId, $resultLeagueId, $uefaTeamId),
-            'auto-fifa' => $this->autoFifaRedirectParams($resultTeamId, $resultLeagueId, $fifaTeamId),
+            'auto-uefa' => $this->autoUefaRedirectParams($resultTeamId, $resultLeagueId, $uefaTeamId, $uefaIdentifier),
+            'auto-fifa' => $this->autoFifaRedirectParams($resultTeamId, $resultLeagueId, $fifaTeamId, $fifaIdentifier),
             default => $this->autoRedirectParams($resultTeamId, $resultLeagueId),
         };
 
@@ -384,28 +412,38 @@ class AdminSquadController extends Controller
     }
 
     /**
-     * @return array{tab: string, team_id?: int, squad_league_id?: int, uefa_team_id?: string}
+     * @return array{tab: string, team_id?: int, squad_league_id?: int, uefa_team_id?: string, uefa_competition_identifier?: string}
      */
-    private function autoUefaRedirectParams(int $teamId, int $leagueId, string $uefaTeamId): array
-    {
+    private function autoUefaRedirectParams(
+        int $teamId,
+        int $leagueId,
+        string $uefaTeamId,
+        string $uefaCompetitionIdentifier = '',
+    ): array {
         return array_filter([
             'tab' => 'auto-uefa',
             'team_id' => $teamId > 0 ? $teamId : null,
             'squad_league_id' => $leagueId > 0 ? $leagueId : null,
             'uefa_team_id' => $uefaTeamId !== '' ? $uefaTeamId : null,
+            'uefa_competition_identifier' => $uefaCompetitionIdentifier !== '' ? $uefaCompetitionIdentifier : null,
         ]);
     }
 
     /**
-     * @return array{tab: string, team_id?: int, squad_league_id?: int, fifa_team_id?: string}
+     * @return array{tab: string, team_id?: int, squad_league_id?: int, fifa_team_id?: string, fifa_competition_identifier?: string}
      */
-    private function autoFifaRedirectParams(int $teamId, int $leagueId, string $fifaTeamId): array
-    {
+    private function autoFifaRedirectParams(
+        int $teamId,
+        int $leagueId,
+        string $fifaTeamId,
+        string $fifaCompetitionIdentifier = '',
+    ): array {
         return array_filter([
             'tab' => 'auto-fifa',
             'team_id' => $teamId > 0 ? $teamId : null,
             'squad_league_id' => $leagueId > 0 ? $leagueId : null,
             'fifa_team_id' => $fifaTeamId !== '' ? $fifaTeamId : null,
+            'fifa_competition_identifier' => $fifaCompetitionIdentifier !== '' ? $fifaCompetitionIdentifier : null,
         ]);
     }
 
@@ -437,6 +475,8 @@ class AdminSquadController extends Controller
         ?string $answer = null,
         ?string $uefaTeamId = null,
         ?string $fifaTeamId = null,
+        ?string $uefaCompetitionIdentifier = null,
+        ?string $fifaCompetitionIdentifier = null,
     ): View {
         return view('admin.squad', [
             'data' => $this->squad->pagePayload(
@@ -448,6 +488,8 @@ class AdminSquadController extends Controller
                 $images,
                 $uefaTeamId,
                 $fifaTeamId,
+                $uefaCompetitionIdentifier,
+                $fifaCompetitionIdentifier,
             ),
             'errors' => $errors,
             'answer' => $answer ?? session('admin_message'),
