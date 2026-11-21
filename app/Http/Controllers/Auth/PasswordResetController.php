@@ -22,6 +22,10 @@ class PasswordResetController extends Controller
 
     public function show(Request $request, string $token): View|RedirectResponse
     {
+        // Reset UI is the guest start page; drop any active session so brand/header
+        // don't mix logged-in league chrome with the guest reset form.
+        $this->logoutIfAuthenticated($request);
+
         $email = trim((string) $request->query('email', $request->input('email', '')));
         $user = $this->userForToken($email, $token);
         if (! $user) {
@@ -39,6 +43,7 @@ class PasswordResetController extends Controller
 
         $errors = $this->validatePasswords($password, $passwordConfirmation);
         if ($errors !== []) {
+            $this->logoutIfAuthenticated($request);
             $nickname = (string) (WebUser::query()->where('user_email', $email)->value('user_nickname') ?? '');
 
             return $this->formView($token, $email, $nickname, $errors);
@@ -135,5 +140,16 @@ class PasswordResetController extends Controller
             'account_message',
             '<strong>Es sind Fehler aufgetreten:</strong><br>Der Link ist ungültig oder abgelaufen.'
         );
+    }
+
+    private function logoutIfAuthenticated(Request $request): void
+    {
+        if (! Auth::check()) {
+            return;
+        }
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
     }
 }

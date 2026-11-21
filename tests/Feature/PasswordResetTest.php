@@ -149,6 +149,37 @@ class PasswordResetTest extends TestCase
             ->assertDontSee('id="login"', false);
     }
 
+    public function test_opening_reset_link_logs_out_existing_session(): void
+    {
+        $user = $this->seedUser();
+        $token = Password::broker()->createToken($user);
+
+        $this->mock(StartPageService::class, function ($mock) {
+            $mock->shouldReceive('payload')->andReturn([
+                'stats' => [
+                    'users_total' => 1,
+                    'users_today' => 0,
+                    'lineups' => 0,
+                    'matchrounds_played' => 0,
+                    'score_avg' => 0.0,
+                ],
+                'leagues' => [],
+                'results' => [],
+            ]);
+        });
+
+        $this->actingAs($user)
+            ->get(route('password.reset', [
+                'token' => $token,
+                'email' => 'resetter@example.com',
+            ]))
+            ->assertOk()
+            ->assertSee('Passwort zurücksetzen: ', false)
+            ->assertSee('resetter', false);
+
+        $this->assertGuest();
+    }
+
     public function test_reset_updates_password_logs_in_and_consumes_token(): void
     {
         $user = $this->seedUser();
