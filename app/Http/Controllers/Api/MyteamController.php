@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\FfbAdminAccess;
 use App\Services\MyteamService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,6 +12,7 @@ class MyteamController extends Controller
 {
     public function __construct(
         private readonly MyteamService $myteam,
+        private readonly FfbAdminAccess $admins,
     ) {
     }
 
@@ -38,10 +40,9 @@ class MyteamController extends Controller
             'userteam_user_id',
             $request->query('target_user_id', $viewerId)
         );
-        $viewer = $request->attributes->get('ffb_user');
-        $isAdmin = (bool) ($viewer?->user_admin ?? false);
+        $canBypass = $this->admins->canBypassLineupPrivacy($viewerId);
 
-        $result = $this->myteam->teamForRound($viewerId, $targetUserId, $matchroundId, $isAdmin);
+        $result = $this->myteam->teamForRound($viewerId, $targetUserId, $matchroundId, $canBypass);
 
         return $this->respond($result);
     }
@@ -54,10 +55,9 @@ class MyteamController extends Controller
             'userteam_user_id',
             $request->query('target_user_id', $viewerId)
         );
-        $viewer = $request->attributes->get('ffb_user');
-        $isAdmin = (bool) ($viewer?->user_admin ?? false);
+        $canBypass = $this->admins->canBypassLineupPrivacy($viewerId);
 
-        $result = $this->myteam->userStats($viewerId, $targetUserId, $matchroundId, $isAdmin);
+        $result = $this->myteam->userStats($viewerId, $targetUserId, $matchroundId, $canBypass);
 
         return $this->respond($result);
     }

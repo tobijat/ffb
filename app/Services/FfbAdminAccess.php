@@ -8,16 +8,29 @@ class FfbAdminAccess
 {
     public const SECTION = 'ffb';
 
-    public function isAdmin(int $userId): bool
+    /** Minimum admin_level required to view other users' lineups before the deadline. */
+    public const LINEUP_PRIVACY_BYPASS_LEVEL = 200;
+
+    public function isAdmin(int $userId, int $minLevel = 0): bool
     {
         if ($userId <= 0) {
             return false;
         }
 
-        return WebAdmin::query()
+        $query = WebAdmin::query()
             ->where('admin_user_id', $userId)
             ->where('admin_section', self::SECTION)
-            ->where('admin_status', 'active')
-            ->exists();
+            ->where('admin_status', 'active');
+
+        if ($minLevel > 0) {
+            $query->where('admin_level', '>=', $minLevel);
+        }
+
+        return $query->exists();
+    }
+
+    public function canBypassLineupPrivacy(int $userId): bool
+    {
+        return $this->isAdmin($userId, self::LINEUP_PRIVACY_BYPASS_LEVEL);
     }
 }

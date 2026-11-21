@@ -80,7 +80,6 @@ class SeedDbBuilder
         'web_user_details',
         'web_user_permissions',
         'web_admin',
-        'ffb_admin',
         'ffb_userteam',
         'ffb_userteam_slot',
         'ffb_userteam_substitute_slot',
@@ -254,8 +253,6 @@ class SeedDbBuilder
 
         $this->loadTable('ffb_userscore', fn ($q) => $q->whereIn('userscore_user_id', $userIds)
             ->whereIn('userscore_league_id', $leagueIds));
-        $this->loadTable('ffb_admin', fn ($q) => $q->whereIn('admin_user_id', $userIds)
-            ->whereIn('admin_league_id', $leagueIds));
 
         $this->loadTable('web_user', fn ($q) => $q->whereIn('user_id', $userIds));
         $this->loadTable('web_user_details', fn ($q) => $q->whereIn('user_id', $userIds));

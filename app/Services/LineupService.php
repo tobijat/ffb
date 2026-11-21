@@ -55,7 +55,7 @@ class LineupService
                     'user_id' => (int) $user->user_id,
                     'user_nickname' => (string) $user->user_nickname,
                     'photo_url' => UserAvatar::publicUrl($avatar),
-                    'is_admin' => (bool) ($user->user_admin ?? false),
+                    'is_admin' => app(FfbAdminAccess::class)->canBypassLineupPrivacy((int) $user->user_id),
                     'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
                 ],
                 'selected_league_id' => $leagueId,

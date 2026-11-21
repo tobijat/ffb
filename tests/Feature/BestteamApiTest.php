@@ -16,7 +16,6 @@ class BestteamApiTest extends TestCase
         $user->user_id = $userId;
         $user->user_status = 'active';
         $user->user_nickname = 'tester';
-        $user->user_admin = false;
 
         $this->mock(FfbUserResolver::class, function ($mock) use ($user, $userId) {
             $mock->shouldReceive('findActive')->with($userId)->andReturn($user);

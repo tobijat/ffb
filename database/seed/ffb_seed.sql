@@ -26684,7 +26684,6 @@ CREATE TABLE `web_user` (
   `user_lname` varchar(255) NOT NULL,
   `user_gender` varchar(255) DEFAULT '',
   `user_status` varchar(255) NOT NULL DEFAULT 'na',
-  `user_admin` tinyint(4) NOT NULL DEFAULT 0,
   `user_nationality` varchar(255) DEFAULT NULL,
   `user_date_birth` datetime DEFAULT NULL,
   `user_ip` varchar(255) NOT NULL,
@@ -26694,10 +26693,10 @@ CREATE TABLE `web_user` (
   PRIMARY KEY (`user_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=548 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `web_user` (`user_id`, `user_nickname`, `user_date_laction`, `user_date_llogin`, `user_lip`, `user_password`, `user_email`, `user_fname`, `user_lname`, `user_gender`, `user_status`, `user_admin`, `user_nationality`, `user_date_birth`, `user_ip`, `user_date_register`, `user_activation_code`, `user_mailservice`) VALUES
-(1, 'AdminUser', '2026-10-08 12:11:51', '2026-10-08 12:11:51', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'adminuser@example.test', 'AdminUser', 'Test', 'male', 'active', 1, 'AUT', NULL, '127.0.0.1', '2008-06-03 16:33:54', '', '403d370096c1e203686048ce53291418'),
-(546, 'Haaland', '2026-10-05 16:46:59', '2026-10-05 16:46:59', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'haaland@example.test', 'Haaland', 'Test', '', 'active', 0, '', NULL, '127.0.0.1', '2026-10-04 13:43:38', '', ''),
-(547, 'Ronaldo', '2026-10-04 13:52:17', '2026-10-04 13:52:17', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'ronaldo@example.test', 'Ronaldo', 'Test', '', 'active', 0, '', NULL, '127.0.0.1', '2026-10-04 13:46:47', '', '');
+INSERT INTO `web_user` (`user_id`, `user_nickname`, `user_date_laction`, `user_date_llogin`, `user_lip`, `user_password`, `user_email`, `user_fname`, `user_lname`, `user_gender`, `user_status`, `user_nationality`, `user_date_birth`, `user_ip`, `user_date_register`, `user_activation_code`, `user_mailservice`) VALUES
+(1, 'AdminUser', '2026-10-08 12:11:51', '2026-10-08 12:11:51', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'adminuser@example.test', 'AdminUser', 'Test', 'male', 'active', 'AUT', NULL, '127.0.0.1', '2008-06-03 16:33:54', '', '403d370096c1e203686048ce53291418'),
+(546, 'Haaland', '2026-10-05 16:46:59', '2026-10-05 16:46:59', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'haaland@example.test', 'Haaland', 'Test', '', 'active', '', NULL, '127.0.0.1', '2026-10-04 13:43:38', '', ''),
+(547, 'Ronaldo', '2026-10-04 13:52:17', '2026-10-04 13:52:17', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'ronaldo@example.test', 'Ronaldo', 'Test', '', 'active', '', NULL, '127.0.0.1', '2026-10-04 13:46:47', '', '');
 
 DROP TABLE IF EXISTS `web_user_details`;
 CREATE TABLE `web_user_details` (
@@ -26751,16 +26750,6 @@ CREATE TABLE `web_admin` (
 INSERT INTO `web_admin` (`admin_id`, `admin_user_id`, `admin_section`, `admin_level`, `admin_status`) VALUES
 (1, 1, 'ffb', 100, 'active'),
 (2, 1, 'pictory', 100, 'active');
-
-DROP TABLE IF EXISTS `ffb_admin`;
-CREATE TABLE `ffb_admin` (
-  `admin_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `admin_user_id` int(11) NOT NULL,
-  `admin_league_id` int(11) NOT NULL,
-  PRIMARY KEY (`admin_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=55 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ffb_admin: 0 rows
 
 DROP TABLE IF EXISTS `ffb_userteam`;
 CREATE TABLE `ffb_userteam` (

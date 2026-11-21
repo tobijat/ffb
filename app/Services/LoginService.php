@@ -61,6 +61,7 @@ class LoginService
         $isAdmin = WebAdmin::query()
             ->where('admin_user_id', $user->user_id)
             ->where('admin_section', self::AREA_PREFIX)
+            ->where('admin_status', 'active')
             ->exists();
 
         if ($this->passwords->needsRehash($storedHash)) {

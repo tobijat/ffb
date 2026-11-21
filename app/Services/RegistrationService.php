@@ -75,7 +75,6 @@ class RegistrationService
             $user->user_lname = trim((string) ($input['user_lname'] ?? ''));
             $user->user_gender = '';
             $user->user_status = 'na';
-            $user->user_admin = false;
             $user->user_nationality = (string) ($input['user_nationality'] ?? '');
             $user->user_date_birth = $this->birthDateFromInput($input);
             $user->user_ip = $ip;

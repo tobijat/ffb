@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\WebUser;
+use App\Services\FfbAdminAccess;
 use App\Services\FfbAuth;
 use App\Services\FfbUserResolver;
 use App\Services\MyteamService;
@@ -10,16 +11,22 @@ use Tests\TestCase;
 
 class MyteamApiTest extends TestCase
 {
-    private function actingAsFfbUser(int $userId = 544): void
+    private function actingAsFfbUser(int $userId = 544, bool $canBypassLineupPrivacy = false): void
     {
         $user = new WebUser;
         $user->user_id = $userId;
         $user->user_status = 'active';
         $user->user_nickname = 'tester';
-        $user->user_admin = false;
 
         $this->mock(FfbUserResolver::class, function ($mock) use ($user, $userId) {
             $mock->shouldReceive('findActive')->with($userId)->andReturn($user);
+        });
+
+        $this->mock(FfbAdminAccess::class, function ($mock) use ($userId, $canBypassLineupPrivacy) {
+            $mock->shouldReceive('canBypassLineupPrivacy')
+                ->with($userId)
+                ->andReturn($canBypassLineupPrivacy);
+            $mock->shouldReceive('isAdmin')->andReturn(false);
         });
     }
 
@@ -149,6 +156,28 @@ class MyteamApiTest extends TestCase
             ->getJson('/api/myteam/team?matchround_id=280&userteam_user_id=12')
             ->assertStatus(403)
             ->assertJsonPath('error', 'Du kannst fremde Mannschaften erst ansehen wenn die Deadline vorüber ist!');
+    }
+
+    public function test_team_passes_lineup_privacy_bypass_from_ffb_admin_access(): void
+    {
+        $this->actingAsFfbUser(544, canBypassLineupPrivacy: true);
+
+        $this->mock(MyteamService::class, function ($mock) {
+            $mock->shouldReceive('teamForRound')->once()->with(544, 12, 280, true)->andReturn([
+                'ok' => true,
+                'data' => [
+                    'user_id' => 12,
+                    'matchround_id' => 280,
+                    'userteam' => null,
+                    'players' => [],
+                    'substitutes' => [],
+                ],
+            ]);
+        });
+
+        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            ->getJson('/api/myteam/team?matchround_id=280&userteam_user_id=12')
+            ->assertOk();
     }
 
     public function test_myteam_page_redirects_guests(): void
