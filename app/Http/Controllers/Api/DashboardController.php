@@ -15,7 +15,7 @@ class DashboardController extends Controller
 
     public function show(Request $request): JsonResponse
     {
-        $userId = (int) $request->attributes->get('ffb_user_id');
+        $userId = (int) $request->user()->user_id;
         $page = max(1, (int) $request->query('news_page', 1));
         $archive = (bool) $request->boolean('archive');
 
@@ -27,7 +27,7 @@ class DashboardController extends Controller
 
     public function selectLeague(Request $request): JsonResponse
     {
-        $userId = (int) $request->attributes->get('ffb_user_id');
+        $userId = (int) $request->user()->user_id;
         $leagueId = (int) $request->input('league_id', 0);
         $result = $this->dashboard->selectLeague($userId, $leagueId);
 
@@ -50,7 +50,7 @@ class DashboardController extends Controller
 
     public function votePoll(Request $request): JsonResponse
     {
-        $userId = (int) $request->attributes->get('ffb_user_id');
+        $userId = (int) $request->user()->user_id;
         $pollId = (int) $request->input('poll_id', 0);
         $answerId = (int) $request->input('poll_answer_id', 0);
         $text = (string) $request->input('poll_answer', '');

@@ -18,7 +18,7 @@ class MyteamController extends Controller
 
     public function matchrounds(Request $request): JsonResponse
     {
-        $userId = (int) $request->attributes->get('ffb_user_id');
+        $userId = (int) $request->user()->user_id;
         $result = $this->myteam->matchrounds($userId);
 
         return $this->respond($result);
@@ -34,7 +34,7 @@ class MyteamController extends Controller
 
     public function team(Request $request): JsonResponse
     {
-        $viewerId = (int) $request->attributes->get('ffb_user_id');
+        $viewerId = (int) $request->user()->user_id;
         $matchroundId = (int) $request->query('matchround_id', 0);
         $targetUserId = (int) $request->query(
             'userteam_user_id',
@@ -49,7 +49,7 @@ class MyteamController extends Controller
 
     public function userStats(Request $request): JsonResponse
     {
-        $viewerId = (int) $request->attributes->get('ffb_user_id');
+        $viewerId = (int) $request->user()->user_id;
         $matchroundId = (int) $request->query('matchround_id', 0);
         $targetUserId = (int) $request->query(
             'userteam_user_id',

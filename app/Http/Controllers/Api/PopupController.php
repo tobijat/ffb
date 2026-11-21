@@ -23,7 +23,7 @@ class PopupController extends Controller
 
     public function user(Request $request, int $userId): JsonResponse
     {
-        $viewerId = (int) $request->attributes->get('ffb_user_id');
+        $viewerId = (int) $request->user()->user_id;
         $result = $this->profiles->forUser($viewerId, $userId);
 
         return $this->respond($result);
@@ -45,7 +45,7 @@ class PopupController extends Controller
 
     public function player(Request $request, int $playerteamId): JsonResponse
     {
-        $viewerId = (int) $request->attributes->get('ffb_user_id');
+        $viewerId = (int) $request->user()->user_id;
         $matchroundId = (int) $request->query('matchround_id', 0);
         $result = $this->players->forPlayerteam($viewerId, $playerteamId, $matchroundId);
 
@@ -54,7 +54,7 @@ class PopupController extends Controller
 
     public function playerRound(Request $request, int $playerteamId, int $matchroundId): JsonResponse
     {
-        $viewerId = (int) $request->attributes->get('ffb_user_id');
+        $viewerId = (int) $request->user()->user_id;
         $result = $this->players->forRound($viewerId, $playerteamId, $matchroundId);
 
         return $this->respond($result);

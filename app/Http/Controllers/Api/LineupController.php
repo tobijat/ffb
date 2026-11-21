@@ -15,7 +15,7 @@ class LineupController extends Controller
 
     public function options(Request $request): JsonResponse
     {
-        $userId = (int) $request->attributes->get('ffb_user_id');
+        $userId = (int) $request->user()->user_id;
         $matchroundId = (int) $request->query('matchround_id', 0);
 
         return $this->respond($this->lineups->options($userId, $matchroundId));
@@ -23,14 +23,14 @@ class LineupController extends Controller
 
     public function matchround(Request $request): JsonResponse
     {
-        $userId = (int) $request->attributes->get('ffb_user_id');
+        $userId = (int) $request->user()->user_id;
 
         return $this->respond($this->lineups->matchroundAndTeams($userId));
     }
 
     public function teamPlayers(Request $request, int $teamId): JsonResponse
     {
-        $userId = (int) $request->attributes->get('ffb_user_id');
+        $userId = (int) $request->user()->user_id;
         $matchroundId = (int) $request->query('matchround_id', 0);
 
         return $this->respond($this->lineups->teamPlayers($userId, $teamId, $matchroundId));
@@ -49,7 +49,7 @@ class LineupController extends Controller
             ], 422);
         }
 
-        $userId = (int) $request->attributes->get('ffb_user_id');
+        $userId = (int) $request->user()->user_id;
         $payload = $this->lineups->getForRound($userId, $matchroundId);
 
         return response()->json([
@@ -87,7 +87,7 @@ class LineupController extends Controller
             $rawSubstitutes = [];
         }
 
-        $userId = (int) $request->attributes->get('ffb_user_id');
+        $userId = (int) $request->user()->user_id;
         $result = $this->lineups->saveForRound($userId, $matchroundId, $rawIds, $rawSubstitutes);
 
         if (! $result['ok']) {

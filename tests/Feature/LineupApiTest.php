@@ -2,16 +2,28 @@
 
 namespace Tests\Feature;
 
-use App\Http\Controllers\Api\LineupController;
-use App\Http\Middleware\ResolveFfbUser;
 use App\Models\WebUser;
 use App\Services\FfbUserResolver;
 use App\Services\LineupService;
-use Illuminate\Http\Request;
 use Tests\TestCase;
 
 class LineupApiTest extends TestCase
 {
+    protected function actingAsActiveUser(int $userId = 544): static
+    {
+        $user = new WebUser;
+        $user->user_id = $userId;
+        $user->user_status = 'active';
+        $user->user_nickname = 'tester';
+        $user->exists = true;
+
+        $this->mock(FfbUserResolver::class, function ($mock) use ($user, $userId) {
+            $mock->shouldReceive('findActive')->with($userId)->andReturn($user);
+        });
+
+        return $this->actingAs($user);
+    }
+
     public function test_requires_authentication(): void
     {
         $response = $this->getJson('/api/lineup?matchround_id=1');
@@ -23,15 +35,6 @@ class LineupApiTest extends TestCase
 
     public function test_accepts_laravel_session(): void
     {
-        $user = new WebUser;
-        $user->user_id = 544;
-        $user->user_status = 'active';
-        $user->user_nickname = 'tester';
-
-        $this->mock(FfbUserResolver::class, function ($mock) use ($user) {
-            $mock->shouldReceive('findActive')->once()->with(544)->andReturn($user);
-        });
-
         $this->mock(LineupService::class, function ($mock) {
             $mock->shouldReceive('getForRound')
                 ->once()
@@ -45,7 +48,7 @@ class LineupApiTest extends TestCase
                 ]);
         });
 
-        $response = $this->actingAsFfbUser(544)
+        $response = $this->actingAsActiveUser(544)
             ->getJson('/api/lineup?matchround_id=280');
 
         $response->assertOk()
@@ -53,20 +56,22 @@ class LineupApiTest extends TestCase
             ->assertJsonPath('data.user_id', 544);
     }
 
+    public function test_rejects_user_id_query_without_session(): void
+    {
+        $this->getJson('/api/lineup?matchround_id=280&user_id=544')
+            ->assertStatus(401)
+            ->assertJsonPath('error', 'Du wurdest ausgeloggt. Bitte Seite neu laden um dich erneut einzuloggen.');
+    }
+
     public function test_requires_matchround_id(): void
     {
-        $this->withoutMiddleware(ResolveFfbUser::class);
-
-        $request = Request::create('/api/lineup', 'GET');
-        $request->attributes->set('ffb_user_id', 1);
-
-        $response = $this->app->make(LineupController::class)->show($request);
-
-        $this->assertSame(422, $response->getStatusCode());
-        $this->assertSame([
-            'status' => 422,
-            'error' => 'matchround_id is required',
-        ], $response->getData(true));
+        $this->actingAsActiveUser(1)
+            ->getJson('/api/lineup')
+            ->assertStatus(422)
+            ->assertExactJson([
+                'status' => 422,
+                'error' => 'matchround_id is required',
+            ]);
     }
 
     public function test_returns_lineup_payload(): void
@@ -86,34 +91,26 @@ class LineupApiTest extends TestCase
                 ->andReturn($payload);
         });
 
-        $request = Request::create('/api/lineup?matchround_id=280', 'GET');
-        $request->attributes->set('ffb_user_id', 544);
-
-        $response = $this->app->make(LineupController::class)->show($request);
-
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame([
-            'status' => 200,
-            'data' => $payload,
-        ], $response->getData(true));
+        $this->actingAsActiveUser(544)
+            ->getJson('/api/lineup?matchround_id=280')
+            ->assertOk()
+            ->assertExactJson([
+                'status' => 200,
+                'data' => $payload,
+            ]);
     }
 
     public function test_store_requires_matchround_id(): void
     {
-        $this->withoutMiddleware(ResolveFfbUser::class);
-
-        $request = Request::create('/api/lineup', 'POST', [
-            'playerteam_ids' => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-        ]);
-        $request->attributes->set('ffb_user_id', 544);
-
-        $response = $this->app->make(LineupController::class)->store($request);
-
-        $this->assertSame(422, $response->getStatusCode());
-        $this->assertSame([
-            'status' => 422,
-            'error' => 'matchround_id is required',
-        ], $response->getData(true));
+        $this->actingAsActiveUser(544)
+            ->postJson('/api/lineup', [
+                'playerteam_ids' => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+            ])
+            ->assertStatus(422)
+            ->assertExactJson([
+                'status' => 422,
+                'error' => 'matchround_id is required',
+            ]);
     }
 
     public function test_store_saves_lineup(): void
@@ -140,20 +137,17 @@ class LineupApiTest extends TestCase
                 ]);
         });
 
-        $request = Request::create('/api/lineup', 'POST', [
-            'matchround_id' => 280,
-            'playerteam_ids' => $ids,
-        ]);
-        $request->attributes->set('ffb_user_id', 544);
-
-        $response = $this->app->make(LineupController::class)->store($request);
-
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame([
-            'status' => 200,
-            'message' => 'Deine Aufstellung wurde aktualisiert!',
-            'data' => $payload,
-        ], $response->getData(true));
+        $this->actingAsActiveUser(544)
+            ->postJson('/api/lineup', [
+                'matchround_id' => 280,
+                'playerteam_ids' => $ids,
+            ])
+            ->assertOk()
+            ->assertExactJson([
+                'status' => 200,
+                'message' => 'Deine Aufstellung wurde aktualisiert!',
+                'data' => $payload,
+            ]);
     }
 
     public function test_store_rejects_invalid_lineup(): void
@@ -168,19 +162,16 @@ class LineupApiTest extends TestCase
                 ]);
         });
 
-        $request = Request::create('/api/lineup', 'POST', [
-            'matchround_id' => 280,
-            'lineup' => '1,2,3',
-        ]);
-        $request->attributes->set('ffb_user_id', 544);
-
-        $response = $this->app->make(LineupController::class)->store($request);
-
-        $this->assertSame(422, $response->getStatusCode());
-        $this->assertSame([
-            'status' => 422,
-            'error' => 'Invalid lineup: exactly 11 players are required',
-        ], $response->getData(true));
+        $this->actingAsActiveUser(544)
+            ->postJson('/api/lineup', [
+                'matchround_id' => 280,
+                'lineup' => '1,2,3',
+            ])
+            ->assertStatus(422)
+            ->assertExactJson([
+                'status' => 422,
+                'error' => 'Invalid lineup: exactly 11 players are required',
+            ]);
     }
 
     public function test_options_and_matchround_require_auth(): void
@@ -192,15 +183,6 @@ class LineupApiTest extends TestCase
 
     public function test_options_returns_payload(): void
     {
-        $user = new WebUser;
-        $user->user_id = 544;
-        $user->user_status = 'active';
-        $user->user_nickname = 'tester';
-
-        $this->mock(FfbUserResolver::class, function ($mock) use ($user) {
-            $mock->shouldReceive('findActive')->with(544)->andReturn($user);
-        });
-
         $this->mock(LineupService::class, function ($mock) {
             $mock->shouldReceive('options')->once()->with(544, 0)->andReturn([
                 'ok' => true,
@@ -221,7 +203,7 @@ class LineupApiTest extends TestCase
             ]);
         });
 
-        $this->actingAsFfbUser(544)
+        $this->actingAsActiveUser(544)
             ->getJson('/api/lineup/options')
             ->assertOk()
             ->assertJsonPath('data.lineup_max_players', 11);

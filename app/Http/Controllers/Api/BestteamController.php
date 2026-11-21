@@ -16,7 +16,7 @@ class BestteamController extends Controller
 
     public function matchrounds(Request $request): JsonResponse
     {
-        $userId = (int) $request->attributes->get('ffb_user_id');
+        $userId = (int) $request->user()->user_id;
         $result = $this->bestteam->matchrounds($userId);
 
         return $this->respond($result);

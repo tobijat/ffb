@@ -7,12 +7,11 @@ use App\Http\Controllers\Api\MyteamController;
 use App\Http\Controllers\Api\PopupController;
 use App\Http\Controllers\Api\UserscoreController;
 use App\Http\Controllers\StartController;
-use App\Http\Middleware\ResolveFfbUser;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/start', [StartController::class, 'data']);
 
-Route::middleware([ResolveFfbUser::class])->group(function () {
+Route::middleware(['auth', 'ffb.active'])->group(function () {
     Route::get('/lineup', [LineupController::class, 'show']);
     Route::post('/lineup', [LineupController::class, 'store']);
     Route::get('/lineup/options', [LineupController::class, 'options']);

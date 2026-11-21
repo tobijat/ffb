@@ -16,7 +16,7 @@ class UserscoreController extends Controller
 
     public function matchrounds(Request $request): JsonResponse
     {
-        $userId = (int) $request->attributes->get('ffb_user_id');
+        $userId = (int) $request->user()->user_id;
         $result = $this->userscores->matchrounds($userId);
 
         if (! $result['ok']) {
@@ -34,7 +34,7 @@ class UserscoreController extends Controller
 
     public function overall(Request $request): JsonResponse
     {
-        $userId = (int) $request->attributes->get('ffb_user_id');
+        $userId = (int) $request->user()->user_id;
         $result = $this->userscores->overall(
             $userId,
             (string) $request->query('sort', ''),
@@ -56,7 +56,7 @@ class UserscoreController extends Controller
 
     public function round(Request $request, int $matchroundId): JsonResponse
     {
-        $userId = (int) $request->attributes->get('ffb_user_id');
+        $userId = (int) $request->user()->user_id;
         $result = $this->userscores->forRound(
             $userId,
             $matchroundId,
