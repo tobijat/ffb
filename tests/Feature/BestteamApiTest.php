@@ -4,22 +4,24 @@ namespace Tests\Feature;
 
 use App\Models\WebUser;
 use App\Services\BestteamService;
-use App\Services\FfbAuth;
 use App\Services\FfbUserResolver;
 use Tests\TestCase;
 
 class BestteamApiTest extends TestCase
 {
-    private function actingAsFfbUser(int $userId = 544): void
+    protected function actingAsFfbUser(int $userId = 544): static
     {
         $user = new WebUser;
         $user->user_id = $userId;
         $user->user_status = 'active';
         $user->user_nickname = 'tester';
+        $user->exists = true;
 
         $this->mock(FfbUserResolver::class, function ($mock) use ($user, $userId) {
             $mock->shouldReceive('findActive')->with($userId)->andReturn($user);
         });
+
+        return $this->actingAs($user);
     }
 
     public function test_bestteam_apis_require_auth(): void
@@ -52,7 +54,7 @@ class BestteamApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/bestteam/matchrounds')
             ->assertOk()
             ->assertJsonPath('data.matchrounds.0.matchround_title', 'Runde 1');
@@ -86,7 +88,7 @@ class BestteamApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/bestteam/team?matchround_id=280&type=top')
             ->assertOk()
             ->assertJsonPath('data.available', true)
@@ -111,7 +113,7 @@ class BestteamApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/bestteam/team?matchround_id=280&type=flop')
             ->assertOk()
             ->assertJsonPath('data.available', false)
@@ -135,7 +137,7 @@ class BestteamApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/bestteam/stats/round?matchround_id=280')
             ->assertOk()
             ->assertJsonPath('data.stats.num_users', 10);
@@ -160,7 +162,7 @@ class BestteamApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/bestteam/stats/team?matchround_id=280&type=top')
             ->assertOk()
             ->assertJsonPath('data.stats.system', '4-4-2')
@@ -193,7 +195,7 @@ class BestteamApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/bestteam')
             ->assertOk()
             ->assertSee('js/bestteam.js', false)

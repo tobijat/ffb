@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Services\AdminNewsService;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use Tests\TestCase;
 
 class AdminNewsTest extends TestCase
@@ -21,7 +20,7 @@ class AdminNewsTest extends TestCase
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/news')
             ->assertRedirect(route('start'));
     }
@@ -77,7 +76,7 @@ class AdminNewsTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/news')
             ->assertOk()
             ->assertSee('News', false)
@@ -100,7 +99,7 @@ class AdminNewsTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/news', [
                 'news_league_id' => 0,
                 'news_title' => 'Titel',
@@ -153,7 +152,7 @@ class AdminNewsTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/news', [
                 'news_league_id' => 0,
                 'news_title' => '',
@@ -176,7 +175,7 @@ class AdminNewsTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->delete('/admin/news/9')
             ->assertRedirect(route('admin.news'))
             ->assertSessionHas('admin_message', 'News erfolgreich gelöscht.');

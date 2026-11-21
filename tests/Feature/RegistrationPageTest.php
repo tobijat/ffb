@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Services\FfbAuth;
 use App\Services\RegistrationService;
 use App\Services\StartPageService;
 use Illuminate\Database\Schema\Blueprint;
@@ -48,7 +47,7 @@ class RegistrationPageTest extends TestCase
 
     public function test_registration_page_redirects_logged_in_users(): void
     {
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/registration')
             ->assertRedirect(route('profile', ['tab' => 'account']));
     }

@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Services\AdminMatchdataService;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use PHPUnit\Framework\Attributes\Test;
 use ReflectionMethod;
 use Tests\TestCase;
@@ -23,7 +22,7 @@ class AdminMatchdataTest extends TestCase
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/matchdata')
             ->assertRedirect(route('start'));
     }
@@ -67,7 +66,7 @@ class AdminMatchdataTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 7])
+        $this->actingAsFfbUser(7)
             ->get('/admin/matchdata')
             ->assertOk()
             ->assertSee('Spieldaten')
@@ -111,7 +110,7 @@ class AdminMatchdataTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 7])
+        $this->actingAsFfbUser(7)
             ->get('/admin/matchdata?tab=uefa')
             ->assertOk()
             ->assertSee('Spieldaten (UEFA)', false)
@@ -150,7 +149,7 @@ class AdminMatchdataTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 7])
+        $this->actingAsFfbUser(7)
             ->get('/admin/matchdata?tab=fifa')
             ->assertOk()
             ->assertSee('Spieldaten (FIFA)', false)
@@ -201,7 +200,7 @@ class AdminMatchdataTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 7])
+        $this->actingAsFfbUser(7)
             ->postJson('/admin/matchdata/matches/9/scrape-uefa')
             ->assertOk()
             ->assertJsonPath('ok', true)
@@ -252,7 +251,7 @@ class AdminMatchdataTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 7])
+        $this->actingAsFfbUser(7)
             ->postJson('/admin/matchdata/matches/9/scrape-fifa')
             ->assertOk()
             ->assertJsonPath('ok', true)
@@ -279,7 +278,7 @@ class AdminMatchdataTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 7])
+        $this->actingAsFfbUser(7)
             ->getJson('/admin/matchdata/rounds')
             ->assertOk()
             ->assertJsonPath('ok', true)
@@ -328,7 +327,7 @@ class AdminMatchdataTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 7])
+        $this->actingAsFfbUser(7)
             ->postJson('/admin/matchdata/matches/9/scrape', [
                 'url' => 'https://www.weltfussball.at/spielbericht/example/',
             ])
@@ -432,7 +431,7 @@ class AdminMatchdataTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 7])
+        $this->actingAsFfbUser(7)
             ->postJson('/admin/matchdata/matches/9/players/11', [
                 'minutes' => 90,
                 'goals' => '12',

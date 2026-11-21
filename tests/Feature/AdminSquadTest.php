@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Services\AdminPlayerService;
 use App\Services\AdminSquadService;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use Tests\TestCase;
 
 class AdminSquadTest extends TestCase
@@ -22,7 +21,7 @@ class AdminSquadTest extends TestCase
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/squad')
             ->assertRedirect(route('start'));
     }
@@ -34,7 +33,7 @@ class AdminSquadTest extends TestCase
         });
 
         $this->mock(AdminSquadService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544, 0, null, 'roster', null, null, null, null)->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->with(544, 0, null, 'roster', null, null, null, null, null, null)->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -83,7 +82,7 @@ class AdminSquadTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/squad')
             ->assertOk()
             ->assertSee('Kader', false)
@@ -102,7 +101,7 @@ class AdminSquadTest extends TestCase
         });
 
         $this->mock(AdminSquadService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544, 0, null, 'roster', null, null, null, null)->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->with(544, 0, null, 'roster', null, null, null, null, null, null)->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -143,7 +142,7 @@ class AdminSquadTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/squad?squad_league_id=1')
             ->assertOk()
             ->assertSee('Bestand', false)
@@ -163,7 +162,7 @@ class AdminSquadTest extends TestCase
         });
 
         $this->mock(AdminSquadService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544, 3, null, 'roster', null, null, null, null)->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->with(544, 3, null, 'roster', null, null, null, null, null, null)->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -221,7 +220,7 @@ class AdminSquadTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/squad?team_id=3')
             ->assertOk()
             ->assertSee('Arnautovic', false)
@@ -253,7 +252,7 @@ class AdminSquadTest extends TestCase
         });
 
         $this->mock(AdminSquadService::class, function ($mock) {
-            $mock->shouldReceive('pagePayload')->once()->with(544, 3, null, 'add', null, null, null, null)->andReturn([
+            $mock->shouldReceive('pagePayload')->once()->with(544, 3, null, 'add', null, null, null, null, null, null)->andReturn([
                 'user' => [
                     'user_id' => 544,
                     'user_nickname' => 'adminuser',
@@ -294,7 +293,7 @@ class AdminSquadTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/squad?team_id=3&tab=add')
             ->assertOk()
             ->assertSee('Auswahl übernehmen', false)
@@ -334,7 +333,7 @@ class AdminSquadTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/admin/players/search?exclude_team_id=3&exclude_league_id=1')
             ->assertOk()
             ->assertJsonPath('total', 0);
@@ -354,7 +353,7 @@ class AdminSquadTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/squad', [
                 'team_id' => 3,
                 'items' => [
@@ -388,7 +387,7 @@ class AdminSquadTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/squad/batch-update', [
                 'team_id' => 3,
                 'items' => [
@@ -418,7 +417,7 @@ class AdminSquadTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->delete('/admin/squad/44', ['team_id' => 3])
             ->assertRedirect(route('admin.squad', ['team_id' => 3]))
             ->assertSessionHas('admin_message', 'Spieler aus dem Kader entfernt.');
@@ -458,8 +457,7 @@ class AdminSquadTest extends TestCase
                 ]);
         });
 
-        $this->withSession([
-            FfbAuth::SESSION_USER_ID => 544,
+        $this->actingAsFfbUser(544)->withSession([
             'admin_squad_auto' => [
                 'analyzed' => true,
                 'source_name' => 'squads.json',

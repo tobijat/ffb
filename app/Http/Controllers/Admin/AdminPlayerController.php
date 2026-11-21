@@ -5,25 +5,24 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\AdminPlayerMergeService;
 use App\Services\AdminPlayerService;
-use App\Services\FfbAuth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use InvalidArgumentException;
 use Throwable;
+use Illuminate\Support\Facades\Auth;
 
 class AdminPlayerController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
         private readonly AdminPlayerService $players,
         private readonly AdminPlayerMergeService $playerMerge,
     ) {}
 
     public function show(Request $request): View
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $errors = session('admin_errors');
         $tab = trim((string) $request->query('tab', 'manual'));
 
@@ -214,7 +213,7 @@ class AdminPlayerController extends Controller
 
     public function store(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->players->create($request->all());
 
         if ($result['ok']) {
@@ -233,7 +232,7 @@ class AdminPlayerController extends Controller
 
     public function update(Request $request, int $player): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->players->update($player, $request->all());
 
         if ($result['ok']) {

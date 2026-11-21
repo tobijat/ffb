@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Http\Controllers\Api\LineupController;
 use App\Http\Middleware\ResolveFfbUser;
 use App\Models\WebUser;
-use App\Services\FfbAuth;
 use App\Services\FfbUserResolver;
 use App\Services\LineupService;
 use Illuminate\Http\Request;
@@ -46,7 +45,7 @@ class LineupApiTest extends TestCase
                 ]);
         });
 
-        $response = $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $response = $this->actingAsFfbUser(544)
             ->getJson('/api/lineup?matchround_id=280');
 
         $response->assertOk()
@@ -222,7 +221,7 @@ class LineupApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/lineup/options')
             ->assertOk()
             ->assertJsonPath('data.lineup_max_players', 11);
@@ -255,7 +254,7 @@ class LineupApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/lineup')
             ->assertOk()
             ->assertSee('js/lineup.js', false)

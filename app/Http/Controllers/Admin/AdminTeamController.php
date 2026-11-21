@@ -4,22 +4,21 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AdminTeamService;
-use App\Services\FfbAuth;
 use App\Support\RequestJsonArray;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class AdminTeamController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
         private readonly AdminTeamService $teams,
     ) {}
 
     public function show(Request $request): View
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $errors = session('admin_errors');
         $tab = match ($request->query('tab')) {
             'auto' => 'auto',
@@ -45,7 +44,7 @@ class AdminTeamController extends Controller
 
     public function edit(Request $request, int $team): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $form = $this->teams->formForEdit($team);
         if ($form === null) {
             return redirect()
@@ -58,7 +57,7 @@ class AdminTeamController extends Controller
 
     public function store(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->teams->create(
             $request->all(),
             $request->file('team_icon_file'),
@@ -81,7 +80,7 @@ class AdminTeamController extends Controller
 
     public function update(Request $request, int $team): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->teams->update(
             $team,
             $request->all(),

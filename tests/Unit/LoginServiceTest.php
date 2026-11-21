@@ -2,7 +2,6 @@
 
 namespace Tests\Unit;
 
-use App\Services\FfbAuth;
 use App\Services\FfbPassword;
 use App\Services\LegacyPhpSession;
 use App\Services\LoginService;
@@ -12,9 +11,7 @@ class LoginServiceTest extends TestCase
 {
     private function service(): LoginService
     {
-        $legacy = new LegacyPhpSession;
-
-        return new LoginService(new FfbPassword, new FfbAuth($legacy), $legacy);
+        return new LoginService(new FfbPassword, new LegacyPhpSession);
     }
 
     public function test_resolve_destination_defaults_to_home(): void

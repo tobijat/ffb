@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\WebUser;
-use App\Services\FfbAuth;
 use App\Services\FfbPassword;
 use App\Services\FfbUserResolver;
 use Illuminate\Database\Schema\Blueprint;

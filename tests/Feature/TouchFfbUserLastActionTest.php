@@ -3,9 +3,10 @@
 namespace Tests\Feature;
 
 use App\Http\Middleware\TouchFfbUserLastAction;
-use App\Services\FfbAuth;
+use App\Models\WebUser;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpFoundation\Response;
@@ -50,7 +51,7 @@ class TouchFfbUserLastActionTest extends TestCase
 
         $request = Request::create('/help', 'GET');
         $request->setLaravelSession($this->app['session']->driver());
-        $request->session()->put(FfbAuth::SESSION_USER_ID, 544);
+        Auth::login(WebUser::query()->findOrFail(544));
 
         $middleware = $this->app->make(TouchFfbUserLastAction::class);
         $middleware->handle($request, fn () => new Response('ok'));

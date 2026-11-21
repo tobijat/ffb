@@ -12,7 +12,6 @@ use App\Models\Userteam;
 use App\Services\AdminCenterService;
 use App\Services\AdminDbCleanupService;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Mockery;
@@ -52,7 +51,7 @@ class AdminDbCleanupTest extends TestCase
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/db-cleanup')
             ->assertRedirect(route('start'));
     }
@@ -103,7 +102,7 @@ class AdminDbCleanupTest extends TestCase
             $mock->shouldReceive('runTask')->never();
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/db-cleanup')
             ->assertOk()
             ->assertSee('DB Cleanup', false)
@@ -136,7 +135,7 @@ class AdminDbCleanupTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->postJson('/admin/db-cleanup/run', ['task' => 'duplicate-playerteams'])
             ->assertOk()
             ->assertJsonPath('ok', true)
@@ -166,7 +165,7 @@ class AdminDbCleanupTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->postJson('/admin/db-cleanup/run', [
                 'task' => 'players-without-playerteam',
                 'action' => 'delete',
@@ -187,7 +186,7 @@ class AdminDbCleanupTest extends TestCase
             $mock->shouldReceive('isAdmin')->andReturn(true);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->postJson('/admin/db-cleanup/run', ['task' => 'unknown-task'])
             ->assertStatus(422)
             ->assertJsonPath('ok', false);

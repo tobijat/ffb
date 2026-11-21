@@ -14,7 +14,6 @@ use App\Services\AdminCenterService;
 use App\Services\AdminPlayerpriceService;
 use App\Services\EloRatingClient;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use App\Services\LineupOptionsResolver;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -92,7 +91,7 @@ class AdminPlayerpriceRecentPerformanceTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/playerprice?tab=recent')
             ->assertOk()
             ->assertSee('Recent Performance', false)
@@ -197,7 +196,7 @@ class AdminPlayerpriceRecentPerformanceTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/playerprice/recent-performance/preview', [
                 'price_league_id' => 7,
                 'matchround_id' => 3,

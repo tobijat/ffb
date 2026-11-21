@@ -3,24 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Services\DashboardService;
-use App\Services\FfbAuth;
 use App\Services\StartPageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class StartController extends Controller
 {
     public function __construct(
         private readonly StartPageService $startPage,
         private readonly DashboardService $dashboard,
-        private readonly FfbAuth $auth,
     ) {
     }
 
     public function show(Request $request): View
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
 
         if ($userId > 0) {
             $page = max(1, (int) $request->query('news_page', 1));

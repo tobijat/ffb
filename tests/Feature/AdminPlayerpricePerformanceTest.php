@@ -14,7 +14,6 @@ use App\Services\AdminCenterService;
 use App\Services\AdminPlayerpriceService;
 use App\Services\EloRatingClient;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use App\Services\LineupOptionsResolver;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Schema\Blueprint;
@@ -126,7 +125,7 @@ class AdminPlayerpricePerformanceTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/playerprice?tab=performance')
             ->assertOk()
             ->assertSee('Spieler-Performance', false)
@@ -705,7 +704,7 @@ class AdminPlayerpricePerformanceTest extends TestCase
                 ]);
         });
 
-        $html = $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $html = $this->actingAsFfbUser(544)
             ->get('/admin/playerprice?tab=performance&matchround_id=3')
             ->assertOk()
             ->assertSee('Matchround-Performance berechnen', false)
@@ -804,7 +803,7 @@ class AdminPlayerpricePerformanceTest extends TestCase
                 ]);
         });
 
-        $html = $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $html = $this->actingAsFfbUser(544)
             ->post('/admin/playerprice/matchround-performance/preview', [
                 'price_league_id' => 7,
                 'tab' => 'performance',

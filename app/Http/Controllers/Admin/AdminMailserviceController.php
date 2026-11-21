@@ -4,21 +4,20 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AdminMailserviceService;
-use App\Services\FfbAuth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class AdminMailserviceController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
         private readonly AdminMailserviceService $mailservice,
     ) {}
 
     public function show(Request $request): View
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
 
         return view('admin.mailservice', [
             'data' => $this->mailservice->pagePayload($userId),
@@ -74,7 +73,7 @@ class AdminMailserviceController extends Controller
 
     public function send(Request $request): JsonResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
 
         $userIds = $request->input('user_ids', []);
         if (is_string($userIds)) {

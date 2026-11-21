@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\WebUser;
 use App\Services\DashboardService;
-use App\Services\FfbAuth;
 use App\Services\FfbUserResolver;
 use Tests\TestCase;
 
@@ -43,7 +42,7 @@ class DashboardApiTest extends TestCase
             $mock->shouldReceive('payload')->once()->with(544, 1, false)->andReturn($payload);
         });
 
-        $response = $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $response = $this->actingAsFfbUser(544)
             ->getJson('/api/dashboard');
 
         $response->assertOk()
@@ -95,7 +94,7 @@ class DashboardApiTest extends TestCase
             ]);
         });
 
-        $response = $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $response = $this->actingAsFfbUser(544)
             ->get('/');
 
         $response->assertOk()
@@ -132,7 +131,7 @@ class DashboardApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->postJson('/api/league/select', ['league_id' => 26])
             ->assertOk()
             ->assertJsonPath('status', 200)

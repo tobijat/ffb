@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Services\AdminAwardsService;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use Tests\TestCase;
 
 class AdminAwardsTest extends TestCase
@@ -21,7 +20,7 @@ class AdminAwardsTest extends TestCase
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/awards')
             ->assertRedirect(route('start'));
     }
@@ -61,7 +60,7 @@ class AdminAwardsTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/awards')
             ->assertOk()
             ->assertSee('Auszeichnungen', false)
@@ -103,7 +102,7 @@ class AdminAwardsTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/admin/awards/groups/1')
             ->assertOk()
             ->assertJsonPath('userAward.name', 'Tabellenführer')
@@ -125,7 +124,7 @@ class AdminAwardsTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->postJson('/admin/awards/defines/10/calculate')
             ->assertOk()
             ->assertJsonPath('userUpdates', 2)

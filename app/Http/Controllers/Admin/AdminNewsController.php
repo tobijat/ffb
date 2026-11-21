@@ -4,22 +4,21 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AdminNewsService;
-use App\Services\FfbAuth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class AdminNewsController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
         private readonly AdminNewsService $news,
     ) {
     }
 
     public function show(Request $request): View
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $errors = session('admin_errors');
 
         return $this->render(
@@ -32,7 +31,7 @@ class AdminNewsController extends Controller
 
     public function edit(Request $request, int $news): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $form = $this->news->formForEdit($news);
         if ($form === null) {
             return redirect()
@@ -45,7 +44,7 @@ class AdminNewsController extends Controller
 
     public function store(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->news->create($request->all());
 
         if ($result['ok']) {
@@ -64,7 +63,7 @@ class AdminNewsController extends Controller
 
     public function update(Request $request, int $news): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->news->update($news, $request->all());
 
         if ($result['ok']) {

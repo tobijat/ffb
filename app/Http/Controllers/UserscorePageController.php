@@ -2,22 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\FfbAuth;
 use App\Services\UserscoreService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class UserscorePageController extends Controller
 {
     public function __construct(
         private readonly UserscoreService $userscores,
-        private readonly FfbAuth $auth,
     ) {
     }
 
     public function show(Request $request): View|\Illuminate\Http\RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         if ($userId <= 0) {
             return redirect()->route('start', [
                 'destination' => 'userscore',

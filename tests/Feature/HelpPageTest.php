@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Services\FfbAuth;
 use App\Services\HelpService;
 use Tests\TestCase;
 
@@ -147,7 +146,7 @@ class HelpPageTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/help')
             ->assertOk()
             ->assertSee('Hallo', false)

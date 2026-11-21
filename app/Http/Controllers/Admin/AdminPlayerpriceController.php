@@ -4,15 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AdminPlayerpriceService;
-use App\Services\FfbAuth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class AdminPlayerpriceController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
         private readonly AdminPlayerpriceService $playerprice,
     ) {}
 
@@ -31,7 +30,7 @@ class AdminPlayerpriceController extends Controller
 
     public function previewMatchroundPerformance(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->playerprice->previewMatchroundPerformance($userId, $request->all());
         $leagueId = (int) ($result['price_league_id'] ?? $request->input('price_league_id', 0));
         $matchroundId = (int) ($result['matchround_id'] ?? $request->input('matchround_id', 0));
@@ -66,7 +65,7 @@ class AdminPlayerpriceController extends Controller
 
     public function saveMatchroundPerformance(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->playerprice->saveMatchroundPerformance($userId, $request->all());
         $leagueId = (int) ($result['price_league_id'] ?? $request->input('price_league_id', 0));
         $matchroundId = (int) ($result['matchround_id'] ?? $request->input('matchround_id', 0));
@@ -102,7 +101,7 @@ class AdminPlayerpriceController extends Controller
 
     public function previewRecentPerformance(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->playerprice->previewRecentPerformance($userId, $request->all());
         $leagueId = (int) ($result['price_league_id'] ?? $request->input('price_league_id', 0));
         $matchroundId = (int) ($result['matchround_id'] ?? $request->input('matchround_id', 0));
@@ -140,7 +139,7 @@ class AdminPlayerpriceController extends Controller
 
     public function saveRecentPerformance(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->playerprice->saveRecentPerformance($userId, $request->all());
         $leagueId = (int) ($result['price_league_id'] ?? $request->input('price_league_id', 0));
         $matchroundId = (int) ($result['matchround_id'] ?? $request->input('matchround_id', 0));
@@ -180,7 +179,7 @@ class AdminPlayerpriceController extends Controller
 
     public function previewEloTeamPrices(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->playerprice->previewEloTeamPrices($userId, $request->all());
         $leagueId = (int) ($result['price_league_id'] ?? $request->input('price_league_id', 0));
         $matchroundId = (int) ($result['matchround_id'] ?? $request->input('matchround_id', 0));
@@ -219,7 +218,7 @@ class AdminPlayerpriceController extends Controller
 
     public function saveEloTeamPrices(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->playerprice->saveEloTeamPrices($userId, $request->all());
         $leagueId = (int) ($result['price_league_id'] ?? $request->input('price_league_id', 0));
         $matchroundId = (int) ($result['matchround_id'] ?? $request->input('matchround_id', 0));
@@ -275,7 +274,7 @@ class AdminPlayerpriceController extends Controller
         ?array $performancePreview = null,
         ?array $recentPerformancePreview = null,
     ): View {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $errors = session('admin_errors');
         $sessionDetails = session('admin_details');
 

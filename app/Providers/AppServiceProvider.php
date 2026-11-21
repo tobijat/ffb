@@ -3,10 +3,10 @@
 namespace App\Providers;
 
 use App\Models\UserDetails;
-use App\Services\FfbAuth;
 use App\Services\LeagueBrand;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Auth;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             try {
-                $userId = app(FfbAuth::class)->userId(request());
+                $userId = (int) Auth::id();
                 if ($userId <= 0) {
                     $view->with('brandLeague', null);
 

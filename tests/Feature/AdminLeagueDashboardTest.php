@@ -23,7 +23,6 @@ use App\Services\AdminCenterService;
 use App\Services\AdminLeagueDashboardService;
 use App\Services\ExtremeTeamService;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use App\Services\LineupOptionsResolver;
 use App\Services\SubstitutionCalculationService;
 use Illuminate\Database\Schema\Blueprint;
@@ -116,7 +115,7 @@ class AdminLeagueDashboardTest extends TestCase
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/league-dashboard')
             ->assertRedirect(route('start'));
     }
@@ -144,7 +143,7 @@ class AdminLeagueDashboardTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 7])
+        $this->actingAsFfbUser(7)
             ->get('/admin/league-dashboard')
             ->assertOk()
             ->assertDontSee('id="admin-league-dashboard-title"', false)
@@ -475,7 +474,7 @@ class AdminLeagueDashboardTest extends TestCase
             ]);
         });
 
-        $response = $this->withSession([FfbAuth::SESSION_USER_ID => 7])
+        $response = $this->actingAsFfbUser(7)
             ->get('/admin/league-dashboard')
             ->assertOk()
             ->assertSee('Liga: Testliga', false)
@@ -2943,8 +2942,8 @@ class AdminLeagueDashboardTest extends TestCase
         Matchround::query()->create([
             'matchround_league_id' => (int) $league->league_id,
             'matchround_title' => 'Runde 2',
-            'matchround_startdate' => '2026-10-01 00:00:00',
-            'matchround_enddate' => '2026-10-31 23:59:59',
+            'matchround_startdate' => '2027-10-01 00:00:00',
+            'matchround_enddate' => '2027-10-31 23:59:59',
             'matchround_status' => 1,
         ]);
 

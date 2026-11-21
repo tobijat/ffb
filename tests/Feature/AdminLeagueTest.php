@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Services\AdminLeagueService;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use Tests\TestCase;
 
 class AdminLeagueTest extends TestCase
@@ -21,7 +20,7 @@ class AdminLeagueTest extends TestCase
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/leagues')
             ->assertRedirect(route('start'));
     }
@@ -73,7 +72,7 @@ class AdminLeagueTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/leagues')
             ->assertOk()
             ->assertSee('Ligen', false)
@@ -100,7 +99,7 @@ class AdminLeagueTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/leagues', [
                 'league_title' => 'Neue Liga',
                 'league_visible' => 1,
@@ -123,7 +122,7 @@ class AdminLeagueTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->delete('/admin/leagues/26')
             ->assertRedirect(route('admin.leagues'))
             ->assertSessionHas('admin_message', 'Liga erfolgreich gelöscht.');

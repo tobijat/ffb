@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Services\AdminTeamService;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use Tests\TestCase;
 
 class AdminTeamTest extends TestCase
@@ -21,7 +20,7 @@ class AdminTeamTest extends TestCase
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/teams')
             ->assertRedirect(route('start'));
     }
@@ -106,7 +105,7 @@ class AdminTeamTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/teams')
             ->assertOk()
             ->assertSee('Teams', false)
@@ -177,7 +176,7 @@ class AdminTeamTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/teams/7/edit')
             ->assertOk()
             ->assertSee('Flagge wird automatisch aus dem Ländercode abgeleitet.', false)
@@ -203,7 +202,7 @@ class AdminTeamTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/teams', [
                 'team_name' => 'Austria Wien',
                 'team_nationality' => 'aut',
@@ -230,7 +229,7 @@ class AdminTeamTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->delete('/admin/teams/3')
             ->assertRedirect(route('admin.teams'))
             ->assertSessionHas('admin_message', 'Team erfolgreich gelöscht.');
@@ -281,7 +280,7 @@ class AdminTeamTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/teams?tab=auto')
             ->assertOk()
             ->assertSee('Auto-Teams', false)
@@ -324,7 +323,7 @@ class AdminTeamTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/teams/auto/analyze', [
                 'matchrounds_json' => 'nations.json',
             ])
@@ -346,8 +345,7 @@ class AdminTeamTest extends TestCase
             ]);
         });
 
-        $this->withSession([
-            FfbAuth::SESSION_USER_ID => 544,
+        $this->actingAsFfbUser(544)->withSession([
             'admin_teams_auto' => [
                 'analyzed' => true,
                 'source_name' => 'nations.json',
@@ -456,7 +454,7 @@ class AdminTeamTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/teams?tab=auto-uefa')
             ->assertOk()
             ->assertSee('name="rows_json"', false)
@@ -490,8 +488,7 @@ class AdminTeamTest extends TestCase
                 ]);
         });
 
-        $this->withSession([
-            FfbAuth::SESSION_USER_ID => 544,
+        $this->actingAsFfbUser(544)->withSession([
             'admin_teams_auto_uefa' => [
                 'analyzed' => true,
                 'source_name' => 'uefa',
@@ -544,8 +541,7 @@ class AdminTeamTest extends TestCase
                 ]);
         });
 
-        $this->withSession([
-            FfbAuth::SESSION_USER_ID => 544,
+        $this->actingAsFfbUser(544)->withSession([
             'admin_teams_auto_fifa' => [
                 'analyzed' => true,
                 'source_name' => 'fifa',

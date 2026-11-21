@@ -4,23 +4,22 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AdminDbCleanupService;
-use App\Services\FfbAuth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use InvalidArgumentException;
 use Throwable;
+use Illuminate\Support\Facades\Auth;
 
 class AdminDbCleanupController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
         private readonly AdminDbCleanupService $cleanup,
     ) {}
 
     public function show(Request $request): View
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
 
         return view('admin.db-cleanup', [
             'data' => $this->cleanup->pagePayload($userId),

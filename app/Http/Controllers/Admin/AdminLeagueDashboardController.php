@@ -4,20 +4,19 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AdminLeagueDashboardService;
-use App\Services\FfbAuth;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class AdminLeagueDashboardController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
         private readonly AdminLeagueDashboardService $dashboard,
     ) {}
 
     public function show(Request $request): View
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
 
         return view('admin.league-dashboard', [
             'data' => $this->dashboard->pagePayload($userId),

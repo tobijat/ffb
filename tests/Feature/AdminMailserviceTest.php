@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Services\AdminMailserviceService;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use Tests\TestCase;
 
 class AdminMailserviceTest extends TestCase
@@ -21,7 +20,7 @@ class AdminMailserviceTest extends TestCase
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/mailservice')
             ->assertRedirect(route('start'));
     }
@@ -73,7 +72,7 @@ class AdminMailserviceTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/mailservice')
             ->assertOk()
             ->assertSee('Mailservice', false)
@@ -98,7 +97,7 @@ class AdminMailserviceTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/admin/mailservice/matchrounds?league_id=7')
             ->assertOk()
             ->assertJson([
@@ -130,7 +129,7 @@ class AdminMailserviceTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/admin/mailservice/users?league_id=7&userstatus=active&mailservice=info')
             ->assertOk()
             ->assertJsonPath('numResults', 1)
@@ -164,7 +163,7 @@ class AdminMailserviceTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/admin/mailservice/mails/99')
             ->assertOk()
             ->assertJsonPath('mail.mail_subject', 'Reload me')
@@ -195,7 +194,7 @@ class AdminMailserviceTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->postJson('/admin/mailservice/send', [
                 'user_ids' => [9, 10],
                 'subject' => 'Hello',
@@ -224,7 +223,7 @@ class AdminMailserviceTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->postJson('/admin/mailservice/send', [
                 'user_ids' => [],
                 'subject' => '',

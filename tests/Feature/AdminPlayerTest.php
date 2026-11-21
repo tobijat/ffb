@@ -9,7 +9,6 @@ use App\Models\Team;
 use App\Services\AdminCenterService;
 use App\Services\AdminPlayerService;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Mockery;
@@ -30,7 +29,7 @@ class AdminPlayerTest extends TestCase
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/players')
             ->assertRedirect(route('start'));
     }
@@ -84,7 +83,7 @@ class AdminPlayerTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/players')
             ->assertOk()
             ->assertSee('Spieler', false)
@@ -151,7 +150,7 @@ class AdminPlayerTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/players?tab=duplicates')
             ->assertOk()
             ->assertSee('Duplikate', false)
@@ -210,7 +209,7 @@ class AdminPlayerTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/admin/players/search?q=12&nationality=AUT&page=2')
             ->assertOk()
             ->assertJsonPath('items.0.player_lname', 'Arnautovic')
@@ -235,7 +234,7 @@ class AdminPlayerTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/players', [
                 'player_fname' => 'David',
                 'player_lname' => 'Alaba',
@@ -262,7 +261,7 @@ class AdminPlayerTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/players/batch-update', [
                 'items' => [
                     12 => [
@@ -294,7 +293,7 @@ class AdminPlayerTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->delete('/admin/players/12')
             ->assertRedirect(route('admin.players'))
             ->assertSessionHas('admin_message', 'Spieler erfolgreich gelöscht.');

@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Services\AdminMatchService;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use Tests\TestCase;
 
 class AdminMatchTest extends TestCase
@@ -21,7 +20,7 @@ class AdminMatchTest extends TestCase
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/matches')
             ->assertRedirect(route('start'));
     }
@@ -79,7 +78,7 @@ class AdminMatchTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/matches')
             ->assertOk()
             ->assertSee('Spiele', false)
@@ -150,7 +149,7 @@ class AdminMatchTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/matches')
             ->assertOk()
             ->assertSee('Testliga', false)
@@ -187,7 +186,7 @@ class AdminMatchTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/matches', [
                 'match_round' => 12,
                 'match_date' => '2026-09-06',
@@ -214,7 +213,7 @@ class AdminMatchTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->delete('/admin/matches/99', ['league_id' => 26])
             ->assertRedirect(route('admin.matches', ['league_id' => 26]))
             ->assertSessionHas('admin_message', 'Spiel erfolgreich gelöscht.');
@@ -272,7 +271,7 @@ class AdminMatchTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/matches?tab=auto')
             ->assertOk()
             ->assertSee('Auto-Matches', false)
@@ -315,7 +314,7 @@ class AdminMatchTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/matches/auto/analyze', [
                 'league_id' => 26,
                 'matchrounds_json' => 'plan.json',
@@ -405,8 +404,7 @@ class AdminMatchTest extends TestCase
             ],
         ];
 
-        $this->withSession([
-            FfbAuth::SESSION_USER_ID => 544,
+        $this->actingAsFfbUser(544)->withSession([
             'admin_matches_auto_uefa' => $draft,
         ])
             ->get('/admin/matches?tab=auto-uefa')
@@ -414,7 +412,7 @@ class AdminMatchTest extends TestCase
             ->assertSee('Deutschland', false)
             ->assertSee('Malta', false);
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/matches?tab=auto-uefa')
             ->assertOk()
             ->assertDontSee('Deutschland', false)
@@ -435,8 +433,7 @@ class AdminMatchTest extends TestCase
             ]);
         });
 
-        $this->withSession([
-            FfbAuth::SESSION_USER_ID => 544,
+        $this->actingAsFfbUser(544)->withSession([
         ])
             ->post('/admin/matches/auto', [
                 'league_id' => 26,
@@ -479,8 +476,7 @@ class AdminMatchTest extends TestCase
                 ]);
         });
 
-        $this->withSession([
-            FfbAuth::SESSION_USER_ID => 544,
+        $this->actingAsFfbUser(544)->withSession([
         ])
             ->post('/admin/matches/auto', [
                 'league_id' => 26,
@@ -521,8 +517,7 @@ class AdminMatchTest extends TestCase
                 ]);
         });
 
-        $this->withSession([
-            FfbAuth::SESSION_USER_ID => 544,
+        $this->actingAsFfbUser(544)->withSession([
         ])
             ->post('/admin/matches/auto-uefa', [
                 'league_id' => 26,
@@ -565,8 +560,7 @@ class AdminMatchTest extends TestCase
                 ]);
         });
 
-        $this->withSession([
-            FfbAuth::SESSION_USER_ID => 544,
+        $this->actingAsFfbUser(544)->withSession([
         ])
             ->post('/admin/matches/auto-fifa', [
                 'league_id' => 39,

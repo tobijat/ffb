@@ -4,22 +4,21 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AdminSquadService;
-use App\Services\FfbAuth;
 use App\Support\RequestJsonArray;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class AdminSquadController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
         private readonly AdminSquadService $squad,
     ) {}
 
     public function show(Request $request): View
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $teamId = (int) $request->query('team_id', 0);
         $errors = session('admin_errors');
         $tab = match ($request->query('tab')) {
@@ -251,7 +250,7 @@ class AdminSquadController extends Controller
 
     public function checkImages(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $teamId = (int) $request->input('team_id', 0);
         $leagueId = (int) $request->input('squad_league_id', 0);
         /** @var array<int|string, mixed> $lookupNames */

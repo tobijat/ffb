@@ -7,7 +7,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | When false (recommended for production), API auth only accepts the
-    | Laravel session key ffb_user_id set by POST /login.
+    | Laravel session guard identity exposed by Auth::id().
     |
     | When true, also accepts X-FFB-User-Id / user_id / userteam_user_id for
     | local smoke tests and automated suites.

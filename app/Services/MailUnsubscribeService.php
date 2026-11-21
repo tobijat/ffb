@@ -3,13 +3,13 @@
 namespace App\Services;
 
 use App\Models\UserPermissions;
-use App\Services\FfbAuth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class MailUnsubscribeService
 {
     public function __construct(
-        private readonly FfbAuth $auth,
+        private readonly LegacyPhpSession $legacySession,
     ) {
     }
 
@@ -18,7 +18,10 @@ class MailUnsubscribeService
      */
     public function cancel(string $id, string $type, Request $request): array
     {
-        $this->auth->logout($request);
+        $this->legacySession->forget();
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         $parts = explode('-', $id, 2);
         $code = $parts[0] ?? '';

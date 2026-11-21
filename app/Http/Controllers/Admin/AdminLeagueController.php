@@ -4,21 +4,20 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AdminLeagueService;
-use App\Services\FfbAuth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class AdminLeagueController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
         private readonly AdminLeagueService $leagues,
     ) {}
 
     public function show(Request $request): View
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $errors = session('admin_errors');
 
         return $this->render(
@@ -31,7 +30,7 @@ class AdminLeagueController extends Controller
 
     public function edit(Request $request, int $league): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $form = $this->leagues->formForEdit($league);
         if ($form === null) {
             return redirect()
@@ -44,7 +43,7 @@ class AdminLeagueController extends Controller
 
     public function store(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->leagues->create(
             $request->all(),
             $request->file('league_symbol_file'),
@@ -66,7 +65,7 @@ class AdminLeagueController extends Controller
 
     public function update(Request $request, int $league): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->leagues->update(
             $league,
             $request->all(),

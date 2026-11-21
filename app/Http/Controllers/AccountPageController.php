@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\UserDetails;
 use App\Services\AccountService;
-use App\Services\FfbAuth;
 use App\Support\CustomAvatarSvg;
 use App\Support\KitKitchenClient;
 use App\Support\TeamShirt;
@@ -13,18 +12,18 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class AccountPageController extends Controller
 {
     public function __construct(
         private readonly AccountService $accounts,
-        private readonly FfbAuth $auth,
     ) {
     }
 
     public function show(Request $request): RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         if ($userId <= 0) {
             return redirect()->route('start', [
                 'destination' => 'profile?tab=account',
@@ -36,7 +35,7 @@ class AccountPageController extends Controller
 
     public function update(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         if ($userId <= 0) {
             return redirect()->route('start', [
                 'destination' => 'profile?tab=account',
@@ -61,7 +60,7 @@ class AccountPageController extends Controller
 
     public function showProfile(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         if ($userId <= 0) {
             return redirect()->route('start', [
                 'destination' => 'profile',
@@ -75,7 +74,7 @@ class AccountPageController extends Controller
 
     public function updateProfile(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         if ($userId <= 0) {
             return redirect()->route('start', [
                 'destination' => 'profile',
@@ -97,7 +96,7 @@ class AccountPageController extends Controller
 
     public function randomKitAvatar(Request $request, KitKitchenClient $kits): JsonResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         if ($userId <= 0) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
@@ -156,7 +155,7 @@ class AccountPageController extends Controller
      */
     public function kitFromShirt(Request $request, KitKitchenClient $kits): JsonResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         if ($userId <= 0) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }

@@ -4,15 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AdminExtremeteamService;
-use App\Services\FfbAuth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class AdminExtremeteamController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
         private readonly AdminExtremeteamService $extremeTeams,
     ) {}
 
@@ -23,7 +22,7 @@ class AdminExtremeteamController extends Controller
 
     public function populate(Request $request): RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->extremeTeams->populate($userId, $request->all());
 
         $redirect = redirect()->route('admin.extremeteam');
@@ -39,7 +38,7 @@ class AdminExtremeteamController extends Controller
 
     private function render(Request $request): View
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $errors = session('admin_errors');
 
         return view('admin.extremeteam', [

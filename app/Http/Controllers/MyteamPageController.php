@@ -2,23 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\FfbAuth;
 use App\Services\MyteamService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class MyteamPageController extends Controller
 {
     public function __construct(
         private readonly MyteamService $myteam,
-        private readonly FfbAuth $auth,
     ) {
     }
 
     public function show(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         if ($userId <= 0) {
             return redirect()->route('start', [
                 'destination' => 'myteam',

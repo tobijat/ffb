@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\WebAdmin;
 use App\Models\WebUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LoginService
 {
@@ -12,7 +13,6 @@ class LoginService
 
     public function __construct(
         private readonly FfbPassword $passwords,
-        private readonly FfbAuth $auth,
         private readonly LegacyPhpSession $legacySession,
     ) {}
 
@@ -73,7 +73,7 @@ class LoginService
         $user->user_lip = (string) $request->ip();
         $user->save();
 
-        $this->auth->login((int) $user->user_id, $request);
+        Auth::login($user);
         $this->syncLegacySession($user, $isAdmin);
 
         return [

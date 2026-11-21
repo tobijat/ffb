@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\WebUser;
 use App\Services\AttributionService;
 use App\Services\AwardsPopupService;
-use App\Services\FfbAuth;
 use App\Services\FfbUserResolver;
 use App\Services\MatchPopupService;
 use App\Services\PlayerPopupService;
@@ -14,16 +13,19 @@ use Tests\TestCase;
 
 class PopupApiTest extends TestCase
 {
-    private function actingAsFfbUser(int $userId = 544): void
+    protected function actingAsFfbUser(int $userId = 544): static
     {
         $user = new WebUser;
         $user->user_id = $userId;
         $user->user_status = 'active';
         $user->user_nickname = 'tester';
+        $user->exists = true;
 
         $this->mock(FfbUserResolver::class, function ($mock) use ($user, $userId) {
             $mock->shouldReceive('findActive')->with($userId)->andReturn($user);
         });
+
+        return $this->actingAs($user);
     }
 
     public function test_profile_popup_requires_auth(): void
@@ -82,7 +84,7 @@ class PopupApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/popups/user/12')
             ->assertOk()
             ->assertJsonPath('status', 200)
@@ -102,7 +104,7 @@ class PopupApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/popups/user/99999')
             ->assertStatus(404)
             ->assertJsonPath('error', 'User not found');
@@ -156,7 +158,7 @@ class PopupApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/popups/user/12/awards')
             ->assertOk()
             ->assertJsonPath('status', 200)
@@ -218,7 +220,7 @@ class PopupApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/popups/match/100')
             ->assertOk()
             ->assertJsonPath('status', 200)
@@ -238,7 +240,7 @@ class PopupApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/popups/match/99999')
             ->assertStatus(404)
             ->assertJsonPath('error', 'Match not found');
@@ -297,7 +299,7 @@ class PopupApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/popups/player/55')
             ->assertOk()
             ->assertJsonPath('status', 200)
@@ -363,7 +365,7 @@ class PopupApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/popups/player/55/rounds/10')
             ->assertOk()
             ->assertJsonPath('data.played', true)
@@ -402,7 +404,7 @@ class PopupApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/popups/player/55/chart?league_id=26')
             ->assertOk()
             ->assertJsonPath('data.league_id', 26)
@@ -421,7 +423,7 @@ class PopupApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/popups/player/55/chart')
             ->assertStatus(422)
             ->assertJsonPath('error', 'league_id is required');
@@ -449,7 +451,7 @@ class PopupApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/popups/player/55/prices?league_id=26')
             ->assertOk()
             ->assertJsonPath('data.points.0.price', 4.5)
@@ -481,7 +483,7 @@ class PopupApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/popups/attribution?image='.urlencode($url))
             ->assertOk()
             ->assertJsonPath('data.generated', true)
@@ -506,7 +508,7 @@ class PopupApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/popups/attribution?image='.urlencode($url))
             ->assertOk()
             ->assertJsonPath('data.generated', false)

@@ -5,21 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\WebUser;
 use App\Services\DashboardService;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use App\Services\HelpService;
 use App\Support\UserAvatar;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class ReferencePageController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
     ) {}
 
     public function show(Request $request): View
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $user = null;
 
         if ($userId > 0) {

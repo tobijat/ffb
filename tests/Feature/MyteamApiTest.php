@@ -4,19 +4,19 @@ namespace Tests\Feature;
 
 use App\Models\WebUser;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use App\Services\FfbUserResolver;
 use App\Services\MyteamService;
 use Tests\TestCase;
 
 class MyteamApiTest extends TestCase
 {
-    private function actingAsFfbUser(int $userId = 544, bool $canBypassLineupPrivacy = false): void
+    protected function actingAsFfbUser(int $userId = 544, bool $canBypassLineupPrivacy = false): static
     {
         $user = new WebUser;
         $user->user_id = $userId;
         $user->user_status = 'active';
         $user->user_nickname = 'tester';
+        $user->exists = true;
 
         $this->mock(FfbUserResolver::class, function ($mock) use ($user, $userId) {
             $mock->shouldReceive('findActive')->with($userId)->andReturn($user);
@@ -28,6 +28,8 @@ class MyteamApiTest extends TestCase
                 ->andReturn($canBypassLineupPrivacy);
             $mock->shouldReceive('isAdmin')->andReturn(false);
         });
+
+        return $this->actingAs($user);
     }
 
     public function test_myteam_apis_require_auth(): void
@@ -59,7 +61,7 @@ class MyteamApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/myteam/matchrounds')
             ->assertOk()
             ->assertJsonPath('data.matchrounds.0.matchround_title', 'Runde 1');
@@ -82,7 +84,7 @@ class MyteamApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/myteam/users?matchround_id=280')
             ->assertOk()
             ->assertJsonPath('data.users.1.user_nickname', 'alice');
@@ -131,7 +133,7 @@ class MyteamApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/myteam/team?matchround_id=280&userteam_user_id=12')
             ->assertOk()
             ->assertJsonPath('data.userteam.userteam_score', 42)
@@ -152,7 +154,7 @@ class MyteamApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/myteam/team?matchround_id=280&userteam_user_id=12')
             ->assertStatus(403)
             ->assertJsonPath('error', 'Du kannst fremde Mannschaften erst ansehen wenn die Deadline vorüber ist!');
@@ -160,8 +162,6 @@ class MyteamApiTest extends TestCase
 
     public function test_team_passes_lineup_privacy_bypass_from_ffb_admin_access(): void
     {
-        $this->actingAsFfbUser(544, canBypassLineupPrivacy: true);
-
         $this->mock(MyteamService::class, function ($mock) {
             $mock->shouldReceive('teamForRound')->once()->with(544, 12, 280, true)->andReturn([
                 'ok' => true,
@@ -175,7 +175,7 @@ class MyteamApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544, canBypassLineupPrivacy: true)
             ->getJson('/api/myteam/team?matchround_id=280&userteam_user_id=12')
             ->assertOk();
     }
@@ -206,7 +206,7 @@ class MyteamApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/myteam')
             ->assertOk()
             ->assertSee('Mannschaft', false)
@@ -236,7 +236,7 @@ class MyteamApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/myteam/stats/user?matchround_id=280&userteam_user_id=12')
             ->assertOk()
             ->assertJsonPath('data.stats.system', '4-4-2');
@@ -260,7 +260,7 @@ class MyteamApiTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/api/myteam/stats/round?matchround_id=280')
             ->assertOk()
             ->assertJsonPath('data.stats.num_users', 10);

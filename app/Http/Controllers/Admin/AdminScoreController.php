@@ -4,15 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AdminScoreService;
-use App\Services\FfbAuth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class AdminScoreController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
         private readonly AdminScoreService $score,
     ) {}
 
@@ -32,7 +31,7 @@ class AdminScoreController extends Controller
 
     public function calculateSubstitutions(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->score->calculateSubstitutions($userId, $request->all());
         $matchroundId = (int) ($result['matchround_id'] ?? $request->input('matchround_id', 0));
         $tab = (string) ($result['tab'] ?? 'subs');
@@ -60,7 +59,7 @@ class AdminScoreController extends Controller
 
     public function saveSubstitutions(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->score->saveSubstitutions($userId, $request->all());
         $matchroundId = (int) ($result['matchround_id'] ?? $request->input('matchround_id', 0));
         $tab = (string) ($result['tab'] ?? 'subs');
@@ -88,7 +87,7 @@ class AdminScoreController extends Controller
 
     public function calculateUserteamScores(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $input = $request->all();
         $result = $this->score->calculateUserteamScores($userId, $input);
         $matchroundId = (int) ($result['matchround_id'] ?? $request->input('matchround_id', 0));
@@ -116,7 +115,7 @@ class AdminScoreController extends Controller
 
     public function saveUserteamScores(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $input = $request->all();
         $result = $this->score->saveUserteamScores($userId, $input);
         $matchroundId = (int) ($result['matchround_id'] ?? $request->input('matchround_id', 0));
@@ -144,7 +143,7 @@ class AdminScoreController extends Controller
 
     public function calculateUserScores(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->score->calculateUserScores($userId);
 
         if (! ($result['ok'] ?? false)) {
@@ -165,7 +164,7 @@ class AdminScoreController extends Controller
 
     public function saveUserScores(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->score->saveUserScores($userId);
 
         if (! ($result['ok'] ?? false)) {
@@ -200,7 +199,7 @@ class AdminScoreController extends Controller
         ?array $subsPreview = null,
         ?int $matchroundId = null,
     ): View {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $errors = session('admin_errors');
         $sessionDetails = session('admin_details');
 

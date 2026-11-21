@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Services\AdminMatchroundService;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use Tests\TestCase;
 
 class AdminMatchroundTest extends TestCase
@@ -21,7 +20,7 @@ class AdminMatchroundTest extends TestCase
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/matchrounds')
             ->assertRedirect(route('start'));
     }
@@ -68,7 +67,7 @@ class AdminMatchroundTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/matchrounds')
             ->assertOk()
             ->assertSee('Spielrunden', false)
@@ -110,7 +109,7 @@ class AdminMatchroundTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/matchrounds')
             ->assertOk()
             ->assertSee('Testliga', false)
@@ -161,7 +160,7 @@ class AdminMatchroundTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/matchrounds')
             ->assertOk()
             ->assertSee('Testliga', false)
@@ -217,7 +216,7 @@ class AdminMatchroundTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/matchrounds')
             ->assertOk()
             ->assertSee('name="matchround_options_lineup_min_bench"', false)
@@ -248,7 +247,7 @@ class AdminMatchroundTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/matchrounds', [
                 'matchround_league_id' => 26,
                 'matchround_title' => 'Runde 2',
@@ -275,7 +274,7 @@ class AdminMatchroundTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->delete('/admin/matchrounds/12', ['league_id' => 26])
             ->assertRedirect(route('admin.matchrounds', ['league_id' => 26]))
             ->assertSessionHas('admin_message', 'Spielrunde erfolgreich gelöscht.');

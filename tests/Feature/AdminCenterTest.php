@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Services\AdminCenterService;
 use App\Services\DashboardService;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use App\Services\LegacyPhpSession;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -29,7 +28,7 @@ class AdminCenterTest extends TestCase
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin')
             ->assertRedirect(route('start'));
     }
@@ -100,7 +99,7 @@ class AdminCenterTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin')
             ->assertOk()
             ->assertSee('Admin Center', false)
@@ -197,7 +196,7 @@ class AdminCenterTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/leagues/26/select')
             ->assertRedirect(route('admin.leagueDashboard'))
             ->assertSessionMissing('admin_message');
@@ -225,7 +224,7 @@ class AdminCenterTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/')
             ->assertOk()
             ->assertSee('Admin Center', false)
@@ -254,7 +253,7 @@ class AdminCenterTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/')
             ->assertOk()
             ->assertDontSee('Admin Center', false);

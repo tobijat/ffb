@@ -4,21 +4,20 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AdminMatchroundService;
-use App\Services\FfbAuth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class AdminMatchroundController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
         private readonly AdminMatchroundService $matchrounds,
     ) {}
 
     public function show(Request $request): View
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $leagueId = $this->matchrounds->defaultLeagueId($userId);
         $errors = session('admin_errors');
         $prefill = session('admin_matchround_prefill');
@@ -34,7 +33,7 @@ class AdminMatchroundController extends Controller
 
     public function edit(Request $request, int $matchround): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $edit = $this->matchrounds->formForEdit($matchround);
         if ($edit === null) {
             return redirect()
@@ -47,7 +46,7 @@ class AdminMatchroundController extends Controller
 
     public function store(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->matchrounds->create($request->all());
         $leagueId = (int) ($result['league_id'] ?? $request->input('matchround_league_id', 0));
 
@@ -74,7 +73,7 @@ class AdminMatchroundController extends Controller
 
     public function update(Request $request, int $matchround): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->matchrounds->update($matchround, $request->all());
         $leagueId = (int) ($result['league_id'] ?? $request->input('matchround_league_id', 0));
 

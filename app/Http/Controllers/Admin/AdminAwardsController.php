@@ -4,23 +4,22 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AdminAwardsService;
-use App\Services\FfbAuth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class AdminAwardsController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
         private readonly AdminAwardsService $awards,
     ) {
     }
 
     public function show(Request $request): View
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $errors = session('admin_errors');
 
         return view('admin.awards', [
@@ -106,7 +105,7 @@ class AdminAwardsController extends Controller
 
     public function calculateDefine(Request $request, int $define): JsonResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->awards->calculateDefine($define, $userId);
 
         return response()->json($result);
@@ -114,7 +113,7 @@ class AdminAwardsController extends Controller
 
     public function calculateAll(Request $request): JsonResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->awards->calculateAll($userId);
 
         return response()->json($result);

@@ -6,7 +6,6 @@ use App\Services\AdminCenterService;
 use App\Services\AdminPlayerpriceService;
 use App\Services\EloRatingClient;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use App\Services\LineupOptionsResolver;
 use Mockery;
 use PHPUnit\Framework\Attributes\Test;
@@ -26,7 +25,7 @@ class AdminPlayerpriceTest extends TestCase
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/playerprice')
             ->assertRedirect(route('start'));
     }
@@ -50,7 +49,7 @@ class AdminPlayerpriceTest extends TestCase
                 ]));
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/playerprice')
             ->assertOk()
             ->assertSee('Preise', false)
@@ -80,7 +79,7 @@ class AdminPlayerpriceTest extends TestCase
                 ]));
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/playerprice?tab=players')
             ->assertOk()
             ->assertSee('ELO Team-Preis', false)
@@ -107,7 +106,7 @@ class AdminPlayerpriceTest extends TestCase
                 ]));
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/playerprice?tab=teams')
             ->assertOk()
             ->assertSee('ELO Team-Preis', false)
@@ -184,7 +183,7 @@ class AdminPlayerpriceTest extends TestCase
                 ]));
         });
 
-        $html = $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $html = $this->actingAsFfbUser(544)
             ->post('/admin/playerprice/elo-team-prices/preview', [
                 'price_league_id' => 7,
                 'tab' => 'teams',
@@ -290,7 +289,7 @@ class AdminPlayerpriceTest extends TestCase
                 ]));
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/playerprice/elo-team-prices/preview', [
                 'price_league_id' => 7,
                 'tab' => 'teams',
@@ -338,7 +337,7 @@ class AdminPlayerpriceTest extends TestCase
             'teams_without_elo' => 2,
             'teams_skipped' => [
                 ['team_id' => 90, 'team_name' => 'Admira Villach'],
-                ['team_id' => 86, 'team_name' => 'FC Bayern München'],
+                ['team_id' => 86, 'team_name' => 'FC Bayern MÃ¼nchen'],
             ],
             'lineup_max_credits' => 100.0,
             'lineup_max_players_team' => 3,
@@ -364,15 +363,15 @@ class AdminPlayerpriceTest extends TestCase
                 ]));
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/playerprice/elo-team-prices/preview', [
                 'price_league_id' => 7,
                 'tab' => 'teams',
             ])
             ->assertOk()
-            ->assertSee('2 Team(s) ohne ELO-Zuordnung wurden übersprungen', false)
+            ->assertSee('2 Team(s) ohne ELO-Zuordnung wurden Ã¼bersprungen', false)
             ->assertSee('Admira Villach', false)
-            ->assertSee('FC Bayern München', false);
+            ->assertSee('FC Bayern MÃ¼nchen', false);
     }
 
     #[Test]

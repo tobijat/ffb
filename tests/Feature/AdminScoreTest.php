@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Services\AdminScoreService;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use Mockery;
 use Tests\TestCase;
 
@@ -22,7 +21,7 @@ class AdminScoreTest extends TestCase
             $mock->shouldReceive('isAdmin')->with(544)->andReturn(false);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/score')
             ->assertRedirect(route('start'));
     }
@@ -72,7 +71,7 @@ class AdminScoreTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/score')
             ->assertOk()
             ->assertSee('UserScore Settings', false)
@@ -120,7 +119,7 @@ class AdminScoreTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/score?tab=user')
             ->assertOk()
             ->assertSee('ffb_userscore', false)
@@ -163,7 +162,7 @@ class AdminScoreTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/score?tab=subs')
             ->assertOk()
             ->assertSee('Auswechslungen', false)
@@ -235,7 +234,7 @@ class AdminScoreTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/score/userteam-scores/calculate', ['matchround_id' => 3])
             ->assertOk()
             ->assertSee('gewählte Spielrunde', false)
@@ -309,7 +308,7 @@ class AdminScoreTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/score/userteam-scores/calculate', ['matchround_id' => 0])
             ->assertOk()
             ->assertSee('alle Spielrunden', false)
@@ -381,7 +380,7 @@ class AdminScoreTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/score/userteam-scores/save', ['matchround_id' => 3])
             ->assertOk()
             ->assertSee('Userteam-Scores für die gewählte Spielrunde erfolgreich gespeichert', false);
@@ -443,7 +442,7 @@ class AdminScoreTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/score/user-scores/calculate')
             ->assertOk()
             ->assertSee('User-Scores berechnet (noch nicht gespeichert).', false)
@@ -507,7 +506,7 @@ class AdminScoreTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/score/user-scores/save')
             ->assertOk()
             ->assertSee('User-Scores erfolgreich gespeichert.', false);
@@ -530,7 +529,7 @@ class AdminScoreTest extends TestCase
                 ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/score/userteam-scores/calculate')
             ->assertRedirect(route('admin.score', ['tab' => 'userteam']))
             ->assertSessionHas('admin_errors', ['Bitte zuerst eine Liga auswählen.']);
@@ -576,7 +575,7 @@ class AdminScoreTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/score/userteam-scores')
             ->assertOk()
             ->assertSee('Userteam-Scores für alle Spielrunden erfolgreich gespeichert', false);

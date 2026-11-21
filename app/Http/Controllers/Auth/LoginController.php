@@ -4,17 +4,18 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Services\AppHostService;
-use App\Services\FfbAuth;
+use App\Services\LegacyPhpSession;
 use App\Services\LoginService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
     public function __construct(
         private readonly LoginService $login,
-        private readonly FfbAuth $auth,
+        private readonly LegacyPhpSession $legacySession,
         private readonly AppHostService $hosts,
     ) {
     }
@@ -44,7 +45,10 @@ class LoginController extends Controller
 
     public function logout(Request $request): RedirectResponse|JsonResponse
     {
-        $this->auth->logout($request);
+        $this->legacySession->forget();
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         if ($this->hosts->isPictory($request)) {
             if ($request->expectsJson() || $request->wantsJson()) {

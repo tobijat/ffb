@@ -11,6 +11,7 @@ use App\Support\CustomAvatarSvg;
 use App\Support\TeamShirt;
 use App\Support\UserAvatar;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -18,7 +19,7 @@ class AccountService
 {
     public function __construct(
         private readonly FfbPassword $passwords,
-        private readonly FfbAuth $auth,
+        private readonly LegacyPhpSession $legacySession,
     ) {}
 
     /**
@@ -121,7 +122,10 @@ class AccountService
                 (string) $request->getHost(),
             );
 
-            $this->auth->logout($request);
+            $this->legacySession->forget();
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
             $emailChanged = true;
             $message .= '<br><b>!!</b> Du hast deine E-Mail Adresse geändert. Ein E-Mail wurde an die neue Adresse geschickt. Um die Änderung abzuschließen, musst du den Link in dieser E-Mail anklicken. Du wirst jetzt ausgeloggt und kannst dich erst wieder einloggen, wenn der Link geklickt wurde.';
 

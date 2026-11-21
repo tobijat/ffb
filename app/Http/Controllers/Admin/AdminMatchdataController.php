@@ -4,24 +4,23 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AdminMatchdataService;
-use App\Services\FfbAuth;
 use App\Services\WeltfussballProxyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Illuminate\Support\Facades\Auth;
 
 class AdminMatchdataController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
         private readonly AdminMatchdataService $matchdata,
         private readonly WeltfussballProxyService $wfProxy,
     ) {}
 
     public function show(Request $request): View
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $tab = match ($request->query('tab')) {
             'uefa' => 'uefa',
             'fifa' => 'fifa',
@@ -37,7 +36,7 @@ class AdminMatchdataController extends Controller
 
     public function rounds(Request $request): JsonResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
 
         return response()->json([
             'ok' => true,
@@ -63,7 +62,7 @@ class AdminMatchdataController extends Controller
 
     public function players(Request $request, int $match, int $team): JsonResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $allPlayers = $request->boolean('all_players');
 
         return response()->json([
@@ -97,7 +96,7 @@ class AdminMatchdataController extends Controller
 
     public function scrape(Request $request, int $match): JsonResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $url = (string) $request->input('url', '');
         $cookies = $request->filled('cookies') ? (string) $request->input('cookies') : null;
         $html = $request->filled('html') ? (string) $request->input('html') : null;
@@ -111,7 +110,7 @@ class AdminMatchdataController extends Controller
 
     public function scrapeUefa(Request $request, int $match): JsonResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->matchdata->scrapeUefaMatchData($userId, $match);
 
         return response()->json($result, ($result['ok'] ?? false) ? 200 : 422);
@@ -119,7 +118,7 @@ class AdminMatchdataController extends Controller
 
     public function scrapeFifa(Request $request, int $match): JsonResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->matchdata->scrapeFifaMatchData($userId, $match);
 
         return response()->json($result, ($result['ok'] ?? false) ? 200 : 422);

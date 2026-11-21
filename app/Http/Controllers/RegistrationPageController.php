@@ -2,26 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\FfbAuth;
 use App\Services\RegistrationService;
 use App\Services\StartPageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class RegistrationPageController extends Controller
 {
     public function __construct(
         private readonly RegistrationService $registration,
-        private readonly FfbAuth $auth,
         private readonly StartPageService $startPage,
     ) {
     }
 
     public function show(Request $request): View|RedirectResponse
     {
-        if ($this->auth->userId($request) > 0) {
+        if ((int) Auth::id() > 0) {
             return redirect()->route('profile', ['tab' => 'account']);
         }
 
@@ -40,7 +39,7 @@ class RegistrationPageController extends Controller
 
     public function store(Request $request): View|RedirectResponse
     {
-        if ($this->auth->userId($request) > 0) {
+        if ((int) Auth::id() > 0) {
             return redirect()->route('profile', ['tab' => 'account']);
         }
 

@@ -4,22 +4,21 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AdminMatchService;
-use App\Services\FfbAuth;
 use App\Support\RequestJsonArray;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class AdminMatchController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
         private readonly AdminMatchService $matches,
     ) {}
 
     public function show(Request $request): View
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $leagueId = $this->matches->defaultLeagueId($userId);
         $errors = session('admin_errors');
         $prefill = session('admin_match_prefill');
@@ -50,7 +49,7 @@ class AdminMatchController extends Controller
 
     public function edit(Request $request, int $match): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $edit = $this->matches->formForEdit($match);
         if ($edit === null) {
             return redirect()
@@ -63,7 +62,7 @@ class AdminMatchController extends Controller
 
     public function store(Request $request): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->matches->create($request->all());
         $leagueId = (int) ($result['league_id'] ?? 0);
 
@@ -90,7 +89,7 @@ class AdminMatchController extends Controller
 
     public function update(Request $request, int $match): View|RedirectResponse
     {
-        $userId = $this->auth->userId($request);
+        $userId = (int) Auth::id();
         $result = $this->matches->update($match, $request->all());
         $leagueId = (int) ($result['league_id'] ?? 0);
 

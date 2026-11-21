@@ -3,10 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\WebUser;
-use App\Services\FfbAuth;
 use App\Services\FfbPassword;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -64,7 +64,7 @@ class LaravelGuardAuthTest extends TestCase
     }
 
     #[Test]
-    public function login_sets_laravel_guard_and_legacy_session_key(): void
+    public function login_authenticates_via_laravel_guard(): void
     {
         $userId = $this->seedUser('guarduser', 'secret1');
 
@@ -74,33 +74,30 @@ class LaravelGuardAuthTest extends TestCase
         ])->assertOk();
 
         $this->assertAuthenticatedAs(WebUser::query()->findOrFail($userId));
-        $this->assertSame($userId, (int) session(FfbAuth::SESSION_USER_ID));
-        $this->assertSame($userId, app(FfbAuth::class)->userId());
+        $this->assertSame($userId, (int) Auth::id());
     }
 
     #[Test]
-    public function user_id_falls_back_to_legacy_session_key(): void
+    public function acting_as_sets_auth_id(): void
     {
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544]);
+        $this->actingAsFfbUser(544);
 
-        $this->assertGuest();
-        $this->assertSame(544, app(FfbAuth::class)->userId());
+        $this->assertAuthenticated();
+        $this->assertSame(544, (int) Auth::id());
     }
 
     #[Test]
-    public function logout_clears_guard_and_legacy_key(): void
+    public function logout_clears_laravel_guard(): void
     {
         $userId = $this->seedUser('logoutuser', 'secret1');
         $user = WebUser::query()->findOrFail($userId);
 
         $this->actingAs($user)
-            ->withSession([FfbAuth::SESSION_USER_ID => $userId])
             ->post('/logout')
             ->assertRedirect(route('start'));
 
         $this->assertGuest();
-        $this->assertSame(0, (int) session(FfbAuth::SESSION_USER_ID, 0));
-        $this->assertSame(0, app(FfbAuth::class)->userId());
+        $this->assertSame(0, (int) Auth::id());
     }
 
     private function seedUser(string $nickname, string $password): int
@@ -117,7 +114,7 @@ class LaravelGuardAuthTest extends TestCase
             'user_lip' => '127.0.0.1',
         ], 'user_id');
 
-        \Illuminate\Support\Facades\DB::table('ffb_user_details')->insert([
+        DB::table('ffb_user_details')->insert([
             'user_id' => $id,
             'user_fname' => '',
             'user_lname' => '',

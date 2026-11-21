@@ -2,8 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Services\FfbAuth;
+use App\Models\WebUser;
 use App\Services\LoginService;
+use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
 
 class LoginTest extends TestCase
@@ -14,7 +15,12 @@ class LoginTest extends TestCase
             $mock->shouldReceive('attempt')
                 ->once()
                 ->andReturnUsing(function ($nickname, $password, $request, $destination) {
-                    app(FfbAuth::class)->login(544, $request);
+                    $user = new WebUser;
+                    $user->user_id = 544;
+                    $user->user_nickname = 'player1';
+                    $user->user_status = 'active';
+                    $user->exists = true;
+                    Auth::login($user);
 
                     return [
                         'ok' => true,
@@ -36,10 +42,8 @@ class LoginTest extends TestCase
                 'user_id' => 544,
             ]);
 
-        $this->assertSame(544, (int) session(FfbAuth::SESSION_USER_ID));
-        // No web_user row in this mocked test — guard stays guest; legacy key still set.
-        $this->assertGuest();
-        $this->assertSame(544, app(FfbAuth::class)->userId());
+        $this->assertAuthenticated();
+        $this->assertSame(544, (int) Auth::id());
     }
 
     public function test_login_rejects_with_errors(): void
@@ -62,17 +66,16 @@ class LoginTest extends TestCase
             ->assertJsonPath('status', 500)
             ->assertJsonPath('errors.0', 'Das Passwort ist falsch.');
 
-        $this->assertSame(0, (int) session(FfbAuth::SESSION_USER_ID, 0));
+        $this->assertGuest();
     }
 
     public function test_logout_clears_session(): void
     {
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/logout')
             ->assertRedirect(route('start'));
 
-        $this->assertSame(0, (int) session(FfbAuth::SESSION_USER_ID, 0));
         $this->assertGuest();
-        $this->assertSame(0, app(FfbAuth::class)->userId());
+        $this->assertSame(0, (int) Auth::id());
     }
 }

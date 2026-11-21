@@ -3,17 +3,18 @@
 namespace App\Http\Controllers\Pictory;
 
 use App\Http\Controllers\Controller;
-use App\Services\FfbAuth;
+use App\Services\LegacyPhpSession;
 use App\Services\LoginService;
 use App\Services\RegistrationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class PictoryAuthController extends Controller
 {
     public function __construct(
-        private readonly FfbAuth $auth,
+        private readonly LegacyPhpSession $legacySession,
         private readonly LoginService $login,
         private readonly RegistrationService $registration,
     ) {
@@ -21,7 +22,7 @@ class PictoryAuthController extends Controller
 
     public function showLogin(Request $request): View|RedirectResponse
     {
-        if ($this->auth->userId($request) > 0) {
+        if ((int) Auth::id() > 0) {
             return redirect()->route('pictory.home');
         }
 
@@ -34,7 +35,7 @@ class PictoryAuthController extends Controller
 
     public function login(Request $request): View|RedirectResponse
     {
-        if ($this->auth->userId($request) > 0) {
+        if ((int) Auth::id() > 0) {
             return redirect()->route('pictory.home');
         }
 
@@ -58,7 +59,7 @@ class PictoryAuthController extends Controller
 
     public function showRegister(Request $request): View|RedirectResponse
     {
-        if ($this->auth->userId($request) > 0) {
+        if ((int) Auth::id() > 0) {
             return redirect()->route('pictory.home');
         }
 
@@ -73,7 +74,7 @@ class PictoryAuthController extends Controller
 
     public function register(Request $request): View|RedirectResponse
     {
-        if ($this->auth->userId($request) > 0) {
+        if ((int) Auth::id() > 0) {
             return redirect()->route('pictory.home');
         }
 
@@ -104,7 +105,10 @@ class PictoryAuthController extends Controller
 
     public function logout(Request $request): RedirectResponse
     {
-        $this->auth->logout($request);
+        $this->legacySession->forget();
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return redirect()->route('pictory.home');
     }

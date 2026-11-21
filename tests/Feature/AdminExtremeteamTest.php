@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Services\AdminExtremeteamService;
 use App\Services\FfbAdminAccess;
-use App\Services\FfbAuth;
 use Tests\TestCase;
 
 class AdminExtremeteamTest extends TestCase
@@ -50,7 +49,7 @@ class AdminExtremeteamTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/admin/extremeteam')
             ->assertOk()
             ->assertSee('Top &amp; Flop Teams', false)
@@ -74,7 +73,7 @@ class AdminExtremeteamTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/admin/extremeteam/populate', [
                 'scope' => 'selected',
                 'matchround_ids' => [12],

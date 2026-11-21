@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Services\AccountService;
-use App\Services\FfbAuth;
 use Tests\TestCase;
 
 class AccountPageTest extends TestCase
@@ -102,7 +101,7 @@ class AccountPageTest extends TestCase
 
     public function test_account_page_redirects_to_profile_tab(): void
     {
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/account')
             ->assertRedirect(route('profile', ['tab' => 'account']));
     }
@@ -138,7 +137,7 @@ class AccountPageTest extends TestCase
             $mock->shouldReceive('profilePayload')->once()->andReturn($this->profilePayload());
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/account', [
                 'user_fname' => 'Max',
             ])
@@ -174,7 +173,7 @@ class AccountPageTest extends TestCase
             $mock->shouldReceive('profilePayload')->once()->andReturn($this->profilePayload());
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/account', [
                 'user_fname' => 'Max',
                 'user_tos' => 'user_tos_yes',
@@ -195,7 +194,7 @@ class AccountPageTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/account', [
                 'user_email_chg' => 'new@example.com',
                 'user_email_val_chg' => 'new@example.com',
@@ -217,7 +216,7 @@ class AccountPageTest extends TestCase
             $mock->shouldReceive('profilePayload')->once()->andReturn($this->profilePayload());
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/profile')
             ->assertOk()
             ->assertSee('>Profil</a>', false)
@@ -242,7 +241,7 @@ class AccountPageTest extends TestCase
             $mock->shouldReceive('profilePayload')->once()->andReturn($this->profilePayload());
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/profile?tab=account')
             ->assertOk()
             ->assertSee('Benutzername', false)
@@ -257,7 +256,7 @@ class AccountPageTest extends TestCase
             $mock->shouldReceive('profilePayload')->once()->andReturn($this->profilePayload());
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/profile?tab=avatar')
             ->assertOk()
             ->assertSee('user_details_avatar_shirt', false)
@@ -310,7 +309,7 @@ class AccountPageTest extends TestCase
                 ),
         ]);
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->getJson('/profile/avatar/kit-random?stars=2&number=07&text=Boss&mcolor=ff0000&ncolor=%23ffffff&scolor=fd0&tcolor=111111')
             ->assertOk()
             ->assertJson([
@@ -390,7 +389,7 @@ class AccountPageTest extends TestCase
         ]);
 
         try {
-            $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            $this->actingAsFfbUser(544)
                 ->postJson('/profile/avatar/kit-from-shirt', [
                     'shirt' => 'shirts/austria-abcd/aut.svg',
                     'stars' => 2,
@@ -463,7 +462,7 @@ class AccountPageTest extends TestCase
                 ),
         ]);
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->postJson('/profile/avatar/kit-from-shirt', [
                 'svg' => $postedSvg,
             ])
@@ -525,7 +524,7 @@ class AccountPageTest extends TestCase
         ]);
 
         try {
-            $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            $this->actingAsFfbUser(544)
                 ->postJson('/profile/avatar/kit-from-shirt', [
                     'shirt' => 'shirts/austria-abcd/aut.svg',
                 ])
@@ -572,7 +571,7 @@ class AccountPageTest extends TestCase
         ]);
 
         try {
-            $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+            $this->actingAsFfbUser(544)
                 ->postJson('/profile/avatar/kit-from-shirt', [
                     'shirt' => 'shirts/austria-abcd/aut.svg',
                 ])
@@ -590,7 +589,7 @@ class AccountPageTest extends TestCase
             $mock->shouldReceive('profilePayload')->once()->andReturn($this->profilePayload());
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->get('/profile?tab=avatar')
             ->assertOk()
             ->assertSee('profile/avatar/kit-from-shirt', false)
@@ -616,7 +615,7 @@ class AccountPageTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/profile', [
                 'profile_section' => 'avatar_custom',
                 'avatar_seed' => '123456',
@@ -646,7 +645,7 @@ class AccountPageTest extends TestCase
             ]);
         });
 
-        $this->withSession([FfbAuth::SESSION_USER_ID => 544])
+        $this->actingAsFfbUser(544)
             ->post('/profile', [
                 'user_details_city' => 'Graz',
                 'user_details_zip' => '8010',
