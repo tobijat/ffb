@@ -428,6 +428,11 @@
                     </div>
 
                     <div class="account-field">
+                        <label for="user_password_current">Aktuelles Passwort</label>
+                        <input id="user_password_current" type="password" name="user_password_current" maxlength="32" data-help="user_password_current" autocomplete="current-password">
+                    </div>
+
+                    <div class="account-field">
                         <label for="user_password_chg">Passwort ändern</label>
                         <input id="user_password_chg" type="password" name="user_password_chg" minlength="10" maxlength="32" data-help="user_password_chg" autocomplete="new-password" data-too-short-msg="Passwortänderung: min. Länge ist 10, max. Länge ist 32!" data-too-long-msg="Passwortänderung: min. Länge ist 10, max. Länge ist 32!">
                     </div>
@@ -494,6 +499,6 @@
             window.FFB_ACCOUNT_ERRORS = @json(array_values($errors));
         </script>
     @endif
-    <script src="{{ $assetBase }}/js/account.js?v=20" defer></script>
+    <script src="{{ $assetBase }}/js/account.js?v=21" defer></script>
 </body>
 </html>

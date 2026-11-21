@@ -87,7 +87,7 @@ class AccountService
         }
 
         $form = $this->mergeForm($user, $input);
-        $errors = $this->validate($input, $userId);
+        $errors = $this->validate($input, $user);
 
         if ($errors !== []) {
             return [
@@ -440,13 +440,21 @@ class AccountService
      * @param  array<string, mixed>  $input
      * @return list<string>
      */
-    private function validate(array $input, int $userId): array
+    private function validate(array $input, WebUser $user): array
     {
         $errors = [];
+        $userId = (int) $user->user_id;
 
         $password = (string) ($input['user_password_chg'] ?? '');
         $passwordConfirm = (string) ($input['user_password_val_chg'] ?? '');
         if ($password !== '') {
+            $current = (string) ($input['user_password_current'] ?? '');
+            if ($current === '') {
+                $errors[] = 'Bitte gib dein aktuelles Passwort ein!';
+            } elseif (! $this->passwords->verify($current, (string) $user->user_password)) {
+                $errors[] = 'Das aktuelle Passwort ist nicht korrekt!';
+            }
+
             $errors = array_merge($errors, $this->passwords->validatePlain($password, 'Passwortänderung'));
             if ($password !== $passwordConfirm) {
                 $errors[] = 'Die Passwörter bei der Passwortänderung stimmen nicht überein!';

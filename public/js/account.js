@@ -2,8 +2,10 @@
     const help = {
         user_nickname:
             '<b>Benutzername</b><br>Der Benutzername kann nachträglich nicht mehr geändert werden.',
+        user_password_current:
+            '<b>Aktuelles Passwort</b><br>Wenn du dein Passwort ändern möchtest, gib hier zuerst dein aktuelles Passwort ein.',
         user_password_chg:
-            '<b>Passwort ändern</b><br>Wenn du möchtest, kannst du hier dein Passwort ändern.',
+            '<b>Passwort ändern</b><br>Wenn du möchtest, kannst du hier dein neues Passwort eingeben. Dazu brauchst du auch dein aktuelles Passwort.',
         user_password_val_chg:
             '<b>Passwortänderung wiederholen</b><br>Falls du dein Passwort geändert hast, dann gib hier dein geändertes Passwort noch einmal ein, um es zu bestätigen.',
         user_email:
@@ -105,6 +107,9 @@
             return fieldInForms('user_tos');
         }
         if (lower.includes('passwort')) {
+            if (lower.includes('aktuell')) {
+                return fieldInForms('user_password_current');
+            }
             return lower.includes('überein') || lower.includes('ueberein')
                 ? fieldInForms('user_password_val_chg')
                 : fieldInForms('user_password_chg');
