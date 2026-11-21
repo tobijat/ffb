@@ -5,9 +5,12 @@ namespace App\Http\Middleware;
 use App\Services\FfbAdminAccess;
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Require an FFB admin. Pair with auth + ffb.active on admin route groups.
+ */
 class EnsureFfbAdmin
 {
     public function __construct(

@@ -20,10 +20,6 @@ class PictoryAuthController extends Controller
 
     public function showLogin(Request $request): View|RedirectResponse
     {
-        if ((int) Auth::id() > 0) {
-            return redirect()->route('pictory.home');
-        }
-
         return view('pictory.login', [
             'errors' => [],
             'nickname' => old('user_nickname', ''),
@@ -33,10 +29,6 @@ class PictoryAuthController extends Controller
 
     public function login(Request $request): View|RedirectResponse
     {
-        if ((int) Auth::id() > 0) {
-            return redirect()->route('pictory.home');
-        }
-
         $result = $this->login->attempt(
             (string) $request->input('user_nickname', ''),
             (string) $request->input('user_password', ''),
@@ -57,10 +49,6 @@ class PictoryAuthController extends Controller
 
     public function showRegister(Request $request): View|RedirectResponse
     {
-        if ((int) Auth::id() > 0) {
-            return redirect()->route('pictory.home');
-        }
-
         $payload = $this->registration->pagePayload();
 
         return view('pictory.register', [
@@ -72,10 +60,6 @@ class PictoryAuthController extends Controller
 
     public function register(Request $request): View|RedirectResponse
     {
-        if ((int) Auth::id() > 0) {
-            return redirect()->route('pictory.home');
-        }
-
         $result = $this->registration->register($request->all(), $request);
         $payload = $this->registration->pagePayload($result['form'] ?? null);
 

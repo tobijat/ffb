@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Services\LineupService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class LineupPageController extends Controller
 {
@@ -17,14 +17,7 @@ class LineupPageController extends Controller
 
     public function show(Request $request): View|RedirectResponse
     {
-        $userId = (int) Auth::id();
-        if ($userId <= 0) {
-            return redirect()->route('start', [
-                'destination' => 'lineup',
-            ]);
-        }
-
-        $result = $this->lineups->pagePayload($userId);
+        $result = $this->lineups->pagePayload((int) Auth::id());
         if (! $result['ok']) {
             return redirect()->route('start');
         }

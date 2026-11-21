@@ -57,6 +57,26 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\TouchFfbUserLastAction::class,
         ]);
 
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if (app(\App\Services\AppHostService::class)->isPictory($request)) {
+                return route('pictory.login');
+            }
+
+            $destination = $request->is('account')
+                ? 'profile?tab=account'
+                : trim($request->path(), '/');
+
+            return route('start', ['destination' => $destination]);
+        });
+
+        $middleware->redirectUsersTo(function (Request $request) {
+            if (app(\App\Services\AppHostService::class)->isPictory($request)) {
+                return route('pictory.home');
+            }
+
+            return route('profile', ['tab' => 'account']);
+        });
+
         $middleware->alias([
             'ffb.admin' => \App\Http\Middleware\EnsureFfbAdmin::class,
             'ffb.active' => \App\Http\Middleware\EnsureActiveFfbUser::class,

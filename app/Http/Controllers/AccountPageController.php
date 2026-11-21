@@ -23,25 +23,12 @@ class AccountPageController extends Controller
 
     public function show(Request $request): RedirectResponse
     {
-        $userId = (int) Auth::id();
-        if ($userId <= 0) {
-            return redirect()->route('start', [
-                'destination' => 'profile?tab=account',
-            ]);
-        }
-
         return redirect()->route('profile', ['tab' => 'account']);
     }
 
     public function update(Request $request): View|RedirectResponse
     {
         $userId = (int) Auth::id();
-        if ($userId <= 0) {
-            return redirect()->route('start', [
-                'destination' => 'profile?tab=account',
-            ]);
-        }
-
         $result = $this->accounts->update($userId, $request->all(), $request);
 
         if ($result['ok'] && ($result['email_changed'] ?? false)) {
@@ -60,27 +47,14 @@ class AccountPageController extends Controller
 
     public function showProfile(Request $request): View|RedirectResponse
     {
-        $userId = (int) Auth::id();
-        if ($userId <= 0) {
-            return redirect()->route('start', [
-                'destination' => 'profile',
-            ]);
-        }
-
         $tab = $this->resolveTab($request->query('tab'));
 
-        return $this->renderProfileHub($userId, $tab);
+        return $this->renderProfileHub((int) Auth::id(), $tab);
     }
 
     public function updateProfile(Request $request): View|RedirectResponse
     {
         $userId = (int) Auth::id();
-        if ($userId <= 0) {
-            return redirect()->route('start', [
-                'destination' => 'profile',
-            ]);
-        }
-
         $result = $this->accounts->updateProfile($userId, $request->all(), $request);
         $tab = $this->resolveTab($request->input('profile_section', $request->query('tab')));
 
@@ -96,11 +70,6 @@ class AccountPageController extends Controller
 
     public function randomKitAvatar(Request $request, KitKitchenClient $kits): JsonResponse
     {
-        $userId = (int) Auth::id();
-        if ($userId <= 0) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
         $stars = $request->query('stars');
         $starsInt = is_numeric($stars) ? (int) $stars : null;
         if ($starsInt !== null && ($starsInt < 0 || $starsInt > 9)) {
@@ -156,10 +125,6 @@ class AccountPageController extends Controller
     public function kitFromShirt(Request $request, KitKitchenClient $kits): JsonResponse
     {
         $userId = (int) Auth::id();
-        if ($userId <= 0) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
         $configSvg = trim((string) $request->input('svg', ''));
         $backSvgBody = trim((string) $request->input('svg_back', ''));
         if ($configSvg !== '') {

@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Services\BestteamService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class BestteamPageController extends Controller
 {
@@ -17,14 +17,7 @@ class BestteamPageController extends Controller
 
     public function show(Request $request): View|RedirectResponse
     {
-        $userId = (int) Auth::id();
-        if ($userId <= 0) {
-            return redirect()->route('start', [
-                'destination' => 'bestteam',
-            ]);
-        }
-
-        $result = $this->bestteam->pagePayload($userId);
+        $result = $this->bestteam->pagePayload((int) Auth::id());
         if (! $result['ok']) {
             return redirect()->route('start');
         }

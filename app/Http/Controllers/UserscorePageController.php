@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Services\UserscoreService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class UserscorePageController extends Controller
 {
@@ -14,16 +15,9 @@ class UserscorePageController extends Controller
     ) {
     }
 
-    public function show(Request $request): View|\Illuminate\Http\RedirectResponse
+    public function show(Request $request): View|RedirectResponse
     {
-        $userId = (int) Auth::id();
-        if ($userId <= 0) {
-            return redirect()->route('start', [
-                'destination' => 'userscore',
-            ]);
-        }
-
-        $result = $this->userscores->pagePayload($userId);
+        $result = $this->userscores->pagePayload((int) Auth::id());
         if (! $result['ok']) {
             return redirect()->route('start');
         }

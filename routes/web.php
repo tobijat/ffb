@@ -38,8 +38,11 @@ Route::get('/', [StartController::class, 'show'])->name('start');
 Route::post('/login', [LoginController::class, 'login'])->name('login');
 Route::match(['get', 'post'], '/logout', [LoginController::class, 'logout'])->name('logout');
 
-Route::get('/registration', [RegistrationPageController::class, 'show'])->name('registration');
-Route::post('/registration', [RegistrationPageController::class, 'store'])->name('registration.store');
+Route::middleware('guest')->group(function () {
+    Route::get('/registration', [RegistrationPageController::class, 'show'])->name('registration');
+    Route::post('/registration', [RegistrationPageController::class, 'store'])->name('registration.store');
+});
+
 Route::get('/registration/activate', [RegistrationPageController::class, 'activate'])->name('registration.activate');
 Route::get('/registration/activate-email', [RegistrationPageController::class, 'activateEmail'])->name('registration.activate-email');
 Route::post('/registration/password', [RegistrationPageController::class, 'requestPasswordReset'])->name('registration.password');
@@ -54,21 +57,24 @@ Route::get('/mailservice/cancel', [MailUnsubscribeController::class, 'cancel'])-
 Route::redirect('/admin/matchpoints/config', '/admin/score', 301);
 Route::redirect('/admin/matchpoints', '/admin/matchdata', 301);
 
-Route::get('/userscore', [UserscorePageController::class, 'show'])->name('userscore');
-Route::get('/myteam', [MyteamPageController::class, 'show'])->name('myteam');
-Route::get('/bestteam', [BestteamPageController::class, 'show'])->name('bestteam');
-Route::get('/lineup', [LineupPageController::class, 'show'])->name('lineup');
 Route::get('/help', [HelpPageController::class, 'show'])->name('help');
 Route::get('/reference', [ReferencePageController::class, 'show'])->name('reference');
 
-Route::get('/account', [AccountPageController::class, 'show'])->name('account');
-Route::post('/account', [AccountPageController::class, 'update'])->name('account.update');
-Route::get('/profile', [AccountPageController::class, 'showProfile'])->name('profile');
-Route::post('/profile', [AccountPageController::class, 'updateProfile'])->name('profile.update');
-Route::get('/profile/avatar/kit-random', [AccountPageController::class, 'randomKitAvatar'])->name('profile.avatar.kitRandom');
-Route::post('/profile/avatar/kit-from-shirt', [AccountPageController::class, 'kitFromShirt'])->name('profile.avatar.kitFromShirt');
+Route::middleware(['auth', 'ffb.active'])->group(function () {
+    Route::get('/userscore', [UserscorePageController::class, 'show'])->name('userscore');
+    Route::get('/myteam', [MyteamPageController::class, 'show'])->name('myteam');
+    Route::get('/bestteam', [BestteamPageController::class, 'show'])->name('bestteam');
+    Route::get('/lineup', [LineupPageController::class, 'show'])->name('lineup');
 
-Route::middleware('ffb.admin')->group(function () {
+    Route::get('/account', [AccountPageController::class, 'show'])->name('account');
+    Route::post('/account', [AccountPageController::class, 'update'])->name('account.update');
+    Route::get('/profile', [AccountPageController::class, 'showProfile'])->name('profile');
+    Route::post('/profile', [AccountPageController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/profile/avatar/kit-random', [AccountPageController::class, 'randomKitAvatar'])->name('profile.avatar.kitRandom');
+    Route::post('/profile/avatar/kit-from-shirt', [AccountPageController::class, 'kitFromShirt'])->name('profile.avatar.kitFromShirt');
+});
+
+Route::middleware(['auth', 'ffb.active', 'ffb.admin'])->group(function () {
     Route::get('/admin', [AdminCenterController::class, 'show'])->name('admin.center');
     Route::get('/admin/league-dashboard', [AdminLeagueDashboardController::class, 'show'])->name('admin.leagueDashboard');
     Route::post('/admin/leagues/{league}/select', [AdminCenterController::class, 'selectLeague'])->name('admin.leagues.select');
