@@ -24,6 +24,24 @@
     align-items: stretch;
 }
 
+/* Guest header: stretch brand tile to login/reset card height (dashboard.css
+ * loads after start.css, so restate stretch here with matching specificity). */
+.dash-top.dash-top-guest {
+    align-items: stretch;
+}
+
+.dash-top.dash-top-guest .brand {
+    align-self: stretch;
+    display: flex;
+}
+
+.dash-top.dash-top-guest .brand-stacked {
+    height: auto;
+    min-height: 100%;
+    box-sizing: border-box;
+    justify-content: center;
+}
+
 /* Flatten brand/nav into the header flex so Profile can stay on the top row
  * when nav wraps (same pattern as admin). Admin overrides via .admin-top. */
 .dash-top:not(.admin-top) > .dash-top-main {

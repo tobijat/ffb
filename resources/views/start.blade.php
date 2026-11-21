@@ -8,7 +8,7 @@
     @include('partials.favicon')
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
     <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=46">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=54">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=55">
 </head>
 <body class="start-page dash-body">
     @include('partials.dash-top', [
