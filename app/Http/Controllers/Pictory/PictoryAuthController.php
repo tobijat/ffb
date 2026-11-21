@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Pictory;
 
 use App\Http\Controllers\Controller;
-use App\Services\LegacyPhpSession;
 use App\Services\LoginService;
 use App\Services\RegistrationService;
 use Illuminate\Http\RedirectResponse;
@@ -14,7 +13,6 @@ use Illuminate\View\View;
 class PictoryAuthController extends Controller
 {
     public function __construct(
-        private readonly LegacyPhpSession $legacySession,
         private readonly LoginService $login,
         private readonly RegistrationService $registration,
     ) {
@@ -105,7 +103,6 @@ class PictoryAuthController extends Controller
 
     public function logout(Request $request): RedirectResponse
     {
-        $this->legacySession->forget();
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

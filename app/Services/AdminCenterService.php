@@ -10,9 +10,12 @@ use App\Support\UserAvatar;
 
 class AdminCenterService
 {
+    public const SESSION_LEAGUE_ID = 'admin_league_id';
+
+    public const SESSION_LEAGUE_TITLE = 'admin_league_title';
+
     public function __construct(
         private readonly FfbAdminAccess $admins,
-        private readonly LegacyPhpSession $legacySession,
         private readonly LeagueBrand $leagueBrand,
     ) {}
 
@@ -63,11 +66,11 @@ class AdminCenterService
     }
 
     /**
-     * League already chosen elsewhere (legacy admin session, else player selected league).
+     * League already chosen in admin session, else player selected league.
      */
     public function selectedLeagueId(int $userId): int
     {
-        $adminLeagueId = (int) $this->legacySession->get('league_id_admin', 0);
+        $adminLeagueId = (int) session(self::SESSION_LEAGUE_ID, 0);
         if ($adminLeagueId > 0 && League::query()->whereKey($adminLeagueId)->exists()) {
             return $adminLeagueId;
         }
@@ -96,9 +99,9 @@ class AdminCenterService
             ];
         }
 
-        $this->legacySession->put([
-            'league_id_admin' => (int) $league->league_id,
-            'league_title_admin' => (string) $league->league_title,
+        session([
+            self::SESSION_LEAGUE_ID => (int) $league->league_id,
+            self::SESSION_LEAGUE_TITLE => (string) $league->league_title,
         ]);
 
         return [

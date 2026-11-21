@@ -19,7 +19,6 @@ class AccountService
 {
     public function __construct(
         private readonly FfbPassword $passwords,
-        private readonly LegacyPhpSession $legacySession,
     ) {}
 
     /**
@@ -122,7 +121,6 @@ class AccountService
                 (string) $request->getHost(),
             );
 
-            $this->legacySession->forget();
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

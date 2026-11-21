@@ -8,17 +8,11 @@ use Illuminate\Support\Facades\Auth;
 
 class MailUnsubscribeService
 {
-    public function __construct(
-        private readonly LegacyPhpSession $legacySession,
-    ) {
-    }
-
     /**
      * @return array{ok: true, message: string}|array{ok: false, errors: list<string>}
      */
     public function cancel(string $id, string $type, Request $request): array
     {
-        $this->legacySession->forget();
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

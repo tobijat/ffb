@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\WebAdmin;
 use App\Models\WebUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +12,6 @@ class LoginService
 
     public function __construct(
         private readonly FfbPassword $passwords,
-        private readonly LegacyPhpSession $legacySession,
     ) {}
 
     /**
@@ -58,12 +56,6 @@ class LoginService
             return ['ok' => false, 'errors' => ['Das Passwort ist falsch.']];
         }
 
-        $isAdmin = WebAdmin::query()
-            ->where('admin_user_id', $user->user_id)
-            ->where('admin_section', self::AREA_PREFIX)
-            ->where('admin_status', 'active')
-            ->exists();
-
         if ($this->passwords->needsRehash($storedHash)) {
             $user->user_password = $this->passwords->hash($plainPassword);
         }
@@ -74,7 +66,6 @@ class LoginService
         $user->save();
 
         Auth::login($user);
-        $this->syncLegacySession($user, $isAdmin);
 
         return [
             'ok' => true,
@@ -91,22 +82,6 @@ class LoginService
         }
 
         return (string) config('ffb.home_path', '/');
-    }
-
-    private function syncLegacySession(WebUser $user, bool $isAdmin): void
-    {
-        $details = $user->details;
-
-        $this->legacySession->put([
-            'user_id' => (int) $user->user_id,
-            'user_nickname' => (string) $user->user_nickname,
-            'user_email' => (string) $user->user_email,
-            'user_name' => trim((string) ($details?->user_fname ?? '').' '.(string) ($details?->user_lname ?? '')),
-            'user_avatar' => (string) ($details?->user_details_avatar ?: 'avatar_na.png'),
-            'league_id_player' => (int) ($details?->user_details_ffb_selected_league ?? 0),
-            'admin_flag' => $isAdmin ? 1 : 0,
-            'admin_section' => $isAdmin ? self::AREA_PREFIX : null,
-        ]);
     }
 
     /**

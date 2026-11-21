@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Services\AppHostService;
-use App\Services\LegacyPhpSession;
 use App\Services\LoginService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -15,7 +14,6 @@ class LoginController extends Controller
 {
     public function __construct(
         private readonly LoginService $login,
-        private readonly LegacyPhpSession $legacySession,
         private readonly AppHostService $hosts,
     ) {
     }
@@ -45,7 +43,6 @@ class LoginController extends Controller
 
     public function logout(Request $request): RedirectResponse|JsonResponse
     {
-        $this->legacySession->forget();
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Services\AdminCenterService;
 use App\Services\DashboardService;
 use App\Services\FfbAdminAccess;
-use App\Services\LegacyPhpSession;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
@@ -158,9 +157,6 @@ class AdminCenterTest extends TestCase
         $this->mock(FfbAdminAccess::class, function ($mock) {
             $mock->shouldReceive('isAdmin')->andReturn(true);
         });
-        $this->mock(LegacyPhpSession::class, function ($mock) {
-            $mock->shouldReceive('get')->andReturn(0);
-        });
 
         $leagues = collect(app(AdminCenterService::class)->pagePayload(544)['leagues'])
             ->keyBy('league_id');
@@ -200,6 +196,45 @@ class AdminCenterTest extends TestCase
             ->post('/admin/leagues/26/select')
             ->assertRedirect(route('admin.leagueDashboard'))
             ->assertSessionMissing('admin_message');
+    }
+
+    #[Test]
+    public function select_league_persists_in_laravel_session(): void
+    {
+        $this->createLegacyFfbSchema(true);
+
+        Schema::create('web_user', function ($table) {
+            $table->integer('user_id')->primary();
+            $table->string('user_nickname')->default('');
+        });
+
+        DB::table('ffb_league')->insert([
+            'league_id' => 26,
+            'league_title' => 'Testliga',
+            'league_visible' => 1,
+            'league_archive' => 0,
+            'league_test' => 0,
+        ]);
+        DB::table('web_user')->insert([
+            'user_id' => 544,
+            'user_nickname' => 'admin',
+        ]);
+        DB::table('ffb_user_details')->insert([
+            'user_id' => 544,
+            'user_details_ffb_selected_league' => 0,
+        ]);
+
+        $this->mock(FfbAdminAccess::class, function ($mock) {
+            $mock->shouldReceive('isAdmin')->andReturn(true);
+        });
+
+        $service = app(AdminCenterService::class);
+        $result = $service->selectLeague(26);
+
+        $this->assertTrue($result['ok']);
+        $this->assertSame(26, (int) session(AdminCenterService::SESSION_LEAGUE_ID));
+        $this->assertSame('Testliga', (string) session(AdminCenterService::SESSION_LEAGUE_TITLE));
+        $this->assertSame(26, $service->selectedLeagueId(544));
     }
 
     public function test_user_card_shows_admin_center_link_when_flag_set(): void
