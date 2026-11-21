@@ -63,16 +63,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default game for newly registered users
-    |--------------------------------------------------------------------------
-    |
-    | Maps to ffb_user_details.user_details_ffb_selected_league (ffb_league.league_id).
-    |
-    */
-    'registration_default_league_id' => (int) env('FFB_REGISTRATION_DEFAULT_LEAGUE_ID', 25),
-
-    /*
-    |--------------------------------------------------------------------------
     | Terms PDF (registration TOS link)
     |--------------------------------------------------------------------------
     |

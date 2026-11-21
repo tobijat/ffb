@@ -83,7 +83,7 @@ class RegistrationService
             $details->user_gender = '';
             $details->user_nationality = '';
             $details->user_date_birth = null;
-            $details->user_details_ffb_selected_league = (int) config('ffb.registration_default_league_id', 25);
+            $details->user_details_ffb_selected_league = 0;
             $details->user_details_ffb_favourite_team = 1;
             $details->user_details_last_update = $now;
             $details->save();

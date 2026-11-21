@@ -22,7 +22,11 @@ class DashboardService
      */
     public function navigation(?int $userId = null): array
     {
-        $lineupDisabled = $userId !== null && $this->selectedLeagueIsArchived($userId);
+        $leagueId = $userId !== null ? $this->selectedLeagueId($userId) : 0;
+        $noLeague = $userId !== null && $leagueId <= 0;
+        $lineupArchived = $userId !== null && $leagueId > 0 && $this->leagueIsArchived($leagueId);
+        $pickLeagueTitle = 'Bitte zuerst eine Liga auswählen';
+        $archiveTitle = 'Archiviertes Spiel — keine Aufstellung möglich';
 
         return [
             [
@@ -30,26 +34,46 @@ class DashboardService
                 'name' => 'Aufstellung',
                 'link' => '/lineup',
                 'style' => 'big',
-                'disabled' => $lineupDisabled,
-                'disabled_title' => 'Archiviertes Spiel — keine Aufstellung möglich',
+                'disabled' => $noLeague || $lineupArchived,
+                'disabled_title' => $lineupArchived ? $archiveTitle : $pickLeagueTitle,
             ],
-            ['symbol' => 'nav_player.png', 'name' => 'Mannschaft', 'link' => '/myteam', 'style' => 'big'],
-            ['symbol' => 'nav_topflop.png', 'name' => 'Top&Flop', 'link' => '/bestteam', 'style' => 'big'],
-            ['symbol' => 'nav_results.png', 'name' => 'Rangliste', 'link' => '/userscore', 'style' => 'big'],
+            [
+                'symbol' => 'nav_player.png',
+                'name' => 'Mannschaft',
+                'link' => '/myteam',
+                'style' => 'big',
+                'disabled' => $noLeague,
+                'disabled_title' => $pickLeagueTitle,
+            ],
+            [
+                'symbol' => 'nav_topflop.png',
+                'name' => 'Top&Flop',
+                'link' => '/bestteam',
+                'style' => 'big',
+                'disabled' => $noLeague,
+                'disabled_title' => $pickLeagueTitle,
+            ],
+            [
+                'symbol' => 'nav_results.png',
+                'name' => 'Rangliste',
+                'link' => '/userscore',
+                'style' => 'big',
+                'disabled' => $noLeague,
+                'disabled_title' => $pickLeagueTitle,
+            ],
             ['symbol' => 'nav_help.png', 'name' => 'Regeln', 'link' => '/help', 'style' => 'big'],
         ];
     }
 
-    private function selectedLeagueIsArchived(int $userId): bool
+    private function selectedLeagueId(int $userId): int
     {
-        $leagueId = (int) (UserDetails::query()
+        return (int) (UserDetails::query()
             ->where('user_id', $userId)
             ->value('user_details_ffb_selected_league') ?? 0);
+    }
 
-        if ($leagueId <= 0) {
-            return false;
-        }
-
+    private function leagueIsArchived(int $leagueId): bool
+    {
         return (int) (League::query()->where('league_id', $leagueId)->value('league_archive') ?? 0) !== 0;
     }
 

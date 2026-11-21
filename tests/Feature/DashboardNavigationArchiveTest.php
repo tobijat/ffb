@@ -26,6 +26,24 @@ class DashboardNavigationArchiveTest extends TestCase
     }
 
     #[Test]
+    public function navigation_disables_league_items_when_no_league_selected(): void
+    {
+        UserDetails::query()->insert([
+            'user_id' => 544,
+            'user_details_ffb_selected_league' => 0,
+        ]);
+
+        $nav = collect($this->app->make(DashboardService::class)->navigation(544))
+            ->keyBy('name');
+
+        foreach (['Aufstellung', 'Mannschaft', 'Top&Flop', 'Rangliste'] as $name) {
+            $this->assertTrue($nav[$name]['disabled'], $name);
+            $this->assertSame('Bitte zuerst eine Liga auswählen', $nav[$name]['disabled_title']);
+        }
+        $this->assertFalse((bool) ($nav['Regeln']['disabled'] ?? false));
+    }
+
+    #[Test]
     public function navigation_disables_lineup_for_archived_selected_league(): void
     {
         $leagueId = (int) League::query()->insertGetId([
@@ -48,6 +66,8 @@ class DashboardNavigationArchiveTest extends TestCase
             $nav['Aufstellung']['disabled_title']
         );
         $this->assertFalse((bool) ($nav['Mannschaft']['disabled'] ?? false));
+        $this->assertFalse((bool) ($nav['Top&Flop']['disabled'] ?? false));
+        $this->assertFalse((bool) ($nav['Rangliste']['disabled'] ?? false));
     }
 
     #[Test]
@@ -68,6 +88,7 @@ class DashboardNavigationArchiveTest extends TestCase
             ->keyBy('name');
 
         $this->assertFalse($nav['Aufstellung']['disabled']);
+        $this->assertFalse((bool) ($nav['Mannschaft']['disabled'] ?? false));
     }
 
     private function createSchema(): void
