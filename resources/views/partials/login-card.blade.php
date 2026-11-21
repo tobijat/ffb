@@ -6,6 +6,7 @@
 @if ($isReset)
     <form class="user-card user-card-login" method="post" action="{{ $passwordReset['formAction'] }}" autocomplete="off">
         @csrf
+        <input type="hidden" name="email" value="{{ $passwordReset['email'] }}">
         <div class="user-card-text">
             <p class="hello">Passwort zurücksetzen: <strong>{{ $passwordReset['nickname'] }}</strong></p>
 

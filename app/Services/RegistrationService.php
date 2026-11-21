@@ -3,14 +3,13 @@
 namespace App\Services;
 
 use App\Mail\AccountActivationMail;
-use App\Mail\PasswordResetMail;
 use App\Models\UserDetails;
 use App\Models\UserPermissions;
 use App\Models\WebUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Password;
 
 class RegistrationService
 {
@@ -201,53 +200,15 @@ class RegistrationService
             ->first();
 
         if ($user && filter_var((string) $user->user_email, FILTER_VALIDATE_EMAIL)) {
-            $resetUrl = URL::temporarySignedRoute(
-                'password.reset',
-                now()->addDay(),
-                ['user' => (int) $user->user_id],
-            );
-
-            Mail::to((string) $user->user_email)->send(new PasswordResetMail(
-                (string) $user->user_nickname,
-                $resetUrl,
-                (string) $request->getHost(),
-            ));
+            // Credential key must match the web_user column (not Laravel's default "email").
+            Password::broker()->sendResetLink([
+                'user_email' => (string) $user->user_email,
+            ]);
         }
 
         return [
             'ok' => true,
             'message' => 'Wenn ein Account mit diesen Angaben existiert, hast du eine E-Mail mit einem Link zum Zurücksetzen des Passworts erhalten.',
-        ];
-    }
-
-    /**
-     * @param  array<string, mixed>  $input
-     * @return array{ok: true, message: string}|array{ok: false, errors: list<string>}
-     */
-    public function completePasswordReset(WebUser $user, array $input): array
-    {
-        $password = (string) ($input['user_password'] ?? '');
-        $passwordVal = (string) ($input['user_password_val'] ?? '');
-        $errors = [];
-
-        if ($password === '' || $passwordVal === '') {
-            $errors[] = 'Bitte beide Passwort-Felder ausfüllen.';
-        } elseif (strlen($password) < 5 || strlen($password) > 32) {
-            $errors[] = 'Passwort: min. Länge ist 5, max. Länge ist 32!';
-        } elseif (strcmp($password, $passwordVal) !== 0) {
-            $errors[] = 'Die Passwörter stimmen nicht überein!';
-        }
-
-        if ($errors !== []) {
-            return ['ok' => false, 'errors' => $errors];
-        }
-
-        $user->user_password = $this->passwords->hash($password);
-        $user->save();
-
-        return [
-            'ok' => true,
-            'message' => 'Dein Passwort wurde geändert. Du kannst dich jetzt damit anmelden.',
         ];
     }
 

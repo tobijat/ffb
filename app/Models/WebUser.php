@@ -2,15 +2,22 @@
 
 namespace App\Models;
 
+use App\Mail\PasswordResetMail;
 use Illuminate\Auth\Authenticatable;
+use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
 
-class WebUser extends Model implements AuthenticatableContract
+class WebUser extends Model implements AuthenticatableContract, CanResetPasswordContract
 {
     use Authenticatable;
+    use CanResetPassword;
+    use Notifiable;
 
     protected $table = 'web_user';
 
@@ -49,6 +56,29 @@ class WebUser extends Model implements AuthenticatableContract
     public function getRememberTokenName(): string
     {
         return '';
+    }
+
+    public function getEmailForPasswordReset(): string
+    {
+        return (string) $this->user_email;
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $email = $this->getEmailForPasswordReset();
+        $resetUrl = url(route('password.reset', [
+            'token' => $token,
+            'email' => $email,
+        ], false));
+
+        $host = request()?->getHost()
+            ?: (parse_url((string) config('app.url'), PHP_URL_HOST) ?: 'localhost');
+
+        Mail::to($email)->send(new PasswordResetMail(
+            (string) $this->user_nickname,
+            $resetUrl,
+            (string) $host,
+        ));
     }
 
     public function details(): HasOne

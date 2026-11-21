@@ -26,6 +26,7 @@ class SeedDbBuilder
         'failed_jobs',
         'job_batches',
         'jobs',
+        'web_user_password_reset_tokens',
         'password_reset_tokens',
         'sessions',
         'users',

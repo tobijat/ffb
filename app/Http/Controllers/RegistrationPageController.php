@@ -3,18 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Services\RegistrationService;
-use App\Services\StartPageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Auth;
 
 class RegistrationPageController extends Controller
 {
     public function __construct(
         private readonly RegistrationService $registration,
-        private readonly StartPageService $startPage,
     ) {
     }
 
@@ -92,106 +89,5 @@ class RegistrationPageController extends Controller
             'status' => 422,
             'errors' => $result['errors'] ?? ['Unbekannter Fehler.'],
         ], 422);
-    }
-
-    public function showPasswordReset(Request $request, int $user): View|RedirectResponse
-    {
-        if ($request->query->has('signature')) {
-            if (! $request->hasValidSignature()) {
-                return $this->invalidPasswordResetRedirect();
-            }
-
-            $request->session()->put('password_reset', [
-                'user_id' => $user,
-                'expires_at' => (int) $request->query('expires', 0),
-            ]);
-
-            return redirect()->route('password.reset', ['user' => $user]);
-        }
-
-        if (! $this->hasPasswordResetSession($request, $user)) {
-            return $this->invalidPasswordResetRedirect();
-        }
-
-        $webUser = \App\Models\WebUser::query()->find($user);
-        if (! $webUser) {
-            return $this->invalidPasswordResetRedirect();
-        }
-
-        return $this->passwordResetView(
-            (string) $webUser->user_nickname,
-            route('password.reset.update', ['user' => $user]),
-            [],
-        );
-    }
-
-    public function updatePasswordReset(Request $request, int $user): View|RedirectResponse
-    {
-        if (! $this->hasPasswordResetSession($request, $user)) {
-            return $this->invalidPasswordResetRedirect();
-        }
-
-        $webUser = \App\Models\WebUser::query()->find($user);
-        if (! $webUser) {
-            return $this->invalidPasswordResetRedirect();
-        }
-
-        $result = $this->registration->completePasswordReset($webUser, $request->all());
-
-        if ($result['ok']) {
-            $request->session()->forget('password_reset');
-
-            return redirect()->route('start')->with('account_message', $result['message']);
-        }
-
-        return $this->passwordResetView(
-            (string) $webUser->user_nickname,
-            route('password.reset.update', ['user' => $user]),
-            $result['errors'] ?? [],
-        );
-    }
-
-    /**
-     * @param  list<string>  $errors
-     */
-    private function passwordResetView(string $nickname, string $formAction, array $errors): View
-    {
-        $data = $this->startPage->payload();
-
-        return view('start', [
-            'stats' => $data['stats'],
-            'leagues' => $data['leagues'],
-            'results' => $data['results'],
-            'legacyBase' => '/',
-            'destination' => '',
-            'accountMessage' => null,
-            'passwordReset' => [
-                'nickname' => $nickname,
-                'formAction' => $formAction,
-                'errors' => $errors,
-            ],
-        ]);
-    }
-
-    private function hasPasswordResetSession(Request $request, int $user): bool
-    {
-        $payload = $request->session()->get('password_reset');
-        if (! is_array($payload)) {
-            return false;
-        }
-
-        if ((int) ($payload['user_id'] ?? 0) !== $user) {
-            return false;
-        }
-
-        return (int) ($payload['expires_at'] ?? 0) > time();
-    }
-
-    private function invalidPasswordResetRedirect(): RedirectResponse
-    {
-        return redirect()->route('start')->with(
-            'account_message',
-            '<strong>Es sind Fehler aufgetreten:</strong><br>Der Link ist ungültig oder abgelaufen.'
-        );
     }
 }

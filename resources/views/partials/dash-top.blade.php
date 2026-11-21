@@ -2,7 +2,7 @@
     $headerUser = $user ?? ($data['user'] ?? null);
     $headerNav = $nav ?? ($data['navigation'] ?? []);
     $guestTagline = 'Fantasy Football mit echten Ligen — aufstellen, punkten, gewinnen.';
-    // Guests (incl. password-reset) always get the marketing tagline unless overridden.
+    // Guests always get the marketing tagline unless overridden.
     if (empty($headerUser) && empty($brandSubtitle)) {
         $brandSubtitle = $guestTagline;
     }

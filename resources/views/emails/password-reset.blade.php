@@ -2,7 +2,7 @@ Hallo {{ $nickname }}!
 
 Du hast für die Seite http://{{ $siteHost }} ein neues Passwort angefordert.
 
-Klicke auf folgenden Link, um ein neues Passwort zu setzen (gültig für 24 Stunden):
+Klicke auf folgenden Link, um ein neues Passwort zu setzen (gültig für 60 Minuten):
 
 {!! $resetUrl !!}
 

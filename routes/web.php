@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\AdminScoreController;
 use App\Http\Controllers\Admin\AdminSquadController;
 use App\Http\Controllers\Admin\AdminTeamController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\BestteamPageController;
 use App\Http\Controllers\HelpPageController;
 use App\Http\Controllers\LineupPageController;
@@ -47,9 +48,9 @@ Route::get('/registration/activate', [RegistrationPageController::class, 'activa
 Route::get('/registration/activate-email', [RegistrationPageController::class, 'activateEmail'])->name('registration.activate-email');
 Route::post('/registration/password', [RegistrationPageController::class, 'requestPasswordReset'])->name('registration.password');
 
-Route::get('/password/reset/{user}', [RegistrationPageController::class, 'showPasswordReset'])
+Route::get('/password/reset/{token}', [PasswordResetController::class, 'show'])
     ->name('password.reset');
-Route::post('/password/reset/{user}', [RegistrationPageController::class, 'updatePasswordReset'])
+Route::post('/password/reset/{token}', [PasswordResetController::class, 'update'])
     ->name('password.reset.update');
 
 Route::get('/mailservice/cancel', [MailUnsubscribeController::class, 'cancel'])->name('mailservice.cancel');

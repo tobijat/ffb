@@ -5,7 +5,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -93,15 +92,6 @@ return Application::configure(basePath: dirname(__DIR__))
                     'status' => 401,
                     'error' => 'Du wurdest ausgeloggt. Bitte Seite neu laden um dich erneut einzuloggen.',
                 ], 401);
-            }
-        });
-
-        $exceptions->render(function (InvalidSignatureException $e, Request $request) {
-            if ($request->is('password/reset/*')) {
-                return redirect()->route('start')->with(
-                    'account_message',
-                    '<strong>Es sind Fehler aufgetreten:</strong><br>Der Link ist ungültig oder abgelaufen.'
-                );
             }
         });
     })->create();
