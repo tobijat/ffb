@@ -41,7 +41,16 @@ class PasswordResetController extends Controller
         $password = (string) $request->input('user_password', $request->input('password', ''));
         $passwordConfirmation = (string) $request->input('user_password_val', $request->input('password_confirmation', ''));
 
-        $errors = $this->validatePasswords($password, $passwordConfirmation);
+        $errors = [];
+        if ($password === '' || $passwordConfirmation === '') {
+            $errors[] = 'Bitte beide Passwort-Felder ausfüllen.';
+        } else {
+            $errors = array_merge($errors, $this->passwords->validatePlain($password));
+            if (strcmp($password, $passwordConfirmation) !== 0) {
+                $errors[] = 'Die Passwörter stimmen nicht überein!';
+            }
+        }
+
         if ($errors !== []) {
             $this->logoutIfAuthenticated($request);
             $nickname = (string) (WebUser::query()->where('user_email', $email)->value('user_nickname') ?? '');
@@ -73,24 +82,6 @@ class PasswordResetController extends Controller
         }
 
         return $this->invalidLinkRedirect();
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function validatePasswords(string $password, string $passwordConfirmation): array
-    {
-        $errors = [];
-
-        if ($password === '' || $passwordConfirmation === '') {
-            $errors[] = 'Bitte beide Passwort-Felder ausfüllen.';
-        } elseif (strlen($password) < 5 || strlen($password) > 32) {
-            $errors[] = 'Passwort: min. Länge ist 5, max. Länge ist 32!';
-        } elseif (strcmp($password, $passwordConfirmation) !== 0) {
-            $errors[] = 'Die Passwörter stimmen nicht überein!';
-        }
-
-        return $errors;
     }
 
     private function userForToken(string $email, string $token): ?WebUser

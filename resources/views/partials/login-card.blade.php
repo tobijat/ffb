@@ -19,11 +19,11 @@
 
             <label>
                 <span class="visually-hidden">Neues Passwort</span>
-                <input type="password" name="user_password" id="user_password" maxlength="32" placeholder="Neues Passwort" required autocomplete="new-password" autofocus data-required-msg="Bitte neues Passwort eingeben.">
+                <input type="password" name="user_password" id="user_password" minlength="10" maxlength="32" placeholder="Neues Passwort" required autocomplete="new-password" autofocus data-required-msg="Bitte neues Passwort eingeben." data-too-short-msg="Passwort: min. Länge ist 10, max. Länge ist 32!">
             </label>
             <label>
                 <span class="visually-hidden">Passwort wiederholen</span>
-                <input type="password" name="user_password_val" id="user_password_val" maxlength="32" placeholder="Passwort wiederholen" required autocomplete="new-password" data-required-msg="Bitte Passwort wiederholen.">
+                <input type="password" name="user_password_val" id="user_password_val" minlength="10" maxlength="32" placeholder="Passwort wiederholen" required autocomplete="new-password" data-required-msg="Bitte Passwort wiederholen." data-too-short-msg="Passwort: min. Länge ist 10, max. Länge ist 32!">
             </label>
 
             <p class="login-links">

@@ -254,9 +254,7 @@ class RegistrationService
             $errors[] = 'Sonderzeichen dürfen im Benutzernamen nicht zweimal hintereinander stehen!';
         }
 
-        if (strlen($password) < 5 || strlen($password) > 32) {
-            $errors[] = 'Passwort: min. Länge ist 5, max. Länge ist 32!';
-        }
+        $errors = array_merge($errors, $this->passwords->validatePlain($password));
 
         if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Deine Email-Adresse ist nicht gültig!';

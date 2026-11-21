@@ -7,9 +7,16 @@ namespace App\Services;
  *
  * Existing accounts store 32-char MD5 digests. New writes use password_hash().
  * On successful login with a legacy hash, callers should rehash and persist.
+ *
+ * New / changed passwords must meet {@see validatePlain()} rules; existing
+ * stored hashes are never re-validated on login.
  */
 class FfbPassword
 {
+    public const MIN_LENGTH = 10;
+
+    public const MAX_LENGTH = 32;
+
     public function hash(string $plainPassword): string
     {
         return password_hash($plainPassword, PASSWORD_DEFAULT);
@@ -48,5 +55,32 @@ class FfbPassword
         }
 
         return (bool) preg_match('/^[a-f0-9]{32}$/i', $storedHash);
+    }
+
+    /**
+     * Validate a new plaintext password (registration, change, reset).
+     *
+     * @return list<string>
+     */
+    public function validatePlain(string $password, string $label = 'Passwort'): array
+    {
+        $errors = [];
+        $length = strlen($password);
+
+        if ($length < self::MIN_LENGTH || $length > self::MAX_LENGTH) {
+            $errors[] = $label.': min. Länge ist '.self::MIN_LENGTH.', max. Länge ist '.self::MAX_LENGTH.'!';
+        }
+
+        if ($password !== '' && ! $this->hasDigitOrSpecial($password)) {
+            $errors[] = $label.': muss mindestens eine Zahl oder ein Sonderzeichen enthalten!';
+        }
+
+        return $errors;
+    }
+
+    private function hasDigitOrSpecial(string $password): bool
+    {
+        return (bool) preg_match('/\d/', $password)
+            || (bool) preg_match('/[^a-zA-Z0-9]/', $password);
     }
 }

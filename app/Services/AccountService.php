@@ -13,7 +13,6 @@ use App\Support\UserAvatar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 
 class AccountService
 {
@@ -448,10 +447,7 @@ class AccountService
         $password = (string) ($input['user_password_chg'] ?? '');
         $passwordConfirm = (string) ($input['user_password_val_chg'] ?? '');
         if ($password !== '') {
-            $len = Str::length($password);
-            if ($len < 5 || $len > 32) {
-                $errors[] = 'Passwortänderung: min. Länge ist 5, max. Länge ist 32!';
-            }
+            $errors = array_merge($errors, $this->passwords->validatePlain($password, 'Passwortänderung'));
             if ($password !== $passwordConfirm) {
                 $errors[] = 'Die Passwörter bei der Passwortänderung stimmen nicht überein!';
             }

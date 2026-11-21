@@ -429,12 +429,12 @@
 
                     <div class="account-field">
                         <label for="user_password_chg">Passwort ändern</label>
-                        <input id="user_password_chg" type="password" name="user_password_chg" minlength="5" maxlength="32" data-help="user_password_chg" autocomplete="new-password" data-too-short-msg="Passwortänderung: min. Länge ist 5, max. Länge ist 32!" data-too-long-msg="Passwortänderung: min. Länge ist 5, max. Länge ist 32!">
+                        <input id="user_password_chg" type="password" name="user_password_chg" minlength="10" maxlength="32" data-help="user_password_chg" autocomplete="new-password" data-too-short-msg="Passwortänderung: min. Länge ist 10, max. Länge ist 32!" data-too-long-msg="Passwortänderung: min. Länge ist 10, max. Länge ist 32!">
                     </div>
 
                     <div class="account-field">
                         <label for="user_password_val_chg">Passwortänderung wiederholen</label>
-                        <input id="user_password_val_chg" type="password" name="user_password_val_chg" minlength="5" maxlength="32" data-help="user_password_val_chg" autocomplete="new-password" data-too-short-msg="Passwortänderung: min. Länge ist 5, max. Länge ist 32!" data-too-long-msg="Passwortänderung: min. Länge ist 5, max. Länge ist 32!">
+                        <input id="user_password_val_chg" type="password" name="user_password_val_chg" minlength="10" maxlength="32" data-help="user_password_val_chg" autocomplete="new-password" data-too-short-msg="Passwortänderung: min. Länge ist 10, max. Länge ist 32!" data-too-long-msg="Passwortänderung: min. Länge ist 10, max. Länge ist 32!">
                     </div>
 
                     <div class="account-field">

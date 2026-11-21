@@ -187,8 +187,8 @@ class PasswordResetTest extends TestCase
 
         $this->post(route('password.reset.update', ['token' => $token]), [
             'email' => 'resetter@example.com',
-            'user_password' => 'secret1',
-            'user_password_val' => 'secret1',
+            'user_password' => 'secret12ab',
+            'user_password_val' => 'secret12ab',
         ])
             ->assertRedirect(route('start'))
             ->assertSessionHas('account_message', 'Dein Passwort wurde geändert.');
@@ -197,7 +197,7 @@ class PasswordResetTest extends TestCase
         $this->assertSame(7, (int) Auth::id());
 
         $stored = (string) DB::table('web_user')->where('user_id', 7)->value('user_password');
-        $this->assertTrue(app(FfbPassword::class)->verify('secret1', $stored));
+        $this->assertTrue(app(FfbPassword::class)->verify('secret12ab', $stored));
 
         $this->assertSame(0, DB::table('web_user_password_reset_tokens')->count());
 
@@ -232,11 +232,11 @@ class PasswordResetTest extends TestCase
             'email' => 'resetter@example.com',
         ]))->post(route('password.reset.update', ['token' => $token]), [
             'email' => 'resetter@example.com',
-            'user_password' => 'abc',
-            'user_password_val' => 'abc',
+            'user_password' => 'abcdefghi',
+            'user_password_val' => 'abcdefghi',
         ])
             ->assertOk()
-            ->assertSee('Passwort: min. Länge ist 5, max. Länge ist 32!', false)
+            ->assertSee('Passwort: min. Länge ist 10, max. Länge ist 32!', false)
             ->assertSee('user-card-login', false);
 
         $this->assertGuest();

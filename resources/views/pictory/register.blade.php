@@ -30,11 +30,11 @@
                 <div class="row">
                     <div>
                         <label for="user_password">Passwort</label>
-                        <input id="user_password" type="password" name="user_password" required minlength="5" maxlength="32" autocomplete="new-password">
+                        <input id="user_password" type="password" name="user_password" required minlength="10" maxlength="32" autocomplete="new-password">
                     </div>
                     <div>
                         <label for="user_password_val">Passwort wiederholen</label>
-                        <input id="user_password_val" type="password" name="user_password_val" required minlength="5" maxlength="32" autocomplete="new-password">
+                        <input id="user_password_val" type="password" name="user_password_val" required minlength="10" maxlength="32" autocomplete="new-password">
                     </div>
                 </div>
 

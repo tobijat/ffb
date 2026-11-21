@@ -35,8 +35,8 @@ class RegistrationServiceValidationTest extends TestCase
         $service = new RegistrationService(new FfbPassword);
         $errors = $service->validate([
             'user_nickname' => 'tester',
-            'user_password' => 'secret1',
-            'user_password_val' => 'secret2',
+            'user_password' => 'secret12ab',
+            'user_password_val' => 'secret99xy',
             'user_email' => 'a@example.com',
             'user_email_val' => 'a@example.com',
             'user_tos' => 'user_tos_yes',
@@ -50,8 +50,8 @@ class RegistrationServiceValidationTest extends TestCase
         $this->withUsersTable();
         $service = new RegistrationService(new FfbPassword);
         $base = [
-            'user_password' => 'secret1',
-            'user_password_val' => 'secret1',
+            'user_password' => 'secret12ab',
+            'user_password_val' => 'secret12ab',
             'user_email' => 'a@example.com',
             'user_email_val' => 'a@example.com',
             'user_tos' => 'user_tos_yes',
@@ -79,8 +79,8 @@ class RegistrationServiceValidationTest extends TestCase
         $service = new RegistrationService(new FfbPassword);
         $errors = $service->validate([
             'user_nickname' => '太郎くん',
-            'user_password' => 'secret1',
-            'user_password_val' => 'secret1',
+            'user_password' => 'secret12ab',
+            'user_password_val' => 'secret12ab',
             'user_email' => 'a@example.com',
             'user_email_val' => 'a@example.com',
             'user_tos' => 'user_tos_yes',

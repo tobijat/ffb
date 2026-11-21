@@ -36,4 +36,18 @@ class FfbPasswordTest extends TestCase
         $this->assertFalse($passwords->verify('secret', ''));
         $this->assertTrue($passwords->needsRehash(null));
     }
+
+    public function test_validate_plain_enforces_length_and_digit_or_special(): void
+    {
+        $passwords = new FfbPassword;
+
+        $this->assertNotEmpty($passwords->validatePlain('short1'));
+        $this->assertNotEmpty($passwords->validatePlain('abcdefghij'));
+        $this->assertSame([], $passwords->validatePlain('abcdefghij1'));
+        $this->assertSame([], $passwords->validatePlain('abcdefghij!'));
+        $this->assertContains(
+            'Passwortänderung: muss mindestens eine Zahl oder ein Sonderzeichen enthalten!',
+            $passwords->validatePlain('abcdefghij', 'Passwortänderung')
+        );
+    }
 }

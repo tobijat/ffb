@@ -43,12 +43,12 @@
 
                 <div class="account-field">
                     <label for="user_password">* Passwort</label>
-                    <input id="user_password" type="password" name="user_password" minlength="5" maxlength="32" required data-help="user_password" autocomplete="new-password" data-required-msg="Bitte Passwort eingeben." data-too-short-msg="Passwort: min. Länge ist 5, max. Länge ist 32!" data-too-long-msg="Passwort: min. Länge ist 5, max. Länge ist 32!">
+                    <input id="user_password" type="password" name="user_password" minlength="10" maxlength="32" required data-help="user_password" autocomplete="new-password" data-required-msg="Bitte Passwort eingeben." data-too-short-msg="Passwort: min. Länge ist 10, max. Länge ist 32!" data-too-long-msg="Passwort: min. Länge ist 10, max. Länge ist 32!">
                 </div>
 
                 <div class="account-field">
                     <label for="user_password_val">* Passwort wiederholen</label>
-                    <input id="user_password_val" type="password" name="user_password_val" minlength="5" maxlength="32" required data-help="user_password_val" autocomplete="new-password" data-required-msg="Bitte Passwort wiederholen." data-too-short-msg="Passwort: min. Länge ist 5, max. Länge ist 32!" data-too-long-msg="Passwort: min. Länge ist 5, max. Länge ist 32!">
+                    <input id="user_password_val" type="password" name="user_password_val" minlength="10" maxlength="32" required data-help="user_password_val" autocomplete="new-password" data-required-msg="Bitte Passwort wiederholen." data-too-short-msg="Passwort: min. Länge ist 10, max. Länge ist 32!" data-too-long-msg="Passwort: min. Länge ist 10, max. Länge ist 32!">
                 </div>
 
                 <div class="account-field">
