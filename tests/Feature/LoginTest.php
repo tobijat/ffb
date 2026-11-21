@@ -37,6 +37,9 @@ class LoginTest extends TestCase
             ]);
 
         $this->assertSame(544, (int) session(FfbAuth::SESSION_USER_ID));
+        // No web_user row in this mocked test — guard stays guest; legacy key still set.
+        $this->assertGuest();
+        $this->assertSame(544, app(FfbAuth::class)->userId());
     }
 
     public function test_login_rejects_with_errors(): void
@@ -69,5 +72,7 @@ class LoginTest extends TestCase
             ->assertRedirect(route('start'));
 
         $this->assertSame(0, (int) session(FfbAuth::SESSION_USER_ID, 0));
+        $this->assertGuest();
+        $this->assertSame(0, app(FfbAuth::class)->userId());
     }
 }

@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class WebUser extends Model
+class WebUser extends Model implements AuthenticatableContract
 {
+    use Authenticatable;
+
     protected $table = 'web_user';
 
     protected $primaryKey = 'user_id';
@@ -18,6 +22,34 @@ class WebUser extends Model
         'user_password',
         'user_activation_code',
     ];
+
+    public function getAuthPassword(): string
+    {
+        return (string) $this->user_password;
+    }
+
+    public function getAuthPasswordName(): string
+    {
+        return 'user_password';
+    }
+
+    /**
+     * web_user has no remember_token column; remember-me is unused.
+     */
+    public function getRememberToken(): ?string
+    {
+        return null;
+    }
+
+    public function setRememberToken($value): void
+    {
+        // no-op
+    }
+
+    public function getRememberTokenName(): string
+    {
+        return '';
+    }
 
     public function details(): HasOne
     {

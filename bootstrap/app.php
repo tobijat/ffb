@@ -21,6 +21,22 @@ return Application::configure(basePath: dirname(__DIR__))
                     'laravel' => app()->version(),
                 ]);
             });
+
+            $pictoryHosts = app(\App\Services\AppHostService::class)
+                ->hostsForService(\App\Services\AppHostService::SERVICE_PICTORY);
+
+            if ($pictoryHosts !== []) {
+                $pattern = implode('|', array_map(
+                    static fn (string $host): string => preg_quote($host, '/'),
+                    $pictoryHosts,
+                ));
+
+                // Single route group so route('pictory.*') uses the current request host.
+                Route::domain('{pictoryDomain}')
+                    ->where(['pictoryDomain' => $pattern])
+                    ->middleware('web')
+                    ->group(base_path('routes/pictory/web.php'));
+            }
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -29,6 +45,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Cookie\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
+            \App\Http\Middleware\ResolveAppService::class,
+        ]);
+
+        $middleware->web(prepend: [
+            \App\Http\Middleware\ResolveAppService::class,
         ]);
 
         $middleware->web(append: [

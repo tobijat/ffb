@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\AppHostService;
 use App\Services\FfbAuth;
 use App\Services\LoginService;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +15,7 @@ class LoginController extends Controller
     public function __construct(
         private readonly LoginService $login,
         private readonly FfbAuth $auth,
+        private readonly AppHostService $hosts,
     ) {
     }
 
@@ -43,6 +45,17 @@ class LoginController extends Controller
     public function logout(Request $request): RedirectResponse|JsonResponse
     {
         $this->auth->logout($request);
+
+        if ($this->hosts->isPictory($request)) {
+            if ($request->expectsJson() || $request->wantsJson()) {
+                return response()->json([
+                    'status' => 200,
+                    'destination' => route('pictory.home', absolute: false),
+                ]);
+            }
+
+            return redirect()->route('pictory.home');
+        }
 
         $home = (string) config('ffb.home_path', '/');
 

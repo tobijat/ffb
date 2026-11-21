@@ -10,15 +10,8 @@
             '<b>E-Mail</b><br>Gib hier deine E-Mail Adresse ein. Sie sollte gültig sein — du bekommst ein Aktivierungs-Mail an diese Adresse.',
         user_email_val:
             '<b>E-Mail wiederholen</b><br>Gib hier deine E-Mail Adresse noch einmal ein, um sie zu bestätigen.',
-        user_fname: '<b>Vorname</b><br>Wenn du möchtest, kannst du hier deinen Vornamen eingeben.',
-        user_lname: '<b>Nachname</b><br>Wenn du möchtest, kannst du hier deinen Nachnamen eingeben.',
-        user_birthday:
-            '<b>Geburtsdatum</b><br>Wenn du möchtest, kannst du hier dein Geburtsdatum angeben.',
-        user_nationality:
-            '<b>Nationalität</b><br>Wenn du möchtest, kannst du hier deine Nationalität angeben.',
         user_tos:
             '<b>Bedingungen</b><br>Hier musst du bestätigen, dass du die Bedingungen gelesen hast und akzeptierst.',
-        user_code: '<b>Bestätigungs-Code</b><br>Bitte bestätige, dass du kein Bot bist.',
     };
 
     const target = document.getElementById('reg_helptext');
@@ -92,9 +85,6 @@
             lower.includes('existiert bereits')
         ) {
             return fieldByName('user_nickname');
-        }
-        if (lower.includes('geburt') || lower.includes('alter') || lower.includes('jahr')) {
-            return fieldByName('user_birth_day');
         }
         if (lower.includes('felder ausfüllen') || lower.includes('felder ausfuellen')) {
             const required = form.querySelectorAll('[required]');

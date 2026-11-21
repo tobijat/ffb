@@ -23,15 +23,7 @@ class RegistrationPageTest extends TestCase
                         'user_nickname' => '',
                         'user_email' => '',
                         'user_email_val' => '',
-                        'user_fname' => '',
-                        'user_lname' => '',
-                        'user_birth_day' => 0,
-                        'user_birth_month' => 0,
-                        'user_birth_year' => 0,
-                        'user_nationality' => '',
                     ],
-                    'countries' => ['AUT' => 'Österreich'],
-                    'birth_years' => [2010, 1990],
                     'navigation' => [
                         ['symbol' => 'nav_user.png', 'name' => 'Registrieren', 'link' => '/registration', 'style' => 'big'],
                     ],
@@ -44,6 +36,10 @@ class RegistrationPageTest extends TestCase
             ->assertOk()
             ->assertSee('Account anlegen', false)
             ->assertSee('Benutzername', false)
+            ->assertDontSee('user_fname', false)
+            ->assertDontSee('user_lname', false)
+            ->assertDontSee('user_nationality', false)
+            ->assertDontSee('Geburtsdatum', false)
             ->assertSee('js/registration.js', false)
             ->assertSee('user-card-login', false)
             ->assertSee('Fantasy Football mit echten Ligen', false)
@@ -68,12 +64,6 @@ class RegistrationPageTest extends TestCase
                     'user_nickname' => 'neu',
                     'user_email' => 'neu@example.com',
                     'user_email_val' => 'neu@example.com',
-                    'user_fname' => '',
-                    'user_lname' => '',
-                    'user_birth_day' => 0,
-                    'user_birth_month' => 0,
-                    'user_birth_year' => 0,
-                    'user_nationality' => '',
                 ],
             ]);
             $mock->shouldReceive('pagePayload')->once()->andReturn([
@@ -83,15 +73,7 @@ class RegistrationPageTest extends TestCase
                         'user_nickname' => 'neu',
                         'user_email' => 'neu@example.com',
                         'user_email_val' => 'neu@example.com',
-                        'user_fname' => '',
-                        'user_lname' => '',
-                        'user_birth_day' => 0,
-                        'user_birth_month' => 0,
-                        'user_birth_year' => 0,
-                        'user_nationality' => '',
                     ],
-                    'countries' => [],
-                    'birth_years' => [],
                     'navigation' => [],
                     'tos_url' => '/resource/Registrierung.pdf',
                 ],

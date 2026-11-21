@@ -27,8 +27,6 @@ class RegistrationService
             'ok' => true,
             'data' => [
                 'form' => $formOverride ?? $this->emptyForm(),
-                'countries' => config('countries', []),
-                'birth_years' => $this->birthYears(),
                 'navigation' => HelpService::guestNavigation(),
                 'tos_url' => (string) config('ffb.registration_tos_url'),
             ],
@@ -81,11 +79,11 @@ class RegistrationService
 
             $details = new UserDetails;
             $details->user_id = (int) $user->user_id;
-            $details->user_fname = trim((string) ($input['user_fname'] ?? ''));
-            $details->user_lname = trim((string) ($input['user_lname'] ?? ''));
+            $details->user_fname = '';
+            $details->user_lname = '';
             $details->user_gender = '';
-            $details->user_nationality = (string) ($input['user_nationality'] ?? '');
-            $details->user_date_birth = $this->birthDateFromInput($input);
+            $details->user_nationality = '';
+            $details->user_date_birth = null;
             $details->user_details_ffb_selected_league = (int) config('ffb.registration_default_league_id', 25);
             $details->user_details_ffb_favourite_team = 1;
             $details->user_details_last_update = $now;
@@ -315,11 +313,6 @@ class RegistrationService
             $errors[] = 'Du musst die Bedingungen gelesen und akzeptiert haben!';
         }
 
-        $birthError = $this->validateBirthDate($input);
-        if ($birthError !== null) {
-            $errors[] = $birthError;
-        }
-
         if ($errors !== []) {
             return $errors;
         }
@@ -337,7 +330,11 @@ class RegistrationService
 
     private function sendActivationMail(WebUser $user, string $activationCode, string $siteHost): string
     {
-        $activationUrl = route('registration.activate', [
+        $activateRoute = app(AppHostService::class)->isPictory()
+            ? 'pictory.activate'
+            : 'registration.activate';
+
+        $activationUrl = route($activateRoute, [
             'id' => $activationCode.'-'.(int) $user->user_id,
         ]);
 
@@ -367,12 +364,6 @@ class RegistrationService
             'user_nickname' => '',
             'user_email' => '',
             'user_email_val' => '',
-            'user_fname' => '',
-            'user_lname' => '',
-            'user_birth_day' => 0,
-            'user_birth_month' => 0,
-            'user_birth_year' => 0,
-            'user_nationality' => '',
         ];
     }
 
@@ -386,62 +377,6 @@ class RegistrationService
             'user_nickname' => (string) ($input['user_nickname'] ?? ''),
             'user_email' => (string) ($input['user_email'] ?? ''),
             'user_email_val' => (string) ($input['user_email_val'] ?? ''),
-            'user_fname' => (string) ($input['user_fname'] ?? ''),
-            'user_lname' => (string) ($input['user_lname'] ?? ''),
-            'user_birth_day' => (int) ($input['user_birth_day'] ?? 0),
-            'user_birth_month' => (int) ($input['user_birth_month'] ?? 0),
-            'user_birth_year' => (int) ($input['user_birth_year'] ?? 0),
-            'user_nationality' => (string) ($input['user_nationality'] ?? ''),
         ];
-    }
-
-    /**
-     * @param  array<string, mixed>  $input
-     */
-    private function birthDateFromInput(array $input): ?string
-    {
-        $day = (int) ($input['user_birth_day'] ?? 0);
-        $month = (int) ($input['user_birth_month'] ?? 0);
-        $year = (int) ($input['user_birth_year'] ?? 0);
-
-        if ($day <= 0 || $month <= 0 || $year <= 0) {
-            return null;
-        }
-
-        return sprintf('%04d-%02d-%02d', $year, $month, $day);
-    }
-
-    /**
-     * @param  array<string, mixed>  $input
-     */
-    private function validateBirthDate(array $input): ?string
-    {
-        $day = (int) ($input['user_birth_day'] ?? 0);
-        $month = (int) ($input['user_birth_month'] ?? 0);
-        $year = (int) ($input['user_birth_year'] ?? 0);
-
-        if ($day <= 0 && $month <= 0 && $year <= 0) {
-            return null;
-        }
-
-        if ($day <= 0 || $month <= 0 || $year <= 0 || ! checkdate($month, $day, $year)) {
-            return 'Das Geburtsdatum ist nicht gültig!';
-        }
-
-        return null;
-    }
-
-    /**
-     * @return list<int>
-     */
-    private function birthYears(): array
-    {
-        $now = (int) date('Y');
-        $years = [];
-        for ($y = $now - 11; $y > $now - 101; $y--) {
-            $years[] = $y;
-        }
-
-        return $years;
     }
 }
