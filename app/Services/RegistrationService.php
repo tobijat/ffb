@@ -72,13 +72,11 @@ class RegistrationService
             $user->user_password = $this->passwords->hash((string) $input['user_password']);
             $user->user_email = trim((string) $input['user_email']);
             $user->user_status = 'na';
-            $user->user_ip = $ip;
             $user->user_lip = $ip;
             $user->user_date_register = $now;
             $user->user_date_llogin = $now;
             $user->user_date_laction = $now;
             $user->user_activation_code = $activationCode;
-            $user->user_mailservice = '';
             $user->save();
 
             $details = new UserDetails;

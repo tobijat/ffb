@@ -99,8 +99,6 @@ class AccountService
             ];
         }
 
-        $user->user_ip = (string) $request->ip();
-
         $password = (string) ($input['user_password_chg'] ?? '');
         if ($password !== '') {
             $user->user_password = $this->passwords->hash($password);
@@ -259,8 +257,6 @@ class AccountService
         );
         $permissions->user_permissions_ffb_visible_profile = (int) ($input['user_permissions_ffb_visible_profile'] ?? 0) === 1 ? 1 : 0;
 
-        $user->user_ip = (string) $request->ip();
-        $user->save();
         $details->save();
         $permissions->save();
 
@@ -310,9 +306,6 @@ class AccountService
                 CustomAvatarSvg::deleteStored($previous);
             }
         }
-
-        $user->user_ip = (string) $request->ip();
-        $user->save();
 
         $fresh = $user->fresh(['details']);
 
@@ -370,9 +363,6 @@ class AccountService
         if ($previous !== $stored) {
             CustomAvatarSvg::deleteStored($previous);
         }
-
-        $user->user_ip = (string) $request->ip();
-        $user->save();
 
         $fresh = $user->fresh(['details']);
 

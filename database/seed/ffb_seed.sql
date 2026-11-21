@@ -26681,17 +26681,15 @@ CREATE TABLE `web_user` (
   `user_password` varchar(255) NOT NULL,
   `user_email` varchar(255) NOT NULL,
   `user_status` varchar(255) NOT NULL DEFAULT 'na',
-  `user_ip` varchar(255) NOT NULL,
   `user_date_register` datetime DEFAULT NULL,
   `user_activation_code` varchar(255) NOT NULL,
-  `user_mailservice` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`user_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=548 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `web_user` (`user_id`, `user_nickname`, `user_date_laction`, `user_date_llogin`, `user_lip`, `user_password`, `user_email`, `user_status`, `user_ip`, `user_date_register`, `user_activation_code`, `user_mailservice`) VALUES
-(1, 'AdminUser', '2026-10-08 12:11:51', '2026-10-08 12:11:51', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'adminuser@example.test', 'active', '127.0.0.1', '2008-06-03 16:33:54', '', '403d370096c1e203686048ce53291418'),
-(546, 'Haaland', '2026-10-05 16:46:59', '2026-10-05 16:46:59', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'haaland@example.test', 'active', '127.0.0.1', '2026-10-04 13:43:38', '', ''),
-(547, 'Ronaldo', '2026-10-04 13:52:17', '2026-10-04 13:52:17', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'ronaldo@example.test', 'active', '127.0.0.1', '2026-10-04 13:46:47', '', '');
+INSERT INTO `web_user` (`user_id`, `user_nickname`, `user_date_laction`, `user_date_llogin`, `user_lip`, `user_password`, `user_email`, `user_status`, `user_date_register`, `user_activation_code`) VALUES
+(1, 'AdminUser', '2026-10-08 12:11:51', '2026-10-08 12:11:51', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'adminuser@example.test', 'active', '2008-06-03 16:33:54', ''),
+(546, 'Haaland', '2026-10-05 16:46:59', '2026-10-05 16:46:59', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'haaland@example.test', 'active', '2026-10-04 13:43:38', ''),
+(547, 'Ronaldo', '2026-10-04 13:52:17', '2026-10-04 13:52:17', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'ronaldo@example.test', 'active', '2026-10-04 13:46:47', '');
 
 DROP TABLE IF EXISTS `ffb_user_details`;
 CREATE TABLE `ffb_user_details` (
