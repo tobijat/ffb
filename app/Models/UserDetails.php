@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserDetails extends Model
 {
-    protected $table = 'web_user_details';
+    protected $table = 'ffb_user_details';
 
     protected $primaryKey = 'user_id';
 

@@ -122,7 +122,7 @@ class PlayerPopupPastMatchesTest extends TestCase
             'playerstats_score' => 5,
             'playerstats_cards' => 'n',
         ]);
-        DB::table('web_user_details')->insert([
+        DB::table('ffb_user_details')->insert([
             'user_id' => 544,
             'user_details_ffb_selected_league' => 1,
         ]);

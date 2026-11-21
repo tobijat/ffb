@@ -63,7 +63,7 @@ class PlayerPopupTransferDateNullTest extends TestCase
             'player_nationality' => 'aut',
             'player_status_description' => '',
         ]);
-        DB::table('web_user_details')->insert([
+        DB::table('ffb_user_details')->insert([
             'user_id' => 7,
             'user_details_ffb_selected_league' => 1,
         ]);

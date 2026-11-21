@@ -38,8 +38,8 @@ class ProfilePopupService
         $favTeam = $this->teamInfo((int) ($details->user_details_ffb_favourite_team ?? 0));
         $ownTeam = $this->teamInfo((int) ($details->user_details_ffb_own_team ?? 0));
 
-        $fname = $user->user_fname ?: null;
-        $lname = $user->user_lname ?: null;
+        $fname = $details->user_fname ?: null;
+        $lname = $details->user_lname ?: null;
 
         return [
             'ok' => true,
@@ -53,7 +53,7 @@ class ProfilePopupService
                     'user_name' => ($visibleProfile && ($fname || $lname))
                         ? trim(($fname ?? '').' '.($lname ?? ''))
                         : null,
-                    'user_gender' => $user->user_gender ?: null,
+                    'user_gender' => $details->user_gender ?: null,
                     'user_date_llogin' => $user->user_date_llogin
                         ? date('d.m.Y', strtotime((string) $user->user_date_llogin))
                         : null,

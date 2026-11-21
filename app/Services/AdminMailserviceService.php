@@ -98,33 +98,33 @@ class AdminMailserviceService
         }
 
         if ($mailservice !== '') {
-            $query->leftJoin('web_user_permissions', 'web_user.user_id', '=', 'web_user_permissions.user_id');
+            $query->leftJoin('ffb_user_permissions', 'web_user.user_id', '=', 'ffb_user_permissions.user_id');
             if ($mailservice === 'opted_out') {
                 $query->where(function ($q): void {
-                    $q->whereNull('web_user_permissions.user_id')
+                    $q->whereNull('ffb_user_permissions.user_id')
                         ->orWhere(function ($q2): void {
                             $q2->where(function ($info): void {
-                                $info->whereNull('web_user_permissions.user_permissions_ffb_mailservice_info')
-                                    ->orWhere('web_user_permissions.user_permissions_ffb_mailservice_info', '')
-                                    ->orWhere('web_user_permissions.user_permissions_ffb_mailservice_info', '0');
+                                $info->whereNull('ffb_user_permissions.user_permissions_ffb_mailservice_info')
+                                    ->orWhere('ffb_user_permissions.user_permissions_ffb_mailservice_info', '')
+                                    ->orWhere('ffb_user_permissions.user_permissions_ffb_mailservice_info', '0');
                             })->where(function ($reminder): void {
-                                $reminder->whereNull('web_user_permissions.user_permissions_ffb_mailservice_reminder')
-                                    ->orWhere('web_user_permissions.user_permissions_ffb_mailservice_reminder', '')
-                                    ->orWhere('web_user_permissions.user_permissions_ffb_mailservice_reminder', '0');
+                                $reminder->whereNull('ffb_user_permissions.user_permissions_ffb_mailservice_reminder')
+                                    ->orWhere('ffb_user_permissions.user_permissions_ffb_mailservice_reminder', '')
+                                    ->orWhere('ffb_user_permissions.user_permissions_ffb_mailservice_reminder', '0');
                             });
                         });
                 });
             } else {
-                $query->whereNotNull('web_user_permissions.user_id');
+                $query->whereNotNull('ffb_user_permissions.user_id');
                 if ($mailservice === 'info' || $mailservice === 'info_reminder') {
-                    $query->where('web_user_permissions.user_permissions_ffb_mailservice_info', '!=', '0')
-                        ->where('web_user_permissions.user_permissions_ffb_mailservice_info', '!=', '')
-                        ->whereNotNull('web_user_permissions.user_permissions_ffb_mailservice_info');
+                    $query->where('ffb_user_permissions.user_permissions_ffb_mailservice_info', '!=', '0')
+                        ->where('ffb_user_permissions.user_permissions_ffb_mailservice_info', '!=', '')
+                        ->whereNotNull('ffb_user_permissions.user_permissions_ffb_mailservice_info');
                 }
                 if ($mailservice === 'reminder' || $mailservice === 'info_reminder') {
-                    $query->where('web_user_permissions.user_permissions_ffb_mailservice_reminder', '!=', '0')
-                        ->where('web_user_permissions.user_permissions_ffb_mailservice_reminder', '!=', '')
-                        ->whereNotNull('web_user_permissions.user_permissions_ffb_mailservice_reminder');
+                    $query->where('ffb_user_permissions.user_permissions_ffb_mailservice_reminder', '!=', '0')
+                        ->where('ffb_user_permissions.user_permissions_ffb_mailservice_reminder', '!=', '')
+                        ->whereNotNull('ffb_user_permissions.user_permissions_ffb_mailservice_reminder');
                 }
             }
         }
@@ -151,8 +151,8 @@ class AdminMailserviceService
     private function applyNoLineupFilter($query, int $leagueId, int $matchroundId): void
     {
         if ($leagueId > 0) {
-            $query->join('web_user_details', 'web_user.user_id', '=', 'web_user_details.user_id')
-                ->where('web_user_details.user_details_ffb_selected_league', $leagueId);
+            $query->join('ffb_user_details', 'web_user.user_id', '=', 'ffb_user_details.user_id')
+                ->where('ffb_user_details.user_details_ffb_selected_league', $leagueId);
 
             if ($matchroundId > 0) {
                 $query->whereNotExists(function ($sub) use ($matchroundId): void {

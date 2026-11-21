@@ -211,7 +211,7 @@ trait CreatesLegacyFfbSchema
             $table->unsignedInteger('extremeteam_slot_playerteam_id');
         });
 
-        Schema::create('web_user_details', function (Blueprint $table) {
+        Schema::create('ffb_user_details', function (Blueprint $table) {
             $table->integer('user_id')->primary();
             $table->integer('user_details_ffb_selected_league')->default(0);
         });
@@ -238,7 +238,7 @@ trait CreatesLegacyFfbSchema
             'ffb_matchround',
             'ffb_league_options',
             'ffb_league',
-            'web_user_details',
+            'ffb_user_details',
         ] as $table) {
             Schema::dropIfExists($table);
         }

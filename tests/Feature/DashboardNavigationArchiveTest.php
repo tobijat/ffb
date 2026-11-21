@@ -21,7 +21,7 @@ class DashboardNavigationArchiveTest extends TestCase
     protected function tearDown(): void
     {
         Schema::dropIfExists('ffb_league');
-        Schema::dropIfExists('web_user_details');
+        Schema::dropIfExists('ffb_user_details');
         parent::tearDown();
     }
 
@@ -72,7 +72,7 @@ class DashboardNavigationArchiveTest extends TestCase
 
     private function createSchema(): void
     {
-        Schema::create('web_user_details', function (Blueprint $table) {
+        Schema::create('ffb_user_details', function (Blueprint $table) {
             $table->integer('user_id')->primary();
             $table->integer('user_details_ffb_selected_league')->default(0);
         });

@@ -195,13 +195,13 @@ class DashboardService
             && ! $details?->user_details_street
             && ! $details?->user_details_phone
             && ! $details?->user_details_website
-            && ! $user->user_fname
-            && ! $user->user_lname;
+            && ! $details?->user_fname
+            && ! $details?->user_lname;
 
         return [
             'user_id' => (int) $user->user_id,
             'user_nickname' => (string) $user->user_nickname,
-            'user_name' => trim(($user->user_fname ?? '').' '.($user->user_lname ?? '')),
+            'user_name' => trim(($details?->user_fname ?? '').' '.($details?->user_lname ?? '')),
             'user_avatar' => $avatar,
             'photo_url' => UserAvatar::publicUrl($avatar),
             'update_profile_nag' => $emptyProfile,

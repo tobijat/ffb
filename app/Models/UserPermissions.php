@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserPermissions extends Model
 {
-    protected $table = 'web_user_permissions';
+    protected $table = 'ffb_user_permissions';
 
     protected $primaryKey = 'user_id';
 

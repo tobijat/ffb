@@ -69,7 +69,7 @@ class PlayerPopupLeaguePerformanceTest extends TestCase
             'playerteam_player_position' => 'm',
             'playerteam_date_transfer' => '2020-01-01 00:00:00',
         ]);
-        DB::table('web_user_details')->insert([
+        DB::table('ffb_user_details')->insert([
             'user_id' => 544,
             'user_details_ffb_selected_league' => 1,
         ]);

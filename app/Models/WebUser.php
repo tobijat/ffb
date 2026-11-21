@@ -24,6 +24,11 @@ class WebUser extends Model
         return $this->hasOne(UserDetails::class, 'user_id', 'user_id');
     }
 
+    public function permissions(): HasOne
+    {
+        return $this->hasOne(UserPermissions::class, 'user_id', 'user_id');
+    }
+
     public function userteams(): HasMany
     {
         return $this->hasMany(Userteam::class, 'userteam_user_id', 'user_id');

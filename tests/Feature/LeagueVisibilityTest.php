@@ -30,7 +30,7 @@ class LeagueVisibilityTest extends TestCase
         Schema::dropIfExists('ffb_userscore');
         Schema::dropIfExists('ffb_poll');
         Schema::dropIfExists('ffb_news');
-        Schema::dropIfExists('web_user_permissions');
+        Schema::dropIfExists('ffb_user_permissions');
         Schema::dropIfExists('web_admin');
         Schema::dropIfExists('web_user');
         parent::tearDown();
@@ -123,7 +123,7 @@ class LeagueVisibilityTest extends TestCase
     #[Test]
     public function current_dashboard_keeps_selected_archived_league_visible(): void
     {
-        DB::table('web_user_details')->where('user_id', 10)->update([
+        DB::table('ffb_user_details')->where('user_id', 10)->update([
             'user_details_ffb_selected_league' => 3,
         ]);
 
@@ -169,7 +169,7 @@ class LeagueVisibilityTest extends TestCase
         $this->assertTrue($result['ok']);
         $this->assertSame(2, $result['selected_league_id']);
         $this->assertSame('Hidden Current', $result['league_title']);
-        $this->assertSame(2, (int) DB::table('web_user_details')->where('user_id', 10)->value('user_details_ffb_selected_league'));
+        $this->assertSame(2, (int) DB::table('ffb_user_details')->where('user_id', 10)->value('user_details_ffb_selected_league'));
     }
 
     #[Test]
@@ -384,16 +384,13 @@ class LeagueVisibilityTest extends TestCase
         Schema::dropIfExists('ffb_userscore');
         Schema::dropIfExists('ffb_poll');
         Schema::dropIfExists('ffb_news');
-        Schema::dropIfExists('web_user_permissions');
+        Schema::dropIfExists('ffb_user_permissions');
         Schema::dropIfExists('web_admin');
         Schema::dropIfExists('web_user');
 
         Schema::create('web_user', function (Blueprint $table) {
             $table->integer('user_id')->primary();
             $table->string('user_nickname')->default('');
-            $table->string('user_fname')->nullable();
-            $table->string('user_lname')->nullable();
-            $table->string('user_gender')->nullable();
             $table->string('user_status')->default('active');
             $table->string('user_date_llogin')->nullable();
             $table->string('user_date_register')->nullable();
@@ -405,7 +402,7 @@ class LeagueVisibilityTest extends TestCase
             $table->string('admin_section')->default('ffb');
         });
 
-        Schema::create('web_user_permissions', function (Blueprint $table) {
+        Schema::create('ffb_user_permissions', function (Blueprint $table) {
             $table->integer('user_id')->primary();
             $table->tinyInteger('user_permissions_ffb_visible_profile')->default(0);
         });
@@ -436,7 +433,10 @@ class LeagueVisibilityTest extends TestCase
             $table->integer('poll_league_id')->default(0);
         });
 
-        Schema::table('web_user_details', function (Blueprint $table) {
+        Schema::table('ffb_user_details', function (Blueprint $table) {
+            $table->string('user_fname')->nullable();
+            $table->string('user_lname')->nullable();
+            $table->string('user_gender')->nullable();
             $table->string('user_details_avatar')->nullable();
             $table->string('user_details_photo')->nullable();
             $table->integer('user_details_ffb_favourite_team')->default(0);
@@ -493,13 +493,13 @@ class LeagueVisibilityTest extends TestCase
             ['user_id' => 20, 'user_nickname' => 'profile', 'user_status' => 'active'],
         ]);
 
-        DB::table('web_user_details')->insert([
+        DB::table('ffb_user_details')->insert([
             ['user_id' => 10, 'user_details_ffb_selected_league' => 1],
             ['user_id' => 11, 'user_details_ffb_selected_league' => 1],
             ['user_id' => 20, 'user_details_ffb_selected_league' => 1],
         ]);
 
-        DB::table('web_user_permissions')->insert([
+        DB::table('ffb_user_permissions')->insert([
             ['user_id' => 20, 'user_permissions_ffb_visible_profile' => 0],
         ]);
     }

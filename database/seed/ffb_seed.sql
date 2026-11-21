@@ -26680,12 +26680,7 @@ CREATE TABLE `web_user` (
   `user_lip` varchar(255) DEFAULT NULL,
   `user_password` varchar(255) NOT NULL,
   `user_email` varchar(255) NOT NULL,
-  `user_fname` varchar(255) NOT NULL,
-  `user_lname` varchar(255) NOT NULL,
-  `user_gender` varchar(255) DEFAULT '',
   `user_status` varchar(255) NOT NULL DEFAULT 'na',
-  `user_nationality` varchar(255) DEFAULT NULL,
-  `user_date_birth` datetime DEFAULT NULL,
   `user_ip` varchar(255) NOT NULL,
   `user_date_register` datetime DEFAULT NULL,
   `user_activation_code` varchar(255) NOT NULL,
@@ -26693,14 +26688,19 @@ CREATE TABLE `web_user` (
   PRIMARY KEY (`user_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=548 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `web_user` (`user_id`, `user_nickname`, `user_date_laction`, `user_date_llogin`, `user_lip`, `user_password`, `user_email`, `user_fname`, `user_lname`, `user_gender`, `user_status`, `user_nationality`, `user_date_birth`, `user_ip`, `user_date_register`, `user_activation_code`, `user_mailservice`) VALUES
-(1, 'AdminUser', '2026-10-08 12:11:51', '2026-10-08 12:11:51', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'adminuser@example.test', 'AdminUser', 'Test', 'male', 'active', 'AUT', NULL, '127.0.0.1', '2008-06-03 16:33:54', '', '403d370096c1e203686048ce53291418'),
-(546, 'Haaland', '2026-10-05 16:46:59', '2026-10-05 16:46:59', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'haaland@example.test', 'Haaland', 'Test', '', 'active', '', NULL, '127.0.0.1', '2026-10-04 13:43:38', '', ''),
-(547, 'Ronaldo', '2026-10-04 13:52:17', '2026-10-04 13:52:17', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'ronaldo@example.test', 'Ronaldo', 'Test', '', 'active', '', NULL, '127.0.0.1', '2026-10-04 13:46:47', '', '');
+INSERT INTO `web_user` (`user_id`, `user_nickname`, `user_date_laction`, `user_date_llogin`, `user_lip`, `user_password`, `user_email`, `user_status`, `user_ip`, `user_date_register`, `user_activation_code`, `user_mailservice`) VALUES
+(1, 'AdminUser', '2026-10-08 12:11:51', '2026-10-08 12:11:51', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'adminuser@example.test', 'active', '127.0.0.1', '2008-06-03 16:33:54', '', '403d370096c1e203686048ce53291418'),
+(546, 'Haaland', '2026-10-05 16:46:59', '2026-10-05 16:46:59', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'haaland@example.test', 'active', '127.0.0.1', '2026-10-04 13:43:38', '', ''),
+(547, 'Ronaldo', '2026-10-04 13:52:17', '2026-10-04 13:52:17', '127.0.0.1', '$2y$12$0xrhDMoD379vwLRGyzVGxeoZw1LPl2uGCpkgsVCAAolELQwUAF7Na', 'ronaldo@example.test', 'active', '127.0.0.1', '2026-10-04 13:46:47', '', '');
 
-DROP TABLE IF EXISTS `web_user_details`;
-CREATE TABLE `web_user_details` (
+DROP TABLE IF EXISTS `ffb_user_details`;
+CREATE TABLE `ffb_user_details` (
   `user_id` int(11) NOT NULL,
+  `user_fname` varchar(255) NOT NULL DEFAULT '',
+  `user_lname` varchar(255) NOT NULL DEFAULT '',
+  `user_gender` varchar(255) DEFAULT '',
+  `user_nationality` varchar(255) DEFAULT NULL,
+  `user_date_birth` datetime DEFAULT NULL,
   `user_details_last_update` datetime NOT NULL,
   `user_details_avatar` varchar(255) DEFAULT 'avatar_na.png',
   `user_details_photo` varchar(255) DEFAULT 'profile_na.png',
@@ -26717,13 +26717,13 @@ CREATE TABLE `web_user_details` (
   KEY `ffb_user_FI_1` (`user_details_ffb_favourite_team`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `web_user_details` (`user_id`, `user_details_last_update`, `user_details_avatar`, `user_details_photo`, `user_details_zip`, `user_details_city`, `user_details_street`, `user_details_phone`, `user_details_website`, `user_details_ffb_favourite_team`, `user_details_ffb_own_team`, `user_details_ffb_own_player`, `user_details_ffb_selected_league`) VALUES
-(1, '2026-09-05 19:00:15', 'avatar_na.png', 'profile_na.png', '', '', '', '', '', 3, 0, 0, 38),
-(546, '2026-10-04 13:43:38', 'avatar_na.png', 'profile_na.png', '', '', '', '', '', 1, 0, 0, 38),
-(547, '2026-10-04 13:46:47', 'avatar_na.png', 'profile_na.png', '', '', '', '', '', 1, 0, 0, 38);
+INSERT INTO `ffb_user_details` (`user_id`, `user_fname`, `user_lname`, `user_gender`, `user_nationality`, `user_date_birth`, `user_details_last_update`, `user_details_avatar`, `user_details_photo`, `user_details_zip`, `user_details_city`, `user_details_street`, `user_details_phone`, `user_details_website`, `user_details_ffb_favourite_team`, `user_details_ffb_own_team`, `user_details_ffb_own_player`, `user_details_ffb_selected_league`) VALUES
+(1, 'AdminUser', 'Test', 'male', 'AUT', NULL, '2026-09-05 19:00:15', 'avatar_na.png', 'profile_na.png', '', '', '', '', '', 3, 0, 0, 38),
+(546, 'Haaland', 'Test', '', '', NULL, '2026-10-04 13:43:38', 'avatar_na.png', 'profile_na.png', '', '', '', '', '', 1, 0, 0, 38),
+(547, 'Ronaldo', 'Test', '', '', NULL, '2026-10-04 13:46:47', 'avatar_na.png', 'profile_na.png', '', '', '', '', '', 1, 0, 0, 38);
 
-DROP TABLE IF EXISTS `web_user_permissions`;
-CREATE TABLE `web_user_permissions` (
+DROP TABLE IF EXISTS `ffb_user_permissions`;
+CREATE TABLE `ffb_user_permissions` (
   `user_id` int(11) NOT NULL,
   `user_permissions_ffb_mailservice_reminder` varchar(255) DEFAULT NULL,
   `user_permissions_ffb_mailservice_info` varchar(255) DEFAULT NULL,
@@ -26732,7 +26732,7 @@ CREATE TABLE `web_user_permissions` (
   PRIMARY KEY (`user_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `web_user_permissions` (`user_id`, `user_permissions_ffb_mailservice_reminder`, `user_permissions_ffb_mailservice_info`, `user_permissions_ffb_visible_profile`, `user_permissions_pictory_visible_profile`) VALUES
+INSERT INTO `ffb_user_permissions` (`user_id`, `user_permissions_ffb_mailservice_reminder`, `user_permissions_ffb_mailservice_info`, `user_permissions_ffb_visible_profile`, `user_permissions_pictory_visible_profile`) VALUES
 (1, '11d2f7d2f5475656b25e79256d691190', 'a209340b56d2500a2902078b3ad0774f', 1, 0),
 (546, '5b8fbb3a6d98b21cd95ebc82aeffec32', '9b901cff1c1068904f93de6bfb8bba0d', 0, 0),
 (547, '40f7110bee0dd88aca3a6e57e8795a00', 'd2b566ca85a5ab35af3fdc7d836f53f0', 0, 0);

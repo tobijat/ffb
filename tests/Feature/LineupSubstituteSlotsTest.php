@@ -43,7 +43,7 @@ class LineupSubstituteSlotsTest extends TestCase
             'ffb_matchround',
             'ffb_league_options',
             'ffb_league',
-            'web_user_details',
+            'ffb_user_details',
             'web_user',
         ] as $table) {
             Schema::dropIfExists($table);
@@ -314,7 +314,7 @@ class LineupSubstituteSlotsTest extends TestCase
             'user_nickname' => 'tester',
             'user_status' => 'active',
         ]);
-        DB::table('web_user_details')->insert([
+        DB::table('ffb_user_details')->insert([
             'user_id' => 544,
             'user_details_ffb_selected_league' => $this->leagueId,
         ]);
@@ -327,7 +327,7 @@ class LineupSubstituteSlotsTest extends TestCase
             $table->string('user_nickname')->default('');
             $table->string('user_status')->default('active');
         });
-        Schema::create('web_user_details', function (Blueprint $table) {
+        Schema::create('ffb_user_details', function (Blueprint $table) {
             $table->integer('user_id')->primary();
             $table->integer('user_details_ffb_selected_league')->default(0);
         });

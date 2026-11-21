@@ -49,8 +49,8 @@ class AccountService
                         && ! $details?->user_details_street
                         && ! $details?->user_details_phone
                         && ! $details?->user_details_website
-                        && ! $user->user_fname
-                        && ! $user->user_lname,
+                        && ! $details?->user_fname
+                        && ! $details?->user_lname,
                     'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
                 ],
                 'form' => $form,
@@ -77,7 +77,7 @@ class AccountService
      */
     public function update(int $userId, array $input, Request $request): array
     {
-        $user = WebUser::query()->find($userId);
+        $user = WebUser::query()->with('details')->find($userId);
         if (! $user) {
             return [
                 'ok' => false,
@@ -171,8 +171,8 @@ class AccountService
                         && ! $details?->user_details_street
                         && ! $details?->user_details_phone
                         && ! $details?->user_details_website
-                        && ! $user->user_fname
-                        && ! $user->user_lname,
+                        && ! $details?->user_fname
+                        && ! $details?->user_lname,
                     'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
                 ],
                 'form' => $formOverride ?? $this->profileFormFromUser($user),
@@ -233,10 +233,10 @@ class AccountService
 
         $website = $this->normalizeWebsite((string) ($input['user_details_website'] ?? ''));
 
-        $user->user_fname = trim((string) ($input['user_fname'] ?? ''));
-        $user->user_lname = trim((string) ($input['user_lname'] ?? ''));
-        $user->user_nationality = (string) ($input['user_nationality'] ?? '');
-        $user->user_date_birth = $this->birthDateFromInput($input);
+        $details->user_fname = trim((string) ($input['user_fname'] ?? ''));
+        $details->user_lname = trim((string) ($input['user_lname'] ?? ''));
+        $details->user_nationality = (string) ($input['user_nationality'] ?? '');
+        $details->user_date_birth = $this->birthDateFromInput($input);
 
         $details->user_details_zip = trim((string) ($input['user_details_zip'] ?? ''));
         $details->user_details_city = trim((string) ($input['user_details_city'] ?? ''));
@@ -388,14 +388,15 @@ class AccountService
      */
     private function formFromUser(WebUser $user): array
     {
-        $birth = $this->parseBirth($user->user_date_birth);
+        $details = $user->details;
+        $birth = $this->parseBirth($details?->user_date_birth);
 
         return [
             'user_nickname' => (string) $user->user_nickname,
             'user_email' => (string) $user->user_email,
-            'user_fname' => (string) ($user->user_fname ?? ''),
-            'user_lname' => (string) ($user->user_lname ?? ''),
-            'user_nationality' => (string) ($user->user_nationality ?? ''),
+            'user_fname' => (string) ($details?->user_fname ?? ''),
+            'user_lname' => (string) ($details?->user_lname ?? ''),
+            'user_nationality' => (string) ($details?->user_nationality ?? ''),
             'user_birth_day' => $birth['day'],
             'user_birth_month' => $birth['month'],
             'user_birth_year' => $birth['year'],
@@ -561,12 +562,12 @@ class AccountService
         $details = $user->details;
         $permissions = UserPermissions::query()->find($user->user_id);
         $avatar = (string) ($details?->user_details_avatar ?: 'avatar_na.png');
-        $birth = $this->parseBirth($user->user_date_birth);
+        $birth = $this->parseBirth($details?->user_date_birth);
 
         return [
-            'user_fname' => (string) ($user->user_fname ?? ''),
-            'user_lname' => (string) ($user->user_lname ?? ''),
-            'user_nationality' => (string) ($user->user_nationality ?? ''),
+            'user_fname' => (string) ($details?->user_fname ?? ''),
+            'user_lname' => (string) ($details?->user_lname ?? ''),
+            'user_nationality' => (string) ($details?->user_nationality ?? ''),
             'user_birth_day' => $birth['day'],
             'user_birth_month' => $birth['month'],
             'user_birth_year' => $birth['year'],

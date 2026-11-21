@@ -77,8 +77,8 @@ class SeedDbBuilder
         'ffb_goal',
         'ffb_psgoal',
         'web_user',
-        'web_user_details',
-        'web_user_permissions',
+        'ffb_user_details',
+        'ffb_user_permissions',
         'web_admin',
         'ffb_userteam',
         'ffb_userteam_slot',
@@ -255,8 +255,8 @@ class SeedDbBuilder
             ->whereIn('userscore_league_id', $leagueIds));
 
         $this->loadTable('web_user', fn ($q) => $q->whereIn('user_id', $userIds));
-        $this->loadTable('web_user_details', fn ($q) => $q->whereIn('user_id', $userIds));
-        $this->loadTable('web_user_permissions', fn ($q) => $q->whereIn('user_id', $userIds));
+        $this->loadTable('ffb_user_details', fn ($q) => $q->whereIn('user_id', $userIds));
+        $this->loadTable('ffb_user_permissions', fn ($q) => $q->whereIn('user_id', $userIds));
         $this->loadTable('web_admin', fn ($q) => $q->whereIn('admin_user_id', $userIds));
 
         foreach ($this->rowsByTable as $table => $rows) {
@@ -296,17 +296,36 @@ class SeedDbBuilder
             $row['user_activation_code'] = '';
             $row['user_ip'] = '127.0.0.1';
             $row['user_lip'] = '127.0.0.1';
-            $row['user_fname'] = $nick;
-            $row['user_lname'] = 'Test';
             $row['user_status'] = 'active';
-            $row['user_date_birth'] = null;
+            unset(
+                $row['user_fname'],
+                $row['user_lname'],
+                $row['user_gender'],
+                $row['user_nationality'],
+                $row['user_date_birth'],
+            );
         }
         unset($row);
 
-        if (! isset($this->rowsByTable['web_user_details'])) {
+        if (! isset($this->rowsByTable['ffb_user_details'])) {
             return;
         }
-        foreach ($this->rowsByTable['web_user_details'] as &$row) {
+        $usersById = [];
+        foreach ($this->rowsByTable['web_user'] ?? [] as $userRow) {
+            $usersById[(int) ($userRow['user_id'] ?? 0)] = $userRow;
+        }
+
+        foreach ($this->rowsByTable['ffb_user_details'] as &$row) {
+            $userId = (int) ($row['user_id'] ?? 0);
+            $userRow = $usersById[$userId] ?? [];
+            $nick = (string) ($userRow['user_nickname'] ?? 'User');
+
+            // Prefer already-migrated profile columns on details; fall back to legacy web_user.
+            $row['user_fname'] = (string) ($row['user_fname'] ?? $userRow['user_fname'] ?? $nick);
+            $row['user_lname'] = (string) ($row['user_lname'] ?? $userRow['user_lname'] ?? 'Test');
+            $row['user_gender'] = (string) ($row['user_gender'] ?? $userRow['user_gender'] ?? '');
+            $row['user_nationality'] = $row['user_nationality'] ?? $userRow['user_nationality'] ?? null;
+            $row['user_date_birth'] = null;
             $row['user_details_ffb_selected_league'] = $this->leagueIds[0];
             $row['user_details_avatar'] = 'avatar_na.png';
             $row['user_details_photo'] = 'profile_na.png';

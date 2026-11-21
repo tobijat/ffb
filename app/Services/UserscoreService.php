@@ -46,8 +46,8 @@ class UserscoreService
                         && ! $details?->user_details_street
                         && ! $details?->user_details_phone
                         && ! $details?->user_details_website
-                        && ! $user->user_fname
-                        && ! $user->user_lname,
+                        && ! $details?->user_fname
+                        && ! $details?->user_lname,
                     'is_ffb_admin' => app(FfbAdminAccess::class)->isAdmin((int) $user->user_id),
                 ],
                 'selected_league_id' => $leagueId,
@@ -385,11 +385,11 @@ class UserscoreService
             return [];
         }
 
-        $rows = DB::table('web_user_details')
-            ->leftJoin('ffb_team', 'ffb_team.team_id', '=', 'web_user_details.user_details_ffb_favourite_team')
-            ->whereIn('web_user_details.user_id', $userIds)
+        $rows = DB::table('ffb_user_details')
+            ->leftJoin('ffb_team', 'ffb_team.team_id', '=', 'ffb_user_details.user_details_ffb_favourite_team')
+            ->whereIn('ffb_user_details.user_id', $userIds)
             ->select([
-                'web_user_details.user_id',
+                'ffb_user_details.user_id',
                 'ffb_team.team_nationality',
             ])
             ->get();

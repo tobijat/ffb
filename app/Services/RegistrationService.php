@@ -71,12 +71,7 @@ class RegistrationService
             $user->user_nickname = trim((string) $input['user_nickname']);
             $user->user_password = $this->passwords->hash((string) $input['user_password']);
             $user->user_email = trim((string) $input['user_email']);
-            $user->user_fname = trim((string) ($input['user_fname'] ?? ''));
-            $user->user_lname = trim((string) ($input['user_lname'] ?? ''));
-            $user->user_gender = '';
             $user->user_status = 'na';
-            $user->user_nationality = (string) ($input['user_nationality'] ?? '');
-            $user->user_date_birth = $this->birthDateFromInput($input);
             $user->user_ip = $ip;
             $user->user_lip = $ip;
             $user->user_date_register = $now;
@@ -88,6 +83,11 @@ class RegistrationService
 
             $details = new UserDetails;
             $details->user_id = (int) $user->user_id;
+            $details->user_fname = trim((string) ($input['user_fname'] ?? ''));
+            $details->user_lname = trim((string) ($input['user_lname'] ?? ''));
+            $details->user_gender = '';
+            $details->user_nationality = (string) ($input['user_nationality'] ?? '');
+            $details->user_date_birth = $this->birthDateFromInput($input);
             $details->user_details_ffb_selected_league = (int) config('ffb.registration_default_league_id', 25);
             $details->user_details_ffb_favourite_team = 1;
             $details->user_details_last_update = $now;

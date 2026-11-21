@@ -101,7 +101,7 @@ class LoginService
             'user_id' => (int) $user->user_id,
             'user_nickname' => (string) $user->user_nickname,
             'user_email' => (string) $user->user_email,
-            'user_name' => trim((string) $user->user_fname.' '.(string) $user->user_lname),
+            'user_name' => trim((string) ($details?->user_fname ?? '').' '.(string) ($details?->user_lname ?? '')),
             'user_avatar' => (string) ($details?->user_details_avatar ?: 'avatar_na.png'),
             'league_id_player' => (int) ($details?->user_details_ffb_selected_league ?? 0),
             'admin_flag' => $isAdmin ? 1 : 0,
