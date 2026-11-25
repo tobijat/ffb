@@ -37,7 +37,6 @@ class RegistrationPageController extends Controller
         if ($result['ok'] && ! empty($result['logged_in'])) {
             return redirect()
                 ->route('start')
-                ->with('account_message', $result['message'])
                 ->with('show_activation_modal', true);
         }
 

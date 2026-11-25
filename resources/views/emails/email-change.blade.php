@@ -1,7 +1,7 @@
 Hallo {{ $nickname }}!
 
-Du hast auf http://{{ $siteHost }} eine neue E-Mail Adresse angegeben.
-Um die Änderung abzuschließen, klick bitte folgenden Link an oder kopiere ihn in die Adresszeile deines Browsers.
+Du hast auf http://{{ $siteHost }} deine E-Mail Adresse geändert.
+Um die neue Adresse zu bestätigen, klicke bitte folgenden Link an oder kopiere ihn in die Adresszeile deines Browsers.
 Bis dahin bleibt deine bisherige E-Mail Adresse aktiv.
 
 {{ $activationUrl }}

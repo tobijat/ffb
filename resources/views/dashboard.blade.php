@@ -6,7 +6,8 @@
     <title>Start — SoccerSportsfan</title>
     @include('partials.favicon')
     <link rel="stylesheet" href="css/start.css?v=45">
-    <link rel="stylesheet" href="css/dashboard.css?v=56">
+    <link rel="stylesheet" href="css/modal.css?v=50">
+    <link rel="stylesheet" href="css/dashboard.css?v=57">
 </head>
 <body class="dash-body">
     @php
@@ -178,20 +179,37 @@
 
     <div
         id="activation-modal"
-        class="activation-modal"
+        class="ffb-modal-root activation-modal"
         hidden
         role="dialog"
         aria-modal="true"
         aria-labelledby="activation-modal-title"
     >
-        <div class="activation-modal-backdrop" data-activation-close></div>
-        <div class="activation-modal-dialog">
-            <h2 id="activation-modal-title">E-Mail bestätigen</h2>
-            <p>Bestätige deine E-Mail Adresse um deinen Account zu aktivieren.</p>
-            <p id="activation-modal-feedback" class="activation-modal-feedback" hidden></p>
-            <div class="activation-modal-actions">
-                <button type="button" class="btn btn-primary" id="activation-resend">Aktivierungs-Link erneut senden</button>
-                <button type="button" class="btn" data-activation-close>Schließen</button>
+        <div class="ffb-modal-backdrop" data-activation-close></div>
+        <div class="ffb-modal-dialog" role="document">
+            <div class="ffb-modal-head">
+                <div class="ffb-modal-head-title ffb-modal-head-title--start" id="activation-modal-title">E-Mail Adresse bestätigen</div>
+                <button
+                    type="button"
+                    class="ffb-modal-close"
+                    data-activation-close
+                    title="Schließen"
+                    aria-label="Schließen"
+                >
+                    <img src="images/ffb/symbols/delete.svg" alt="">
+                </button>
+            </div>
+            <div class="ffb-modal-body">
+                <p><b>Bestätige deine E-Mail Adresse.</b></p>
+                <p>
+                    Dein Account wurde angelegt und du bist jetzt angemeldet. Ein Aktivierungs-Link wurde an
+                    <b>{{ $user['user_email'] ?? '' }}</b> gesendet.
+                    Du musst den Link anklicken um deine E-Mail Adresse einmalig zu bestätigen. Danach kannst du hier an den Spielen teilnehmen.
+                </p>
+                <p id="activation-modal-feedback" class="activation-modal-feedback" hidden></p>
+                <div class="activation-modal-actions">
+                    <button type="button" class="btn" id="activation-resend">Aktivierungs-Link erneut senden</button>
+                </div>
             </div>
         </div>
     </div>
@@ -209,6 +227,6 @@
             csrfToken: @json(csrf_token()),
         };
     </script>
-    <script src="js/dashboard.js?v=3" defer></script>
+    <script src="js/dashboard.js?v=5" defer></script>
 </body>
 </html>

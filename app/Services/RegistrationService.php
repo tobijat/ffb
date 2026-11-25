@@ -242,7 +242,7 @@ class RegistrationService
             return [
                 'ok' => false,
                 'status' => 403,
-                'errors' => ['Aktivierungs-Mail kann nicht gesendet werden.'],
+                'errors' => ['Aktivierungs-Link kann nicht gesendet werden.'],
             ];
         }
 
@@ -262,7 +262,7 @@ class RegistrationService
 
         return [
             'ok' => true,
-            'message' => 'Die Aktivierungs-Mail wurde erneut gesendet. Bitte prüf auch den Spam-Ordner.',
+            'message' => 'Der Aktivierungs-Link wurde erneut gesendet. Bitte prüfe auch den Spam-Ordner.',
         ];
     }
 

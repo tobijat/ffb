@@ -271,6 +271,7 @@ class DashboardService
         return [
             'user_id' => (int) $user->user_id,
             'user_nickname' => (string) $user->user_nickname,
+            'user_email' => (string) $user->user_email,
             'user_name' => trim(($details?->user_fname ?? '').' '.($details?->user_lname ?? '')),
             'user_avatar' => $avatar,
             'photo_url' => UserAvatar::publicUrl($avatar),

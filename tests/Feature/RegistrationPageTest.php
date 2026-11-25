@@ -115,7 +115,7 @@ class RegistrationPageTest extends TestCase
             'user_email' => 'neu@example.com',
         ])
             ->assertRedirect(route('start'))
-            ->assertSessionHas('account_message', 'Account angelegt.')
+            ->assertSessionMissing('account_message')
             ->assertSessionHas('show_activation_modal', true);
     }
 

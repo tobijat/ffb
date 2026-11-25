@@ -138,7 +138,7 @@
         });
     }
 
-    if (cfg.showActivationModal && emailUnverified) {
+    if (emailUnverified) {
         openActivationModal();
     }
 
