@@ -205,11 +205,14 @@
     margin-top: 0.5rem;
 }
 
+/* Soft green primary actions — same look in modals, profile, and avatar tabs. */
+.account-main .btn:not(.btn-secondary),
 .account-modal-actions .btn {
     background: var(--bg, #ccffcc);
     border-color: #7aaa7a #2a5a2a #2a5a2a #7aaa7a;
 }
 
+.account-main .btn:not(.btn-secondary):hover:not(:disabled):not([disabled]),
 .account-modal-actions .btn:hover {
     background: var(--panel-hover, #bbffbb);
     color: var(--ink, #000);

@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=45">
     <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=55">
     <link rel="stylesheet" href="{{ $assetBase }}/css/modal.css?v=50">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=33">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=34">
 </head>
 <body class="dash-body">
     @php

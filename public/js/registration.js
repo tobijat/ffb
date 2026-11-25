@@ -3,7 +3,7 @@
         user_nickname:
             '<b>Benutzername</b><br>Gib hier deinen gewünschten Benutzernamen ein. Er sollte mindestens 3 und maximal 16 Zeichen lang sein.',
         user_password:
-            '<b>Passwort</b><br>Gib hier dein gewünschtes Passwort ein. Es sollte mindestens 5 und maximal 32 Zeichen lang sein.',
+            '<b>Passwort</b><br>Gib hier dein gewünschtes Passwort ein. Mindestlänge 10 Zeichen, davon mindestens 1 Zahl oder Sonderzeichen.',
         user_password_val:
             '<b>Passwort wiederholen</b><br>Gib hier dein Passwort noch einmal ein, um es zu bestätigen.',
         user_email:
@@ -11,7 +11,7 @@
         user_email_val:
             '<b>E-Mail wiederholen</b><br>Gib hier deine E-Mail Adresse noch einmal ein, um sie zu bestätigen.',
         user_tos:
-            '<b>Bedingungen</b><br>Hier musst du bestätigen, dass du die Bedingungen gelesen hast und akzeptierst.',
+            '<b>Registrierungsbedingungen</b><br>Lies die Registrierungsbedingungen und bestätige mit dem Häkchen, dass du sie akzeptierst.',
     };
 
     const target = document.getElementById('reg_helptext');
@@ -41,7 +41,7 @@
             return;
         }
         el.classList.add('is-error');
-        const checkWrap = el.closest('.account-field-check');
+        const checkWrap = el.closest('.account-tos-accept, .account-field-check');
         if (checkWrap) {
             checkWrap.classList.add('is-error');
         }
@@ -53,7 +53,7 @@
         }
         el.classList.remove('is-error');
         el.setCustomValidity('');
-        const checkWrap = el.closest('.account-field-check');
+        const checkWrap = el.closest('.account-tos-accept, .account-field-check');
         if (checkWrap) {
             checkWrap.classList.remove('is-error');
         }

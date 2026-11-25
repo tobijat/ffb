@@ -8,8 +8,8 @@
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
     <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=46">
     <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=55">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=8">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/registration.css?v=3">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=34">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/registration.css?v=5">
 </head>
 <body class="dash-body">
     @php
@@ -61,10 +61,13 @@
                     <input id="user_email_val" type="email" name="user_email_val" value="{{ $form['user_email_val'] }}" required data-help="user_email_val" autocomplete="email" data-required-msg="Bitte E-Mail wiederholen.">
                 </div>
 
-                <div class="account-field account-field-check">
-                    <label data-help="user_tos">
-                        <input type="checkbox" name="user_tos" value="user_tos_yes" required data-required-msg="Du musst die Bedingungen gelesen und akzeptiert haben!">
-                        <span>* Ich habe die <a href="{{ $tosUrl }}" target="_blank" rel="noopener">Bedingungen</a> akzeptiert</span>
+                <div class="account-field">
+                    <span class="account-label">
+                        * <a href="{{ $tosUrl }}" target="_blank" rel="noopener" data-help="user_tos">Bedingungen</a>
+                    </span>
+                    <label class="account-tos-accept" data-help="user_tos">
+                        <input id="user_tos" type="checkbox" name="user_tos" value="user_tos_yes" required data-required-msg="Du musst die Registrierungsbedingungen akzeptieren!">
+                        <span><a href="{{ $tosUrl }}" target="_blank" rel="noopener" data-help="user_tos">Registrierungsbedingungen</a> akzeptieren</span>
                     </label>
                 </div>
 
@@ -90,7 +93,7 @@
             window.FFB_REGISTRATION_ERRORS = @json(array_values($errors));
         </script>
     @endif
-    <script src="{{ $assetBase }}/js/registration.js?v=4" defer></script>
+    <script src="{{ $assetBase }}/js/registration.js?v=5" defer></script>
     @include('partials.footer')
     @include('partials.guest-login-scripts')
 </body>
