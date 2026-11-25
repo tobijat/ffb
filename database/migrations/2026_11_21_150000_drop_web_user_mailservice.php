@@ -28,7 +28,7 @@ return new class extends Migration
 
         $this->withRelaxedSqlMode(function (): void {
             Schema::table('web_user', function (Blueprint $table) {
-                $table->string('user_mailservice')->nullable()->after('user_activation_code');
+                $table->string('user_mailservice')->nullable()->after('user_date_register');
             });
         });
     }

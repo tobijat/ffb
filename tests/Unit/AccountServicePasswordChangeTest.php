@@ -33,7 +33,6 @@ class AccountServicePasswordChangeTest extends TestCase
             $table->string('user_email')->default('');
             $table->string('user_password')->default('');
             $table->string('user_status')->default('active');
-            $table->string('user_activation_code')->nullable();
         });
 
         Schema::create('ffb_user_details', function (Blueprint $table) {

@@ -77,7 +77,6 @@ class RegistrationService
             $user->user_date_register = $now;
             $user->user_date_llogin = $now;
             $user->user_date_laction = $now;
-            $user->user_activation_code = '';
             $user->save();
 
             $details = new UserDetails;

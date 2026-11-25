@@ -41,7 +41,6 @@ class RegistrationActivationTest extends TestCase
             $table->timestamp('email_verified_at')->nullable();
             $table->string('user_password')->default('');
             $table->string('user_status')->default('active');
-            $table->string('user_activation_code')->nullable();
             $table->string('user_lip')->nullable();
             $table->string('user_date_register')->nullable();
             $table->string('user_date_llogin')->nullable();
@@ -125,7 +124,6 @@ class RegistrationActivationTest extends TestCase
             'user_password' => $this->passwords->hash('secret12ab'),
             'user_status' => 'pending',
             'email_verified_at' => null,
-            'user_activation_code' => '',
         ], 'user_id');
 
         $url = URL::temporarySignedRoute(
@@ -152,7 +150,6 @@ class RegistrationActivationTest extends TestCase
             'user_password' => $this->passwords->hash('secret12ab'),
             'user_status' => 'pending',
             'email_verified_at' => null,
-            'user_activation_code' => '',
         ], 'user_id');
 
         $bad = URL::temporarySignedRoute(
@@ -176,7 +173,6 @@ class RegistrationActivationTest extends TestCase
             'user_password' => $this->passwords->hash('secret12ab'),
             'user_status' => 'pending',
             'email_verified_at' => null,
-            'user_activation_code' => '',
         ]);
 
         $this->postJson('/login', [
@@ -210,7 +206,6 @@ class RegistrationActivationTest extends TestCase
             'user_password' => $user->user_password,
             'user_status' => 'pending',
             'email_verified_at' => null,
-            'user_activation_code' => '',
         ]);
 
         $this->mock(FfbUserResolver::class, function ($mock) use ($user) {

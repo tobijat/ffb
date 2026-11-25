@@ -294,9 +294,8 @@ class SeedDbBuilder
             $row['user_nickname'] = $nick;
             $row['user_email'] = strtolower($nick).'@example.test';
             $row['user_password'] = $hash;
-            $row['user_activation_code'] = '';
             $row['user_lip'] = '127.0.0.1';
-            unset($row['user_ip']);
+            unset($row['user_ip'], $row['user_activation_code']);
             $row['user_status'] = 'active';
             $row['email_verified_at'] = now()->format('Y-m-d H:i:s');
             unset(

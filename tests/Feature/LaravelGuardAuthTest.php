@@ -30,7 +30,6 @@ class LaravelGuardAuthTest extends TestCase
             $table->string('user_date_llogin')->nullable();
             $table->string('user_date_laction')->nullable();
             $table->string('user_date_register')->nullable();
-            $table->string('user_activation_code')->default('');
         });
 
         Schema::create('ffb_user_details', function (Blueprint $table) {
@@ -107,7 +106,6 @@ class LaravelGuardAuthTest extends TestCase
             'user_email' => $nickname.'@example.test',
             'user_password' => app(FfbPassword::class)->hash($password),
             'user_status' => 'active',
-            'user_activation_code' => '',
             'user_date_register' => now()->format('Y-m-d H:i:s'),
             'user_date_llogin' => now()->format('Y-m-d H:i:s'),
             'user_date_laction' => now()->format('Y-m-d H:i:s'),

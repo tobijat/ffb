@@ -46,7 +46,6 @@ class EmailChangePendingTest extends TestCase
             $table->timestamp('email_verified_at')->nullable();
             $table->string('user_password')->default('');
             $table->string('user_status')->default('active');
-            $table->string('user_activation_code')->nullable();
             $table->string('user_date_laction')->nullable();
         });
 
@@ -98,8 +97,8 @@ class EmailChangePendingTest extends TestCase
 
         $this->assertTrue($result['ok']);
         $this->assertAuthenticated();
-        $this->assertStringContainsString('Bestätigungs-Mail', $result['message']);
-        $this->assertStringNotContainsString('zuvor angeforderter Wechsel', $result['message']);
+        $this->assertStringContainsString('Bestätigungs-Link', $result['message']);
+        $this->assertStringNotContainsString('Zuvor gesendete Links', $result['message']);
 
         $row = DB::table('web_user')->where('user_id', 7)->first();
         $this->assertSame('old@example.com', $row->user_email);
@@ -134,7 +133,7 @@ class EmailChangePendingTest extends TestCase
             'user_email_val_chg' => 'second@example.com',
         ], $request);
         $this->assertTrue($second['ok']);
-        $this->assertStringContainsString('zuvor angeforderter Wechsel', $second['message']);
+        $this->assertStringContainsString('Zuvor gesendete Links sind damit ungültig.', $second['message']);
 
         $row = DB::table('web_user')->where('user_id', 7)->first();
         $this->assertSame('old@example.com', $row->user_email);

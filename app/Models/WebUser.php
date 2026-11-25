@@ -27,7 +27,6 @@ class WebUser extends Model implements AuthenticatableContract, CanResetPassword
 
     protected $hidden = [
         'user_password',
-        'user_activation_code',
     ];
 
     protected function casts(): array
