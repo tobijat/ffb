@@ -8,7 +8,8 @@
     @php $assetBase = rtrim(config('ffb.home_path'), '/'); @endphp
     <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=45">
     <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=55">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=18">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/modal.css?v=50">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=30">
 </head>
 <body class="dash-body">
     @php
@@ -419,64 +420,95 @@
             </div>
 
             <div class="account-tab-panel" id="tab-account" role="tabpanel" @if ($activeTab !== 'account') hidden @endif>
-                <form class="account-form" method="post" action="account" autocomplete="off">
-                    @csrf
-
+                @php
+                    $accountInputCh = max(
+                        8,
+                        mb_strlen((string) ($accountForm['user_nickname'] ?? '')),
+                        mb_strlen((string) ($accountForm['user_email'] ?? '')),
+                        mb_strlen((string) ($accountForm['user_email_pending'] ?? '')),
+                    ) + 2;
+                @endphp
+                <div class="account-form" style="--account-input-ch: {{ $accountInputCh }}">
                     <div class="account-field">
                         <label for="user_nickname">Benutzername</label>
-                        <input id="user_nickname" type="text" name="user_nickname" value="{{ $accountForm['user_nickname'] }}" readonly data-help="user_nickname">
+                        <input id="user_nickname" type="text" value="{{ $accountForm['user_nickname'] }}" readonly data-help="user_nickname">
                     </div>
 
                     <div class="account-field">
-                        <label for="user_password_current">Aktuelles Passwort</label>
-                        <input id="user_password_current" type="password" name="user_password_current" maxlength="32" data-help="user_password_current" autocomplete="current-password">
-                    </div>
-
-                    <div class="account-field">
-                        <label for="user_password_chg">Passwort ändern</label>
-                        <input id="user_password_chg" type="password" name="user_password_chg" minlength="10" maxlength="32" data-help="user_password_chg" autocomplete="new-password" data-too-short-msg="Passwortänderung: min. Länge ist 10, max. Länge ist 32!" data-too-long-msg="Passwortänderung: min. Länge ist 10, max. Länge ist 32!">
-                    </div>
-
-                    <div class="account-field">
-                        <label for="user_password_val_chg">Passwortänderung wiederholen</label>
-                        <input id="user_password_val_chg" type="password" name="user_password_val_chg" minlength="10" maxlength="32" data-help="user_password_val_chg" autocomplete="new-password" data-too-short-msg="Passwortänderung: min. Länge ist 10, max. Länge ist 32!" data-too-long-msg="Passwortänderung: min. Länge ist 10, max. Länge ist 32!">
-                    </div>
-
-                    <div class="account-field">
-                        <label for="user_email">aktuelle E-Mail</label>
-                        <input id="user_email" type="text" name="user_email" value="{{ $accountForm['user_email'] }}" readonly data-help="user_email">
-                    </div>
-
-                    <div class="account-field">
-                        <label for="user_email_chg">E-Mail ändern</label>
-                        <input id="user_email_chg" type="email" name="user_email_chg" value="{{ $accountForm['user_email_chg'] }}" maxlength="120" data-help="user_email_chg" autocomplete="off">
-                    </div>
-
-                    <div class="account-field">
-                        <label for="user_email_val_chg">E-Mail Änderung wiederholen</label>
-                        <input id="user_email_val_chg" type="email" name="user_email_val_chg" value="{{ $accountForm['user_email_val_chg'] }}" maxlength="120" data-help="user_email_val_chg" autocomplete="off">
-                    </div>
-
-                    <div class="account-field account-field-check">
-                        <label for="user_tos">
-                            <input id="user_tos" type="checkbox" name="user_tos" value="user_tos_yes" data-help="user_tos" data-required-msg="Du musst die Bedingungen gelesen und akzeptiert haben!">
-                            Ich habe die <a href="{{ config('ffb.registration_tos_url') }}" target="_blank" rel="noopener">Bedingungen</a> akzeptiert
+                        <label for="user_email">
+                            @if (! empty($accountForm['user_email_pending']))
+                                E-Mail Adresse (aktiv)
+                            @else
+                                E-Mail Adresse
+                            @endif
                         </label>
+                        <input id="user_email" type="text" value="{{ $accountForm['user_email'] }}" readonly data-help="user_email">
+                        <button
+                            type="button"
+                            class="btn btn-quiet"
+                            id="account-email-change-open"
+                            data-help="user_email_chg"
+                        >
+                            E-Mail Adresse ändern
+                        </button>
                     </div>
 
-                    <div class="account-actions">
-                        <button type="submit" class="btn" name="users_registration_update" value="1">Speichern</button>
+                    @if (! empty($accountForm['user_email_pending']))
+                        <div class="account-field">
+                            <label for="user_email_pending">E-Mail Adresse (unbestätigt)</label>
+                            <input
+                                id="user_email_pending"
+                                type="text"
+                                value="{{ $accountForm['user_email_pending'] }}"
+                                readonly
+                                data-help="user_email_pending"
+                            >
+                            <form class="account-inline-form" method="post" action="account" autocomplete="off">
+                                @csrf
+                                <input type="hidden" name="user_email_chg" value="{{ $accountForm['user_email_pending'] }}">
+                                <input type="hidden" name="user_email_val_chg" value="{{ $accountForm['user_email_pending'] }}">
+                                <button
+                                    type="submit"
+                                    class="btn btn-quiet"
+                                    name="users_registration_update"
+                                    value="1"
+                                    data-help="user_email_pending_resend"
+                                >
+                                    Bestätigungslink erneut senden
+                                </button>
+                            </form>
+                        </div>
+                    @endif
+
+                    <div class="account-field">
+                        <label for="user_password_mask">Passwort</label>
+                        <input
+                            id="user_password_mask"
+                            type="text"
+                            value="********"
+                            readonly
+                            data-help="user_password_chg"
+                            aria-label="Passwort"
+                        >
+                        <button
+                            type="button"
+                            class="btn btn-quiet"
+                            id="account-password-change-open"
+                            data-help="user_password_chg"
+                        >
+                            Passwort ändern
+                        </button>
                     </div>
-                </form>
+                </div>
             </div>
         </section>
 
         <aside class="panel account-help" aria-labelledby="profile-help-title">
             <h2 id="profile-help-title">Hinweise</h2>
             @if ($activeTab === 'account')
-                <p class="hint">Felder mit * sind Pflicht. Klick auf ein Feld, um weitere Hinweise anzuzeigen.</p>
+                <p class="hint">Klick auf ein Feld oder einen Button, um weitere Hinweise anzuzeigen.</p>
                 <div id="account-helptext" class="account-helptext">
-                    Alle Pflichtfelder müssen ausgefüllt werden. Klick auf ein Feld um weitere Hinweise anzuzeigen.
+                    Hier kannst du deine E-Mail Adresse oder dein Passwort ändern.
                 </div>
             @elseif ($activeTab === 'avatar')
                 <p class="hint">Wähle ein Trikot als Avatar. Klick auf ein Feld, um weitere Hinweise anzuzeigen.</p>
@@ -494,11 +526,158 @@
 
     @include('partials.footer')
 
+    <div
+        id="account-email-modal"
+        class="ffb-modal-root account-change-modal"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="account-email-modal-title"
+    >
+        <div class="ffb-modal-backdrop" data-account-modal-close></div>
+        <div class="ffb-modal-dialog" role="document">
+            <div class="ffb-modal-head">
+                <div class="ffb-modal-head-title ffb-modal-head-title--start" id="account-email-modal-title">
+                    E-Mail Adresse ändern
+                </div>
+                <button
+                    type="button"
+                    class="ffb-modal-close"
+                    data-account-modal-close
+                    title="Schließen"
+                    aria-label="Schließen"
+                >
+                    <img src="{{ $assetBase }}/images/ffb/symbols/delete.svg" alt="">
+                </button>
+            </div>
+            <div class="ffb-modal-body">
+                <form class="account-form account-modal-form" method="post" action="account" autocomplete="off">
+                    @csrf
+                    <div class="account-field account-field-stacked">
+                        <label for="user_email_chg">Neue E-Mail Adresse</label>
+                        <input
+                            id="user_email_chg"
+                            type="email"
+                            name="user_email_chg"
+                            value="{{ $accountForm['user_email_chg'] }}"
+                            maxlength="120"
+                            required
+                            data-help="user_email_chg"
+                            autocomplete="off"
+                            data-required-msg="Bitte gib deine neue E-Mail Adresse ein!"
+                        >
+                    </div>
+                    <div class="account-field account-field-stacked">
+                        <label for="user_email_val_chg">Neue E-Mail Adresse wiederholen</label>
+                        <input
+                            id="user_email_val_chg"
+                            type="email"
+                            name="user_email_val_chg"
+                            value="{{ $accountForm['user_email_val_chg'] }}"
+                            maxlength="120"
+                            required
+                            data-help="user_email_val_chg"
+                            autocomplete="off"
+                            data-required-msg="Bitte wiederhole deine neue E-Mail Adresse!"
+                        >
+                    </div>
+                    <div class="account-actions account-modal-actions">
+                        <button type="submit" class="btn" name="users_registration_update" value="1">
+                            Bestätigungslink senden
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div
+        id="account-password-modal"
+        class="ffb-modal-root account-change-modal"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="account-password-modal-title"
+    >
+        <div class="ffb-modal-backdrop" data-account-modal-close></div>
+        <div class="ffb-modal-dialog" role="document">
+            <div class="ffb-modal-head">
+                <div class="ffb-modal-head-title ffb-modal-head-title--start" id="account-password-modal-title">
+                    Passwort ändern
+                </div>
+                <button
+                    type="button"
+                    class="ffb-modal-close"
+                    data-account-modal-close
+                    title="Schließen"
+                    aria-label="Schließen"
+                >
+                    <img src="{{ $assetBase }}/images/ffb/symbols/delete.svg" alt="">
+                </button>
+            </div>
+            <div class="ffb-modal-body">
+                <form class="account-form account-modal-form" method="post" action="account" autocomplete="off">
+                    @csrf
+                    <div class="account-field account-field-stacked">
+                        <label for="user_password_current">Aktuelles Passwort</label>
+                        <input
+                            id="user_password_current"
+                            type="password"
+                            name="user_password_current"
+                            maxlength="32"
+                            required
+                            data-help="user_password_current"
+                            autocomplete="current-password"
+                            data-required-msg="Bitte gib dein aktuelles Passwort ein!"
+                        >
+                    </div>
+                    <div class="account-field account-field-stacked">
+                        <label for="user_password_chg">Neues Passwort</label>
+                        <input
+                            id="user_password_chg"
+                            type="password"
+                            name="user_password_chg"
+                            minlength="10"
+                            maxlength="32"
+                            required
+                            data-help="user_password_chg"
+                            autocomplete="new-password"
+                            data-required-msg="Bitte gib dein neues Passwort ein!"
+                            data-too-short-msg="Passwortänderung: min. Länge ist 10, max. Länge ist 32!"
+                            data-too-long-msg="Passwortänderung: min. Länge ist 10, max. Länge ist 32!"
+                        >
+                    </div>
+                    <div class="account-field account-field-stacked">
+                        <label for="user_password_val_chg">Neues Passwort wiederholen</label>
+                        <input
+                            id="user_password_val_chg"
+                            type="password"
+                            name="user_password_val_chg"
+                            minlength="10"
+                            maxlength="32"
+                            required
+                            data-help="user_password_val_chg"
+                            autocomplete="new-password"
+                            data-required-msg="Bitte wiederhole dein neues Passwort!"
+                            data-too-short-msg="Passwortänderung: min. Länge ist 10, max. Länge ist 32!"
+                            data-too-long-msg="Passwortänderung: min. Länge ist 10, max. Länge ist 32!"
+                        >
+                    </div>
+                    <div class="account-actions account-modal-actions">
+                        <button type="submit" class="btn" name="users_registration_update" value="1">
+                            Passwort speichern
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     @if (!empty($errors))
         <script>
             window.FFB_ACCOUNT_ERRORS = @json(array_values($errors));
         </script>
     @endif
-    <script src="{{ $assetBase }}/js/account.js?v=22" defer></script>
+    <script src="{{ $assetBase }}/js/account.js?v=25" defer></script>
 </body>
 </html>

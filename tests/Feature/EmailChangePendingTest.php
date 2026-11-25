@@ -94,7 +94,6 @@ class EmailChangePendingTest extends TestCase
         $result = app(AccountService::class)->update(7, [
             'user_email_chg' => 'new@example.com',
             'user_email_val_chg' => 'new@example.com',
-            'user_tos' => 'user_tos_yes',
         ], Request::create('/account', 'POST'));
 
         $this->assertTrue($result['ok']);
@@ -127,14 +126,12 @@ class EmailChangePendingTest extends TestCase
         $first = $service->update(7, [
             'user_email_chg' => 'first@example.com',
             'user_email_val_chg' => 'first@example.com',
-            'user_tos' => 'user_tos_yes',
         ], $request);
         $this->assertTrue($first['ok']);
 
         $second = $service->update(7, [
             'user_email_chg' => 'second@example.com',
             'user_email_val_chg' => 'second@example.com',
-            'user_tos' => 'user_tos_yes',
         ], $request);
         $this->assertTrue($second['ok']);
         $this->assertStringContainsString('zuvor angeforderter Wechsel', $second['message']);
@@ -191,7 +188,6 @@ class EmailChangePendingTest extends TestCase
         $payload = [
             'user_email_chg' => 'new@example.com',
             'user_email_val_chg' => 'new@example.com',
-            'user_tos' => 'user_tos_yes',
         ];
 
         $first = $service->update(7, $payload, $request);
@@ -226,7 +222,6 @@ class EmailChangePendingTest extends TestCase
         $result = app(AccountService::class)->update(9, [
             'user_email_chg' => 'fixed@example.com',
             'user_email_val_chg' => 'fixed@example.com',
-            'user_tos' => 'user_tos_yes',
         ], Request::create('/account', 'POST'));
 
         $this->assertTrue($result['ok']);
@@ -319,7 +314,6 @@ class EmailChangePendingTest extends TestCase
         $result = app(AccountService::class)->update(7, [
             'user_email_chg' => 'taken@example.com',
             'user_email_val_chg' => 'taken@example.com',
-            'user_tos' => 'user_tos_yes',
         ], Request::create('/account', 'POST'));
 
         $this->assertFalse($result['ok']);

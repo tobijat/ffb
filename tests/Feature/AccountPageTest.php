@@ -119,7 +119,7 @@ class AccountPageTest extends TestCase
             $mock->shouldReceive('update')->once()->andReturn([
                 'ok' => false,
                 'status' => 422,
-                'errors' => ['Du musst die Bedingungen gelesen und akzeptiert haben!'],
+                'errors' => ['Bitte gib dein aktuelles Passwort ein!'],
                 'form' => [
                     'user_nickname' => 'tester',
                     'user_email' => 'tester@example.com',
@@ -139,14 +139,16 @@ class AccountPageTest extends TestCase
 
         $this->actingAsFfbUser(544)
             ->post('/account', [
-                'user_fname' => 'Max',
+                'user_password_chg' => 'newpass12ab',
+                'user_password_val_chg' => 'newpass12ab',
             ])
             ->assertOk()
             ->assertSee('>Account</a>', false)
             ->assertSee('FFB_ACCOUNT_ERRORS', false)
-            ->assertSee('Du musst die Bedingungen gelesen und akzeptiert haben!', false)
+            ->assertSee('Bitte gib dein aktuelles Passwort ein!', false)
             ->assertDontSee('account-flash-error', false)
-            ->assertSee('Bedingungen gelesen', false);
+            ->assertSee('account-password-modal', false)
+            ->assertDontSee('user_tos', false);
     }
 
     public function test_account_update_success_rerenders_with_message(): void
@@ -175,8 +177,9 @@ class AccountPageTest extends TestCase
 
         $this->actingAsFfbUser(544)
             ->post('/account', [
-                'user_fname' => 'Max',
-                'user_tos' => 'user_tos_yes',
+                'user_password_current' => 'secret12ab',
+                'user_password_chg' => 'newpass12ab',
+                'user_password_val_chg' => 'newpass12ab',
             ])
             ->assertOk()
             ->assertSee('Deine Daten wurden aktualisiert', false)
@@ -211,7 +214,6 @@ class AccountPageTest extends TestCase
             ->post('/account', [
                 'user_email_chg' => 'new@example.com',
                 'user_email_val_chg' => 'new@example.com',
-                'user_tos' => 'user_tos_yes',
             ])
             ->assertOk()
             ->assertSee('E-Mail geändert', false)
@@ -260,7 +262,18 @@ class AccountPageTest extends TestCase
             ->get('/profile?tab=account')
             ->assertOk()
             ->assertSee('Benutzername', false)
+            ->assertSee('E-Mail Adresse', false)
             ->assertSee('tester@example.com', false)
+            ->assertSee('Passwort', false)
+            ->assertSee('********', false)
+            ->assertSee('E-Mail Adresse ändern', false)
+            ->assertSee('Passwort ändern', false)
+            ->assertSee('user_nickname', false)
+            ->assertSee('btn-quiet', false)
+            ->assertSee('account-email-modal', false)
+            ->assertSee('account-password-modal', false)
+            ->assertDontSee('users_registration_update" value="1">Speichern', false)
+            ->assertDontSee('name="user_tos"', false)
             ->assertSee('account-tab ffb-tab is-active', false);
     }
 

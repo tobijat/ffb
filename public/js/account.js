@@ -3,25 +3,27 @@
         user_nickname:
             '<b>Benutzername</b><br>Der Benutzername kann nachträglich nicht mehr geändert werden.',
         user_password_current:
-            '<b>Aktuelles Passwort</b><br>Wenn du dein Passwort ändern möchtest, gib hier zuerst dein aktuelles Passwort ein.',
+            '<b>Aktuelles Passwort</b><br>Gib hier zuerst dein aktuelles Passwort ein, bevor du ein neues setzt.',
         user_password_chg:
-            '<b>Passwort ändern</b><br>Wenn du möchtest, kannst du hier dein neues Passwort eingeben. Dazu brauchst du auch dein aktuelles Passwort.',
+            '<b>Passwort ändern</b><br>Hier kannst du dein Passwort ändern. Du brauchst dazu dein aktuelles Passwort. Mindestlänge 10 Zeichen, inkl. Zahl oder Sonderzeichen.',
         user_password_val_chg:
-            '<b>Passwortänderung wiederholen</b><br>Falls du dein Passwort geändert hast, dann gib hier dein geändertes Passwort noch einmal ein, um es zu bestätigen.',
+            '<b>Passwortänderung wiederholen</b><br>Gib dein neues Passwort noch einmal ein, um es zu bestätigen.',
         user_email:
-            '<b>aktuelle E-Mail</b><br>Das ist deine aktuelle E-Mail Adresse. Du solltest immer eine aktive E-Mail Adresse eingetragen haben, um wichtige E-Mails nicht zu versäumen. Wenn du sie ändern möchtest, dann verwende das Feld „E-Mail ändern“.',
+            '<b>E-Mail Adresse</b><br>Das ist deine aktuelle, aktive E-Mail Adresse. Du solltest immer eine aktive Adresse eingetragen haben. Zum Ändern nutze den Button „E-Mail Adresse ändern“.',
         user_email_chg:
-            '<b>E-Mail ändern</b><br>Wenn du möchtest, kannst du hier deine E-Mail Adresse ändern. Sie sollte gültig sein und du solltest Zugang dazu haben. An die neue Adresse wird ein Bestätigungs-Mail geschickt. Bis du den Link anklickst, bleibt deine bisherige E-Mail aktiv.',
+            '<b>E-Mail Adresse ändern</b><br>Gib eine gültige neue Adresse ein, zu der du Zugang hast. An die neue Adresse wird ein Bestätigungslink geschickt. Bis du ihn anklickst, bleibt deine bisherige E-Mail aktiv.',
+        user_email_pending:
+            '<b>E-Mail Adresse (unbestätigt)</b><br>Diese neue Adresse wartet noch auf die Bestätigung per Link. Deine bisherige E-Mail bleibt bis dahin aktiv.',
+        user_email_pending_resend:
+            '<b>Bestätigungslink erneut senden</b><br>Schickt den Bestätigungslink noch einmal an die unbestätigte E-Mail Adresse. Bitte prüf auch den Spam-Ordner.',
         user_email_val_chg:
-            '<b>E-Mail wiederholen</b><br>Falls du deine E-Mail Adresse geändert hast, dann gib hier deine geänderte E-Mail Adresse noch einmal ein, um sie zu bestätigen.',
+            '<b>E-Mail wiederholen</b><br>Gib deine neue E-Mail Adresse noch einmal ein, um sie zu bestätigen.',
         user_fname: '<b>Vorname</b><br>Wenn du möchtest, kannst du hier deinen Vornamen eingeben.',
         user_lname: '<b>Nachname</b><br>Wenn du möchtest, kannst du hier deinen Nachnamen eingeben.',
         user_birthday:
             '<b>Geburtsdatum</b><br>Wenn du möchtest, kannst du hier dein Geburtsdatum angeben.',
         user_nationality:
             '<b>Nationalität</b><br>Wenn du möchtest, kannst du hier deine Nationalität angeben. Ein entsprechendes Icon wird dann auf deiner Profilseite angezeigt.',
-        user_tos:
-            '<b>Ich habe die Bedingungen akzeptiert</b><br>Hier musst du bestätigen, dass du die Bedingungen dieser Seite gelesen hast und sie akzeptierst.',
         user_details_city:
             '<b>Wohnort</b><br>Wenn du möchtest, kannst du hier deinen Wohnort eingeben.',
         user_details_zip:
@@ -103,9 +105,6 @@
 
     function targetForServerError(message) {
         const lower = String(message || '').toLowerCase();
-        if (lower.includes('bedingungen')) {
-            return fieldInForms('user_tos');
-        }
         if (lower.includes('passwort')) {
             if (lower.includes('aktuell')) {
                 return fieldInForms('user_password_current');
@@ -131,6 +130,70 @@
             document.querySelector('form.account-form input, form.account-form select')
         );
     }
+
+    function openAccountModal(modal) {
+        if (!modal) {
+            return;
+        }
+        document.querySelectorAll('.account-change-modal').forEach(function (el) {
+            el.hidden = true;
+        });
+        modal.hidden = false;
+        document.body.classList.add('account-modal-open');
+        const focusEl = modal.querySelector('input:not([type="hidden"]), button[type="submit"]');
+        if (focusEl) {
+            requestAnimationFrame(function () {
+                focusEl.focus({ preventScroll: true });
+            });
+        }
+    }
+
+    function closeAccountModal(modal) {
+        if (modal) {
+            modal.hidden = true;
+        }
+        const anyOpen = Array.from(document.querySelectorAll('.account-change-modal')).some(
+            function (el) {
+                return !el.hidden;
+            }
+        );
+        if (!anyOpen) {
+            document.body.classList.remove('account-modal-open');
+        }
+    }
+
+    const emailModal = document.getElementById('account-email-modal');
+    const passwordModal = document.getElementById('account-password-modal');
+    const emailOpenBtn = document.getElementById('account-email-change-open');
+    const passwordOpenBtn = document.getElementById('account-password-change-open');
+
+    if (emailOpenBtn) {
+        emailOpenBtn.addEventListener('click', function () {
+            openAccountModal(emailModal);
+        });
+    }
+    if (passwordOpenBtn) {
+        passwordOpenBtn.addEventListener('click', function () {
+            openAccountModal(passwordModal);
+        });
+    }
+
+    document.querySelectorAll('[data-account-modal-close]').forEach(function (el) {
+        el.addEventListener('click', function () {
+            closeAccountModal(el.closest('.account-change-modal'));
+        });
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key !== 'Escape') {
+            return;
+        }
+        document.querySelectorAll('.account-change-modal').forEach(function (modal) {
+            if (!modal.hidden) {
+                closeAccountModal(modal);
+            }
+        });
+    });
 
     document.querySelectorAll('form.account-form').forEach(function (form) {
         form.querySelectorAll('input, select').forEach(function (input) {
@@ -903,6 +966,10 @@
         if (message) {
             const el = targetForServerError(message);
             if (el) {
+                const modal = el.closest('.account-change-modal');
+                if (modal) {
+                    openAccountModal(modal);
+                }
                 el.setCustomValidity(message);
                 markError(el);
                 requestAnimationFrame(function () {

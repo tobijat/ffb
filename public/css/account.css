@@ -5,6 +5,11 @@
     align-items: start;
 }
 
+.account-main {
+    container-type: inline-size;
+    container-name: account-main;
+}
+
 .account-tabs {
     --ffb-tab-panel-bg: var(--panel);
 }
@@ -107,6 +112,118 @@
 .account-actions {
     margin-top: 4px;
     padding-left: calc(12rem + 8px);
+}
+
+/* Account tab: label | input | button as flex children.
+ * Button wraps under the label (row start). margin-right:auto on the input
+ * keeps the button right-aligned while it still fits on the first row. */
+#tab-account .account-field {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 0.45rem;
+}
+
+#tab-account .account-field > label {
+    flex: 0 0 12rem;
+    max-width: 14rem;
+}
+
+#tab-account .account-field > input {
+    flex: 0 1 calc(var(--account-input-ch, 20) * 1ch);
+    width: calc(var(--account-input-ch, 20) * 1ch);
+    max-width: 100%;
+    min-width: 0;
+    margin-right: auto;
+    box-sizing: border-box;
+}
+
+#tab-account .account-field > .btn-quiet,
+#tab-account .account-field > .account-inline-form {
+    flex: 0 0 auto;
+}
+
+/* Very narrow: stack label, then full-width input, then button. */
+@container account-main (max-width: 22rem) {
+    #tab-account .account-field > label {
+        flex: 1 1 100%;
+        max-width: none;
+    }
+
+    #tab-account .account-field > input {
+        flex: 1 1 100%;
+        width: 100%;
+        max-width: none;
+        margin-right: 0;
+    }
+}
+
+.account-inline-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.btn-quiet {
+    appearance: none;
+    flex: 0 1 auto;
+    margin: 0;
+    padding: 0.28rem 0.7rem;
+    font: inherit;
+    font-size: 9pt;
+    line-height: 1.2;
+    color: #444;
+    background: #e4e4e4;
+    border: 1px solid #b0b0b0;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-quiet:hover,
+.btn-quiet:focus-visible {
+    color: #222;
+    background: #d6d6d6;
+    border-color: #999;
+    outline: none;
+}
+
+.account-field-stacked {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 0.35rem;
+}
+
+.account-modal-form {
+    margin-top: 0;
+}
+
+.account-modal-actions {
+    padding-left: 0;
+    margin-top: 0.5rem;
+}
+
+.account-modal-actions .btn {
+    background: var(--bg, #ccffcc);
+    border-color: #7aaa7a #2a5a2a #2a5a2a #7aaa7a;
+}
+
+.account-modal-actions .btn:hover {
+    background: var(--panel-hover, #bbffbb);
+    color: var(--ink, #000);
+}
+
+.account-change-modal {
+    z-index: 2100;
+    padding-top: 12vh;
+}
+
+.account-change-modal .ffb-modal-dialog {
+    width: min(420px, 100%);
+}
+
+body.account-modal-open {
+    overflow: hidden;
 }
 
 .account-flash {
@@ -412,4 +529,5 @@
     .account-actions {
         padding-left: 0;
     }
+
 }

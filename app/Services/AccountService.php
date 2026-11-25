@@ -431,6 +431,7 @@ class AccountService
         return [
             'user_nickname' => (string) $user->user_nickname,
             'user_email' => (string) $user->user_email,
+            'user_email_pending' => (string) ($user->user_email_pending ?? ''),
             'user_fname' => (string) ($details?->user_fname ?? ''),
             'user_lname' => (string) ($details?->user_lname ?? ''),
             'user_nationality' => (string) ($details?->user_nationality ?? ''),
@@ -529,10 +530,6 @@ class AccountService
             if (strcasecmp($email, (string) $user->user_email) === 0) {
                 $errors[] = 'Die neue E-Mail Adresse ist identisch mit deiner aktuellen!';
             }
-        }
-
-        if (($input['user_tos'] ?? '') !== 'user_tos_yes') {
-            $errors[] = 'Du musst die Bedingungen gelesen und akzeptiert haben!';
         }
 
         return $errors;

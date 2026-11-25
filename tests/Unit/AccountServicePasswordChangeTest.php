@@ -72,7 +72,6 @@ class AccountServicePasswordChangeTest extends TestCase
         $result = $this->service()->update(7, [
             'user_password_chg' => 'newpass12ab',
             'user_password_val_chg' => 'newpass12ab',
-            'user_tos' => 'user_tos_yes',
         ], Request::create('/account', 'POST'));
 
         $this->assertFalse($result['ok']);
@@ -85,7 +84,6 @@ class AccountServicePasswordChangeTest extends TestCase
             'user_password_current' => 'wrongpass1',
             'user_password_chg' => 'newpass12ab',
             'user_password_val_chg' => 'newpass12ab',
-            'user_tos' => 'user_tos_yes',
         ], Request::create('/account', 'POST'));
 
         $this->assertFalse($result['ok']);
@@ -98,7 +96,6 @@ class AccountServicePasswordChangeTest extends TestCase
             'user_password_current' => 'oldpass12',
             'user_password_chg' => 'newpass12ab',
             'user_password_val_chg' => 'newpass12ab',
-            'user_tos' => 'user_tos_yes',
         ], Request::create('/account', 'POST'));
 
         $this->assertTrue($result['ok']);
@@ -109,9 +106,7 @@ class AccountServicePasswordChangeTest extends TestCase
 
     public function test_update_without_password_change_skips_current_password(): void
     {
-        $result = $this->service()->update(7, [
-            'user_tos' => 'user_tos_yes',
-        ], Request::create('/account', 'POST'));
+        $result = $this->service()->update(7, [], Request::create('/account', 'POST'));
 
         $this->assertTrue($result['ok']);
         $this->assertTrue($this->passwords->verify(
