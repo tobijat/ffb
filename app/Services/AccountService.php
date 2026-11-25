@@ -118,8 +118,8 @@ class AccountService
 
                 app(RegistrationService::class)->sendActivationMail($user, $host);
 
-                $message .= '<br><b>!!</b> Die E-Mail Adresse wurde geändert. '
-                    .'Ein neuer Aktivierungs-Link wurde an die neue Adresse geschickt.';
+                $message .= '<br>Die E-Mail Adresse wurde geändert. '
+                    .'Ein Aktivierungs-Link wurde an die neue Adresse geschickt.';
 
                 return [
                     'ok' => true,
@@ -150,7 +150,7 @@ class AccountService
                 $user->save();
                 $this->sendEmailChangeMail($user, $host);
 
-                $message .= '<br><b>!!</b> Die Bestätigungs-Mail wurde erneut an die neue Adresse geschickt.';
+                $message .= '<br>Der Bestätigungs-Link wurde erneut gesendet.';
 
                 return [
                     'ok' => true,
@@ -166,10 +166,10 @@ class AccountService
             $user->save();
             $this->sendEmailChangeMail($user, $host);
 
-            $message .= '<br><b>!!</b> An die neue Adresse wurde eine Bestätigungs-Mail geschickt. '
-                .'Deine aktuelle E-Mail bleibt aktiv, bis du den Link in dieser Mail anklickst.';
+            $message .= '<br>Ein Bestätigungs-Link wurde an die neue E-Mail Adresse geschickt. '
+                .'Deine aktuelle E-Mail Adresse bleibt aktiv, bis du den Link anklickst.';
             if ($replaced) {
-                $message .= '<br>Ein zuvor angeforderter Wechsel ist damit ungültig.';
+                $message .= '<br>Zuvor gesendete Links sind damit ungültig.';
             }
 
             return [

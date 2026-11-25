@@ -3,19 +3,19 @@
         user_nickname:
             '<b>Benutzername</b><br>Der Benutzername kann nachträglich nicht mehr geändert werden.',
         user_password_current:
-            '<b>Aktuelles Passwort</b><br>Gib hier zuerst dein aktuelles Passwort ein, bevor du ein neues setzt.',
+            '<b>Aktuelles Passwort</b><br>Gib hier dein aktuelles Passwort ein.',
         user_password_chg:
-            '<b>Passwort ändern</b><br>Hier kannst du dein Passwort ändern. Du brauchst dazu dein aktuelles Passwort. Mindestlänge 10 Zeichen, inkl. Zahl oder Sonderzeichen.',
+            '<b>Passwort ändern</b><br>Hier kannst du dein Passwort ändern. Mindestlänge 10 Zeichen, davon mindestens 1 Zahl oder Sonderzeichen.',
         user_password_val_chg:
             '<b>Passwortänderung wiederholen</b><br>Gib dein neues Passwort noch einmal ein, um es zu bestätigen.',
         user_email:
-            '<b>E-Mail Adresse</b><br>Das ist deine aktuelle, aktive E-Mail Adresse. Du solltest immer eine aktive Adresse eingetragen haben. Zum Ändern nutze den Button „E-Mail Adresse ändern“.',
+            '<b>E-Mail Adresse</b><br>Das ist deine aktuelle, aktive E-Mail Adresse. Wenn du möchtest, kannst du sie hier ändern',
         user_email_chg:
-            '<b>E-Mail Adresse ändern</b><br>Gib eine gültige neue Adresse ein, zu der du Zugang hast. An die neue Adresse wird ein Bestätigungslink geschickt. Bis du ihn anklickst, bleibt deine bisherige E-Mail aktiv.',
+            '<b>E-Mail Adresse ändern</b><br>Gib eine gültige neue E-Mail Adresse ein, zu der du Zugang hast. An die neue Adresse wird ein Bestätigungslink geschickt. Bis du ihn anklickst, bleibt deine bisherige E-Mail Adresse aktiv.',
         user_email_pending:
-            '<b>E-Mail Adresse (unbestätigt)</b><br>Diese neue Adresse wartet noch auf die Bestätigung per Link. Deine bisherige E-Mail bleibt bis dahin aktiv.',
+            '<b>E-Mail Adresse (unbestätigt)</b><br>Bestätige deine neue E-Mail Adresse per zugesendetem Link. Deine bisherige E-Mail Adresse bleibt bis dahin aktiv.',
         user_email_pending_resend:
-            '<b>Bestätigungslink erneut senden</b><br>Schickt den Bestätigungslink noch einmal an die unbestätigte E-Mail Adresse. Bitte prüf auch den Spam-Ordner.',
+            '<b>Link senden</b><br>Sendet dir die E-Mail mit dem Bestätigungs-Link noch einmal zu. Bitte prüfe auch den Spam-Ordner.',
         user_email_val_chg:
             '<b>E-Mail wiederholen</b><br>Gib deine neue E-Mail Adresse noch einmal ein, um sie zu bestätigen.',
         user_fname: '<b>Vorname</b><br>Wenn du möchtest, kannst du hier deinen Vornamen eingeben.',
@@ -113,7 +113,19 @@
                 ? fieldInForms('user_password_val_chg')
                 : fieldInForms('user_password_chg');
         }
-        if (lower.includes('e-mail') || lower.includes('email')) {
+        // Resend throttle / pending confirm mail — stay on the page control, do not open a modal.
+        if (
+            lower.includes('bestätigungs-mail') ||
+            lower.includes('bestaetigungs-mail') ||
+            (lower.includes('bestätigungs') && lower.includes('erneut')) ||
+            (lower.includes('warte') && lower.includes('mail'))
+        ) {
+            return (
+                document.querySelector('[data-help="user_email_pending_resend"]') ||
+                fieldInForms('user_email_chg')
+            );
+        }
+        if (lower.includes('e-mail') || lower.includes('email') || lower.includes('adressänderung')) {
             return lower.includes('überein') || lower.includes('ueberein')
                 ? fieldInForms('user_email_val_chg')
                 : fieldInForms('user_email_chg');
@@ -125,9 +137,8 @@
             return document.querySelector('input[name="user_details_avatar_shirt"]');
         }
         return (
-            fieldInForms('user_password_chg') ||
             fieldInForms('user_details_city') ||
-            document.querySelector('form.account-form input, form.account-form select')
+            document.querySelector('#tab-profile form.account-form input, #tab-profile form.account-form select')
         );
     }
 

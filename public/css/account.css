@@ -114,61 +114,55 @@
     padding-left: calc(12rem + 8px);
 }
 
-/* Account tab: label | input | button as flex children.
- * Button wraps under the label (row start). margin-right:auto on the input
- * keeps the button right-aligned while it still fits on the first row. */
+/* Account tab: label | full-width input / input-group. */
 #tab-account .account-field {
-    display: flex;
-    flex-wrap: wrap;
+    grid-template-columns: minmax(11rem, 14rem) minmax(0, 1fr);
     align-items: center;
-    column-gap: 8px;
-    row-gap: 0.45rem;
 }
 
-#tab-account .account-field > label {
-    flex: 0 0 12rem;
-    max-width: 14rem;
-}
-
-#tab-account .account-field > input {
-    flex: 0 1 calc(var(--account-input-ch, 20) * 1ch);
-    width: calc(var(--account-input-ch, 20) * 1ch);
-    max-width: 100%;
+#tab-account .account-field > input#user_nickname,
+#tab-account .account-input-group {
+    width: 100%;
+    max-width: none;
     min-width: 0;
-    margin-right: auto;
     box-sizing: border-box;
 }
 
-#tab-account .account-field > .btn-quiet,
-#tab-account .account-field > .account-inline-form {
-    flex: 0 0 auto;
+#tab-account .account-field > input:disabled,
+#tab-account .account-input-group > input:disabled {
+    opacity: 1;
+    color: #333;
+    cursor: default;
+    pointer-events: none;
 }
 
-/* Very narrow: stack label, then full-width input, then button. */
-@container account-main (max-width: 22rem) {
-    #tab-account .account-field > label {
-        flex: 1 1 100%;
-        max-width: none;
-    }
-
-    #tab-account .account-field > input {
-        flex: 1 1 100%;
-        width: 100%;
-        max-width: none;
-        margin-right: 0;
-    }
+#tab-account .account-input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 2px 2px 2px 0;
+    border: 1px solid #7aaa7a;
+    border-radius: var(--radius);
+    background: #e8f5e8;
 }
 
-.account-inline-form {
-    display: inline-flex;
-    margin: 0;
+#tab-account .account-input-group > input[type="text"],
+#tab-account .account-input-group > input[type="email"],
+#tab-account .account-input-group > input[type="password"] {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
 }
 
-.btn-quiet {
+#tab-account .account-input-group-btn {
     appearance: none;
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     margin: 0;
-    padding: 0.28rem 0.7rem;
+    padding: 0.2rem 0.75rem;
     font: inherit;
     font-size: 9pt;
     line-height: 1.2;
@@ -180,12 +174,20 @@
     white-space: nowrap;
 }
 
-.btn-quiet:hover,
-.btn-quiet:focus-visible {
+#tab-account .account-input-group-btn:hover,
+#tab-account .account-input-group-btn:focus-visible {
     color: #222;
     background: #d6d6d6;
     border-color: #999;
     outline: none;
+}
+
+/* Narrow: label on its own row, then full-width input/group. */
+@container account-main (max-width: 34rem) {
+    #tab-account .account-field {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
 }
 
 .account-field-stacked {

@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{{ $assetBase }}/css/start.css?v=45">
     <link rel="stylesheet" href="{{ $assetBase }}/css/dashboard.css?v=55">
     <link rel="stylesheet" href="{{ $assetBase }}/css/modal.css?v=50">
-    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=30">
+    <link rel="stylesheet" href="{{ $assetBase }}/css/account.css?v=33">
 </head>
 <body class="dash-body">
     @php
@@ -420,18 +420,10 @@
             </div>
 
             <div class="account-tab-panel" id="tab-account" role="tabpanel" @if ($activeTab !== 'account') hidden @endif>
-                @php
-                    $accountInputCh = max(
-                        8,
-                        mb_strlen((string) ($accountForm['user_nickname'] ?? '')),
-                        mb_strlen((string) ($accountForm['user_email'] ?? '')),
-                        mb_strlen((string) ($accountForm['user_email_pending'] ?? '')),
-                    ) + 2;
-                @endphp
-                <div class="account-form" style="--account-input-ch: {{ $accountInputCh }}">
-                    <div class="account-field">
+                <div class="account-form">
+                    <div class="account-field" data-help="user_nickname">
                         <label for="user_nickname">Benutzername</label>
-                        <input id="user_nickname" type="text" value="{{ $accountForm['user_nickname'] }}" readonly data-help="user_nickname">
+                        <input id="user_nickname" type="text" value="{{ $accountForm['user_nickname'] }}" readonly disabled>
                     </div>
 
                     <div class="account-field">
@@ -442,39 +434,41 @@
                                 E-Mail Adresse
                             @endif
                         </label>
-                        <input id="user_email" type="text" value="{{ $accountForm['user_email'] }}" readonly data-help="user_email">
-                        <button
-                            type="button"
-                            class="btn btn-quiet"
-                            id="account-email-change-open"
-                            data-help="user_email_chg"
-                        >
-                            E-Mail Adresse ändern
-                        </button>
+                        <div class="account-input-group" data-help="user_email">
+                            <input id="user_email" type="text" value="{{ $accountForm['user_email'] }}" readonly disabled>
+                            <button
+                                type="button"
+                                class="account-input-group-btn"
+                                id="account-email-change-open"
+                                data-help="user_email_chg"
+                            >
+                                Ändern
+                            </button>
+                        </div>
                     </div>
 
                     @if (! empty($accountForm['user_email_pending']))
                         <div class="account-field">
                             <label for="user_email_pending">E-Mail Adresse (unbestätigt)</label>
-                            <input
-                                id="user_email_pending"
-                                type="text"
-                                value="{{ $accountForm['user_email_pending'] }}"
-                                readonly
-                                data-help="user_email_pending"
-                            >
-                            <form class="account-inline-form" method="post" action="account" autocomplete="off">
+                            <form class="account-input-group" method="post" action="account" autocomplete="off" data-help="user_email_pending">
                                 @csrf
                                 <input type="hidden" name="user_email_chg" value="{{ $accountForm['user_email_pending'] }}">
                                 <input type="hidden" name="user_email_val_chg" value="{{ $accountForm['user_email_pending'] }}">
+                                <input
+                                    id="user_email_pending"
+                                    type="text"
+                                    value="{{ $accountForm['user_email_pending'] }}"
+                                    readonly
+                                    disabled
+                                >
                                 <button
                                     type="submit"
-                                    class="btn btn-quiet"
+                                    class="account-input-group-btn"
                                     name="users_registration_update"
                                     value="1"
                                     data-help="user_email_pending_resend"
                                 >
-                                    Bestätigungslink erneut senden
+                                    Link erneut senden
                                 </button>
                             </form>
                         </div>
@@ -482,22 +476,24 @@
 
                     <div class="account-field">
                         <label for="user_password_mask">Passwort</label>
-                        <input
-                            id="user_password_mask"
-                            type="text"
-                            value="********"
-                            readonly
-                            data-help="user_password_chg"
-                            aria-label="Passwort"
-                        >
-                        <button
-                            type="button"
-                            class="btn btn-quiet"
-                            id="account-password-change-open"
-                            data-help="user_password_chg"
-                        >
-                            Passwort ändern
-                        </button>
+                        <div class="account-input-group" data-help="user_password_chg">
+                            <input
+                                id="user_password_mask"
+                                type="text"
+                                value="********"
+                                readonly
+                                disabled
+                                aria-label="Passwort"
+                            >
+                            <button
+                                type="button"
+                                class="account-input-group-btn"
+                                id="account-password-change-open"
+                                data-help="user_password_chg"
+                            >
+                                Ändern
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -678,6 +674,6 @@
             window.FFB_ACCOUNT_ERRORS = @json(array_values($errors));
         </script>
     @endif
-    <script src="{{ $assetBase }}/js/account.js?v=25" defer></script>
+    <script src="{{ $assetBase }}/js/account.js?v=27" defer></script>
 </body>
 </html>
