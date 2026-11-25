@@ -11,8 +11,9 @@ use App\Support\CustomAvatarSvg;
 use App\Support\TeamShirt;
 use App\Support\UserAvatar;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 
 class AccountService
 {
@@ -106,31 +107,76 @@ class AccountService
         $emailChanged = false;
         $newEmail = trim((string) ($input['user_email_chg'] ?? ''));
         $message = '<b>Deine Daten wurden aktualisiert!</b>';
+        $host = (string) $request->getHost();
 
         if ($newEmail !== '') {
-            $activationCode = md5(uniqid((string) time(), true));
-            $user->user_email = $newEmail;
-            $user->user_activation_code = $activationCode;
-            $user->user_status = 'na';
+            // Unverified: treat as signup typo correction — swap email + new activation mail.
+            if (! $user->hasVerifiedEmail()) {
+                $user->user_email = $newEmail;
+                $user->user_email_pending = null;
+                $user->save();
+
+                app(RegistrationService::class)->sendActivationMail($user, $host);
+
+                $message .= '<br><b>!!</b> Die E-Mail Adresse wurde geändert. '
+                    .'Ein neuer Aktivierungs-Link wurde an die neue Adresse geschickt.';
+
+                return [
+                    'ok' => true,
+                    'message' => $message,
+                    'email_changed' => true,
+                    'form' => $this->formFromUser($user->fresh('details')),
+                ];
+            }
+
+            $previousPending = trim((string) ($user->user_email_pending ?? ''));
+            $samePending = $previousPending !== '' && strcasecmp($previousPending, $newEmail) === 0;
+
+            // Same pending address again: throttled resend of the confirm mail.
+            if ($samePending) {
+                $key = 'email-change-resend:'.$userId;
+                if (RateLimiter::tooManyAttempts($key, 1)) {
+                    $seconds = RateLimiter::availableIn($key);
+
+                    return [
+                        'ok' => false,
+                        'status' => 429,
+                        'errors' => ["Bitte warte noch {$seconds} Sekunden, bevor du die Bestätigungs-Mail erneut anforderst."],
+                        'form' => $form,
+                    ];
+                }
+
+                RateLimiter::hit($key, 60);
+                $user->save();
+                $this->sendEmailChangeMail($user, $host);
+
+                $message .= '<br><b>!!</b> Die Bestätigungs-Mail wurde erneut an die neue Adresse geschickt.';
+
+                return [
+                    'ok' => true,
+                    'message' => $message,
+                    'email_changed' => true,
+                    'form' => $this->formFromUser($user->fresh('details')),
+                ];
+            }
+
+            // Verified: last request wins — overwrite pending and mail the newest address.
+            $replaced = $previousPending !== '';
+            $user->user_email_pending = $newEmail;
             $user->save();
+            $this->sendEmailChangeMail($user, $host);
 
-            $this->sendEmailChangeMail(
-                $user,
-                $activationCode,
-                (string) $request->getHost(),
-            );
-
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-            $emailChanged = true;
-            $message .= '<br><b>!!</b> Du hast deine E-Mail Adresse geändert. Ein E-Mail wurde an die neue Adresse geschickt. Um die Änderung abzuschließen, musst du den Link in dieser E-Mail anklicken. Du wirst jetzt ausgeloggt und kannst dich erst wieder einloggen, wenn der Link geklickt wurde.';
+            $message .= '<br><b>!!</b> An die neue Adresse wurde eine Bestätigungs-Mail geschickt. '
+                .'Deine aktuelle E-Mail bleibt aktiv, bis du den Link in dieser Mail anklickst.';
+            if ($replaced) {
+                $message .= '<br>Ein zuvor angeforderter Wechsel ist damit ungültig.';
+            }
 
             return [
                 'ok' => true,
                 'message' => $message,
                 'email_changed' => true,
-                'form' => $form,
+                'form' => $this->formFromUser($user->fresh('details')),
             ];
         }
 
@@ -471,11 +517,17 @@ class AccountService
                 $errors[] = 'Die E-Mail Adressen bei der Adressänderung stimmen nicht überein!';
             }
             $exists = WebUser::query()
-                ->where('user_email', $email)
+                ->where(function ($query) use ($email): void {
+                    $query->where('user_email', $email)
+                        ->orWhere('user_email_pending', $email);
+                })
                 ->where('user_id', '!=', $userId)
                 ->exists();
             if ($exists) {
                 $errors[] = 'Die von dir gewählte neue E-Mail Adresse existiert bereits!';
+            }
+            if (strcasecmp($email, (string) $user->user_email) === 0) {
+                $errors[] = 'Die neue E-Mail Adresse ist identisch mit deiner aktuellen!';
             }
         }
 
@@ -537,13 +589,19 @@ class AccountService
         return $years;
     }
 
-    private function sendEmailChangeMail(WebUser $user, string $activationCode, string $serverName): void
+    private function sendEmailChangeMail(WebUser $user, string $serverName): void
     {
-        $activationUrl = route('registration.activate-email', [
-            'id' => $activationCode.'-'.(int) $user->user_id,
-        ]);
+        $pending = (string) $user->user_email_pending;
+        $activationUrl = URL::temporarySignedRoute(
+            'registration.activate-email',
+            now()->addMinutes((int) config('auth.verification.expire', 1440)),
+            [
+                'id' => (int) $user->user_id,
+                'hash' => sha1($pending),
+            ]
+        );
 
-        Mail::to((string) $user->user_email)->send(new EmailChangeMail(
+        Mail::to($pending)->send(new EmailChangeMail(
             (string) $user->user_nickname,
             $activationUrl,
             $serverName,

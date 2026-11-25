@@ -11,7 +11,7 @@
         user_email:
             '<b>aktuelle E-Mail</b><br>Das ist deine aktuelle E-Mail Adresse. Du solltest immer eine aktive E-Mail Adresse eingetragen haben, um wichtige E-Mails nicht zu versäumen. Wenn du sie ändern möchtest, dann verwende das Feld „E-Mail ändern“.',
         user_email_chg:
-            '<b>E-Mail ändern</b><br>Wenn du möchtest, kannst du hier deine E-Mail Adresse ändern. Sie sollte auf jeden Fall gültig sein und du solltest Zugang dazu haben. Dein Account wird nach der Änderung deaktiviert. Du bekommst dann an die neue Adresse ein Bestätigungsmail geschickt und du musst darin einen Link anklicken, um deinen Account wieder zu aktivieren.',
+            '<b>E-Mail ändern</b><br>Wenn du möchtest, kannst du hier deine E-Mail Adresse ändern. Sie sollte gültig sein und du solltest Zugang dazu haben. An die neue Adresse wird ein Bestätigungs-Mail geschickt. Bis du den Link anklickst, bleibt deine bisherige E-Mail aktiv.',
         user_email_val_chg:
             '<b>E-Mail wiederholen</b><br>Falls du deine E-Mail Adresse geändert hast, dann gib hier deine geänderte E-Mail Adresse noch einmal ein, um sie zu bestätigen.',
         user_fname: '<b>Vorname</b><br>Wenn du möchtest, kannst du hier deinen Vornamen eingeben.',

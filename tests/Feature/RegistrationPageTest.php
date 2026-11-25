@@ -88,15 +88,35 @@ class RegistrationPageTest extends TestCase
     public function test_activation_redirects_to_start_with_message(): void
     {
         $this->mock(RegistrationService::class, function ($mock) {
-            $mock->shouldReceive('activate')->once()->with('abc-1', 'registration')->andReturn([
+            $mock->shouldReceive('activateRegistration')->once()->andReturn([
                 'ok' => true,
                 'message' => 'Account aktiviert.',
             ]);
         });
 
-        $this->get('/registration/activate?id=abc-1')
+        $this->get('/registration/activate?id=1&hash=abc&expires=1&signature=sig')
             ->assertRedirect(route('start'))
             ->assertSessionHas('account_message', 'Account aktiviert.');
+    }
+
+    public function test_registration_store_success_redirects_logged_in(): void
+    {
+        $this->mock(RegistrationService::class, function ($mock) {
+            $mock->shouldReceive('register')->once()->andReturn([
+                'ok' => true,
+                'message' => 'Account angelegt.',
+                'form' => [],
+                'logged_in' => true,
+            ]);
+        });
+
+        $this->post('/registration', [
+            'user_nickname' => 'neu',
+            'user_email' => 'neu@example.com',
+        ])
+            ->assertRedirect(route('start'))
+            ->assertSessionHas('account_message', 'Account angelegt.')
+            ->assertSessionHas('show_activation_modal', true);
     }
 
     public function test_password_reset_request_returns_json(): void

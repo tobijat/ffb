@@ -298,6 +298,7 @@ class SeedDbBuilder
             $row['user_lip'] = '127.0.0.1';
             unset($row['user_ip']);
             $row['user_status'] = 'active';
+            $row['email_verified_at'] = now()->format('Y-m-d H:i:s');
             unset(
                 $row['user_fname'],
                 $row['user_lname'],

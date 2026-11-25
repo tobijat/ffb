@@ -17,10 +17,13 @@ abstract class TestCase extends BaseTestCase
         $user->user_id = $userId;
         $user->user_nickname = 'user'.$userId;
         $user->user_status = 'active';
+        $user->email_verified_at = now();
         $user->exists = true;
 
         $this->mock(FfbUserResolver::class, function ($mock) use ($user, $userId) {
+            $mock->shouldReceive('findPresent')->byDefault()->with($userId)->andReturn($user);
             $mock->shouldReceive('findActive')->byDefault()->with($userId)->andReturn($user);
+            $mock->shouldReceive('findVerified')->byDefault()->with($userId)->andReturn($user);
         });
 
         return $this->actingAs($user);

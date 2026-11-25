@@ -30,6 +30,25 @@ class WebUser extends Model implements AuthenticatableContract, CanResetPassword
         'user_activation_code',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+        ];
+    }
+
+    public function hasVerifiedEmail(): bool
+    {
+        return $this->email_verified_at !== null;
+    }
+
+    public function markEmailAsVerified(): bool
+    {
+        return $this->forceFill([
+            'email_verified_at' => $this->freshTimestamp(),
+        ])->save();
+    }
+
     public function getAuthPassword(): string
     {
         return (string) $this->user_password;

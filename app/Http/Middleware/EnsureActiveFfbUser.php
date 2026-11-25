@@ -9,10 +9,11 @@ use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Ensure the authenticated WebUser is still active (re-checked from DB).
+ * Ensure the authenticated WebUser may keep a session (pending or active).
+ * Pending = email not confirmed yet.
  *
  * When unauthenticated, passes through (pair with auth middleware where login is required).
- * Inactive sessions are cleared; API/JSON gets 401, web gets redirect to start.
+ * Missing/inactive sessions are cleared; API/JSON gets 401, web gets redirect to start.
  */
 class EnsureActiveFfbUser
 {
@@ -28,7 +29,7 @@ class EnsureActiveFfbUser
             return $next($request);
         }
 
-        if ($this->users->findActive($userId)) {
+        if ($this->users->findPresent($userId)) {
             return $next($request);
         }
 

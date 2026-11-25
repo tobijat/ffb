@@ -62,10 +62,8 @@ Route::get('/help', [HelpPageController::class, 'show'])->name('help');
 Route::get('/reference', [ReferencePageController::class, 'show'])->name('reference');
 
 Route::middleware(['auth', 'ffb.active'])->group(function () {
-    Route::get('/userscore', [UserscorePageController::class, 'show'])->name('userscore');
-    Route::get('/myteam', [MyteamPageController::class, 'show'])->name('myteam');
-    Route::get('/bestteam', [BestteamPageController::class, 'show'])->name('bestteam');
-    Route::get('/lineup', [LineupPageController::class, 'show'])->name('lineup');
+    Route::post('/registration/activation/resend', [RegistrationPageController::class, 'resendActivation'])
+        ->name('registration.activation.resend');
 
     Route::get('/account', [AccountPageController::class, 'show'])->name('account');
     Route::post('/account', [AccountPageController::class, 'update'])->name('account.update');
@@ -75,7 +73,14 @@ Route::middleware(['auth', 'ffb.active'])->group(function () {
     Route::post('/profile/avatar/kit-from-shirt', [AccountPageController::class, 'kitFromShirt'])->name('profile.avatar.kitFromShirt');
 });
 
-Route::middleware(['auth', 'ffb.active', 'ffb.admin'])->group(function () {
+Route::middleware(['auth', 'ffb.active', 'ffb.verified'])->group(function () {
+    Route::get('/userscore', [UserscorePageController::class, 'show'])->name('userscore');
+    Route::get('/myteam', [MyteamPageController::class, 'show'])->name('myteam');
+    Route::get('/bestteam', [BestteamPageController::class, 'show'])->name('bestteam');
+    Route::get('/lineup', [LineupPageController::class, 'show'])->name('lineup');
+});
+
+Route::middleware(['auth', 'ffb.active', 'ffb.verified', 'ffb.admin'])->group(function () {
     Route::get('/admin', [AdminCenterController::class, 'show'])->name('admin.center');
     Route::get('/admin/league-dashboard', [AdminLeagueDashboardController::class, 'show'])->name('admin.leagueDashboard');
     Route::post('/admin/leagues/{league}/select', [AdminCenterController::class, 'selectLeague'])->name('admin.leagues.select');

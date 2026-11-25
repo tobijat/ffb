@@ -1,7 +1,16 @@
 (function () {
-    const cfg = window.FFB_DASH || { apiBase: 'api', archive: false, newsPage: 1 };
+    const cfg = window.FFB_DASH || {
+        apiBase: 'api',
+        archive: false,
+        newsPage: 1,
+        emailUnverified: false,
+        showActivationModal: false,
+        resendUrl: '/registration/activation/resend',
+        csrfToken: '',
+    };
     let archive = !!cfg.archive;
     let newsPage = cfg.newsPage || 1;
+    const emailUnverified = !!cfg.emailUnverified;
 
     function apiUrl(path, params) {
         const url = new URL(cfg.apiBase.replace(/\/$/, '') + '/' + path.replace(/^\//, ''), window.location.href);
@@ -50,12 +59,98 @@
         window.location.href = url.toString();
     }
 
+    const activationModal = document.getElementById('activation-modal');
+    const activationFeedback = document.getElementById('activation-modal-feedback');
+    const activationResend = document.getElementById('activation-resend');
+
+    function openActivationModal() {
+        if (!activationModal) {
+            return;
+        }
+        if (activationFeedback) {
+            activationFeedback.hidden = true;
+            activationFeedback.textContent = '';
+            activationFeedback.className = 'activation-modal-feedback';
+        }
+        activationModal.hidden = false;
+        document.body.classList.add('activation-modal-open');
+    }
+
+    function closeActivationModal() {
+        if (!activationModal) {
+            return;
+        }
+        activationModal.hidden = true;
+        document.body.classList.remove('activation-modal-open');
+    }
+
+    window.FFB_DASH.openActivationModal = openActivationModal;
+
+    if (activationModal) {
+        activationModal.querySelectorAll('[data-activation-close]').forEach((el) => {
+            el.addEventListener('click', closeActivationModal);
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !activationModal.hidden) {
+                closeActivationModal();
+            }
+        });
+    }
+
+    if (activationResend) {
+        activationResend.addEventListener('click', async () => {
+            activationResend.disabled = true;
+            try {
+                const response = await fetch(cfg.resendUrl || '/registration/activation/resend', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': cfg.csrfToken || '',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: '{}',
+                });
+                const json = await response.json().catch(() => ({}));
+                if (activationFeedback) {
+                    activationFeedback.hidden = false;
+                    if (response.ok) {
+                        activationFeedback.className = 'activation-modal-feedback is-ok';
+                        activationFeedback.textContent =
+                            json.message || 'Die Aktivierungs-Mail wurde erneut gesendet.';
+                    } else {
+                        activationFeedback.className = 'activation-modal-feedback is-error';
+                        const errors = Array.isArray(json.errors) ? json.errors : [];
+                        activationFeedback.textContent =
+                            errors[0] || json.error || 'Senden fehlgeschlagen.';
+                    }
+                }
+            } catch (err) {
+                if (activationFeedback) {
+                    activationFeedback.hidden = false;
+                    activationFeedback.className = 'activation-modal-feedback is-error';
+                    activationFeedback.textContent = 'Senden fehlgeschlagen.';
+                }
+            } finally {
+                activationResend.disabled = false;
+            }
+        });
+    }
+
+    if (cfg.showActivationModal && emailUnverified) {
+        openActivationModal();
+    }
+
     document.querySelectorAll('.game-tile').forEach((btn) => {
         btn.addEventListener('click', async () => {
+            if (emailUnverified) {
+                openActivationModal();
+                return;
+            }
             const leagueId = Number(btn.dataset.leagueId);
             try {
                 await api('POST', 'league/select', { league_id: leagueId });
-                // After picking a league (including from archive), return to current leagues.
                 reload({ newsPage: 1, archive: false });
             } catch (err) {
                 alert(err.message || 'Liga konnte nicht gewählt werden.');
@@ -67,6 +162,10 @@
     const archiveGrid = document.getElementById('archive-grid');
     if (archiveBtn && archiveGrid) {
         archiveBtn.addEventListener('click', () => {
+            if (emailUnverified) {
+                openActivationModal();
+                return;
+            }
             archive = !archive;
             archiveGrid.hidden = !archive;
             archiveBtn.dataset.archive = archive ? '1' : '0';

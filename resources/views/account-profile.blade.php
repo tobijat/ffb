@@ -499,6 +499,6 @@
             window.FFB_ACCOUNT_ERRORS = @json(array_values($errors));
         </script>
     @endif
-    <script src="{{ $assetBase }}/js/account.js?v=21" defer></script>
+    <script src="{{ $assetBase }}/js/account.js?v=22" defer></script>
 </body>
 </html>

@@ -22,7 +22,9 @@ class PopupApiTest extends TestCase
         $user->exists = true;
 
         $this->mock(FfbUserResolver::class, function ($mock) use ($user, $userId) {
+            $mock->shouldReceive('findPresent')->with($userId)->andReturn($user);
             $mock->shouldReceive('findActive')->with($userId)->andReturn($user);
+            $mock->shouldReceive('findVerified')->with($userId)->andReturn($user);
         });
 
         return $this->actingAs($user);

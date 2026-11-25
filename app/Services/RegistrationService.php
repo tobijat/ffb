@@ -7,9 +7,12 @@ use App\Models\UserDetails;
 use App\Models\UserPermissions;
 use App\Models\WebUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 
 class RegistrationService
 {
@@ -37,7 +40,8 @@ class RegistrationService
      * @return array{
      *   ok: true,
      *   message: string,
-     *   form: array<string, mixed>
+     *   form: array<string, mixed>,
+     *   logged_in: true
      * }|array{
      *   ok: false,
      *   status: int,
@@ -59,21 +63,21 @@ class RegistrationService
             ];
         }
 
-        $activationCode = md5(uniqid((string) time(), true));
         $now = now()->format('Y-m-d H:i:s');
         $ip = (string) $request->ip();
 
-        $user = DB::transaction(function () use ($input, $activationCode, $now, $ip) {
+        $user = DB::transaction(function () use ($input, $now, $ip) {
             $user = new WebUser;
             $user->user_nickname = trim((string) $input['user_nickname']);
             $user->user_password = $this->passwords->hash((string) $input['user_password']);
             $user->user_email = trim((string) $input['user_email']);
-            $user->user_status = 'na';
+            $user->user_status = 'pending';
+            $user->email_verified_at = null;
             $user->user_lip = $ip;
             $user->user_date_register = $now;
             $user->user_date_llogin = $now;
             $user->user_date_laction = $now;
-            $user->user_activation_code = $activationCode;
+            $user->user_activation_code = '';
             $user->save();
 
             $details = new UserDetails;
@@ -99,13 +103,14 @@ class RegistrationService
             return $user;
         });
 
-        $activationUrl = $this->sendActivationMail($user, $activationCode, (string) $request->getHost());
+        $activationUrl = $this->sendActivationMail($user, (string) $request->getHost());
+
+        Auth::login($user);
+        $request->session()->regenerate();
 
         $message = '<b>Dein Account wurde angelegt!</b><br>'
-            .'Ein Aktivierungs-Mail wurde an deine E-Mail Adresse geschickt.<br>'
-            .'Bitte klick den Aktivierungs-Link in dieser E-Mail an, um deinen Account zu aktivieren!<br>'
-            .'Danach kannst du dich auf der Startseite mit deinem Benutzernamen und Passwort anmelden.<br>'
-            .'Nach dem Anmelden kannst du weitere Informationen über dich eintragen indem du auf "Account" klickst.<br>'
+            .'Du bist jetzt angemeldet. Ein Aktivierungs-Mail wurde an deine E-Mail Adresse geschickt.<br>'
+            .'Bitte klick den Aktivierungs-Link in dieser E-Mail an, um Ligen freizuschalten.<br>'
             .'Bitte prüf auch den Spam-Ordner deiner Mailbox, es kann vorkommen, dass die Mail dort gelandet ist!';
 
         if ($this->shouldExposeActivationLink()) {
@@ -117,55 +122,147 @@ class RegistrationService
             'ok' => true,
             'message' => $message,
             'form' => $this->emptyForm(),
+            'logged_in' => true,
         ];
     }
 
     /**
+     * Confirm registration via temporary signed URL (id + email hash).
+     *
      * @return array{ok: true, message: string}|array{ok: false, errors: list<string>}
      */
-    public function activate(string $id, string $kind = 'registration'): array
+    public function activateRegistration(Request $request): array
     {
-        $parts = explode('-', $id, 2);
-        $code = $parts[0] ?? '';
-        $userId = (int) ($parts[1] ?? 0);
+        $invalid = [
+            'ok' => false,
+            'errors' => [
+                'Der Aktivierungs-Link ist ungültig oder wurde bereits verwendet. Eventuell wurde dieser Account bereits aktiviert.',
+            ],
+        ];
 
-        if ($code === '' || $userId <= 0) {
-            return [
-                'ok' => false,
-                'errors' => [
-                    'Der Aktivierungs-Link ist ungültig oder wurde bereits verwendet. Eventuell wurde dieser Account bereits aktiviert.',
-                ],
-            ];
+        if (! $request->hasValidSignature()) {
+            return $invalid;
         }
 
-        $user = WebUser::query()
-            ->where('user_id', $userId)
-            ->where('user_activation_code', $code)
-            ->first();
+        $userId = (int) $request->query('id');
+        $hash = (string) $request->query('hash', '');
 
-        if (! $user) {
-            return [
-                'ok' => false,
-                'errors' => [
-                    'Der Aktivierungs-Link ist ungültig oder wurde bereits verwendet. Eventuell wurde dieser Account bereits aktiviert.',
-                ],
-            ];
+        if ($userId <= 0 || $hash === '') {
+            return $invalid;
+        }
+
+        $user = WebUser::query()->find($userId);
+        if (! $user || ! hash_equals(sha1((string) $user->user_email), $hash)) {
+            return $invalid;
+        }
+
+        if ($user->hasVerifiedEmail() || ! in_array($user->user_status, ['pending', 'active'], true)) {
+            return $invalid;
         }
 
         $user->user_status = 'active';
-        $user->user_activation_code = 'done';
-        $user->save();
+        $user->user_email_pending = null;
+        $user->markEmailAsVerified();
 
-        if ($kind === 'email') {
-            return [
-                'ok' => true,
-                'message' => 'Die E-Mail Änderung wurde abgeschlossen und dein Account wurde aktiviert. Du kannst dich jetzt mit deinem Benutzernamen und Passwort einloggen!',
-            ];
-        }
+        Auth::login($user);
+        $request->session()->regenerate();
 
         return [
             'ok' => true,
-            'message' => 'Die Registrierung wurde abgeschlossen und dein Account wurde aktiviert. Du kannst dich jetzt mit deinem Benutzernamen und Passwort einloggen!',
+            'message' => 'Die Registrierung wurde abgeschlossen und dein Account wurde aktiviert. Du kannst jetzt eine Liga auswählen!',
+        ];
+    }
+
+    /**
+     * Confirm a pending email change via temporary signed URL.
+     *
+     * @return array{ok: true, message: string}|array{ok: false, errors: list<string>}
+     */
+    public function activateEmailChange(Request $request): array
+    {
+        $invalid = [
+            'ok' => false,
+            'errors' => [
+                'Der Bestätigungs-Link ist ungültig oder wurde bereits verwendet.',
+            ],
+        ];
+
+        if (! $request->hasValidSignature()) {
+            return $invalid;
+        }
+
+        $userId = (int) $request->query('id');
+        $hash = (string) $request->query('hash', '');
+        if ($userId <= 0 || $hash === '') {
+            return $invalid;
+        }
+
+        $user = WebUser::query()->find($userId);
+        $pending = trim((string) ($user?->user_email_pending ?? ''));
+        if (! $user || $pending === '' || ! hash_equals(sha1($pending), $hash)) {
+            return $invalid;
+        }
+
+        $taken = WebUser::query()
+            ->where('user_email', $pending)
+            ->where('user_id', '!=', $userId)
+            ->exists();
+        if ($taken) {
+            return [
+                'ok' => false,
+                'errors' => ['Die neue E-Mail Adresse wird inzwischen bereits verwendet.'],
+            ];
+        }
+
+        $user->user_email = $pending;
+        $user->user_email_pending = null;
+        $user->user_status = 'active';
+        $user->markEmailAsVerified();
+
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return [
+            'ok' => true,
+            'message' => 'Deine neue E-Mail Adresse wurde bestätigt und ist jetzt aktiv.',
+        ];
+    }
+
+    /**
+     * Resend activation mail for the logged-in unverified user.
+     *
+     * @return array{ok: true, message: string}|array{ok: false, errors: list<string>, status?: int}
+     */
+    public function resendActivation(Request $request): array
+    {
+        $userId = (int) Auth::id();
+        $user = $userId > 0 ? WebUser::query()->find($userId) : null;
+
+        if (! $user || ! in_array($user->user_status, ['pending', 'active'], true) || $user->hasVerifiedEmail()) {
+            return [
+                'ok' => false,
+                'status' => 403,
+                'errors' => ['Aktivierungs-Mail kann nicht gesendet werden.'],
+            ];
+        }
+
+        $key = 'activation-resend:'.$userId;
+        if (RateLimiter::tooManyAttempts($key, 1)) {
+            $seconds = RateLimiter::availableIn($key);
+
+            return [
+                'ok' => false,
+                'status' => 429,
+                'errors' => ["Bitte warte noch {$seconds} Sekunden, bevor du die Mail erneut anforderst."],
+            ];
+        }
+
+        RateLimiter::hit($key, 60);
+        $this->sendActivationMail($user, (string) $request->getHost());
+
+        return [
+            'ok' => true,
+            'message' => 'Die Aktivierungs-Mail wurde erneut gesendet. Bitte prüf auch den Spam-Ordner.',
         ];
     }
 
@@ -280,22 +377,37 @@ class RegistrationService
             $errors[] = 'Dieser Benutzername existiert bereits!';
         }
 
-        if (WebUser::query()->where('user_email', $email)->exists()) {
+        if (
+            WebUser::query()
+                ->where(function ($query) use ($email): void {
+                    $query->where('user_email', $email)
+                        ->orWhere('user_email_pending', $email);
+                })
+                ->exists()
+        ) {
             $errors[] = 'Diese Email-Adresse existiert bereits!';
         }
 
         return $errors;
     }
 
-    private function sendActivationMail(WebUser $user, string $activationCode, string $siteHost): string
+    /**
+     * Send (or re-send) the registration activation mail for an unverified user.
+     */
+    public function sendActivationMail(WebUser $user, string $siteHost): string
     {
         $activateRoute = app(AppHostService::class)->isPictory()
             ? 'pictory.activate'
             : 'registration.activate';
 
-        $activationUrl = route($activateRoute, [
-            'id' => $activationCode.'-'.(int) $user->user_id,
-        ]);
+        $activationUrl = URL::temporarySignedRoute(
+            $activateRoute,
+            now()->addMinutes((int) config('auth.verification.expire', 1440)),
+            [
+                'id' => (int) $user->user_id,
+                'hash' => sha1((string) $user->user_email),
+            ]
+        );
 
         Mail::to((string) $user->user_email)->send(new AccountActivationMail(
             (string) $user->user_nickname,

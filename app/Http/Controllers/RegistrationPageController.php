@@ -33,6 +33,14 @@ class RegistrationPageController extends Controller
     public function store(Request $request): View|RedirectResponse
     {
         $result = $this->registration->register($request->all(), $request);
+
+        if ($result['ok'] && ! empty($result['logged_in'])) {
+            return redirect()
+                ->route('start')
+                ->with('account_message', $result['message'])
+                ->with('show_activation_modal', true);
+        }
+
         $payload = $this->registration->pagePayload($result['form'] ?? null);
 
         return view('registration', [
@@ -48,7 +56,7 @@ class RegistrationPageController extends Controller
 
     public function activate(Request $request): RedirectResponse
     {
-        $result = $this->registration->activate((string) $request->query('id', ''), 'registration');
+        $result = $this->registration->activateRegistration($request);
 
         if ($result['ok']) {
             return redirect()->route('start')->with('account_message', $result['message']);
@@ -62,7 +70,7 @@ class RegistrationPageController extends Controller
 
     public function activateEmail(Request $request): RedirectResponse
     {
-        $result = $this->registration->activate((string) $request->query('id', ''), 'email');
+        $result = $this->registration->activateEmailChange($request);
 
         if ($result['ok']) {
             return redirect()->route('start')->with('account_message', $result['message']);
@@ -72,6 +80,23 @@ class RegistrationPageController extends Controller
             'account_message',
             '<strong>Es sind Fehler aufgetreten:</strong><br>'.implode('<br>', $result['errors'] ?? [])
         );
+    }
+
+    public function resendActivation(Request $request): JsonResponse
+    {
+        $result = $this->registration->resendActivation($request);
+
+        if ($result['ok']) {
+            return response()->json([
+                'status' => 200,
+                'message' => $result['message'],
+            ]);
+        }
+
+        return response()->json([
+            'status' => $result['status'] ?? 422,
+            'errors' => $result['errors'] ?? ['Unbekannter Fehler.'],
+        ], $result['status'] ?? 422);
     }
 
     public function requestPasswordReset(Request $request): JsonResponse

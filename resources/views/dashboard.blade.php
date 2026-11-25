@@ -6,7 +6,7 @@
     <title>Start — SoccerSportsfan</title>
     @include('partials.favicon')
     <link rel="stylesheet" href="css/start.css?v=45">
-    <link rel="stylesheet" href="css/dashboard.css?v=55">
+    <link rel="stylesheet" href="css/dashboard.css?v=56">
 </head>
 <body class="dash-body">
     @php
@@ -14,21 +14,33 @@
         $leagues = $data['leagues'];
         $archivedLeagues = $data['archived_leagues'] ?? [];
         $selectedId = (int) ($data['selected_league_id'] ?? 0);
+        $emailUnverified = ! empty($data['email_unverified']);
         $news = $data['news'];
-        $textPoll = $data['polls']['text'] ?? null;
-        $selectPoll = $data['polls']['select'] ?? null;
+        $textPoll = $emailUnverified ? null : ($data['polls']['text'] ?? null);
+        $selectPoll = $emailUnverified ? null : ($data['polls']['select'] ?? null);
         $nav = $data['navigation'];
         $archive = (bool) ($data['archive'] ?? false);
+        $accountMessage = $accountMessage ?? null;
+        $showActivationModal = ! empty($showActivationModal);
     @endphp
 
     @include('partials.dash-top')
 
     <main class="dash-main">
-        <section class="games-section" aria-labelledby="games-title">
+        @if (! empty($accountMessage))
+            @php
+                $accountFeedbackKind = str_contains((string) $accountMessage, 'Fehler') ? 'error' : 'ok';
+            @endphp
+            <div class="dash-flash feedback feedback-{{ $accountFeedbackKind }}" role="status">{!! $accountMessage !!}</div>
+        @endif
+
+        <section class="games-section{{ $emailUnverified ? ' is-unverified' : '' }}" aria-labelledby="games-title">
             <div class="section-head">
                 <h2 id="games-title">{{ $selectedId === 0 ? 'Liga auswählen' : 'Verfügbare Ligen' }}</h2>
             </div>
-            @if ($selectedId === 0)
+            @if ($emailUnverified)
+                <p class="hint">Bestätige deine E-Mail Adresse, um eine Liga auszuwählen.</p>
+            @elseif ($selectedId === 0)
                 <p class="hint">Klick eine Liga an, um sie auszuwählen.</p>
             @else
                 <p class="hint">Die markierte Liga ist ausgewählt.</p>
@@ -38,7 +50,7 @@
                 @forelse ($leagues as $league)
                     <button
                         type="button"
-                        class="game-tile{{ $selectedId === (int) $league['league_id'] ? ' is-selected' : '' }}{{ ! empty($league['is_faded']) ? ' is-faded' : '' }}{{ ! empty($league['league_test']) ? ' is-test' : '' }}"
+                        class="game-tile{{ $selectedId === (int) $league['league_id'] ? ' is-selected' : '' }}{{ ! empty($league['is_faded']) ? ' is-faded' : '' }}{{ $emailUnverified ? ' is-unverified' : '' }}{{ ! empty($league['league_test']) ? ' is-test' : '' }}"
                         data-league-id="{{ $league['league_id'] }}"
                         @if (! empty($league['league_test'])) title="Testliga" @endif
                     >
@@ -53,7 +65,7 @@
             @if (count($archivedLeagues) > 0)
                 <button
                     type="button"
-                    class="archive-toggle"
+                    class="archive-toggle{{ $emailUnverified ? ' is-unverified' : '' }}"
                     id="toggle-archive"
                     data-archive="{{ $archive ? '1' : '0' }}"
                     aria-expanded="{{ $archive ? 'true' : 'false' }}"
@@ -69,7 +81,7 @@
                     @foreach ($archivedLeagues as $league)
                         <button
                             type="button"
-                            class="game-tile{{ $selectedId === (int) $league['league_id'] ? ' is-selected' : '' }}{{ ! empty($league['is_faded']) ? ' is-faded' : '' }}{{ ! empty($league['league_test']) ? ' is-test' : '' }}"
+                            class="game-tile{{ $selectedId === (int) $league['league_id'] ? ' is-selected' : '' }}{{ ! empty($league['is_faded']) ? ' is-faded' : '' }}{{ $emailUnverified ? ' is-unverified' : '' }}{{ ! empty($league['league_test']) ? ' is-test' : '' }}"
                             data-league-id="{{ $league['league_id'] }}"
                             @if (! empty($league['league_test'])) title="Testliga" @endif
                         >
@@ -81,7 +93,7 @@
             @endif
         </section>
 
-        <section class="dash-columns">
+        <section class="dash-columns{{ $emailUnverified ? ' is-single' : '' }}">
             <div class="panel" id="news-panel">
                 @if ($textPoll)
                     <h2>Umfrage: {{ $textPoll['poll_title'] }}</h2>
@@ -121,47 +133,68 @@
                 @endif
             </div>
 
-            <div class="panel" id="poll-panel">
-                <h2>Abstimmung</h2>
-                @if (! $selectPoll)
-                    <p class="muted">Gerade keine Abstimmung aktiv.</p>
-                @elseif (($selectPoll['state'] ?? '') === 'open')
-                    <div class="select-poll" data-poll-id="{{ $selectPoll['poll_id'] }}">
-                        <p class="poll-title">{{ $selectPoll['poll_title'] }}</p>
-                        <ul class="poll-answers">
-                            @foreach ($selectPoll['poll_answers'] as $answer)
-                                <li>
-                                    <button type="button" class="poll-vote" data-answer-id="{{ $answer['poll_answer_id'] }}">
-                                        {{ $answer['poll_answer_title'] }}
-                                    </button>
-                                </li>
-                            @endforeach
-                        </ul>
-                        <p class="hint">Läuft bis {{ $selectPoll['poll_end'] }}</p>
-                    </div>
-                @else
-                    <div class="select-poll-result">
-                        <p class="poll-title">{{ $selectPoll['poll_title'] }}</p>
-                        <ul class="poll-results">
-                            @foreach ($selectPoll['poll_result'] as $answer)
-                                <li>
-                                    <div class="result-label">
-                                        <span>{{ $answer['poll_answer_title'] }}</span>
-                                        <strong>{{ $answer['poll_answer_percent'] }}%</strong>
-                                    </div>
-                                    <div class="bar"><span style="width: {{ min(100, (int) $answer['poll_answer_percent_round']) }}%"></span></div>
-                                </li>
-                            @endforeach
-                        </ul>
-                        @if (! empty($selectPoll['poll_over']))
-                            <p class="hint">Beendet · {{ $selectPoll['poll_num_answers'] }} Stimmen</p>
-                        @endif
-                    </div>
-                @endif
-            </div>
+            @unless ($emailUnverified)
+                <div class="panel" id="poll-panel">
+                    <h2>Abstimmung</h2>
+                    @if (! $selectPoll)
+                        <p class="muted">Gerade keine Abstimmung aktiv.</p>
+                    @elseif (($selectPoll['state'] ?? '') === 'open')
+                        <div class="select-poll" data-poll-id="{{ $selectPoll['poll_id'] }}">
+                            <p class="poll-title">{{ $selectPoll['poll_title'] }}</p>
+                            <ul class="poll-answers">
+                                @foreach ($selectPoll['poll_answers'] as $answer)
+                                    <li>
+                                        <button type="button" class="poll-vote" data-answer-id="{{ $answer['poll_answer_id'] }}">
+                                            {{ $answer['poll_answer_title'] }}
+                                        </button>
+                                    </li>
+                                @endforeach
+                            </ul>
+                            <p class="hint">Läuft bis {{ $selectPoll['poll_end'] }}</p>
+                        </div>
+                    @else
+                        <div class="select-poll-result">
+                            <p class="poll-title">{{ $selectPoll['poll_title'] }}</p>
+                            <ul class="poll-results">
+                                @foreach ($selectPoll['poll_result'] as $answer)
+                                    <li>
+                                        <div class="result-label">
+                                            <span>{{ $answer['poll_answer_title'] }}</span>
+                                            <strong>{{ $answer['poll_answer_percent'] }}%</strong>
+                                        </div>
+                                        <div class="bar"><span style="width: {{ min(100, (int) $answer['poll_answer_percent_round']) }}%"></span></div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                            @if (! empty($selectPoll['poll_over']))
+                                <p class="hint">Beendet · {{ $selectPoll['poll_num_answers'] }} Stimmen</p>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            @endunless
         </section>
     </main>
 
+    <div
+        id="activation-modal"
+        class="activation-modal"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="activation-modal-title"
+    >
+        <div class="activation-modal-backdrop" data-activation-close></div>
+        <div class="activation-modal-dialog">
+            <h2 id="activation-modal-title">E-Mail bestätigen</h2>
+            <p>Bestätige deine E-Mail Adresse um deinen Account zu aktivieren.</p>
+            <p id="activation-modal-feedback" class="activation-modal-feedback" hidden></p>
+            <div class="activation-modal-actions">
+                <button type="button" class="btn btn-primary" id="activation-resend">Aktivierungs-Link erneut senden</button>
+                <button type="button" class="btn" data-activation-close>Schließen</button>
+            </div>
+        </div>
+    </div>
 
     @include('partials.footer')
 
@@ -170,8 +203,12 @@
             apiBase: 'api',
             archive: @json($archive),
             newsPage: @json($news['page']),
+            emailUnverified: @json($emailUnverified),
+            showActivationModal: @json($showActivationModal),
+            resendUrl: @json(route('registration.activation.resend', absolute: false)),
+            csrfToken: @json(csrf_token()),
         };
     </script>
-    <script src="js/dashboard.js?v=2" defer></script>
+    <script src="js/dashboard.js?v=3" defer></script>
 </body>
 </html>

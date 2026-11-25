@@ -22,11 +22,14 @@ class DashboardService
      */
     public function navigation(?int $userId = null): array
     {
-        $leagueId = $userId !== null ? $this->selectedLeagueId($userId) : 0;
-        $noLeague = $userId !== null && $leagueId <= 0;
-        $lineupArchived = $userId !== null && $leagueId > 0 && $this->leagueIsArchived($leagueId);
+        $emailUnverified = $userId !== null && $this->isEmailUnverified($userId);
+        $leagueId = ($userId !== null && ! $emailUnverified) ? $this->selectedLeagueId($userId) : 0;
+        $noLeague = $userId !== null && ($emailUnverified || $leagueId <= 0);
+        $lineupArchived = $userId !== null && ! $emailUnverified && $leagueId > 0 && $this->leagueIsArchived($leagueId);
         $pickLeagueTitle = 'Bitte zuerst eine Liga auswählen';
+        $verifyTitle = 'Bestätige deine E-Mail Adresse um deinen Account zu aktivieren.';
         $archiveTitle = 'Archiviertes Spiel — keine Aufstellung möglich';
+        $disabledTitle = $emailUnverified ? $verifyTitle : $pickLeagueTitle;
 
         return [
             [
@@ -35,7 +38,7 @@ class DashboardService
                 'link' => '/lineup',
                 'style' => 'big',
                 'disabled' => $noLeague || $lineupArchived,
-                'disabled_title' => $lineupArchived ? $archiveTitle : $pickLeagueTitle,
+                'disabled_title' => $lineupArchived ? $archiveTitle : $disabledTitle,
             ],
             [
                 'symbol' => 'nav_player.png',
@@ -43,7 +46,7 @@ class DashboardService
                 'link' => '/myteam',
                 'style' => 'big',
                 'disabled' => $noLeague,
-                'disabled_title' => $pickLeagueTitle,
+                'disabled_title' => $disabledTitle,
             ],
             [
                 'symbol' => 'nav_topflop.png',
@@ -51,7 +54,7 @@ class DashboardService
                 'link' => '/bestteam',
                 'style' => 'big',
                 'disabled' => $noLeague,
-                'disabled_title' => $pickLeagueTitle,
+                'disabled_title' => $disabledTitle,
             ],
             [
                 'symbol' => 'nav_results.png',
@@ -59,7 +62,7 @@ class DashboardService
                 'link' => '/userscore',
                 'style' => 'big',
                 'disabled' => $noLeague,
-                'disabled_title' => $pickLeagueTitle,
+                'disabled_title' => $disabledTitle,
             ],
             ['symbol' => 'nav_help.png', 'name' => 'Regeln', 'link' => '/help', 'style' => 'big'],
         ];
@@ -77,6 +80,13 @@ class DashboardService
         return (int) (League::query()->where('league_id', $leagueId)->value('league_archive') ?? 0) !== 0;
     }
 
+    private function isEmailUnverified(int $userId): bool
+    {
+        $user = WebUser::query()->find($userId);
+
+        return $user !== null && ! $user->hasVerifiedEmail();
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -86,6 +96,7 @@ class DashboardService
         if (! $user) {
             return [
                 'user' => null,
+                'email_unverified' => false,
                 'leagues' => [],
                 'archived_leagues' => [],
                 'news' => ['items' => [], 'page' => 1, 'pages' => 0],
@@ -94,8 +105,11 @@ class DashboardService
             ];
         }
 
+        $emailUnverified = ! $user->hasVerifiedEmail();
         $details = $user->details;
-        $selectedLeagueId = (int) ($details?->user_details_ffb_selected_league ?? 0);
+        $selectedLeagueId = $emailUnverified
+            ? 0
+            : (int) ($details?->user_details_ffb_selected_league ?? 0);
         $isAdmin = app(FfbAdminAccess::class)->isAdmin($userId);
         $leagues = $this->leagues(false, $isAdmin, $selectedLeagueId);
         $activeIds = array_fill_keys(
@@ -107,17 +121,33 @@ class DashboardService
             static fn (array $league): bool => ! isset($activeIds[(int) $league['league_id']])
         ));
 
+        if ($emailUnverified) {
+            $leagues = array_map(static function (array $league): array {
+                $league['is_faded'] = true;
+
+                return $league;
+            }, $leagues);
+            $archivedLeagues = array_map(static function (array $league): array {
+                $league['is_faded'] = true;
+
+                return $league;
+            }, $archivedLeagues);
+        }
+
         return [
             'user' => $this->userPayload($user, $details),
+            'email_unverified' => $emailUnverified,
             'selected_league_id' => $selectedLeagueId,
             'leagues' => $leagues,
             'archived_leagues' => $archivedLeagues,
             'archive' => $archiveGames,
             'news' => $this->news($selectedLeagueId, $newsPage),
-            'polls' => [
-                'text' => $this->textPoll($userId, $selectedLeagueId),
-                'select' => $this->selectPoll($userId, $selectedLeagueId),
-            ],
+            'polls' => $emailUnverified
+                ? ['text' => null, 'select' => null]
+                : [
+                    'text' => $this->textPoll($userId, $selectedLeagueId),
+                    'select' => $this->selectPoll($userId, $selectedLeagueId),
+                ],
             'navigation' => $this->navigation($userId),
         ];
     }
@@ -127,6 +157,14 @@ class DashboardService
      */
     public function selectLeague(int $userId, int $leagueId): array
     {
+        if ($this->isEmailUnverified($userId)) {
+            return [
+                'ok' => false,
+                'status' => 403,
+                'error' => 'Bestätige deine E-Mail Adresse um deinen Account zu aktivieren.',
+            ];
+        }
+
         $league = League::query()->find($leagueId);
         $isAdmin = app(FfbAdminAccess::class)->isAdmin($userId);
         if (
@@ -178,6 +216,14 @@ class DashboardService
      */
     private function storeVote(int $userId, int $pollId, int $answerId, string $text): array
     {
+        if ($this->isEmailUnverified($userId)) {
+            return [
+                'ok' => false,
+                'status' => 403,
+                'error' => 'Bestätige deine E-Mail Adresse um deinen Account zu aktivieren.',
+            ];
+        }
+
         $poll = Poll::query()->find($pollId);
         $answer = PollAnswer::query()->find($answerId);
         if (! $poll || ! $answer || (int) $answer->poll_answer_poll_id !== $pollId) {

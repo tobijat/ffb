@@ -79,6 +79,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'ffb.admin' => \App\Http\Middleware\EnsureFfbAdmin::class,
             'ffb.active' => \App\Http\Middleware\EnsureActiveFfbUser::class,
+            'ffb.verified' => \App\Http\Middleware\EnsureVerifiedFfbUser::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

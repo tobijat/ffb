@@ -137,7 +137,9 @@ class PictoryHostStubTest extends TestCase
 
         $this->mock(FfbUserResolver::class, function ($mock) use ($id) {
             $user = WebUser::query()->find($id);
+            $mock->shouldReceive('findPresent')->with($id)->andReturn($user);
             $mock->shouldReceive('findActive')->with($id)->andReturn($user);
+            $mock->shouldReceive('findVerified')->with($id)->andReturn($user);
         });
 
         $this->post('http://pictory.test/login', [

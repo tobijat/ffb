@@ -44,7 +44,12 @@ class PictoryAuthController extends Controller
             ]);
         }
 
-        return redirect()->route('pictory.home');
+        $redirect = redirect()->route('pictory.home');
+        if (! empty($result['email_unverified'])) {
+            $redirect->with('show_activation_modal', true);
+        }
+
+        return $redirect;
     }
 
     public function showRegister(Request $request): View|RedirectResponse
@@ -61,6 +66,14 @@ class PictoryAuthController extends Controller
     public function register(Request $request): View|RedirectResponse
     {
         $result = $this->registration->register($request->all(), $request);
+
+        if ($result['ok'] && ! empty($result['logged_in'])) {
+            return redirect()
+                ->route('pictory.home')
+                ->with('pictory_message', $result['message'])
+                ->with('show_activation_modal', true);
+        }
+
         $payload = $this->registration->pagePayload($result['form'] ?? null);
 
         return view('pictory.register', [
@@ -72,16 +85,16 @@ class PictoryAuthController extends Controller
 
     public function activate(Request $request): RedirectResponse
     {
-        $result = $this->registration->activate((string) $request->query('id', ''), 'registration');
+        $result = $this->registration->activateRegistration($request);
 
         if ($result['ok']) {
             return redirect()
-                ->route('pictory.login')
+                ->route('pictory.home')
                 ->with('pictory_message', $result['message'] ?? 'Account aktiviert.');
         }
 
         return redirect()
-            ->route('pictory.login')
+            ->route('pictory.home')
             ->with('pictory_message', '<strong>Fehler:</strong> '.implode(' ', $result['errors'] ?? ['Aktivierung fehlgeschlagen.']));
     }
 

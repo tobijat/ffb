@@ -29,6 +29,8 @@ class StartController extends Controller
             return view('dashboard', [
                 'data' => $data,
                 'legacyBase' => '/',
+                'accountMessage' => $request->session()->pull('account_message'),
+                'showActivationModal' => (bool) $request->session()->pull('show_activation_modal', false),
             ]);
         }
 

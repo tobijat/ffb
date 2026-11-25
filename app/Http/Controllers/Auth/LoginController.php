@@ -34,6 +34,10 @@ class LoginController extends Controller
             ], 422);
         }
 
+        if (! empty($result['email_unverified'])) {
+            $request->session()->flash('show_activation_modal', true);
+        }
+
         return response()->json([
             'status' => 200,
             'destination' => $result['destination'],

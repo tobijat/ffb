@@ -183,15 +183,28 @@ class AccountPageTest extends TestCase
             ->assertSee('user-card-logout', false);
     }
 
-    public function test_email_change_redirects_to_start_logged_out(): void
+    public function test_email_change_stays_on_account_while_logged_in(): void
     {
         $this->mock(AccountService::class, function ($mock) {
             $mock->shouldReceive('update')->once()->andReturn([
                 'ok' => true,
                 'message' => 'E-Mail geändert',
                 'email_changed' => true,
-                'form' => [],
+                'form' => [
+                    'user_nickname' => 'tester',
+                    'user_email' => 'tester@example.com',
+                    'user_fname' => '',
+                    'user_lname' => '',
+                    'user_nationality' => '',
+                    'user_birth_day' => 0,
+                    'user_birth_month' => 0,
+                    'user_birth_year' => 0,
+                    'user_email_chg' => '',
+                    'user_email_val_chg' => '',
+                ],
             ]);
+            $mock->shouldReceive('pagePayload')->once()->andReturn($this->accountPayload());
+            $mock->shouldReceive('profilePayload')->once()->andReturn($this->profilePayload());
         });
 
         $this->actingAsFfbUser(544)
@@ -200,7 +213,9 @@ class AccountPageTest extends TestCase
                 'user_email_val_chg' => 'new@example.com',
                 'user_tos' => 'user_tos_yes',
             ])
-            ->assertRedirect(route('start'));
+            ->assertOk()
+            ->assertSee('E-Mail geändert', false)
+            ->assertSee('user-card-logout', false);
     }
 
     public function test_profile_page_redirects_guests(): void

@@ -31,10 +31,6 @@ class AccountPageController extends Controller
         $userId = (int) Auth::id();
         $result = $this->accounts->update($userId, $request->all(), $request);
 
-        if ($result['ok'] && ($result['email_changed'] ?? false)) {
-            return redirect()->route('start')->with('account_message', $result['message']);
-        }
-
         return $this->renderProfileHub(
             $userId,
             'account',

@@ -12,6 +12,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/start', [StartController::class, 'data']);
 
 Route::middleware(['auth', 'ffb.active'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'show']);
+});
+
+Route::middleware(['auth', 'ffb.active', 'ffb.verified'])->group(function () {
     Route::get('/lineup', [LineupController::class, 'show']);
     Route::post('/lineup', [LineupController::class, 'store']);
     Route::get('/lineup/options', [LineupController::class, 'options']);
@@ -19,7 +23,6 @@ Route::middleware(['auth', 'ffb.active'])->group(function () {
     Route::get('/lineup/teams/{teamId}/players', [LineupController::class, 'teamPlayers'])
         ->whereNumber('teamId');
 
-    Route::get('/dashboard', [DashboardController::class, 'show']);
     Route::post('/league/select', [DashboardController::class, 'selectLeague']);
     Route::post('/poll/vote', [DashboardController::class, 'votePoll']);
 

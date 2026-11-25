@@ -35,7 +35,9 @@ class DashboardApiTest extends TestCase
         ];
 
         $this->mock(FfbUserResolver::class, function ($mock) use ($user) {
+            $mock->shouldReceive('findPresent')->with(544)->andReturn($user);
             $mock->shouldReceive('findActive')->with(544)->andReturn($user);
+            $mock->shouldReceive('findVerified')->with(544)->andReturn($user);
         });
 
         $this->mock(DashboardService::class, function ($mock) use ($payload) {
@@ -120,7 +122,9 @@ class DashboardApiTest extends TestCase
         $user->user_nickname = 'tester';
 
         $this->mock(FfbUserResolver::class, function ($mock) use ($user) {
+            $mock->shouldReceive('findPresent')->with(544)->andReturn($user);
             $mock->shouldReceive('findActive')->with(544)->andReturn($user);
+            $mock->shouldReceive('findVerified')->with(544)->andReturn($user);
         });
 
         $this->mock(DashboardService::class, function ($mock) {

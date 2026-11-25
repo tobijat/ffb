@@ -15,7 +15,7 @@ class LoginService
     ) {}
 
     /**
-     * @return array{ok: true, destination: string, user_id: int}|array{ok: false, errors: list<string>}
+     * @return array{ok: true, destination: string, user_id: int, email_unverified: bool}|array{ok: false, errors: list<string>}
      */
     public function attempt(string $nickname, string $plainPassword, Request $request, string $destination = ''): array
     {
@@ -36,18 +36,7 @@ class LoginService
             ];
         }
 
-        if ($user->user_status === 'na') {
-            return [
-                'ok' => false,
-                'errors' => [
-                    'Dein Account wurde noch nicht aktiviert.<br>'
-                    .'Klick auf den Aktivierungs-Link in der Email, die dir nach der Registrierung zugeschickt wurde!<br>'
-                    .'Prüf bitte auch deinen Spam-Folder!',
-                ],
-            ];
-        }
-
-        if ($user->user_status !== 'active') {
+        if (! in_array($user->user_status, ['active', 'pending'], true)) {
             return ['ok' => false, 'errors' => ['Anmeldung nicht möglich.']];
         }
 
@@ -60,6 +49,8 @@ class LoginService
             $user->user_password = $this->passwords->hash($plainPassword);
         }
 
+        $emailUnverified = $user->user_status === 'pending' || ! $user->hasVerifiedEmail();
+
         $user->user_date_llogin = now()->format('Y-m-d H:i:s');
         $user->user_date_laction = now()->format('Y-m-d H:i:s');
         $user->user_lip = (string) $request->ip();
@@ -67,10 +58,15 @@ class LoginService
 
         Auth::login($user);
 
+        $destinationPath = $emailUnverified
+            ? route('start', absolute: false)
+            : $this->resolveDestination($destination);
+
         return [
             'ok' => true,
             'user_id' => (int) $user->user_id,
-            'destination' => $this->resolveDestination($destination),
+            'destination' => $destinationPath,
+            'email_unverified' => $emailUnverified,
         ];
     }
 

@@ -18,7 +18,7 @@ class PictoryHomeController extends Controller
     public function show(Request $request): View
     {
         $userId = (int) Auth::id();
-        $user = $userId > 0 ? $this->users->findActive($userId) : null;
+        $user = $userId > 0 ? $this->users->findPresent($userId) : null;
 
         return view('pictory.home', [
             'user' => $user ? [
