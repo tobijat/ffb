@@ -101,10 +101,19 @@ class RegistrationActivationTest extends TestCase
         $this->assertSame(0, (int) DB::table('ffb_user_details')->where('user_id', $user->user_id)->value('user_details_ffb_selected_league'));
 
         Mail::assertSent(AccountActivationMail::class, function (AccountActivationMail $mail) use ($user) {
-            return $mail->nickname === 'newbie'
-                && str_contains($mail->activationUrl, 'signature=')
-                && str_contains($mail->activationUrl, 'id='.$user->user_id)
-                && str_contains($mail->activationUrl, 'hash='.sha1('newbie@example.com'));
+            if ($mail->nickname !== 'newbie'
+                || ! str_contains($mail->activationUrl, 'signature=')
+                || ! str_contains($mail->activationUrl, 'id='.$user->user_id)
+                || ! str_contains($mail->activationUrl, 'hash='.sha1('newbie@example.com'))
+            ) {
+                return false;
+            }
+
+            // Text mails must not HTML-escape & in signed URLs (&amp; breaks signature validation).
+            $body = $mail->render();
+
+            return str_contains($body, $mail->activationUrl)
+                && ! str_contains($body, '&amp;');
         });
     }
 

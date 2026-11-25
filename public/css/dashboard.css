@@ -616,8 +616,12 @@
     background: #e8e8e8;
 }
 
-.dash-flash {
-    margin: 0 0 10px;
+/* Match nav (.dash-top) content width; rely on .dash-main gap for spacing. */
+.dash-main > .dash-flash.feedback {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    box-sizing: border-box;
 }
 
 .game-tile.is-test {
