@@ -208,7 +208,8 @@
                 </p>
                 <p id="activation-modal-feedback" class="activation-modal-feedback" hidden></p>
                 <div class="activation-modal-actions">
-                    <button type="button" class="btn" id="activation-resend">Aktivierungs-Link erneut senden</button>
+                    <button type="button" class="btn" id="activation-resend">Link erneut senden</button>
+                    <a class="btn" href="{{ route('profile', ['tab' => 'account']) }}">Account editieren</a>
                 </div>
             </div>
         </div>

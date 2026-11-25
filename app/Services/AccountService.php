@@ -432,6 +432,7 @@ class AccountService
             'user_nickname' => (string) $user->user_nickname,
             'user_email' => (string) $user->user_email,
             'user_email_pending' => (string) ($user->user_email_pending ?? ''),
+            'email_verified' => $user->hasVerifiedEmail(),
             'user_fname' => (string) ($details?->user_fname ?? ''),
             'user_lname' => (string) ($details?->user_lname ?? ''),
             'user_nationality' => (string) ($details?->user_nationality ?? ''),

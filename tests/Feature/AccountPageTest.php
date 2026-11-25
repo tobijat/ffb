@@ -24,6 +24,8 @@ class AccountPageTest extends TestCase
                 'form' => [
                     'user_nickname' => 'tester',
                     'user_email' => 'tester@example.com',
+                    'user_email_pending' => '',
+                    'email_verified' => true,
                     'user_fname' => 'Max',
                     'user_lname' => 'Muster',
                     'user_nationality' => 'AUT',

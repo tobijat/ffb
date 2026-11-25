@@ -428,7 +428,9 @@
 
                     <div class="account-field">
                         <label for="user_email">
-                            @if (! empty($accountForm['user_email_pending']))
+                            @if (! ($accountForm['email_verified'] ?? true))
+                                E-Mail Adresse (unbestätigt)
+                            @elseif (! empty($accountForm['user_email_pending']))
                                 E-Mail Adresse (aktiv)
                             @else
                                 E-Mail Adresse
